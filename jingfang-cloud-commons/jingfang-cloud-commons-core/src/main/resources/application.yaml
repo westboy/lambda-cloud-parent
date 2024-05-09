@@ -1,0 +1,100 @@
+#\u5141\u8BB8\u66FF\u6362\u7684\u9ED8\u8BA4\u503C
+server:
+  tomcat:
+    connection-timeout: 3000
+  servlet:
+    session:
+      persistent: false
+      tracking-modes: COOKIE
+feign:
+  client:
+    config:
+      default:
+        read-timeout: 3000
+        connect-timeout: 2000
+dubbo:
+  cloud:
+    subscribed-services:
+  protocol:
+    name: dubbo
+    port: -1
+    serialization: kryo
+  protocols:
+    dubbo:
+      port: -1
+      serialization: kryo
+  consumer:
+    check: false
+  registry:
+    address: 'nacos://${spring.cloud.nacos.discovery.server-addr}'
+    group: ${spring.cloud.nacos.discovery.group}
+    parameters:
+      namespace: ${spring.cloud.nacos.discovery.namespace}
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    hikari:
+      connection-test-query: 'SELECT 1 FROM DUAL'
+  web:
+    resources:
+      static-locations:
+        - file:/opt/resources/${spring.application.name}/dist
+        - file:C:/opt/resources/${spring.application.name}/dist
+        - file:C:/opt/resources/
+        - file:/opt/resources/
+        - classpath:/META-INF/resources/
+        - classpath:/resources/
+        - classpath:/static/
+        - classpath:/public/
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+  redis:
+    lettuce:
+      pool:
+        max-idle: 8
+        min-idle: 1
+        max-active: 10
+        max-wait: -1
+    mode: ${spring.redis.run-model:STANDALONE}
+xxl:
+  job:
+    executor:
+      app-name: ${spring.application.name}
+      ip-address: ${spring.cloud.client.ip-address}
+logging:
+  level:
+    'com.jingfang.cloud': INFO
+    'com.netflix.discovery.DiscoveryClient': 'OFF'
+    'org.apache.tomcat.util.modeler.Registry': 'OFF'
+    'com.netflix.discovery.InstanceInfoReplicator': 'ERROR'
+    'com.netflix.discovery.TimedSupervisorTask': 'OFF'
+    'com.netflix.config.AbstractPollingScheduler': 'OFF'
+    'com.netflix.eureka.resources.InstanceResource': 'ERROR'
+    'org.apache.kafka.clients.producer.ProducerConfig': 'OFF'
+    'org.apache.kafka.clients.consumer.ConsumerConfig': 'OFF'
+    'org.springframework.boot.actuate.endpoint.EndpointId': 'OFF'
+    'com.baomidou.mybatisplus.core.metadata.TableInfoHelper': 'ERROR'
+    'com.alibaba.cloud.nacos.client.NacosPropertySourceBuilder': 'OFF'
+    'org.springframework.cloud.client.discovery.DiscoveryClient': 'OFF'
+    'org.springframework.boot.web.embedded.tomcat.TomcatWebServer': 'INFO'
+    'org.springframework.context.support.ResourceBundleMessageSource': 'ERROR'
+    'org.springframework.jmx.export.annotation.AnnotationMBeanExporter': 'ERROR'
+    'org.springframework.context.annotation.ConfigurationClassPostProcessor': 'OFF'
+    'org.springframework.context.annotation.AnnotationConfigApplicationContext': 'OFF'
+    'org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver': 'ERROR'
+    'liquibase.lockservice': 'INFO'
+jingfang:
+  api-docs:
+    production: false
+    enabled: true
+    title: "${spring.application.name} Api Documents"
+  liquibase:
+    enabled: true
+    url: ${spring.datasource.url:${spring.shardingsphere.datasource.master.jdbc-url}}
+    username: ${spring.datasource.username:${spring.shardingsphere.datasource.master.username}}
+    password: ${spring.datasource.password:${spring.shardingsphere.datasource.master.password}}
+    driver-class-name: ${spring.datasource.driver-class-name:${spring.shardingsphere.datasource.master.driver-class-name}}

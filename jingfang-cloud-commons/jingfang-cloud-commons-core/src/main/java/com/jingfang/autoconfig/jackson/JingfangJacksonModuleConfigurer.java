@@ -1,8 +1,8 @@
 package com.jingfang.autoconfig.jackson;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jingfang.core.jackson2.JingfangLocalDateTimeDeserializer;
-import com.jingfang.core.jackson2.JingfangLocalDateTimeSerializer;
+import com.jingfang.cloud.core.jackson2.JingfangLocalDateTimeDeserializer;
+import com.jingfang.cloud.core.jackson2.JingfangLocalDateTimeSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

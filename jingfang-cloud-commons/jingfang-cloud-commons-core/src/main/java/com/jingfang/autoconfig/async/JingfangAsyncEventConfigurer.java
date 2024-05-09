@@ -1,10 +1,9 @@
 package com.jingfang.autoconfig.async;
 
 
-import com.jingfang.core.event.JingfangApplicationEventMulticaster;
-import com.jingfang.core.event.JingfangSyncListenerMethodCache;
-import com.jingfang.core.Constants;
-import com.jingfang.core.ThreadPoolProperties;
+import com.jingfang.cloud.core.event.JingfangApplicationEventMulticaster;
+import com.jingfang.cloud.core.event.JingfangSyncListenerMethodCache;
+import com.jingfang.cloud.core.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,7 +31,7 @@ public class JingfangAsyncEventConfigurer {
 
     @Bean(name = AbstractApplicationContext.APPLICATION_EVENT_MULTICASTER_BEAN_NAME)
     public ApplicationEventMulticaster simpleApplicationEventMulticaster(
-            @Qualifier(Constants.ASYN_EVENT_EXECUTOR) ObjectProvider<Executor> executorProvider,
+            @Qualifier(Constants.ASYNC_EVENT_EXECUTOR) ObjectProvider<Executor> executorProvider,
             JingfangSyncListenerMethodCache jingfangSyncListenerMethodCache,
             ThreadPoolProperties properties) {
         Executor executor = executorProvider.getIfAvailable(() -> {
