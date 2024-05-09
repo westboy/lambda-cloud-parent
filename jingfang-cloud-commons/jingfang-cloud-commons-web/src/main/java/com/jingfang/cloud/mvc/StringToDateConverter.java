@@ -1,6 +1,6 @@
 package com.jingfang.cloud.mvc;
 
-import com.jingfang.core.jackson2.JingfangDateFormat;
+import com.jingfang.cloud.core.jackson2.JingfangDateFormat;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.convert.converter.Converter;

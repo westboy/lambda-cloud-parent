@@ -1,10 +1,10 @@
 package com.jingfang.cloud.mvc.execption;
 
-import com.jingfang.core.exception.NotSupportedException;
-import com.jingfang.core.exception.feign.AbstractFeignException;
-import com.jingfang.core.exception.feign.FeignArgumentNotValidException;
-import com.jingfang.core.exception.model.ArgumentError;
-import com.jingfang.core.exception.model.ErrorModel;
+import com.jingfang.cloud.core.exception.NotSupportedException;
+import com.jingfang.cloud.core.exception.feign.AbstractFeignException;
+import com.jingfang.cloud.core.exception.feign.FeignArgumentNotValidException;
+import com.jingfang.cloud.core.exception.model.ArgumentError;
+import com.jingfang.cloud.core.exception.model.ErrorModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
