@@ -6,9 +6,9 @@ import java.time.format.DateTimeFormatter;
  * @author Jin
  */
 @SuppressWarnings("squid:S110")
-public class JingfangLocalDateTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer {
+public class JFLocalDateTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer {
 
-    public JingfangLocalDateTimeSerializer() {
+    public JFLocalDateTimeSerializer() {
         super(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 }

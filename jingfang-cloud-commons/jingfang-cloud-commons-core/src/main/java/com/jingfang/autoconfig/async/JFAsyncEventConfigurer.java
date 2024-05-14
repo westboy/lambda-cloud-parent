@@ -1,8 +1,8 @@
 package com.jingfang.autoconfig.async;
 
 
-import com.jingfang.cloud.core.event.JingfangApplicationEventMulticaster;
-import com.jingfang.cloud.core.event.JingfangSyncListenerMethodCache;
+import com.jingfang.cloud.core.event.JFApplicationEventMulticaster;
+import com.jingfang.cloud.core.event.JFSyncListenerMethodCache;
 import com.jingfang.cloud.core.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -22,17 +22,17 @@ import java.util.concurrent.Executor;
 @Slf4j
 @Configuration
 @EnableConfigurationProperties(ThreadPoolProperties.class)
-public class JingfangAsyncEventConfigurer {
+public class JFAsyncEventConfigurer {
 
     @Bean
-    public JingfangSyncListenerMethodCache jingfangSyncListenerMethodCache() {
-        return new JingfangSyncListenerMethodCache();
+    public JFSyncListenerMethodCache jingfangSyncListenerMethodCache() {
+        return new JFSyncListenerMethodCache();
     }
 
     @Bean(name = AbstractApplicationContext.APPLICATION_EVENT_MULTICASTER_BEAN_NAME)
     public ApplicationEventMulticaster simpleApplicationEventMulticaster(
             @Qualifier(Constants.ASYNC_EVENT_EXECUTOR) ObjectProvider<Executor> executorProvider,
-            JingfangSyncListenerMethodCache jingfangSyncListenerMethodCache,
+            JFSyncListenerMethodCache JFSyncListenerMethodCache,
             ThreadPoolProperties properties) {
         Executor executor = executorProvider.getIfAvailable(() -> {
             ThreadPoolTaskExecutor defaultTaskExecutor = new ThreadPoolTaskExecutor();
@@ -66,7 +66,7 @@ public class JingfangAsyncEventConfigurer {
             defaultTaskExecutor.initialize();
             return defaultTaskExecutor;
         });
-        JingfangApplicationEventMulticaster eventMulticaster = new JingfangApplicationEventMulticaster(jingfangSyncListenerMethodCache);
+        JFApplicationEventMulticaster eventMulticaster = new JFApplicationEventMulticaster(JFSyncListenerMethodCache);
         eventMulticaster.setTaskExecutor(executor);
         return eventMulticaster;
     }

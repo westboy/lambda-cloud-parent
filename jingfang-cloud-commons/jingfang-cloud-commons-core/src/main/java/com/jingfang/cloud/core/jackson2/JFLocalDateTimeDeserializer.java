@@ -15,7 +15,7 @@ import java.time.temporal.ChronoField;
  * @author Jin
  */
 @SuppressWarnings({"squid:S110", "PMD"})
-public class JingfangLocalDateTimeDeserializer extends com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer {
+public class JFLocalDateTimeDeserializer extends com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer {
 
     private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd[[' 'HH][:mm][:ss]]")

@@ -21,7 +21,7 @@ import java.util.StringJoiner;
  * @see org.springframework.context.event.EventListenerMethodProcessor
  */
 @Slf4j
-public class JingfangSyncListenerMethodCache implements ApplicationContextAware {
+public class JFSyncListenerMethodCache implements ApplicationContextAware {
 
 
     private final Set<String> syncListenerMethodCache = new HashSet<>();
@@ -40,9 +40,9 @@ public class JingfangSyncListenerMethodCache implements ApplicationContextAware 
                     log.debug("Could not resolve target class for bean with name '{}'", beanName, ex);
                 }
                 if (beanType != null) {
-                    Map<Method, JingfangSyncListener> annotatedMethods = MethodIntrospector.selectMethods(beanType,
-                            (MethodIntrospector.MetadataLookup<JingfangSyncListener>) method ->
-                                    AnnotatedElementUtils.findMergedAnnotation(method, JingfangSyncListener.class));
+                    Map<Method, JFSyncListener> annotatedMethods = MethodIntrospector.selectMethods(beanType,
+                            (MethodIntrospector.MetadataLookup<JFSyncListener>) method ->
+                                    AnnotatedElementUtils.findMergedAnnotation(method, JFSyncListener.class));
                     for (Method method : annotatedMethods.keySet()) {
                         syncListenerMethodCache.add(getDefaultListenerId(method));
                     }

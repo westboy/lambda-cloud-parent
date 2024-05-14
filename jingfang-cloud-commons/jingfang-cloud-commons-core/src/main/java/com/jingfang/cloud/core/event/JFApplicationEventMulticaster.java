@@ -14,12 +14,12 @@ import java.util.concurrent.Executor;
  * @author Jin
  */
 
-public class JingfangApplicationEventMulticaster extends SimpleApplicationEventMulticaster {
+public class JFApplicationEventMulticaster extends SimpleApplicationEventMulticaster {
 
-    private final JingfangSyncListenerMethodCache jingfangSyncListenerMethodCache;
+    private final JFSyncListenerMethodCache JFSyncListenerMethodCache;
 
-    public JingfangApplicationEventMulticaster(JingfangSyncListenerMethodCache jingfangSyncListenerMethodCache) {
-        this.jingfangSyncListenerMethodCache = jingfangSyncListenerMethodCache;
+    public JFApplicationEventMulticaster(JFSyncListenerMethodCache JFSyncListenerMethodCache) {
+        this.JFSyncListenerMethodCache = JFSyncListenerMethodCache;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class JingfangApplicationEventMulticaster extends SimpleApplicationEventM
                 ApplicationListenerMethodAdapter listenerMethodAdapter = (ApplicationListenerMethodAdapter) listener;
                 //与事件监听器方法全限定名做匹配
                 String listenerId = listenerMethodAdapter.getListenerId();
-                boolean syncMethod = jingfangSyncListenerMethodCache.isSync(listenerId);
+                boolean syncMethod = JFSyncListenerMethodCache.isSync(listenerId);
                 if (syncMethod) {
                     invokeListener(listener, event);
                     continue;

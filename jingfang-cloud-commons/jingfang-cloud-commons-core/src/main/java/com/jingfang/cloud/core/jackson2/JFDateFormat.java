@@ -21,7 +21,7 @@ import java.util.TimeZone;
  */
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
-public class JingfangDateFormat extends SimpleDateFormat {
+public class JFDateFormat extends SimpleDateFormat {
     /**
      * 日期正则表达式
      */
@@ -74,7 +74,7 @@ public class JingfangDateFormat extends SimpleDateFormat {
     public static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 
-    public JingfangDateFormat() {
+    public JFDateFormat() {
         super(DATE_TIME_PATTERN);
     }
 
