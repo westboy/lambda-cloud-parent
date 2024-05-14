@@ -1,6 +1,6 @@
 package com.jingfang.cloud.mvc.filter;
 
-import com.jingfang.cloud.web.JingfangTimeHolder;
+import com.jingfang.cloud.web.JFTimeHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.filter.OrderedFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,11 +20,11 @@ public class OrderedTimeHandlerFilter extends OncePerRequestFilter implements Or
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain chain) throws ServletException, IOException {
-        JingfangTimeHolder.setTime(System.currentTimeMillis());
+        JFTimeHolder.setTime(System.currentTimeMillis());
         try {
             chain.doFilter(request, response);
         } finally {
-            JingfangTimeHolder.clear();
+            JFTimeHolder.clear();
         }
     }
 

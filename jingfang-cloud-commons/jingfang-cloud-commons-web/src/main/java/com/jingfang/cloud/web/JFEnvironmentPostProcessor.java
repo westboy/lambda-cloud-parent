@@ -12,7 +12,7 @@ import org.springframework.lang.NonNull;
 /**
  * @author Jin
  */
-public abstract class JingfangEnvironmentPostProcessor implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+public abstract class JFEnvironmentPostProcessor implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
     protected static DeferredLog log = new DeferredLog();
 

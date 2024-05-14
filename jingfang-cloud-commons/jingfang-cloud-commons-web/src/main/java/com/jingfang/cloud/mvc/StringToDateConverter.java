@@ -1,6 +1,6 @@
 package com.jingfang.cloud.mvc;
 
-import com.jingfang.cloud.core.jackson2.JingfangDateFormat;
+import com.jingfang.cloud.core.jackson2.JFDateFormat;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.convert.converter.Converter;
@@ -19,6 +19,6 @@ public class StringToDateConverter implements Converter<String, Date> {
         if (StringUtils.isBlank(source)) {
             return null;
         }
-        return new JingfangDateFormat().parse(source);
+        return new JFDateFormat().parse(source);
     }
 }

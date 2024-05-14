@@ -3,7 +3,7 @@ package com.jingfang.cloud.web;
 /**
  * @author Jin
  */
-public final class JingfangTimeHolder {
+public final class JFTimeHolder {
 
     private static final ThreadLocal<Long> CONTEXT_HOLDER = new ThreadLocal<>();
 
