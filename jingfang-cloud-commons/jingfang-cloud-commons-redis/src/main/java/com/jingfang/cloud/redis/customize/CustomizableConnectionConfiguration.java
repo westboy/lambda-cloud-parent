@@ -1,6 +1,7 @@
-package com.jingfang.cloud.redis.configuration;
+package com.jingfang.cloud.redis.customize;
 
 import com.jingfang.autoconfig.RedisExtendProperties;
+import com.jingfang.cloud.redis.RedisConnectionConfiguration;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;

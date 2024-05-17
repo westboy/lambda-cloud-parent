@@ -1,8 +1,8 @@
 package com.jingfang.autoconfig;
 
 import com.jingfang.cloud.core.jackson2.JFObjectMapper;
-import com.jingfang.cloud.redis.configuration.CustomizableConnectionConfiguration;
-import com.jingfang.cloud.redis.configuration.RedissonConfigurationCustomizer;
+import com.jingfang.cloud.redis.customize.CustomizableConnectionConfiguration;
+import com.jingfang.cloud.redis.customize.RedissonConfigurationCustomizer;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.ReadFrom;
 import io.lettuce.core.SocketOptions;

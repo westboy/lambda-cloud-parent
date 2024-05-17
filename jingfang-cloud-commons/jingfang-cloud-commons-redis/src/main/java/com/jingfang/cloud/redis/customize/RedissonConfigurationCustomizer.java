@@ -1,4 +1,4 @@
-package com.jingfang.cloud.redis.configuration;
+package com.jingfang.cloud.redis.customize;
 
 import org.redisson.config.Config;
 
