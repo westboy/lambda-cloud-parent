@@ -23,6 +23,7 @@
         <module>jingfang-cloud-commons-swagger</module>
         <module>jingfang-cloud-commons-actuator</module>
         <module>jingfang-cloud-commons-plugin</module>
+        <module>jingfang-cloud-commons-lucene</module>
     </modules>
 
 </project>
