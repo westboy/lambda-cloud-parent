@@ -3,7 +3,7 @@ package com.jingfang.cloud.redis.delay;
 /**
  * @author westboy
  */
-public interface JFDelayedListener<T> {
+public interface RedisDelayedListener<T> {
 
     /**
      * 处理延迟任务

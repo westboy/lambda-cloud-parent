@@ -3,7 +3,7 @@ package com.jingfang.cloud.web;
 /**
  * @author Jin
  */
-public final class JFTimeHolder {
+public final class RequestTimeHolder {
 
     private static final ThreadLocal<Long> CONTEXT_HOLDER = new ThreadLocal<>();
 

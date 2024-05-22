@@ -14,14 +14,14 @@ import java.util.concurrent.TimeUnit;
  * @author westboy
  */
 @Slf4j
-public class JFDelayedWorker<T> implements Runnable {
+public class RedisDelayedWorker<T> implements Runnable {
 
     private final ExecutorService executors;
-    private final JFDelayedListener<T> listener;
+    private final RedisDelayedListener<T> listener;
 
     private RBlockingQueue<T> blockingFairQueue;
 
-    public JFDelayedWorker(JFDelayConfig config, JFDelayedListener<T> listener) {
+    public RedisDelayedWorker(RedisDelayConfig config, RedisDelayedListener<T> listener) {
         this.listener = listener;
         this.executors = getWorks(config);
     }
@@ -42,7 +42,7 @@ public class JFDelayedWorker<T> implements Runnable {
         }
     }
 
-    private ExecutorService getWorks(@Nonnull JFDelayConfig config) {
+    private ExecutorService getWorks(@Nonnull RedisDelayConfig config) {
         int size = config.getWorks();
         return new ThreadPoolExecutor(size, size,
                 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(Short.MAX_VALUE),

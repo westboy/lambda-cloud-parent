@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
  * @author westboy
  */
 @Data
-public class JFDelayConfig {
+public class RedisDelayConfig {
 
     /**
      * 延迟队列名称

@@ -1,4 +1,4 @@
-package com.jingfang.cloud.core.swagger;
+package com.jingfang.cloud.swagger.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

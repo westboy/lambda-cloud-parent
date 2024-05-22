@@ -46,7 +46,7 @@ public class PathResourceResolver extends PathMatchingResourcePatternResolver im
                         String title = attributes.getValue("Implementation-Title");
                         ResourceIndicator indicator = new ResourceIndicator();
                         indicator.setVersion(attributes.getValue("Implementation-Version"));
-                        SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DATE_FORMAT);
+                        SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DATE_PATTERN);
                         @SuppressWarnings("squid:S1874")
                         String dateString = dateFormat.format(new Date(resource.lastModified()));
                         indicator.setModified(dateString);

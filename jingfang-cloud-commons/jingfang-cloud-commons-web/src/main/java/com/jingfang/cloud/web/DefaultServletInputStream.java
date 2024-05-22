@@ -12,15 +12,15 @@ import java.io.InputStream;
 /**
  * @author Jin
  */
-public class JFServletInputStream extends ServletInputStream {
+public class DefaultServletInputStream extends ServletInputStream {
     private final InputStream sourceStream;
     private boolean finished = false;
 
-    public JFServletInputStream(@NonNull String body) {
+    public DefaultServletInputStream(@NonNull String body) {
         this.sourceStream = new ByteArrayInputStream(body.getBytes());
     }
 
-    public JFServletInputStream(InputStream sourceStream) {
+    public DefaultServletInputStream(InputStream sourceStream) {
         Assert.notNull(sourceStream, "Source InputStream must not be null");
         this.sourceStream = sourceStream;
     }

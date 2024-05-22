@@ -15,20 +15,20 @@ import java.io.BufferedReader;
  * @link org.springframework.web.util.ContentCachingRequestWrapper
  */
 @Slf4j
-public class JFServletRequestWrapper extends HttpServletRequestWrapper {
+public class DefaultServletRequestWrapper extends HttpServletRequestWrapper {
 
 
     private final String body;
 
     @SneakyThrows
-    public JFServletRequestWrapper(HttpServletRequest request) {
+    public DefaultServletRequestWrapper(HttpServletRequest request) {
         super(request);
         this.body = IoUtil.readUtf8(request.getInputStream());
     }
 
     @Override
     public ServletInputStream getInputStream() {
-        return new JFServletInputStream(body);
+        return new DefaultServletInputStream(body);
     }
 
     @Override

@@ -10,19 +10,30 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.lang.NonNull;
 
 /**
- * @author Jin
+ * @author w
  */
-public abstract class JFEnvironmentPostProcessor implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+public abstract class AbstractEnvironmentPostProcessor implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
     protected static DeferredLog log = new DeferredLog();
 
+    /**
+     * postProcessEnvironment
+     *
+     * @param environment
+     * @param application
+     */
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
-            postProcessEnvironment0(environment, application);
+            process(environment, application);
         }
     }
 
+    /**
+     * onApplicationEvent
+     *
+     * @param event
+     */
     @Override
     public void onApplicationEvent(@NonNull ApplicationEnvironmentPreparedEvent event) {
         if (event.getSource() instanceof SpringApplication) {
@@ -33,5 +44,10 @@ public abstract class JFEnvironmentPostProcessor implements EnvironmentPostProce
         }
     }
 
-    protected abstract void postProcessEnvironment0(ConfigurableEnvironment environment, SpringApplication application);
+    /**
+     * process
+     * @param environment
+     * @param application
+     */
+    protected abstract void process(ConfigurableEnvironment environment, SpringApplication application);
 }

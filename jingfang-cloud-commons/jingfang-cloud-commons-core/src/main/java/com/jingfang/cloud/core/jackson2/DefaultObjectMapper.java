@@ -14,24 +14,24 @@ import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 /**
  * @author Jin
  */
-public class JFObjectMapper extends ObjectMapper {
+public class DefaultObjectMapper extends ObjectMapper {
 
-    public JFObjectMapper() {
+    public DefaultObjectMapper() {
         super();
-        this.setDateFormat(new JFDateFormat());
+        this.setDateFormat(new DefaultDateFormat());
         this.disable(INDENT_OUTPUT);
         this.setSerializationInclusion(NON_NULL);
         this.setSerializationInclusion(NON_EMPTY);
         this.activateDefaultTyping(getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
         JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new JFLocalDateTimeSerializer());
-        javaTimeModule.addDeserializer(LocalDateTime.class, new JFLocalDateTimeDeserializer());
+        javaTimeModule.addSerializer(LocalDateTime.class, new DefaultLocalDateTimeSerializer());
+        javaTimeModule.addDeserializer(LocalDateTime.class, new DefaultLocalDateTimeDeserializer());
         this.registerModule(javaTimeModule);
     }
 
 
     @Override
     public com.fasterxml.jackson.databind.ObjectMapper copy() {
-        return new JFObjectMapper();
+        return new DefaultObjectMapper();
     }
 }

@@ -13,7 +13,7 @@ import java.io.Serializable;
  * @author Jin
  */
 @JsonComponent
-public class JFPageSerializer extends JsonSerializer<Page<?>> implements Serializable {
+public class DefaultPageSerializer extends JsonSerializer<Page<?>> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override

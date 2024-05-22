@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Redis工具类
  */
+@SuppressWarnings("all")
 public class RedisUtils {
     private static RedisUtils me = null;
 
-    @SuppressWarnings("all")
     public static RedisUtils me() {
         if (me == null) {
             synchronized (RedisUtils.class) {

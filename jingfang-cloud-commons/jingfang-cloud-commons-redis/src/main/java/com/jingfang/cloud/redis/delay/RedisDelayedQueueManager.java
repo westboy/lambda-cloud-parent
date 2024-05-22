@@ -24,9 +24,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 @Slf4j
 @SuppressWarnings("all")
-public class JFDelayedQueueManager<T> implements CommandLineRunner, InitializingBean, DisposableBean {
-    private final JFDelayConfig config;
-    private final JFDelayedListener<T> listener;
+public class RedisDelayedQueueManager<T> implements CommandLineRunner, InitializingBean, DisposableBean {
+    private final RedisDelayConfig config;
+    private final RedisDelayedListener<T> listener;
 
     private ObjectProvider<RedissonClient> redissonProvider;
 
@@ -34,7 +34,7 @@ public class JFDelayedQueueManager<T> implements CommandLineRunner, Initializing
     private RBlockingQueue<T> blockingFairQueue;
     private ScheduledExecutorService scheduler;
 
-    public JFDelayedQueueManager(JFDelayConfig config, JFDelayedListener<T> listener) {
+    public RedisDelayedQueueManager(RedisDelayConfig config, RedisDelayedListener<T> listener) {
         this.config = config;
         this.listener = listener;
     }
@@ -62,7 +62,7 @@ public class JFDelayedQueueManager<T> implements CommandLineRunner, Initializing
                 new ThreadFactoryBuilder().setNameFormat("JingFangCloud DelayedQueueJob-%d")
                         .setDaemon(true)
                         .build());
-        JFDelayedWorker<T> worker = new JFDelayedWorker<>(config, listener);
+        RedisDelayedWorker<T> worker = new RedisDelayedWorker<>(config, listener);
         worker.setBlockingQueue(blockingFairQueue);
         scheduler.scheduleWithFixedDelay(worker, 0L, 100, MILLISECONDS);
     }

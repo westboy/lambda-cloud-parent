@@ -1,6 +1,6 @@
 package com.jingfang.autoconfig;
 
-import com.jingfang.cloud.core.jackson2.JFObjectMapper;
+import com.jingfang.cloud.core.jackson2.DefaultObjectMapper;
 import com.jingfang.cloud.redis.customize.CustomizableConnectionConfiguration;
 import com.jingfang.cloud.redis.customize.RedissonConfigurationCustomizer;
 import io.lettuce.core.ClientOptions;
@@ -76,8 +76,8 @@ public class RedisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JFObjectMapper objectMapper() {
-        return new JFObjectMapper();
+    public DefaultObjectMapper objectMapper() {
+        return new DefaultObjectMapper();
     }
 
     @Bean
@@ -149,7 +149,7 @@ public class RedisAutoConfiguration {
 
     @Bean(STRING_REDIS_TEMPLATE)
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory,
-                                                   JFObjectMapper objectMapper) {
+                                                   DefaultObjectMapper objectMapper) {
         RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(redisConnectionFactory);
@@ -162,7 +162,7 @@ public class RedisAutoConfiguration {
 
     @Bean(POJO_REDIS_TEMPLATE)
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory,
-                                                       JFObjectMapper objectMapper) {
+                                                       DefaultObjectMapper objectMapper) {
         RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -185,7 +185,7 @@ public class RedisAutoConfiguration {
                                        RedissonProperties redissonProperties,
                                        RedisExtendProperties redisExtendProperties,
                                        List<RedissonConfigurationCustomizer> redissonConfigurationCustomizers,
-                                       JFObjectMapper m1ObjectMapper) {
+                                       DefaultObjectMapper m1ObjectMapper) {
             Config config = new Config();
             config.setCodec(new JsonJacksonCodec(m1ObjectMapper));
             int timeout = getTimeout(properties.getTimeout());

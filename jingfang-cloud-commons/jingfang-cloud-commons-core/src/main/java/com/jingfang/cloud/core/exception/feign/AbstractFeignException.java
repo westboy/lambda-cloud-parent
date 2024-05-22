@@ -2,18 +2,22 @@ package com.jingfang.cloud.core.exception.feign;
 
 
 import com.jingfang.cloud.core.exception.model.ErrorModel;
+import lombok.Getter;
 
 /**
  * @author jin
  */
 public abstract class AbstractFeignException extends RuntimeException {
 
+    @Getter
     private final long timestamp;
 
+    @Getter
     private final String error;
 
     private final String message;
 
+    @Getter
     private final String path;
 
     protected AbstractFeignException(ErrorModel model) {
@@ -26,24 +30,13 @@ public abstract class AbstractFeignException extends RuntimeException {
 
     /**
      * 获取状态码
+     * @return int 
      */
     public abstract int getStatus();
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public String getError() {
-        return error;
-    }
 
     @Override
     public String getMessage() {
         return message;
-    }
-
-    public String getPath() {
-        return path;
     }
 
 }
