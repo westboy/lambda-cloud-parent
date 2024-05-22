@@ -1,6 +1,5 @@
 package com.jingfang.cloud.core.utils;
 
-import com.jingfang.cloud.core.Constants;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -16,8 +15,8 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 
 /**
@@ -26,6 +25,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Slf4j
 public final class HmacGenerator {
     private static final String REGEX = "\\s+|\\\\";
+    public static final String HMAC = "HmacSHA ";
 
     private HmacGenerator() {
     }
@@ -76,7 +76,7 @@ public final class HmacGenerator {
      */
     public static String authorization(String appid, String secret, long timestamp, String baseString) throws UnsupportedEncodingException {
         StringBuilder builder = new StringBuilder();
-        builder.append(Constants.HMAC);
+        builder.append(HMAC);
         builder.append(appid);
         builder.append(":");
         builder.append(timestamp);

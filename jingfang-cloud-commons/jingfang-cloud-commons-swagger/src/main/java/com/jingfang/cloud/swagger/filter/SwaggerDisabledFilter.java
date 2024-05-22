@@ -23,11 +23,7 @@ public class SwaggerDisabledFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) arg1;
         String uri = request.getRequestURI();
         if (docUri.equals(uri)) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.setContentType("text/plain;charset=UTF-8");
-            PrintWriter pw = response.getWriter();
-            pw.write("You do not have permission to access this page");
-            pw.flush();
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
             chain.doFilter(request, response);
         }

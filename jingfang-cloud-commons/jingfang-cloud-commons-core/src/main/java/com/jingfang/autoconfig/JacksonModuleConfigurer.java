@@ -1,8 +1,8 @@
 package com.jingfang.autoconfig;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jingfang.cloud.core.jackson2.DefaultLocalDateTimeDeserializer;
-import com.jingfang.cloud.core.jackson2.DefaultLocalDateTimeSerializer;
+import com.jingfang.cloud.core.jackson2.dser.CustomLocalDateTimeDeserializer;
+import com.jingfang.cloud.core.jackson2.ser.CustomLocalDateTimeSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,8 +17,8 @@ public class JacksonModuleConfigurer {
     @Bean
     public JavaTimeModule javaTimeModule() {
         JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new DefaultLocalDateTimeSerializer());
-        javaTimeModule.addDeserializer(LocalDateTime.class, new DefaultLocalDateTimeDeserializer());
+        javaTimeModule.addSerializer(LocalDateTime.class, new CustomLocalDateTimeSerializer());
+        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
         return javaTimeModule;
     }
 

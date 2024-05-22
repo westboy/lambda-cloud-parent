@@ -1,9 +1,10 @@
-package com.jingfang.cloud.core.jackson2;
+package com.jingfang.cloud.core.jackson2.dser;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonTokenId;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 
 import java.io.IOException;
 import java.time.*;
@@ -15,7 +16,7 @@ import java.time.temporal.ChronoField;
  * @author Jin
  */
 @SuppressWarnings({"squid:S110", "PMD"})
-public class DefaultLocalDateTimeDeserializer extends com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer {
+public class CustomLocalDateTimeDeserializer extends LocalDateTimeDeserializer {
 
     private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd[[' 'HH][:mm][:ss]]")

@@ -1,4 +1,4 @@
-package com.jingfang.cloud.core.jackson2;
+package com.jingfang.cloud.core.jackson2.text;
 
 
 import cn.hutool.core.date.DateTime;
@@ -21,7 +21,7 @@ import java.util.TimeZone;
  */
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
-public class DefaultDateFormat extends SimpleDateFormat {
+public class ExtendDateFormat extends SimpleDateFormat {
     /**
      * 日期正则表达式
      */
@@ -74,7 +74,7 @@ public class DefaultDateFormat extends SimpleDateFormat {
     public static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 
-    public DefaultDateFormat() {
+    public ExtendDateFormat() {
         super(DATE_TIME_PATTERN);
     }
 

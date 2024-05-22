@@ -1,4 +1,4 @@
-package com.jingfang.cloud.core.jackson2;
+package com.jingfang.cloud.core.jackson2.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -13,7 +13,7 @@ import java.io.Serializable;
  * @author Jin
  */
 @JsonComponent
-public class DefaultPageSerializer extends JsonSerializer<Page<?>> implements Serializable {
+public class PageSerializer extends JsonSerializer<Page<?>> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override

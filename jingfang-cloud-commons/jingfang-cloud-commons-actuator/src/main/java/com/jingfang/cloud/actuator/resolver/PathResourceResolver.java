@@ -27,10 +27,12 @@ import java.util.jar.Manifest;
 @Component
 public class PathResourceResolver extends PathMatchingResourcePatternResolver implements InfoContributor {
 
+    private static final String LOCATION_PATTERN = "classpath*:com/jingfanf/cloud/**/*.class";
+
     public Map<String, Object> initialization() {
         Map<String, Object> outcomes = new HashMap<>(16);
         try {
-            Resource[] resources = getResources(Constants.LOCATION_PATTERN);
+            Resource[] resources = getResources(LOCATION_PATTERN);
             Map<String, Object> back = new HashMap<>(16);
             Map<String, Object> packages = new HashMap<>(16);
             for (Resource resource : resources){

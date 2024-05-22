@@ -1,7 +1,10 @@
-package com.jingfang.cloud.core.jackson2;
+package com.jingfang.cloud.core.jackson2.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jingfang.cloud.core.jackson2.dser.CustomLocalDateTimeDeserializer;
+import com.jingfang.cloud.core.jackson2.ser.CustomLocalDateTimeSerializer;
+import com.jingfang.cloud.core.jackson2.text.ExtendDateFormat;
 
 import java.time.LocalDateTime;
 
@@ -14,24 +17,24 @@ import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 /**
  * @author Jin
  */
-public class DefaultObjectMapper extends ObjectMapper {
+public class CustomObjectMapper extends ObjectMapper {
 
-    public DefaultObjectMapper() {
+    public CustomObjectMapper() {
         super();
-        this.setDateFormat(new DefaultDateFormat());
+        this.setDateFormat(new ExtendDateFormat());
         this.disable(INDENT_OUTPUT);
         this.setSerializationInclusion(NON_NULL);
         this.setSerializationInclusion(NON_EMPTY);
         this.activateDefaultTyping(getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
         JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new DefaultLocalDateTimeSerializer());
-        javaTimeModule.addDeserializer(LocalDateTime.class, new DefaultLocalDateTimeDeserializer());
+        javaTimeModule.addSerializer(LocalDateTime.class, new CustomLocalDateTimeSerializer());
+        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
         this.registerModule(javaTimeModule);
     }
 
 
     @Override
-    public com.fasterxml.jackson.databind.ObjectMapper copy() {
-        return new DefaultObjectMapper();
+    public ObjectMapper copy() {
+        return new CustomObjectMapper();
     }
 }
