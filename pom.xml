@@ -427,6 +427,14 @@
         </dependencies>
     </dependencyManagement>
 
+    <distributionManagement>
+        <repository>
+            <id>maven-releases</id>
+            <name>releases</name>
+            <url>http://192.168.130.243:8081/repository/maven-snapshots/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -616,6 +624,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+            </plugin>
         </plugins>
     </build>
     <reporting>
@@ -645,5 +658,6 @@
             </plugin>
         </plugins>
     </reporting>
+
 
 </project>
