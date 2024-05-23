@@ -10,10 +10,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+/**
+ * @author jpjoo
+ */
+@SuppressWarnings("all")
 public class AesKit {
 
-    public static final AesEncoder aesEncoder = new AesEncoder();
-    public static final AesDecoder aesDecoder = new AesDecoder();
+    public static final AesEncoder AES_ENCODER = new AesEncoder();
+    public static final AesDecoder AES_DECODER = new AesDecoder();
 
     public static class AesEncoder {
         public String encryptForAes(String content, String aesKey) {

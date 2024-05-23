@@ -8,7 +8,7 @@ import com.jingfang.cloud.core.convert.Converter;
  *
  * @author Jin
  */
-public class BaseVO<V,E>  implements Converter<V, E> {
+public abstract class BaseVO<V,E>  implements Converter<V, E> {
 
     /**
      * doForward
