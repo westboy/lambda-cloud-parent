@@ -15,6 +15,11 @@ public abstract class AbstractPlugin<T> implements IPlugin<T>, Comparable<Abstra
     protected String version = "";
     protected int weight = 0;
 
+    /**
+     * installPlugin
+     *
+     * @throws Exception
+     */
     public abstract void installPlugin() throws Exception;
 
     @Override

@@ -11,15 +11,19 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public abstract class IndexObject implements Comparable<IndexObject> {
+public abstract class AbstractIndexObject implements Comparable<AbstractIndexObject> {
 
+    /**
+     * id
+     * @return String
+     */
     @JsonIgnore
-    public abstract String getId();
+    public abstract String id();
 
     private float score;
 
     @Override
-    public int compareTo(IndexObject o) {
+    public int compareTo(AbstractIndexObject o) {
         if (this.score < o.getScore()) {
             return 1;
         } else if (this.score > o.getScore()) {

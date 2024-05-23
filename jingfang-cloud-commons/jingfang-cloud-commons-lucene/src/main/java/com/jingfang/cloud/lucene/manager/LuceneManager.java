@@ -5,7 +5,7 @@ package com.jingfang.cloud.lucene.manager;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.jingfang.cloud.lucene.model.IndexObject;
+import com.jingfang.cloud.lucene.model.AbstractIndexObject;
 import com.jingfang.cloud.lucene.utils.IndexObjectUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,14 +43,14 @@ public class LuceneManager {
     /**
      * 创建索引
      *
-     * @param indexObject
+     * @param abstractIndexObject
      * @throws IOException
      */
     @SneakyThrows
-    public void create(IndexObject indexObject) throws IOException {
+    public void create(AbstractIndexObject abstractIndexObject) throws IOException {
         IndexWriter indexWriter = getIndexWriter();
         try {
-            Long result = indexWriter.addDocument(IndexObjectUtil.indexObjectToDocument(indexObject));
+            Long result = indexWriter.addDocument(IndexObjectUtil.indexObjectToDocument(abstractIndexObject));
             log.info("====[ 创建索引: {} ]====", result);
             indexWriter.commit();
         } catch (Exception e) {
@@ -65,13 +65,13 @@ public class LuceneManager {
     /**
      * 更新索引
      *
-     * @param indexObject
+     * @param abstractIndexObject
      * @throws IOException
      */
-    public void update(IndexObject indexObject) throws IOException {
+    public void update(AbstractIndexObject abstractIndexObject) throws IOException {
         IndexWriter indexWriter = getIndexWriter();
         try {
-            Long result = indexWriter.updateDocument(new Term("id", indexObject.getId()), IndexObjectUtil.indexObjectToDocument(indexObject));
+            Long result = indexWriter.updateDocument(new Term("id", abstractIndexObject.id()), IndexObjectUtil.indexObjectToDocument(abstractIndexObject));
             log.info("====[ 更新索引: {} ]====", result);
             indexWriter.commit();
         } catch (Exception e) {
@@ -133,7 +133,7 @@ public class LuceneManager {
      * @return page
      * @throws IOException
      */
-    public <T extends IndexObject> IPage<T> page(String keyword, Integer current, Integer size, Class<T> clazz, String... fields) throws IOException {
+    public <T extends AbstractIndexObject> IPage<T> page(String keyword, Integer current, Integer size, Class<T> clazz, String... fields) throws IOException {
         IndexReader indexReader = getIndexReader();
         IPage<T> page = new Page<>(current, size);
         try {
@@ -195,7 +195,9 @@ public class LuceneManager {
      * @throws IOException
      */
     ScoreDoc getLastScoreDoc(Integer pageNumber, Integer pageSize, Query query, IndexSearcher searcher) throws IOException {
-        if (ObjectUtil.equal(pageNumber, 1)) return null;
+        if (ObjectUtil.equal(pageNumber, 1)) {
+            return null;
+        }
         int total = pageSize * (pageNumber - 1);
         TopDocs topDocs = searcher.search(query, total);
         return topDocs.scoreDocs[total - 1];
@@ -226,8 +228,8 @@ public class LuceneManager {
     Highlighter getHighlighter(Query query) {
         QueryScorer scorer = new QueryScorer(query);
         Fragmenter fragmenter = new SimpleSpanFragmenter(scorer);
-        SimpleHTMLFormatter simpleHTMLFormatter = new SimpleHTMLFormatter("<font color='red'>", "</font>");
-        Highlighter highlighter = new Highlighter(simpleHTMLFormatter, scorer);
+        SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter("<font color='red'>", "</font>");
+        Highlighter highlighter = new Highlighter(htmlFormatter, scorer);
         highlighter.setTextFragmenter(fragmenter);
         return highlighter;
     }

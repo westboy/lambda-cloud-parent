@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.jingfang.cloud.lucene.annotation.LuceneField;
-import com.jingfang.cloud.lucene.model.IndexObject;
+import com.jingfang.cloud.lucene.model.AbstractIndexObject;
 import lombok.SneakyThrows;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -28,10 +28,12 @@ import java.util.stream.Collectors;
 public class IndexObjectUtil {
 
     /**
-     * @param indexObject
-     * @return
+     * indexObjectToDocument
+     *
+     * @param indexObject  AbstractIndexObject
+     * @return Document
      */
-    public static Document indexObjectToDocument(IndexObject indexObject) {
+    public static Document indexObjectToDocument(AbstractIndexObject indexObject) {
         Document doc = new Document();
         Field[] fields = ReflectUtil.getFields(indexObject.getClass());
         Arrays.stream(fields).forEach(field -> {
@@ -48,6 +50,7 @@ public class IndexObjectUtil {
                         if (luceneField.isExtendField()) {
                             //扩展字段类型必须是map
                             if (ObjectUtil.equal(field.getType(), Map.class)) {
+                                //no inspection checked
                                 Map<String, Object> extendFieldMap = (Map<String, Object>) value;
                                 if (ObjectUtil.isNotNull(extendFieldMap)) {
                                     extendFieldMap.forEach((extFieldName, extFieldValue) -> {
@@ -89,15 +92,15 @@ public class IndexObjectUtil {
 
 
     /**
-     * @param analyzer
-     * @param highlighter
-     * @param doc
-     * @param score
-     * @param clazz
-     * @param <T>
-     * @return
+     * @param analyzer Analyzer
+     * @param highlighter Highlighter
+     * @param doc doc
+     * @param score score
+     * @param clazz clazz
+     * @param <T> T
+     * @return T
      */
-    public static <T extends IndexObject> T documentToIndexObject(Analyzer analyzer, Highlighter highlighter, Document doc, float score, Class<T> clazz) {
+    public static <T extends AbstractIndexObject> T documentToIndexObject(Analyzer analyzer, Highlighter highlighter, Document doc, float score, Class<T> clazz) {
         T obj = ReflectUtil.newInstance(clazz);
         Field[] fields = ReflectUtil.getFields(clazz);
         obj.setScore(score);
@@ -114,7 +117,7 @@ public class IndexObjectUtil {
                             //获取字段名用于下面判断排除
                             List<String> objectFileNames = Arrays.stream(fields).map(IndexObjectUtil::getLuceneFieldName).collect(Collectors.toList());
                             //扩展字段map
-                            Map<String, Object> extendFieldMap = new HashMap<>();
+                            Map<String, Object> extendFieldMap = new HashMap<>(16);
                             //遍历取出扩展字段的值
                             doc.getFields().parallelStream().forEach(indexField -> {
                                 //排除
@@ -149,19 +152,21 @@ public class IndexObjectUtil {
         String docFieldName = null;
         if (ObjectUtil.isNotNull(luceneField)) {
             docFieldName = luceneField.name();
-            if (ObjectUtil.isEmpty(docFieldName))
+            if (ObjectUtil.isEmpty(docFieldName)) {
                 docFieldName = field.getName();
+            }
         }
         return docFieldName;
     }
 
     /**
      * 获取需要检索的字段名称
+     *
      * @param clazz
      * @param <T>
      * @return
      */
-    public static <T extends IndexObject> String[] getQueryFieldNames(Class<T> clazz) {
+    public static <T extends AbstractIndexObject> String[] getQueryFieldNames(Class<T> clazz) {
         Field[] fields = ReflectUtil.getFields(clazz);
         List<String> queryFieldNames = new ArrayList<>();
         Arrays.stream(fields).parallel().forEach(field -> {

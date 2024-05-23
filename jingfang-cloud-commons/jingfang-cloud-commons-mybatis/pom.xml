@@ -12,6 +12,11 @@
     <artifactId>jingfang-cloud-commons-mybatis</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>com.jingfang.cloud</groupId>
+            <artifactId>jingfang-cloud-commons-core</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         <!--Mybatis plus-->
         <dependency>
             <groupId>com.baomidou</groupId>

@@ -9,6 +9,13 @@ import com.jingfang.cloud.plugin.exception.PluginException;
  */
 public interface IPlugin<T> {
 
+    /**
+     * invoke
+     *
+     * @param obj
+     * @return
+     * @throws PluginException
+     */
     Object invoke(T obj) throws PluginException;
 
 }
