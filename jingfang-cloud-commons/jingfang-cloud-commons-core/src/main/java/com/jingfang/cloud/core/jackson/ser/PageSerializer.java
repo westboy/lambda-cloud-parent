@@ -1,4 +1,4 @@
-package com.jingfang.cloud.core.jackson2.ser;
+package com.jingfang.cloud.core.jackson.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

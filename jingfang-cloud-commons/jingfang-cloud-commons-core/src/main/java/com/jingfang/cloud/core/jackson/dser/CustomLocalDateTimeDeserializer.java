@@ -1,4 +1,4 @@
-package com.jingfang.cloud.core.jackson2.dser;
+package com.jingfang.cloud.core.jackson.dser;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;

@@ -24,6 +24,7 @@
         <module>jingfang-cloud-commons-actuator</module>
         <module>jingfang-cloud-commons-plugin</module>
         <module>jingfang-cloud-commons-lucene</module>
+        <module>jingfang-cloud-commons-datasource</module>
     </modules>
 
 </project>

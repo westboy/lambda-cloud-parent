@@ -1,6 +1,6 @@
 package com.jingfang.autoconfig;
 
-import com.jingfang.cloud.core.jackson2.mapper.CustomObjectMapper;
+import com.jingfang.cloud.core.jackson.mapper.CustomObjectMapper;
 import com.jingfang.cloud.redis.customize.CustomizableConnectionConfiguration;
 import com.jingfang.cloud.redis.customize.RedissonConfigurationCustomizer;
 import io.lettuce.core.ClientOptions;
@@ -185,9 +185,9 @@ public class RedisAutoConfiguration {
                                        RedissonProperties redissonProperties,
                                        RedisExtendProperties redisExtendProperties,
                                        List<RedissonConfigurationCustomizer> redissonConfigurationCustomizers,
-                                       CustomObjectMapper m1ObjectMapper) {
+                                       CustomObjectMapper objectMapper) {
             Config config = new Config();
-            config.setCodec(new JsonJacksonCodec(m1ObjectMapper));
+            config.setCodec(new JsonJacksonCodec(objectMapper));
             int timeout = getTimeout(properties.getTimeout());
             RedisExtendProperties.Mode mode = redisExtendProperties.getMode();
             switch (mode) {

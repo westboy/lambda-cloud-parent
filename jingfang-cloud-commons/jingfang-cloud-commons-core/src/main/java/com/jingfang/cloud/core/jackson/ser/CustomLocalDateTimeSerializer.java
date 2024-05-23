@@ -1,4 +1,4 @@
-package com.jingfang.cloud.core.jackson2.ser;
+package com.jingfang.cloud.core.jackson.ser;
 
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 

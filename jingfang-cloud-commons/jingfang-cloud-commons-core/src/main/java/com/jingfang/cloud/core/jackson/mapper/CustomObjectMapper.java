@@ -1,10 +1,10 @@
-package com.jingfang.cloud.core.jackson2.mapper;
+package com.jingfang.cloud.core.jackson.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jingfang.cloud.core.jackson2.dser.CustomLocalDateTimeDeserializer;
-import com.jingfang.cloud.core.jackson2.ser.CustomLocalDateTimeSerializer;
-import com.jingfang.cloud.core.jackson2.text.ExtendDateFormat;
+import com.jingfang.cloud.core.jackson.dser.CustomLocalDateTimeDeserializer;
+import com.jingfang.cloud.core.jackson.ser.CustomLocalDateTimeSerializer;
+import com.jingfang.cloud.core.jackson.text.ExtendDateFormat;
 
 import java.time.LocalDateTime;
 

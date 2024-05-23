@@ -1,4 +1,4 @@
-package com.jingfang.cloud.core.jackson2.text;
+package com.jingfang.cloud.core.jackson.text;
 
 
 import cn.hutool.core.date.DateTime;
