@@ -6,7 +6,7 @@
 
     <groupId>com.jingfang.cloud</groupId>
     <artifactId>jingfang-cloud-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>jingfang-cloud-commons</module>
