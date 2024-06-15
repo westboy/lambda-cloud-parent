@@ -33,7 +33,7 @@ public class JacksonModuleConfigurer {
 
     @Bean
     public SimpleModule simpleModule() {
-        if (javaTimeModuleInstance == null) {
+        if (simpleModuleInstance == null) {
             SimpleModule simpleModule = new SimpleModule();
             simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
             simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
