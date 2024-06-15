@@ -22,6 +22,9 @@ public abstract class BaseDO implements Serializable {
     private static final long serialVersionUID = -2694074995776393995L;
 
     @TableField(fill = FieldFill.INSERT)
+    private Integer state;
+
+    @TableField(fill = FieldFill.INSERT)
     private Integer createUser;
 
     @TableField(fill = FieldFill.INSERT)

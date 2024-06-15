@@ -1,5 +1,7 @@
 package com.jingfang.autoconfig;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jingfang.cloud.core.jackson.dser.CustomLocalDateTimeDeserializer;
 import com.jingfang.cloud.core.jackson.ser.CustomLocalDateTimeSerializer;
@@ -14,12 +16,29 @@ import java.time.LocalDateTime;
 @Configuration(proxyBeanMethods = false)
 public class JacksonModuleConfigurer {
 
+    // 单例bean声明
+    private static JavaTimeModule javaTimeModuleInstance;
+    private static SimpleModule simpleModuleInstance;
+
     @Bean
     public JavaTimeModule javaTimeModule() {
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new CustomLocalDateTimeSerializer());
-        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
-        return javaTimeModule;
+        if (javaTimeModuleInstance == null) {
+            JavaTimeModule javaTimeModule = new JavaTimeModule();
+            javaTimeModule.addSerializer(LocalDateTime.class, new CustomLocalDateTimeSerializer());
+            javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
+            javaTimeModuleInstance = javaTimeModule;
+        }
+        return javaTimeModuleInstance;
     }
 
+    @Bean
+    public SimpleModule simpleModule() {
+        if (javaTimeModuleInstance == null) {
+            SimpleModule simpleModule = new SimpleModule();
+            simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
+            simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
+            simpleModuleInstance = simpleModule;
+        }
+        return simpleModuleInstance;
+    }
 }
