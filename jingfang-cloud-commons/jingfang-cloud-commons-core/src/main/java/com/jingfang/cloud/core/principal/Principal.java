@@ -20,7 +20,7 @@ public interface Principal {
      * password
      * @return
      */
-    String getPassword();
+    String getCredentials();
 
     /**
      * roles
