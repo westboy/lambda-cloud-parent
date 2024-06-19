@@ -10,8 +10,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>jingfang-cloud-commons</module>
-        <module>jingfang-cloud-dictionary</module>
-        <module>jingfang-cloud-upload</module>
         <module>jingfang-cloud-extensions</module>
     </modules>
 
@@ -49,6 +47,7 @@
         <dynamic-datasource.version>3.5.1</dynamic-datasource.version>
         <lucene.version>7.3.0</lucene.version>
         <log4j2.version>2.22.0</log4j2.version>
+        <satoken.version>1.38.0</satoken.version>
         <!-- 插件版本 -->
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-jxr-plugin.version>3.3.0</maven-jxr-plugin.version>
