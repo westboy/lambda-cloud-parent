@@ -87,7 +87,9 @@ public class SecurityAutoConfiguration {
             private SaInterceptor getSaInterceptor() {
                 return new SaInterceptor(handler -> {
                     StpUtil.checkLogin();
-                    saTokenCheckHandler.run(handler);
+                    if (saTokenCheckHandler != null) {
+                        saTokenCheckHandler.run(handler);
+                    }
                 }).isAnnotation(securityProperties.getEnableMethodAnnotation());
             }
         };
