@@ -14,11 +14,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
+/**
+ * SecurityProperties
+ *
+ * @author jpjoo
+ */
 @Data
 @ConfigurationProperties(prefix = "jf.security")
 public class SecurityProperties {
 
-    private static final List<String> defaultIgnorePathList = Stream.of("/public/**","*.html", "*.css", "*.js").collect(Collectors.toList());
+    private static final List<String> DEFAULT_IGNORE_PATH_LIST = Stream.of("/public/**", "*.html", "*.css", "*.js").collect(Collectors.toList());
 
     private String tokenName = "jf-token";
     private String tokenPrefix = "Bearer";
@@ -46,8 +51,9 @@ public class SecurityProperties {
     private Long activeTimeout = -1L;
 
     public List<String> getAllIgnoreList() {
-        return CollUtil.addAllIfNotContains(defaultIgnorePathList, ignorePaths);
+        return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignorePaths);
     }
+
     @NestedConfigurationProperty
     public Form form = new Form();
 

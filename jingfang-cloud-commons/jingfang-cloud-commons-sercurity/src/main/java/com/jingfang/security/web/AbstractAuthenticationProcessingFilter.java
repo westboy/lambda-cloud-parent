@@ -8,7 +8,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import cn.dev33.satoken.stp.StpUtil;
 import com.jingfang.cloud.core.principal.Principal;
 import com.jingfang.security.context.SecurityContext;
 import com.jingfang.security.context.SecurityContextHolder;
@@ -16,14 +15,18 @@ import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import lombok.Setter;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.log.LogMessage;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
-public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean  {
-    protected static final AntPathMatcher antPathMatcher = new AntPathMatcher();
+/**
+ * AbstractAuthenticationProcessingFilter
+ *
+ * @author jpjoo
+ */
+public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean {
+    protected static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
     private AuthenticationSuccessHandler successHandler;
     private AuthenticationFailureHandler failureHandler;
     @Setter
@@ -55,7 +58,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     }
 
     protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        if (antPathMatcher.match(this.filterProcessesUrl, request.getRequestURI())) {
+        if (ANT_PATH_MATCHER.match(this.filterProcessesUrl, request.getRequestURI())) {
             return true;
         } else {
             if (this.logger.isTraceEnabled()) {
@@ -65,6 +68,16 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         }
     }
 
+    /**
+     * 尝试认证
+     *
+     * @param request
+     * @param response
+     * @return
+     * @throws AuthenticationException
+     * @throws IOException
+     * @throws ServletException
+     */
     public abstract Principal attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException;
 
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Principal principal) throws IOException, ServletException {

@@ -7,6 +7,11 @@ import com.jingfang.security.handler.LogoutHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * DefaultLogoutHandler
+ *
+ * @author jpjoo
+ */
 public class DefaultLogoutHandler implements LogoutHandler {
 
     @Override

@@ -11,5 +11,14 @@ import javax.servlet.http.HttpServletResponse;
  * @author jpjoo
  */
 public interface AuthenticationFailureHandler {
+    /**
+     * 认证失败
+     *
+     * @param request
+     * @param response
+     * @param exception
+     * @throws IOException
+     * @throws ServletException
+     */
     void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception) throws IOException, ServletException;
 }

@@ -11,5 +11,12 @@ import javax.servlet.http.HttpServletResponse;
  * @author jpjoo
  */
 public interface LogoutHandler {
+    /**
+     * 退出处理器
+     *
+     * @param request
+     * @param response
+     * @param principal
+     */
     void logout(HttpServletRequest request, HttpServletResponse response, Principal principal);
 }

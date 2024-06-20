@@ -13,5 +13,15 @@ import java.io.IOException;
  * @author jpjoo
  */
 public interface LogoutSuccessHandler {
+
+    /**
+     * 退出成功
+     *
+     * @param request
+     * @param response
+     * @param principal
+     * @throws IOException
+     * @throws ServletException
+     */
     void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Principal principal) throws IOException, ServletException;
 }

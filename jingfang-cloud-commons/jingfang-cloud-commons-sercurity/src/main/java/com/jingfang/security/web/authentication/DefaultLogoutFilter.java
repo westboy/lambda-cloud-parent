@@ -19,6 +19,11 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
+/**
+ * DefaultLogoutFilter
+ *
+ * @author jpjoo
+ */
 public class DefaultLogoutFilter extends GenericFilterBean {
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
     private final LogoutHandler handler;
@@ -32,7 +37,7 @@ public class DefaultLogoutFilter extends GenericFilterBean {
         this.filterProcessesUrl = "/logout";
     }
 
-    public DefaultLogoutFilter( String filterProcessesUrl, LogoutSuccessHandler logoutSuccessHandler,LogoutHandler... handlers) {
+    public DefaultLogoutFilter(String filterProcessesUrl, LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
         Assert.notNull(logoutSuccessHandler, "logoutSuccessHandler cannot be null");
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.filterProcessesUrl = filterProcessesUrl;

@@ -16,17 +16,19 @@ public interface VerifyCodeService {
     /**
      * 检查是否支持该过滤器
      *
-     * @param request:
-     * @return boolean
+     * @param request
+     * @return
      */
     boolean support(HttpServletRequest request);
 
     /**
      * 执行校验
      *
-     * @param chain chain
-     * @param request request
-     * @param response response
+     * @param request
+     * @param response
+     * @param chain
+     * @throws IOException
+     * @throws ServletException
      */
     void execute(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException;
 

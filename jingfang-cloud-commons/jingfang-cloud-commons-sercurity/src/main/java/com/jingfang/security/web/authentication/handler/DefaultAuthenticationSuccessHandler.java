@@ -21,8 +21,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * 默认认证成功处理器
+ *
+ * @author jpjoo
+ */
 @Slf4j
-public class DefaultAuthenticationSuccessHandler  implements AuthenticationSuccessHandler, ApplicationEventPublisherAware {
+public class DefaultAuthenticationSuccessHandler implements AuthenticationSuccessHandler, ApplicationEventPublisherAware {
 
     private ApplicationEventPublisher applicationEventPublisher;
 
@@ -41,7 +46,7 @@ public class DefaultAuthenticationSuccessHandler  implements AuthenticationSucce
         int remotePort = request.getRemotePort();
         long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
         //发布登录时间
-        applicationEventPublisher.publishEvent(new UserLoginEvent(principal,cast,remoteAddr,remotePort));
+        applicationEventPublisher.publishEvent(new UserLoginEvent(principal, cast, remoteAddr, remotePort));
         //sa-token 登录
         StpUtil.login(principal.getUsername());
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();

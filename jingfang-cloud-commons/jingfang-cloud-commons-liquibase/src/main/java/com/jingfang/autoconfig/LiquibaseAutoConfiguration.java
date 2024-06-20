@@ -20,6 +20,8 @@ import javax.sql.DataSource;
 import java.util.List;
 
 /**
+ * LiquibaseAutoConfiguration
+ *
  * @author w
  */
 @Slf4j
@@ -34,7 +36,7 @@ public class LiquibaseAutoConfiguration {
     }
 
     @Primary
-    @Bean("JfLiquibase")
+    @Bean("jfLiquibase")
     public SpringLiquibase liquibase(LiquibaseProperties properties) {
         String url = properties.getUrl();
         String username = properties.getUsername();
@@ -50,9 +52,9 @@ public class LiquibaseAutoConfiguration {
 
     @Bean
     @DependsOn("JfLiquibaseFinishedPublisher")
-    public LiquibaseFinishedPublisher LiquibaseFinishedPublisher(SpringLiquibase JfLiquibase,
+    public LiquibaseFinishedPublisher liquibaseFinishedPublisher(SpringLiquibase jfLiquibase,
                                                                  List<LiquibasePostExecutor> executors) {
-        DataSource dataSource = JfLiquibase.getDataSource();
+        DataSource dataSource = jfLiquibase.getDataSource();
         return new LiquibaseFinishedPublisher(dataSource, executors);
     }
 

@@ -4,6 +4,11 @@ import com.jingfang.cloud.redis.utils.RedisUtils;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * RedisCaptchaStore
+ *
+ * @author jpjoo
+ */
 public class RedisCaptchaStore implements CaptchaStore {
 
     private static final String REDIS_CAPTCHA_STORE_KEY = "RedisCaptchaStore:";

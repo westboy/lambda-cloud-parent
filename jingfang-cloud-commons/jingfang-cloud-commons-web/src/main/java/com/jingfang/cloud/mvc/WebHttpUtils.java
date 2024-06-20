@@ -30,6 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * @author Jin
  */
+@SuppressWarnings("PMD")
 @Slf4j
 public final class WebHttpUtils {
 

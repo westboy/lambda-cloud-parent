@@ -18,6 +18,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
+/**
+ * DefaultAuthenticationProcessingFilter
+ *
+ * @author jpjoo
+ */
 @Setter
 @Getter
 public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {

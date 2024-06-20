@@ -12,19 +12,19 @@ import com.jingfang.security.context.SecurityContextImpl;
  */
 public final class InheritableThreadLocalSecurityContextHolderStrategy implements SecurityContextHolderStrategy {
 
-    private static final ThreadLocal<SecurityContext> contextHolder = new InheritableThreadLocal<>();
+    private static final ThreadLocal<SecurityContext> CONTEXT_HOLDER = new InheritableThreadLocal<>();
 
     @Override
     public void clearContext() {
-        contextHolder.remove();
+        CONTEXT_HOLDER.remove();
     }
 
     @Override
     public SecurityContext getContext() {
-        SecurityContext ctx = contextHolder.get();
+        SecurityContext ctx = CONTEXT_HOLDER.get();
         if (ctx == null) {
             ctx = createEmptyContext();
-            contextHolder.set(ctx);
+            CONTEXT_HOLDER.set(ctx);
         }
         return ctx;
     }
@@ -32,7 +32,7 @@ public final class InheritableThreadLocalSecurityContextHolderStrategy implement
     @Override
     public void setContext(SecurityContext context) {
         Assert.notNull(context, "Only non-null SecurityContext instances are permitted");
-        contextHolder.set(context);
+        CONTEXT_HOLDER.set(context);
     }
 
     @Override

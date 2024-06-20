@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Sa-Token 配置类
+ *
+ * @author jpjoo
  */
 @Configuration
 @EnableConfigurationProperties({SecurityProperties.class})

@@ -6,6 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * SecurityContextImpl
+ *
+ * @author jpjoo
+ */
 @Getter
 @Setter
 @EqualsAndHashCode(of = "principal")

@@ -11,6 +11,13 @@ import com.jingfang.cloud.core.principal.Principal;
 public interface UserDetailService extends StpInterface {
 
 
+    /**
+     * 用户登录
+     *
+     * @param username
+     * @param loginType
+     * @return
+     */
     Principal loginByUsername(String username, String loginType);
 
 }
