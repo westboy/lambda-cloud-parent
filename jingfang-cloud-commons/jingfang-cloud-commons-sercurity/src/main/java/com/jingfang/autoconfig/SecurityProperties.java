@@ -2,6 +2,7 @@ package com.jingfang.autoconfig;
 
 import cn.dev33.satoken.util.SaTokenConsts;
 import cn.hutool.core.collection.CollUtil;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.Getter;
@@ -12,8 +13,6 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -25,9 +24,15 @@ import java.util.stream.Stream;
 @ConfigurationProperties(prefix = "jf.security")
 public class SecurityProperties {
 
-    private static final List<String> DEFAULT_IGNORE_PATH_LIST = Stream.of("/public/**", "*.html", "*.css", "*.js").collect(Collectors.toList());
+    private static final List<String> DEFAULT_IGNORE_PATH_LIST = Lists.newArrayList(
+            "/public/**",
+            "/anon/**",
+            "*.html",
+            "*.css",
+            "*.ico",
+            "*.js");
 
-    private String tokenName = "jf-token";
+    private String tokenName = "Authorization";
     private String tokenPrefix = "Bearer";
     private String tokenStyle = SaTokenConsts.TOKEN_STYLE_RANDOM_32;
     private Integer tokenTimeout = 30 * 24 * 60 * 60;

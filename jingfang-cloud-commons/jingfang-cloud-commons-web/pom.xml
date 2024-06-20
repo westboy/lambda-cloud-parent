@@ -110,6 +110,12 @@
             <artifactId>json</artifactId>
             <version>20231013</version>
         </dependency>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-core</artifactId>
+            <version>${satoken.version}</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
 </project>

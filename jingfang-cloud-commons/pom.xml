@@ -14,6 +14,7 @@
     <modules>
         <module>jingfang-cloud-commons-feign</module>
         <module>jingfang-cloud-commons-core</module>
+        <module>jingfang-cloud-commons-dependencies</module>
         <module>jingfang-cloud-commons-mybatis</module>
         <module>jingfang-cloud-commons-redis</module>
         <module>jingfang-cloud-commons-sercurity</module>

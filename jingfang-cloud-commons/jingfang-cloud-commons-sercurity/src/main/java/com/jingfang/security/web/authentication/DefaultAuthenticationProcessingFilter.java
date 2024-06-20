@@ -1,6 +1,7 @@
 package com.jingfang.security.web.authentication;
 
 import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.utils.Assert;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.password.StandardPasswordEncoder;
@@ -36,6 +37,11 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
 
     public DefaultAuthenticationProcessingFilter(String defaultFilterProcessesUrl) {
         super(defaultFilterProcessesUrl);
+    }
+
+    public void setUserDetailService(UserDetailService userDetailService) {
+        Assert.notNull(userDetailService, "userDetailService is null, please impl userDetailService");
+        this.userDetailService = userDetailService;
     }
 
     @Override

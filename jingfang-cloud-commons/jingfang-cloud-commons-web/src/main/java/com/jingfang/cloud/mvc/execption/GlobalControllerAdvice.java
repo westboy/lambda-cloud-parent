@@ -1,5 +1,6 @@
 package com.jingfang.cloud.mvc.execption;
 
+import cn.dev33.satoken.exception.SaTokenException;
 import com.jingfang.cloud.core.exception.NotSupportedException;
 import com.jingfang.cloud.core.exception.feign.AbstractFeignException;
 import com.jingfang.cloud.core.exception.feign.FeignArgumentNotValidException;
@@ -86,13 +87,18 @@ public class GlobalControllerAdvice {
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler({SaTokenException.class})
     public ErrorModel handler401(Exception exception, HttpServletRequest request) {
         ErrorModel model = new ErrorModel();
         model.setPath(request.getRequestURI());
         model.setTimestamp(System.currentTimeMillis());
         model.setStatus(HttpStatus.UNAUTHORIZED.value());
-        model.setError(exception.getMessage());
-        model.setMessage("未授权，"+exception.getMessage());
+        if(exception instanceof SaTokenException){
+            model.setError(String.valueOf(((SaTokenException)exception).getCode()));
+        }else {
+            model.setError(exception.getMessage());
+        }
+        model.setMessage(exception.getMessage());
         return model;
     }
 

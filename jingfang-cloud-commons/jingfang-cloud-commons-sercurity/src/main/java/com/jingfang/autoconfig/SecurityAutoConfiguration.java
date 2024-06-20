@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.handler.SaTokenCheckHandler;
+import com.jingfang.security.service.UserDetailService;
 import com.jingfang.security.web.SecurityLockingStrategy;
 import com.jingfang.security.web.authentication.DefaultAuthenticationProcessingFilter;
 import com.jingfang.security.web.authentication.DefaultLogoutFilter;
@@ -26,13 +27,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -105,6 +111,15 @@ public class SecurityAutoConfiguration {
 
             private SaInterceptor getSaInterceptor() {
                 return new SaInterceptor(handler -> {
+                    if (handler instanceof HandlerMethod) {
+                        HandlerMethod handlerMethod = (HandlerMethod) handler;
+                        if (handlerMethod.getBeanType().isAssignableFrom(BasicErrorController.class)) {
+                            return;
+                        }
+                    }
+                    if (handler instanceof ResourceHttpRequestHandler) {
+                        return;
+                    }
                     StpUtil.checkLogin();
                     if (saTokenCheckHandler != null) {
                         saTokenCheckHandler.run(handler);
@@ -121,7 +136,7 @@ public class SecurityAutoConfiguration {
         int times = lockStrategy.getFailureMaxTimes();
         int duration = lockStrategy.getDuration();
         TimeUnit timeUnit = lockStrategy.getTimeUnit();
-        return new RedisLockingStrategy(times, duration, timeUnit,stringRedisTemplate);
+        return new RedisLockingStrategy(times, duration, timeUnit, stringRedisTemplate);
     }
 
 
@@ -138,15 +153,20 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    public DefaultAuthenticationProcessingFilter defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
-                                                                                       AuthenticationFailureHandler authenticationFailureHandler,
-                                                                                       AuthenticationSuccessHandler authenticationSuccessHandler
+    public FilterRegistrationBean<DefaultAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
+                                                                                                               AuthenticationFailureHandler authenticationFailureHandler,
+                                                                                                               AuthenticationSuccessHandler authenticationSuccessHandler,
+                                                                                                               @Autowired(required = false) UserDetailService userDetailService
     ) {
+        FilterRegistrationBean<DefaultAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         DefaultAuthenticationProcessingFilter processingFilter = new DefaultAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
         processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
         processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        return processingFilter;
+        processingFilter.setUserDetailService(userDetailService);
+        filterRegistrationBean.setFilter(processingFilter);
+        filterRegistrationBean.addUrlPatterns("/*");
+        return filterRegistrationBean;
     }
 
     @Bean
@@ -161,8 +181,12 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    public DefaultLogoutFilter defaultLogoutFilter(DefaultLogoutHandler defaultLogoutHandler, DefaultLogoutSuccessHandler defaultLogoutSuccessHandler) {
-        return new DefaultLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), defaultLogoutSuccessHandler, defaultLogoutHandler);
+    public FilterRegistrationBean<DefaultLogoutFilter> defaultLogoutFilter(DefaultLogoutHandler defaultLogoutHandler, DefaultLogoutSuccessHandler defaultLogoutSuccessHandler) {
+        FilterRegistrationBean<DefaultLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        DefaultLogoutFilter defaultLogoutFilter = new DefaultLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), defaultLogoutSuccessHandler, defaultLogoutHandler);
+        filterRegistrationBean.setFilter(defaultLogoutFilter);
+        filterRegistrationBean.addUrlPatterns("/*");
+        return filterRegistrationBean;
     }
 
 
