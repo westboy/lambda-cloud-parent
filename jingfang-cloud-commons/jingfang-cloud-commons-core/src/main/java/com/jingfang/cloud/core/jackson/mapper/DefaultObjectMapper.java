@@ -17,9 +17,9 @@ import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 /**
  * @author Jin
  */
-public class CustomObjectMapper extends ObjectMapper {
+public class DefaultObjectMapper extends ObjectMapper {
 
-    public CustomObjectMapper() {
+    public DefaultObjectMapper() {
         super();
         this.setDateFormat(new ExtendDateFormat());
         this.disable(INDENT_OUTPUT);
@@ -35,6 +35,6 @@ public class CustomObjectMapper extends ObjectMapper {
 
     @Override
     public ObjectMapper copy() {
-        return new CustomObjectMapper();
+        return new DefaultObjectMapper();
     }
 }

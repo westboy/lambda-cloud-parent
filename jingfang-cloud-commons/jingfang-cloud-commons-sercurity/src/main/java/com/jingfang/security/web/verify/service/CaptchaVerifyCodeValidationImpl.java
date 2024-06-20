@@ -7,10 +7,11 @@ import com.jingfang.autoconfig.SecurityProperties;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.cloud.web.DefaultServletRequestWrapper;
 import com.jingfang.security.exception.VerifyCodeValidationException;
-import com.jingfang.security.web.LoginType;
+import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
 

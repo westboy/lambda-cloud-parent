@@ -1,4 +1,4 @@
-package com.jingfang.security.web;
+package com.jingfang.security.enums;
 
 import lombok.Getter;
 

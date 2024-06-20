@@ -11,6 +11,7 @@ import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
 import javax.imageio.ImageIO;

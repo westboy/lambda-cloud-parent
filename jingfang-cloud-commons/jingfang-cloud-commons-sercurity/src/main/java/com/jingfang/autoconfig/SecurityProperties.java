@@ -27,7 +27,7 @@ public class SecurityProperties {
     /**
      * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
      */
-    private Boolean enableAnnotationCheck;
+    private Boolean enableMethodAnnotation;
     /**
      * 是否允许同一账号多地同时登录（为 true 时允许一起登录，为 false 时新登录挤掉旧登录）
      */
@@ -48,7 +48,7 @@ public class SecurityProperties {
     public List<String> getAllIgnoreList() {
         return CollUtil.addAllIfNotContains(defaultIgnorePathList, ignorePaths);
     }
-
+    @NestedConfigurationProperty
     public Form form = new Form();
 
     @Getter
@@ -170,15 +170,6 @@ public class SecurityProperties {
          * 验证码获取地址
          */
         private String url = "/jcaptcha";
-        /**
-         * 验证码存储策略
-         */
-        private String storage = "cache";
-
-        /**
-         * 验证码类型，默认图片验证码
-         */
-        private String type = "image";
 
         private int duration = 180;
 

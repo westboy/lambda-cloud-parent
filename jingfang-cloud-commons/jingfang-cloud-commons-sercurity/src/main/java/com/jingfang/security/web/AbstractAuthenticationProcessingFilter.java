@@ -22,7 +22,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
-public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean implements ApplicationEventPublisherAware {
+public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean  {
     protected static final AntPathMatcher antPathMatcher = new AntPathMatcher();
     private AuthenticationSuccessHandler successHandler;
     private AuthenticationFailureHandler failureHandler;
@@ -74,7 +74,6 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         if (this.logger.isDebugEnabled()) {
             this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", principal));
         }
-        StpUtil.login(principal.getUsername());
         this.successHandler.onAuthenticationSuccess(request, response, principal);
     }
 

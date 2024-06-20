@@ -1,4 +1,4 @@
-package com.jingfang.security.web.authentication.lock;
+package com.jingfang.security.web.authentication.locking;
 
 import lombok.Getter;
 import lombok.Setter;

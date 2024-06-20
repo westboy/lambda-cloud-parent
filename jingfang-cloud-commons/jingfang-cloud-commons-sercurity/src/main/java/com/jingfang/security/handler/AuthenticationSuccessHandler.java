@@ -19,5 +19,5 @@ public interface AuthenticationSuccessHandler {
         chain.doFilter(request, response);
     }
 
-    void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Principal authentication) throws IOException, ServletException;
+    void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Principal principal) throws IOException, ServletException;
 }

@@ -1,6 +1,7 @@
-package com.jingfang.security.web.authentication.lock;
+package com.jingfang.security.web.authentication.locking;
 
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.text.MessageFormat;
@@ -16,6 +17,11 @@ import java.util.concurrent.TimeUnit;
 public class RedisLockingStrategy extends AbstractLockingStrategy {
 
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     private static final String COMMON = "JFC:USER:LOGINFAILURE:";
 

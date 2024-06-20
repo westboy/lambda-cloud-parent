@@ -3,7 +3,10 @@ package com.jingfang.cloud.mvc;
 import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.core.log.LogMessage;
+import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -11,17 +14,26 @@ import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Jin
  */
+@Slf4j
 public final class WebHttpUtils {
 
+    private static final Pattern ABSOLUTE_URL = Pattern.compile("\\A[a-z0-9.+-]+://.*", Pattern.CASE_INSENSITIVE);
     public static final String XML_HTTP_REQUEST = "x-requested-with";
     public static final String XML_HTTP_REQUEST_VALUE = "XMLHttpRequest";
     public static final String CONTENT_TYPE = "Content-Type";
@@ -31,32 +43,81 @@ public final class WebHttpUtils {
     public static final String X_AUTHORIZED_TOKEN = "x-authorized-token";
     public static final String X_AUTHORIZED_BEARER = X_AUTHORIZED_TOKEN;
     public static final String HMAC = "HmacSHA ";
+    public static final String REDIRECT_URL = "__redirectUrl";
+
     private WebHttpUtils() {
     }
 
-    /**
-     * 获取当前HTTP请求的HttpServletRequest
-     */
+    public static String getRedirectParameter(HttpServletRequest request, String tokens)
+            throws UnsupportedEncodingException {
+        Object redirectUrl = request.getAttribute(REDIRECT_URL);
+        if (redirectUrl != null && StringUtils.isNotBlank(redirectUrl.toString())) {
+            String redirect = redirectUrl.toString();
+            String symbol = redirect.contains("?") ? "&" : "?";
+            return redirect + symbol
+                    + "auth=" + URLEncoder.encode(tokens, UTF_8.name());
+        }
+        return null;
+    }
+
+    public static Object getRedirectAttribute(HttpServletRequest request) {
+        return request.getAttribute(REDIRECT_URL);
+    }
+
+    public static void addJwtCookie(HttpServletResponse response, String token) {
+        Cookie cookie = new Cookie(X_AUTHORIZED_BEARER, token);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+    }
+
+    public static void clearJwtCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(X_AUTHORIZED_BEARER, null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+    }
+
+    public static void sendRedirect(HttpServletRequest request, HttpServletResponse response, String url) throws IOException {
+        String redirectUrl = calculateRedirectUrl(request.getContextPath(), url, false);
+        redirectUrl = response.encodeRedirectURL(redirectUrl);
+        response.sendRedirect(redirectUrl);
+    }
+
+    public static void sendRedirect(HttpServletRequest request, HttpServletResponse response, String url, boolean contextRelative) throws IOException {
+        String redirectUrl = calculateRedirectUrl(request.getContextPath(), url, contextRelative);
+        redirectUrl = response.encodeRedirectURL(redirectUrl);
+        response.sendRedirect(redirectUrl);
+    }
+
+    private static String calculateRedirectUrl(String contextPath, String url, boolean contextRelative) {
+        if (!isAbsoluteUrl(url)) {
+            return contextRelative ? url : contextPath + url;
+        } else if (!contextRelative) {
+            return url;
+        } else {
+            Assert.isTrue(url.contains(contextPath), "The fully qualified URL does not include context path.");
+            url = url.substring(url.lastIndexOf("://") + 3);
+            url = url.substring(url.indexOf(contextPath) + contextPath.length());
+            if (url.length() > 1 && url.charAt(0) == '/') {
+                url = url.substring(1);
+            }
+            return url;
+        }
+    }
+
+
     public static HttpServletRequest getCurrentRequest() {
         final RequestAttributes requestAttributes = Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
         return ((ServletRequestAttributes) requestAttributes).getRequest();
     }
 
-    /**
-     * 获取指定key
-     * @param key 标记
-     * @return 结果
-     */
+
     public static Object getRequestAttributes(String key) {
         return getCurrentRequest().getAttribute(key);
     }
 
-    /**
-     * 从json请求体获取参数
-     *
-     * @param request
-     * @return Map
-     */
     public static Map<String, Object> getRequestBody(HttpServletRequest request) {
         try {
             String body = ServletUtil.getBody(request);
@@ -65,12 +126,7 @@ public final class WebHttpUtils {
             return Maps.newHashMap();
         }
     }
-    /**
-     * 从表单获取参数
-     *
-     * @param request
-     * @return
-     */
+
     public static Map<String, Object> getFormRequest(HttpServletRequest request) {
         List<String> parameterNames = Collections.list(request.getParameterNames());
         return parameterNames.stream().collect(Collectors.toMap(k -> k, request::getParameter));
@@ -108,4 +164,57 @@ public final class WebHttpUtils {
         return !isHmacRequest(request);
     }
 
+    public static String buildFullRequestUrl(HttpServletRequest r) {
+        return buildFullRequestUrl(r.getScheme(), r.getServerName(), r.getServerPort(), r.getRequestURI(), r.getQueryString());
+    }
+
+    public static String buildFullRequestUrl(String scheme, String serverName, int serverPort, String requestURI, String queryString) {
+        scheme = scheme.toLowerCase();
+        StringBuilder url = new StringBuilder();
+        url.append(scheme).append("://").append(serverName);
+        if ("http".equals(scheme)) {
+            if (serverPort != 80) {
+                url.append(":").append(serverPort);
+            }
+        } else if ("https".equals(scheme) && serverPort != 443) {
+            url.append(":").append(serverPort);
+        }
+
+        url.append(requestURI);
+        if (queryString != null) {
+            url.append("?").append(queryString);
+        }
+
+        return url.toString();
+    }
+
+    public static String buildRequestUrl(HttpServletRequest r) {
+        return buildRequestUrl(r.getServletPath(), r.getRequestURI(), r.getContextPath(), r.getPathInfo(), r.getQueryString());
+    }
+
+    private static String buildRequestUrl(String servletPath, String requestURI, String contextPath, String pathInfo, String queryString) {
+        StringBuilder url = new StringBuilder();
+        if (servletPath != null) {
+            url.append(servletPath);
+            if (pathInfo != null) {
+                url.append(pathInfo);
+            }
+        } else {
+            url.append(requestURI.substring(contextPath.length()));
+        }
+
+        if (queryString != null) {
+            url.append("?").append(queryString);
+        }
+
+        return url.toString();
+    }
+
+    public static boolean isValidRedirectUrl(String url) {
+        return url != null && (url.startsWith("/") || isAbsoluteUrl(url));
+    }
+
+    public static boolean isAbsoluteUrl(String url) {
+        return url != null ? ABSOLUTE_URL.matcher(url).matches() : false;
+    }
 }

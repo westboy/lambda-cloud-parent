@@ -1,4 +1,6 @@
-package com.jingfang.security.web.authentication.lock;
+package com.jingfang.security.web;
+
+import com.jingfang.security.web.authentication.locking.UserLoginLimitTracker;
 
 import java.util.concurrent.TimeUnit;
 
