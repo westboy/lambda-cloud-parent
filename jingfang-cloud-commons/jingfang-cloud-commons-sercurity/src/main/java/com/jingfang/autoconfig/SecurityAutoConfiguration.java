@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Configuration
 @EnableConfigurationProperties({SecurityProperties.class})
-public class SecurityConfiguration {
+public class SecurityAutoConfiguration {
 
     private SecurityProperties securityProperties;
 
@@ -49,7 +49,6 @@ public class SecurityConfiguration {
     @Bean
     @Primary
     public SaTokenConfig getSaTokenConfigPrimary() {
-        StpUtil.login(10001);
         SaTokenConfig config = new SaTokenConfig();
         config.setTokenName(securityProperties.getTokenName());
         config.setTokenStyle(securityProperties.getTokenStyle());
