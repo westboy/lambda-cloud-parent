@@ -21,11 +21,16 @@ import com.jingfang.security.web.verify.service.CaptchaVerifyCodeValidationImpl;
 import com.jingfang.security.web.verify.service.VerifyCodeService;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import com.jingfang.security.web.verify.store.RedisCaptchaStore;
+import com.jingfang.security.web.xss.XSSDefendFilter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -38,9 +43,14 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jpjoo
  */
+@Slf4j
 @Configuration
 @EnableConfigurationProperties({SecurityProperties.class})
 public class SecurityAutoConfiguration {
+
+    public SecurityAutoConfiguration() {
+        log.trace("initializing...");
+    }
 
     private SecurityProperties securityProperties;
     private SaTokenCheckHandler saTokenCheckHandler;
@@ -72,6 +82,13 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "jf.security.xss-protected", name = "enabled")
+    public XSSDefendFilter xssDefendFilter(SecurityProperties securityProperties) {
+        SecurityProperties.XssProtected xssProtected = securityProperties.getXssProtected();
+        return new XSSDefendFilter(xssProtected.trusted);
+    }
+
+    @Bean
     @Primary
     public WebMvcConfigurer saInterceptorWebConfigurer() {
         return new WebMvcConfigurer() {
@@ -98,21 +115,24 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    public SecurityLockingStrategy securityLockingStrategy() {
+    @ConditionalOnMissingBean
+    public SecurityLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
         SecurityProperties.Form.LockStrategy lockStrategy = securityProperties.getForm().getLockStrategy();
         int times = lockStrategy.getFailureMaxTimes();
         int duration = lockStrategy.getDuration();
         TimeUnit timeUnit = lockStrategy.getTimeUnit();
-        return new RedisLockingStrategy(times, duration, timeUnit);
+        return new RedisLockingStrategy(times, duration, timeUnit,stringRedisTemplate);
     }
 
 
     @Bean
+    @ConditionalOnMissingBean
     public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
         return new DefaultAuthenticationFailureHandler(objectMapper);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public AuthenticationSuccessHandler authenticationSuccessHandler(ObjectMapper objectMapper) {
         return new DefaultAuthenticationSuccessHandler(objectMapper);
     }
@@ -135,6 +155,7 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public DefaultLogoutSuccessHandler defaultLogoutSuccessHandler() {
         return new DefaultLogoutSuccessHandler();
     }

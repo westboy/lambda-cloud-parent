@@ -54,7 +54,7 @@ public class GlobalControllerAdvice {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class,HttpMessageNotReadableException.class})
+    @ExceptionHandler({IllegalArgumentException.class,HttpMessageNotReadableException.class})
     public ErrorModel handler400V2(Exception exception, HttpServletRequest request) {
         ErrorModel model = handler400(request);
         model.setMessage("请求参数错误, "+exception.getMessage());
@@ -128,9 +128,7 @@ public class GlobalControllerAdvice {
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({HttpRequestMethodNotSupportedException.class,
-            IllegalAccessException.class,
             IllegalStateException.class,
-            IllegalArgumentException.class,
             NotSupportedException.class})
     public ErrorModel handler500(HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
         ErrorModel model = handler500(request);

@@ -76,8 +76,8 @@ public class RedisAutoConfiguration {
     }
 
     @Bean("objectMapper")
-    @ConditionalOnMissingBean
-    public ObjectMapper objectMapper() {
+    @Primary
+    public DefaultObjectMapper objectMapper() {
         return new DefaultObjectMapper();
     }
 

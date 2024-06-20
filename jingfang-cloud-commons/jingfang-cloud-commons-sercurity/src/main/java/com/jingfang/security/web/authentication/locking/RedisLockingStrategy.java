@@ -16,17 +16,13 @@ import java.util.concurrent.TimeUnit;
 @Setter
 public class RedisLockingStrategy extends AbstractLockingStrategy {
 
-    private StringRedisTemplate stringRedisTemplate;
-
-    @Autowired
-    public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
+    private final StringRedisTemplate stringRedisTemplate;
 
     private static final String COMMON = "JFC:USER:LOGINFAILURE:";
 
-    public RedisLockingStrategy(int maxFailureTimes, int duration, TimeUnit timeUnit) {
+    public RedisLockingStrategy(int maxFailureTimes, int duration, TimeUnit timeUnit, StringRedisTemplate stringRedisTemplate) {
         super(maxFailureTimes, duration, timeUnit);
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     /***

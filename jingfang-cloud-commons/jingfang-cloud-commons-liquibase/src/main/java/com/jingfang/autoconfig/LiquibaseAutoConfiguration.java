@@ -51,7 +51,7 @@ public class LiquibaseAutoConfiguration {
     }
 
     @Bean
-    @DependsOn("JfLiquibaseFinishedPublisher")
+    @DependsOn("jfLiquibase")
     public LiquibaseFinishedPublisher liquibaseFinishedPublisher(SpringLiquibase jfLiquibase,
                                                                  List<LiquibasePostExecutor> executors) {
         DataSource dataSource = jfLiquibase.getDataSource();

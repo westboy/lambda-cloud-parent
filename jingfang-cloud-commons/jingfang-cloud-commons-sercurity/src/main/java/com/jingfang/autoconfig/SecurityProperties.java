@@ -2,6 +2,7 @@ package com.jingfang.autoconfig;
 
 import cn.dev33.satoken.util.SaTokenConsts;
 import cn.hutool.core.collection.CollUtil;
+import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +34,7 @@ public class SecurityProperties {
     /**
      * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
      */
-    private Boolean enableMethodAnnotation;
+    private Boolean enableMethodAnnotation =true;
     /**
      * 是否允许同一账号多地同时登录（为 true 时允许一起登录，为 false 时新登录挤掉旧登录）
      */
@@ -46,12 +48,12 @@ public class SecurityProperties {
 
     private String jwtSecretKey = "jf-token-secret";
 
-    private List<String> ignorePaths;
+    private List<String> ignored;
 
     private Long activeTimeout = -1L;
 
     public List<String> getAllIgnoreList() {
-        return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignorePaths);
+        return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignored);
     }
 
     @NestedConfigurationProperty
@@ -180,5 +182,15 @@ public class SecurityProperties {
         private int duration = 180;
 
         private TimeUnit timeUnit = TimeUnit.SECONDS;
+    }
+
+    @NestedConfigurationProperty
+    XssProtected xssProtected = new XssProtected();
+
+    @Getter
+    @Setter
+    public static class XssProtected {
+        boolean enabled = false;
+        Set<String> trusted = Sets.newHashSet();
     }
 }
