@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
+import com.jingfang.security.handler.SaTokenCheckHandler;
 import com.jingfang.security.web.SecurityLockingStrategy;
 import com.jingfang.security.web.authentication.DefaultAuthenticationProcessingFilter;
 import com.jingfang.security.web.authentication.DefaultLogoutFilter;
@@ -40,10 +41,16 @@ import java.util.concurrent.TimeUnit;
 public class SecurityAutoConfiguration {
 
     private SecurityProperties securityProperties;
+    private SaTokenCheckHandler saTokenCheckHandler;
 
     @Autowired
     public void setSecurityProperties(SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
+    }
+
+    @Autowired(required = false)
+    public void setSaTokenCustomHandler(SaTokenCheckHandler saTokenCheckHandler) {
+        this.saTokenCheckHandler = saTokenCheckHandler;
     }
 
     @Bean
@@ -78,7 +85,10 @@ public class SecurityAutoConfiguration {
             }
 
             private SaInterceptor getSaInterceptor() {
-                return new SaInterceptor(handler -> StpUtil.checkLogin()).isAnnotation(securityProperties.getEnableMethodAnnotation());
+                return new SaInterceptor(handler -> {
+                    StpUtil.checkLogin();
+                    saTokenCheckHandler.run(handler);
+                }).isAnnotation(securityProperties.getEnableMethodAnnotation());
             }
         };
     }
@@ -91,7 +101,6 @@ public class SecurityAutoConfiguration {
         TimeUnit timeUnit = lockStrategy.getTimeUnit();
         return new RedisLockingStrategy(times, duration, timeUnit);
     }
-
 
 
     @Bean
@@ -108,7 +117,7 @@ public class SecurityAutoConfiguration {
     public DefaultAuthenticationProcessingFilter defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
                                                                                        AuthenticationFailureHandler authenticationFailureHandler,
                                                                                        AuthenticationSuccessHandler authenticationSuccessHandler
-                                                                                       ) {
+    ) {
         DefaultAuthenticationProcessingFilter processingFilter = new DefaultAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
         processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
         processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
