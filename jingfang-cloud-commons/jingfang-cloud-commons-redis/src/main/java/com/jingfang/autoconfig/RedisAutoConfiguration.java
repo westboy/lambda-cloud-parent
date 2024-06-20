@@ -1,5 +1,6 @@
 package com.jingfang.autoconfig;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.jackson.mapper.DefaultObjectMapper;
 import com.jingfang.cloud.redis.customize.CustomizableConnectionConfiguration;
@@ -41,6 +42,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -75,8 +77,8 @@ public class RedisAutoConfiguration {
         log.trace("initializing...");
     }
 
-    @Bean("objectMapper")
-    @Primary
+    @Bean
+    @ConditionalOnMissingBean
     public DefaultObjectMapper objectMapper() {
         return new DefaultObjectMapper();
     }

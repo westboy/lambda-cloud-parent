@@ -44,7 +44,7 @@ public class LiquibaseAutoConfiguration {
         String driver = properties.getDriverClassName();
         DataSource dataSource = DataSourceUtils.getInstance(url, username, password, driver);
         SpringLiquibase liquibase = new SpringLiquibase();
-        liquibase.setChangeLog("classpath:META-INF/db/changelogs/jf-master.xml");
+        liquibase.setChangeLog("classpath:META-INF/db/changelogs/jingfang-master.xml");
         liquibase.setDataSource(dataSource);
         liquibase.setContexts("jf_cloud");
         return liquibase;

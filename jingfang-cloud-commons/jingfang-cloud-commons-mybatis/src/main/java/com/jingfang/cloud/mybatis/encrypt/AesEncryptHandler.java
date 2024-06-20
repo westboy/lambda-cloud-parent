@@ -43,8 +43,4 @@ public class AesEncryptHandler extends BaseTypeHandler<Object> {
         return AesKit.AES_DECODER.decryptForAesToStr(columnValue, key);
     }
 
-    public static void main(String[] args) {
-        String name1 = AesKit.AES_DECODER.decryptForAesToStr("5KrQY2mzMer32IOwddkkDQ==", key);
-        String value1 = AesKit.AES_DECODER.decryptForAesToStr("IbgboXFvhlOjNoyuYA+xq4ob24q/dVLo0Pujz2+9CfA=", key);
-    }
 }
