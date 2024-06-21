@@ -5,7 +5,6 @@ import com.jingfang.cloud.core.principal.Principal;
 import com.jingfang.cloud.core.utils.Assert;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.exception.AuthenticationException;
-import com.jingfang.security.password.StandardPasswordEncoder;
 import com.jingfang.security.service.UserDetailService;
 import com.jingfang.security.web.AbstractAuthenticationProcessingFilter;
 import com.jingfang.security.web.SecurityLockingStrategy;
@@ -14,6 +13,7 @@ import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.lang.Nullable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +35,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
     private String deviceParameter = "device";
     private SecurityLockingStrategy securityLockingStrategy;
     private UserDetailService userDetailService;
-    private StandardPasswordEncoder standardPasswordEncoder = new StandardPasswordEncoder();
+    private PasswordEncoder passwordEncoder;
 
     public DefaultAuthenticationProcessingFilter(String defaultFilterProcessesUrl) {
         super(defaultFilterProcessesUrl);
@@ -114,7 +114,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
             throw new AuthenticationException("用户不存在！");
         }
         String credentials = principal.getCredentials();
-        boolean matches = standardPasswordEncoder.matches(password, credentials);
+        boolean matches = passwordEncoder.matches(password, credentials);
         if (!matches) {
             throw new AuthenticationException("密码错误！");
         }

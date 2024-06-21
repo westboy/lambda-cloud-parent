@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.handler.SaTokenCheckHandler;
+import com.jingfang.security.password.StandardPasswordEncoder;
 import com.jingfang.security.service.UserDetailService;
 import com.jingfang.security.web.SecurityLockingStrategy;
 import com.jingfang.security.web.authentication.DefaultAuthenticationProcessingFilter;
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -148,9 +150,16 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    public PasswordEncoder passwordEncoder() {
+        return new StandardPasswordEncoder();
+    }
+
+    @Bean
     public FilterRegistrationBean<DefaultAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
                                                                                                                AuthenticationFailureHandler authenticationFailureHandler,
                                                                                                                AuthenticationSuccessHandler authenticationSuccessHandler,
+                                                                                                               PasswordEncoder passwordEncoder,
                                                                                                                @Autowired(required = false) UserDetailService userDetailService
     ) {
         FilterRegistrationBean<DefaultAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
@@ -159,6 +168,7 @@ public class SecurityAutoConfiguration {
         processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
         processingFilter.setUserDetailService(userDetailService);
+        processingFilter.setPasswordEncoder(passwordEncoder);
         filterRegistrationBean.setFilter(processingFilter);
         filterRegistrationBean.addUrlPatterns("/*");
         filterRegistrationBean.setOrder(30);
