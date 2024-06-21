@@ -1,4 +1,4 @@
-package com.jingfang.security.web.verify.service;
+package com.jingfang.security.web.verify.service.captcha;
 
 
 import cn.hutool.core.util.StrUtil;
@@ -9,6 +9,7 @@ import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.cloud.web.DefaultServletRequestWrapper;
 import com.jingfang.security.exception.VerifyCodeValidationException;
 import com.jingfang.security.enums.LoginMode;
+import com.jingfang.security.web.verify.service.VerifyCodeService;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;

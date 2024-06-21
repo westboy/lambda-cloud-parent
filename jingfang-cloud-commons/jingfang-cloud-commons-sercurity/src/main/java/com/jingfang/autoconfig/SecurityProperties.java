@@ -183,6 +183,11 @@ public class SecurityProperties {
         private boolean enabled = false;
 
         /**
+         * 开发模式
+         */
+        private boolean devMode = false;
+
+        /**
          * 验证码获取地址
          */
         private String url = "/jcaptcha";

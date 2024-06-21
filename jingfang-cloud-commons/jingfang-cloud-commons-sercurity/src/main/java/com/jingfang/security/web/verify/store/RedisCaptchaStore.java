@@ -21,10 +21,11 @@ public class RedisCaptchaStore implements CaptchaStore {
     @Override
     public boolean validate(String token, String inputCode) {
         String verifyCode = (String) RedisUtils.me().get(REDIS_CAPTCHA_STORE_KEY + token);
-        if (verifyCode == null) {
+        if (verifyCode == null || !verifyCode.equalsIgnoreCase(inputCode)) {
             return false;
         }
-        return verifyCode.equalsIgnoreCase(inputCode);
+        RedisUtils.me().delete(REDIS_CAPTCHA_STORE_KEY + token);
+        return true;
     }
 
 }

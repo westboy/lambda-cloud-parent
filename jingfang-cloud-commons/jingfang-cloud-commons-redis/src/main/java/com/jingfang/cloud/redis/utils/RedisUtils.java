@@ -25,7 +25,7 @@ public class RedisUtils {
     public static RedisUtils me() {
         if (me == null) {
             synchronized (RedisUtils.class) {
-                RedisTemplate objectRedisTemplate = SpringUtil.getBean(RedisTemplate.class);
+                RedisTemplate objectRedisTemplate = SpringUtil.getBean("redisTemplate",RedisTemplate.class);
                 assert objectRedisTemplate != null;
                 me = new RedisUtils(objectRedisTemplate);
             }

@@ -17,8 +17,8 @@ import com.jingfang.security.web.authentication.handler.DefaultLogoutHandler;
 import com.jingfang.security.web.authentication.handler.DefaultLogoutSuccessHandler;
 import com.jingfang.security.web.authentication.locking.RedisLockingStrategy;
 import com.jingfang.security.web.verify.VerifyCodeFilter;
-import com.jingfang.security.web.verify.service.CaptchaVerifyCodeGenerateImpl;
-import com.jingfang.security.web.verify.service.CaptchaVerifyCodeValidationImpl;
+import com.jingfang.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
+import com.jingfang.security.web.verify.service.captcha.CaptchaVerifyCodeValidationImpl;
 import com.jingfang.security.web.verify.service.VerifyCodeService;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import com.jingfang.security.web.verify.store.RedisCaptchaStore;
@@ -37,11 +37,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 /**
