@@ -46,6 +46,8 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
 
     public static final String VERIFY_CODE_PARAMETER = "verifyCode";
 
+    public static final String VERIFY_IMAGE = "verifyImage";
+
     public CaptchaVerifyCodeGenerateImpl(SecurityProperties securityProperties, ObjectMapper objectMapper, CaptchaStore captchaStore) {
         this.securityProperties = securityProperties;
         this.objectMapper = objectMapper;
@@ -84,7 +86,7 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 Map<String, String> result = Maps.newHashMapWithExpectedSize(2);
                 result.put(TOKEN_KEY, captchaId);
-                result.put(VERIFY_CODE_PARAMETER, captcha.getImageBase64());
+                result.put(VERIFY_IMAGE, captcha.getImageBase64Data());
                 objectMapper.writeValue(writer, result);
             } catch (Exception e) {
                 throw new VerifyCodeValidationException(e.getMessage());
