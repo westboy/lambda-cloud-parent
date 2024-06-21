@@ -44,7 +44,7 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
 
     public static final String TOKEN_KEY = "__token";
 
-    public static final String VERIFY_CODE_PARAMETER = "verify";
+    public static final String VERIFY_CODE_PARAMETER = "verifyCode";
 
     public CaptchaVerifyCodeGenerateImpl(SecurityProperties securityProperties, ObjectMapper objectMapper, CaptchaStore captchaStore) {
         this.securityProperties = securityProperties;
