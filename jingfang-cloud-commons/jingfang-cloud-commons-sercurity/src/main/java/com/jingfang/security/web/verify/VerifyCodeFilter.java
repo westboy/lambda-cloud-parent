@@ -52,8 +52,8 @@ public class VerifyCodeFilter extends GenericFilterBean implements InitializingB
                     return;
                 }
             }
-        } catch (AuthenticationException authenticationException) {
-            this.failureHandler.onAuthenticationFailure(request, response, authenticationException);
+        } catch (Exception exception) {
+            this.failureHandler.onAuthenticationFailure(request, response, exception);
             return;
         }
         chain.doFilter(request, response);

@@ -195,6 +195,17 @@ public class SecurityProperties {
         private int duration = 180;
 
         private TimeUnit timeUnit = TimeUnit.SECONDS;
+
+        private String captchaType;
+
+        private int captchaWidth = 180;
+
+        private int captchaHeight = 70;
+
+        private int captchaCodeCount = 4;
+
+        private int captchaNumberLength = 1;
+
     }
 
     @NestedConfigurationProperty

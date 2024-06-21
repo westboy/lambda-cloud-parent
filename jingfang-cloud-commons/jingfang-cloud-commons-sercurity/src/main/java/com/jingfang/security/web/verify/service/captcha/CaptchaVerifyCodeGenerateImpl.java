@@ -2,6 +2,10 @@ package com.jingfang.security.web.verify.service.captcha;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.CircleCaptcha;
+import cn.hutool.captcha.GifCaptcha;
+import cn.hutool.captcha.generator.MathGenerator;
+import cn.hutool.core.img.ImgUtil;
+import cn.hutool.core.math.Calculator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,11 +24,11 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 图形校验码生成过滤器
@@ -70,15 +74,19 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
 
 
     public void writeCaptcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        boolean ajax = WebHttpUtils.isAjaxRequest(request);
-        CircleCaptcha captcha = CaptchaUtil.createCircleCaptcha(200, 150, 4, 3);
+        GifCaptcha captcha = CaptchaUtil.createGifCaptcha(
+                securityProperties.getForm().getVerify().getCaptchaWidth(),
+                securityProperties.getForm().getVerify().getCaptchaHeight(),
+                securityProperties.getForm().getVerify().getCaptchaCodeCount());
+        MathGenerator mathGenerator = new MathGenerator(securityProperties.getForm().getVerify().getCaptchaNumberLength());
+        captcha.setGenerator(mathGenerator);
         String captchaId = IdUtil.fastUUID();
-        String captchaCode = captcha.getCode();
+        Integer captchaCode = (int) Calculator.conversion(captcha.getCode());
         if (securityProperties.getForm().getVerify().isDevMode()) {
             log.info("验证码[ {}:{}, {}:{} ]", TOKEN_KEY, captchaId, VERIFY_CODE_PARAMETER, captchaCode);
         }
-        captchaStore.store(captchaId, captchaCode, TimeUnit.SECONDS, 60);
-        if (ajax) {
+        captchaStore.store(captchaId, captchaCode.toString(), securityProperties.getForm().getVerify().getTimeUnit(), securityProperties.getForm().getVerify().getDuration());
+        if (WebHttpUtils.isAjaxRequest(request)) {
             try (PrintWriter writer = response.getWriter()) {
                 response.setHeader("Expires", "0");
                 response.setHeader("Pragma", "No-cache");
@@ -92,11 +100,9 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
                 throw new VerifyCodeValidationException(e.getMessage());
             }
         } else {
-            try (ByteArrayOutputStream jpegOutputStream = new ByteArrayOutputStream();
-                 ServletOutputStream output = response.getOutputStream()) {
-                ImageIO.write(captcha.getImage(), "JPEG", jpegOutputStream);
-                byte[] captchaChallengeAsJpeg = jpegOutputStream.toByteArray();
-                output.write(captchaChallengeAsJpeg);
+            //这个只作为测试使用
+            try (ServletOutputStream output = response.getOutputStream()) {
+                captcha.write(output);
             } catch (Exception e) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
