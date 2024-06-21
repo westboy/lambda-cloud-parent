@@ -1,17 +1,17 @@
 package com.jingfang.security.web.verify.service;
 
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.json.JSONObject;
 import com.jingfang.autoconfig.SecurityProperties;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.cloud.web.DefaultServletRequestWrapper;
 import com.jingfang.security.exception.VerifyCodeValidationException;
-import com.jingfang.security.enums.LoginType;
+import com.jingfang.security.enums.LoginMode;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
 
@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * 图形验证码校验过滤器
  *
- * @author Jpjoo
+ * @author jpjoo
  */
 public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
     private final AntPathMatcher matcher = new AntPathMatcher();
@@ -44,7 +44,7 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
         final SecurityProperties.Verify verify = securityProperties.getForm().getVerify();
         boolean captchaEnabled = verify.isEnabled();
         boolean isPostMethod = ServletUtil.isPostMethod(request);
-        return captchaEnabled && isPostMethod && matcher.match(verify.getUrl(), request.getRequestURI());
+        return captchaEnabled && isPostMethod && matcher.match(securityProperties.getForm().getLoginProcessingUrl(), request.getRequestURI());
     }
 
     @Override
@@ -57,8 +57,11 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
             chain.doFilter(request, response);
             return;
         }
-        String loginType = ajaxRequest.getStr("loginType");
-        boolean isPwdLogin = LoginType.PWD.getId().equals(loginType);
+        String loginMode = ajaxRequest.getStr("loginMode");
+        if (StrUtil.isEmpty(loginMode)) {
+            throw new VerifyCodeValidationException("登录模式不能为空!");
+        }
+        boolean isPwdLogin = LoginMode.PWD.getCode().equals(loginMode);
         if (!isPwdLogin) {
             chain.doFilter(request, response);
             return;
