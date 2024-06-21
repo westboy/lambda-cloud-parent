@@ -15,6 +15,7 @@ import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.log.LogMessage;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
@@ -25,6 +26,7 @@ import org.springframework.web.filter.GenericFilterBean;
  *
  * @author jpjoo
  */
+@Slf4j
 public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean {
     protected static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
     private AuthenticationSuccessHandler successHandler;
@@ -46,14 +48,15 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         } else {
             try {
                 Principal principal = this.attemptAuthentication(request, response);
-                if (principal == null) {
-                    return;
-                }
                 this.successfulAuthentication(request, response, chain, principal);
-            } catch (AuthenticationException authenticationException) {
-                this.unsuccessfulAuthentication(request, response, authenticationException);
+            } catch (Exception exception) {
+                if (exception instanceof AuthenticationException) {
+                    this.unsuccessfulAuthentication(request, response, (AuthenticationException) exception);
+                } else {
+                    log.error("authentication exception", exception);
+                    this.unsuccessfulAuthentication(request, response, new AuthenticationException(exception.getMessage()));
+                }
             }
-
         }
     }
 

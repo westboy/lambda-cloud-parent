@@ -1,11 +1,13 @@
 package com.jingfang.security.exception;
 
+import cn.dev33.satoken.exception.SaTokenException;
+
 /**
  * AuthenticationException
  *
  * @author Jin
  */
-public class AuthenticationException extends RuntimeException {
+public class AuthenticationException extends SaTokenException {
     public AuthenticationException(String message) {
         super(message);
     }
