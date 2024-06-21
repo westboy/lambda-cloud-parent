@@ -18,6 +18,7 @@ public interface UserDetailService extends StpInterface {
      * @param username
      * @param loginType
      * @return
+     * @throws AuthenticationException
      */
     Principal loginByUsername(String username, String loginType) throws AuthenticationException;
 
