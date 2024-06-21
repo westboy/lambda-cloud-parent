@@ -2,11 +2,12 @@ package com.jingfang.autoconfig;
 
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.interceptor.SaInterceptor;
-import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.StpLogic;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
-import com.jingfang.security.handler.SaTokenCheckHandler;
+import com.jingfang.security.inteceptor.SecureExtendInterceptor;
 import com.jingfang.security.password.StandardPasswordEncoder;
 import com.jingfang.security.service.UserDetailService;
 import com.jingfang.security.web.SecurityLockingStrategy;
@@ -59,7 +60,7 @@ public class SecurityAutoConfiguration {
     }
 
     private SecurityProperties securityProperties;
-    private SaTokenCheckHandler saTokenCheckHandler;
+    private SecureExtendInterceptor secureExtendInterceptor;
 
     @Autowired
     public void setSecurityProperties(SecurityProperties securityProperties) {
@@ -67,8 +68,8 @@ public class SecurityAutoConfiguration {
     }
 
     @Autowired(required = false)
-    public void setSaTokenCustomHandler(SaTokenCheckHandler saTokenCheckHandler) {
-        this.saTokenCheckHandler = saTokenCheckHandler;
+    public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
+        this.secureExtendInterceptor = secureExtendInterceptor;
     }
 
     @Bean
@@ -120,10 +121,15 @@ public class SecurityAutoConfiguration {
                     if (handler instanceof ResourceHttpRequestHandler) {
                         return;
                     }
-                    StpUtil.checkLogin();
-                    if (saTokenCheckHandler != null) {
-                        saTokenCheckHandler.run(handler);
+                    StpLogic stpLogic = LoginType.ADMIN.getStpLogic();
+                    if (!stpLogic.isLogin()) {
+                        stpLogic = LoginType.USER.getStpLogic();
                     }
+                    stpLogic.checkLogin();
+                    if (secureExtendInterceptor != null) {
+                        secureExtendInterceptor.handle(handler, stpLogic);
+                    }
+
                 }).isAnnotation(securityProperties.getEnableMethodAnnotation());
             }
         };

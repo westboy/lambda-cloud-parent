@@ -1,6 +1,7 @@
 package com.jingfang.security.web.verify.store;
 
 import com.jingfang.cloud.redis.utils.RedisUtils;
+import com.jingfang.security.exception.VerifyCodeExpireException;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,11 +22,14 @@ public class RedisCaptchaStore implements CaptchaStore {
     @Override
     public boolean validate(String token, String inputCode) {
         String verifyCode = (String) RedisUtils.me().get(REDIS_CAPTCHA_STORE_KEY + token);
-        if (verifyCode == null || !verifyCode.equalsIgnoreCase(inputCode)) {
-            return false;
+        if (verifyCode == null) {
+            throw new VerifyCodeExpireException("Your verify code is expired");
         }
-        RedisUtils.me().delete(REDIS_CAPTCHA_STORE_KEY + token);
-        return true;
+        boolean matched = verifyCode.equalsIgnoreCase(inputCode);
+        if (matched) {
+            RedisUtils.me().delete(REDIS_CAPTCHA_STORE_KEY + token);
+        }
+        return matched;
     }
 
 }
