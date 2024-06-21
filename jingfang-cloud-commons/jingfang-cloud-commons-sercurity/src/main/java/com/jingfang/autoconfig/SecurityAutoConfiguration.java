@@ -133,10 +133,7 @@ public class SecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public SecurityLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
         SecurityProperties.Form.LockStrategy lockStrategy = securityProperties.getForm().getLockStrategy();
-        int times = lockStrategy.getFailureMaxTimes();
-        int duration = lockStrategy.getDuration();
-        TimeUnit timeUnit = lockStrategy.getTimeUnit();
-        return new RedisLockingStrategy(times, duration, timeUnit, stringRedisTemplate);
+        return new RedisLockingStrategy(lockStrategy.getFailureMaxTimes(), lockStrategy.getDuration(), lockStrategy.getTimeUnit(), stringRedisTemplate);
     }
 
 
@@ -166,6 +163,7 @@ public class SecurityAutoConfiguration {
         processingFilter.setUserDetailService(userDetailService);
         filterRegistrationBean.setFilter(processingFilter);
         filterRegistrationBean.addUrlPatterns("/*");
+        filterRegistrationBean.setOrder(30);
         return filterRegistrationBean;
     }
 
@@ -186,6 +184,7 @@ public class SecurityAutoConfiguration {
         DefaultLogoutFilter defaultLogoutFilter = new DefaultLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), defaultLogoutSuccessHandler, defaultLogoutHandler);
         filterRegistrationBean.setFilter(defaultLogoutFilter);
         filterRegistrationBean.addUrlPatterns("/*");
+        filterRegistrationBean.setOrder(40);
         return filterRegistrationBean;
     }
 
@@ -206,7 +205,13 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    public VerifyCodeFilter verifyCodeFilter(List<VerifyCodeService> verifyCodeServices) {
-        return new VerifyCodeFilter(verifyCodeServices);
+    public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, AuthenticationFailureHandler authenticationFailureHandler) {
+        FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
+        verifyCodeFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        filterRegistrationBean.setFilter(verifyCodeFilter);
+        filterRegistrationBean.addUrlPatterns("/*");
+        filterRegistrationBean.setOrder(20);
+        return filterRegistrationBean;
     }
 }

@@ -1,5 +1,6 @@
 package com.jingfang.security.enums;
 
+import cn.dev33.satoken.stp.StpLogic;
 import lombok.Getter;
 
 import java.util.Arrays;
@@ -13,47 +14,37 @@ import java.util.function.Supplier;
 @Getter
 public enum LoginType {
 
-    /**
-     * 账号登陆
-     */
-    PWD("0", "账号登陆"),
 
     /**
-     * 手机短信登陆
+     * 管理员
      */
-    SMS("1", "手机短信登陆"),
+    ADMIN("admin", "管理员登录", new StpLogic("admin")),
 
     /**
-     * 邮箱验证码登陆
+     * 用户
      */
-    MAIL("3", "邮箱验证码登陆");
+    USER("user", "用户登录", new StpLogic("user"));
 
+    final String code;
 
-    /**
-     * 登陆方式唯一标识
-     */
-    final String id;
-
-    /**
-     * 登陆描述
-     */
     final String desc;
 
+    final StpLogic stpLogic;
 
-    LoginType(String id, String desc) {
-        this.id = id;
+
+    LoginType(String code, String desc, StpLogic stpLogic) {
+        this.code = code;
         this.desc = desc;
+        this.stpLogic = stpLogic;
     }
 
-    public static LoginType getById(String id) {
-        return Arrays.stream(LoginType.values()).filter(loginTypeEnum -> loginTypeEnum.id.equals(id))
+    public static LoginType get(String id) {
+        return Arrays.stream(LoginType.values()).filter(loginModeEnum -> loginModeEnum.code.equals(id))
                 .findFirst().orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
     }
 
-    public static LoginType getByNameOrId(String condition) {
-        return Arrays.stream(LoginType.values())
-                .filter(loginType -> loginType.id.equals(condition) || loginType.name().equalsIgnoreCase(condition))
-                .findFirst().orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
+    public static StpLogic getStpLogic(String id) {
+        return get(id).getStpLogic();
     }
 
 

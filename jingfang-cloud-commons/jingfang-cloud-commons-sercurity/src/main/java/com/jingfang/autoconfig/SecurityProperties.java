@@ -39,7 +39,7 @@ public class SecurityProperties {
     /**
      * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
      */
-    private Boolean enableMethodAnnotation =true;
+    private Boolean enableMethodAnnotation = true;
     /**
      * 是否允许同一账号多地同时登录（为 true 时允许一起登录，为 false 时新登录挤掉旧登录）
      */
@@ -58,6 +58,9 @@ public class SecurityProperties {
     private Long activeTimeout = -1L;
 
     public List<String> getAllIgnoreList() {
+        if (CollUtil.isEmpty(ignored)) {
+            return DEFAULT_IGNORE_PATH_LIST;
+        }
         return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignored);
     }
 

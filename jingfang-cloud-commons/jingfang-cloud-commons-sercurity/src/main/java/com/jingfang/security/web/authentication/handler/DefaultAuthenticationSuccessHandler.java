@@ -1,13 +1,14 @@
 package com.jingfang.security.web.authentication.handler;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
-import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.StpLogic;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jingfang.cloud.core.jackson.mapper.DefaultObjectMapper;
 import com.jingfang.cloud.core.principal.Principal;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.cloud.web.RequestTimeHolder;
+import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.web.events.UserLoginEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -48,8 +49,16 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
         //发布登录时间
         applicationEventPublisher.publishEvent(new UserLoginEvent(principal, cast, remoteAddr, remotePort));
         //sa-token 登录
-        StpUtil.login(principal.getUsername());
-        SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+        //登录设备
+        String device = (String) request.getAttribute("device");
+        //多用户类型支持
+        String loginType = (String) request.getAttribute("loginType");
+        //获取stpLogic
+        StpLogic stpLogic = LoginType.getStpLogic(loginType);
+        //用户登录
+        stpLogic.login(principal.getUsername(), device);
+        //获取token
+        SaTokenInfo tokenInfo = stpLogic.getTokenInfo();
         if (WebHttpUtils.isAjaxRequest(request)) {
             java.io.PrintWriter writer = null;
             try {

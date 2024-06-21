@@ -1,5 +1,6 @@
 package com.jingfang.security.web.authentication;
 
+import cn.hutool.core.util.StrUtil;
 import com.jingfang.cloud.core.principal.Principal;
 import com.jingfang.cloud.core.utils.Assert;
 import com.jingfang.cloud.mvc.WebHttpUtils;
@@ -31,6 +32,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
     private String usernameParameter = "username";
     private String passwordParameter = "password";
     private String loginTypeParameter = "loginType";
+    private String deviceParameter = "device";
     private SecurityLockingStrategy securityLockingStrategy;
     private UserDetailService userDetailService;
     private StandardPasswordEncoder standardPasswordEncoder = new StandardPasswordEncoder();
@@ -51,6 +53,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
         }
         String username = obtainUsername(request);
         String password = obtainPassword(request);
+        String device = obtainDevice(request);
         String loginType = obtainLoginType(request);
 
         if (username == null) {
@@ -61,6 +64,14 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
             password = "";
         }
 
+        if (device == null) {
+            device = "";
+        }
+
+        if (loginType == null) {
+            loginType = "";
+        }
+
         username = username.trim();
 
         if (StringUtils.isBlank(username) && StringUtils.isBlank(password)) {
@@ -68,8 +79,11 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
             if (MapUtils.isNotEmpty(user)) {
                 username = (String) user.getOrDefault(this.getUsernameParameter(), "");
                 password = (String) user.getOrDefault(this.getPasswordParameter(), "");
-                if (StringUtils.isBlank(username)) {
-                    loginType = (String) user.getOrDefault(this.getLoginTypeParameter(), "");
+                if (StringUtils.isBlank(loginType)) {
+                    loginType = (String) user.getOrDefault(this.getLoginTypeParameter(), "admin");
+                }
+                if (StringUtils.isBlank(device)) {
+                    device = (String) user.getOrDefault(this.getDeviceParameter(), "default");
                 }
             }
         }
@@ -82,6 +96,19 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
         if (securityLockingStrategy.checkFailureTimes(username)) {
             throw new AuthenticationException("账号已经被锁定： " + username);
         }
+
+        if(StrUtil.isEmpty(loginType)){
+            loginType = "admin";
+        }
+
+        request.setAttribute(loginTypeParameter, loginType);
+
+        if(StrUtil.isEmpty(device)){
+            device = "default";
+        }
+        request.setAttribute(deviceParameter, device);
+
+
         Principal principal = userDetailService.loginByUsername(username, loginType);
         if (principal == null) {
             throw new AuthenticationException("用户不存在！");
@@ -94,6 +121,9 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
         return principal;
     }
 
+    private String obtainDevice(HttpServletRequest request) {
+        return request.getParameter("device");
+    }
 
     @Nullable
     protected String obtainLoginType(HttpServletRequest request) {
