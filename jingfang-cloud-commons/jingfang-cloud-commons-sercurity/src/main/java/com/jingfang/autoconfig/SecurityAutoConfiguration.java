@@ -8,6 +8,7 @@ import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.inteceptor.SecureExtendInterceptor;
+import com.jingfang.security.inteceptor.SecureInterceptor;
 import com.jingfang.security.password.StandardPasswordEncoder;
 import com.jingfang.security.service.UserDetailService;
 import com.jingfang.security.web.SecurityLockingStrategy;
@@ -61,15 +62,20 @@ public class SecurityAutoConfiguration {
 
     private SecurityProperties securityProperties;
     private SecureExtendInterceptor secureExtendInterceptor;
+    private UserDetailService userDetailService;
 
+    @Autowired(required = false)
+    public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
+        this.secureExtendInterceptor = secureExtendInterceptor;
+    }
     @Autowired
     public void setSecurityProperties(SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
     }
 
     @Autowired(required = false)
-    public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
-        this.secureExtendInterceptor = secureExtendInterceptor;
+    public void setUserDetailService(UserDetailService userDetailService) {
+        this.userDetailService = userDetailService;
     }
 
     @Bean
@@ -111,26 +117,7 @@ public class SecurityAutoConfiguration {
             }
 
             private SaInterceptor getSaInterceptor() {
-                return new SaInterceptor(handler -> {
-                    if (handler instanceof HandlerMethod) {
-                        HandlerMethod handlerMethod = (HandlerMethod) handler;
-                        if (handlerMethod.getBeanType().isAssignableFrom(BasicErrorController.class)) {
-                            return;
-                        }
-                    }
-                    if (handler instanceof ResourceHttpRequestHandler) {
-                        return;
-                    }
-                    StpLogic stpLogic = LoginType.ADMIN.getStpLogic();
-                    if (!stpLogic.isLogin()) {
-                        stpLogic = LoginType.USER.getStpLogic();
-                    }
-                    stpLogic.checkLogin();
-                    if (secureExtendInterceptor != null) {
-                        secureExtendInterceptor.handle(handler, stpLogic);
-                    }
-
-                }).isAnnotation(securityProperties.getEnableMethodAnnotation());
+                return new SaInterceptor(new SecureInterceptor(userDetailService, secureExtendInterceptor)).isAnnotation(securityProperties.getEnableMethodAnnotation());
             }
         };
     }
