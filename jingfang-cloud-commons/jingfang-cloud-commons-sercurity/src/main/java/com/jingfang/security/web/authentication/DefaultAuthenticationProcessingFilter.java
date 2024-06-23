@@ -88,22 +88,22 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
             }
         }
         if (StringUtils.isBlank(username)) {
-            throw new AuthenticationException("账号 不能为空！");
+            throw new AuthenticationException("账号不能为空！");
         }
         if (StringUtils.isBlank(password)) {
-            throw new AuthenticationException("密码 不能为空！");
+            throw new AuthenticationException("密码不能为空！");
         }
         if (securityLockingStrategy.checkFailureTimes(username)) {
-            throw new AuthenticationException("账号已经被锁定： " + username);
+            throw new AuthenticationException("账号" + username + "已经被锁定:" + securityLockingStrategy.getDuration() + securityLockingStrategy.getTimeUnit().name());
         }
 
-        if(StrUtil.isEmpty(loginType)){
+        if (StrUtil.isEmpty(loginType)) {
             loginType = "admin";
         }
 
         request.setAttribute(loginTypeParameter, loginType);
 
-        if(StrUtil.isEmpty(device)){
+        if (StrUtil.isEmpty(device)) {
             device = "default";
         }
         request.setAttribute(deviceParameter, device);
@@ -116,8 +116,10 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
         String credentials = principal.getCredentials();
         boolean matches = passwordEncoder.matches(password, credentials);
         if (!matches) {
+            securityLockingStrategy.loginFailure(username);
             throw new AuthenticationException("密码错误！");
         }
+        securityLockingStrategy.loginSuccess(username);
         return principal;
     }
 
