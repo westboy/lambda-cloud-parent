@@ -22,16 +22,13 @@ public abstract class BaseDO implements Serializable {
     private static final long serialVersionUID = -2694074995776393995L;
 
     @TableField(fill = FieldFill.INSERT)
-    private Integer state;
-
-    @TableField(fill = FieldFill.INSERT)
-    private Integer createUser;
+    private Serializable createUser;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(fill = FieldFill.UPDATE)
-    private Integer updateUser;
+    private Serializable updateUser;
 
     @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime updateTime;
