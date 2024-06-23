@@ -14,7 +14,7 @@ import java.util.Map;
  */
 @Setter
 @Getter
-@ConfigurationProperties(prefix = "jf.mybatis")
+@ConfigurationProperties(prefix = "jingfang.mybatis")
 public class MybatisPlusExtendProperties {
 
     private Map<String, String> databaseIdMap = new HashMap<>();

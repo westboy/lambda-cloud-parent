@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Setter
 @Getter
-@ConfigurationProperties(prefix = "jf.lucene")
+@ConfigurationProperties(prefix = "jingfang.lucene")
 public class LuceneProperties {
     private String directory;
     private Analyzer analyzer = new SmartChineseAnalyzer();

@@ -28,7 +28,7 @@ import java.util.List;
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 @EnableConfigurationProperties(LiquibaseProperties.class)
-@ConditionalOnProperty(prefix = "jf.liquibase", name = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "jingfang.liquibase", name = "enabled", matchIfMissing = true)
 public class LiquibaseAutoConfiguration {
 
     public LiquibaseAutoConfiguration() {

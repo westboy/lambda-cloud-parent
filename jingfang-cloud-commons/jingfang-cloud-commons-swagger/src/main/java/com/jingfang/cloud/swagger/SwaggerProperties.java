@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author w
  */
 @Data
-@ConfigurationProperties(prefix = "jf.api-docs")
+@ConfigurationProperties(prefix = "jingfang.api-docs")
 public class SwaggerProperties {
 
     String title;

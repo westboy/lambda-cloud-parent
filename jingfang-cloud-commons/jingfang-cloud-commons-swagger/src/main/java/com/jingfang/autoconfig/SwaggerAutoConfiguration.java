@@ -49,7 +49,7 @@ public class SwaggerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "jf.swagger", name = "enabled", havingValue = "false")
+    @ConditionalOnProperty(prefix = "jingfang.swagger", name = "enabled", havingValue = "false")
     public SwaggerDisabledFilter swaggerDisabledFilter(SwaggerProperties properties) {
         return new SwaggerDisabledFilter(properties.getDocUri());
     }

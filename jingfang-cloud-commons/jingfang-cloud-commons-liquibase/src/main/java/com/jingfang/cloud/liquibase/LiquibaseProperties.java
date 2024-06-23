@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Slf4j
 @Setter
 @Getter
-@ConfigurationProperties(prefix = "jf.liquibase")
+@ConfigurationProperties(prefix = "jingfang.liquibase")
 public class LiquibaseProperties {
 
     boolean enabled = true;

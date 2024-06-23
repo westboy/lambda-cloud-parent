@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author jpjoo
  */
 @Data
-@ConfigurationProperties(prefix = "jf.security")
+@ConfigurationProperties(prefix = "jingfang.security")
 public class SecurityProperties {
 
     private static final List<String> DEFAULT_IGNORE_PATH_LIST = Lists.newArrayList(

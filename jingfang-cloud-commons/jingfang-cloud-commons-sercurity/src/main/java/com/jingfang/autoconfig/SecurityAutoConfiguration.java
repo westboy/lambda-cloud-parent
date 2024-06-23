@@ -95,7 +95,7 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "jf.security.xss-protected", name = "enabled")
+    @ConditionalOnProperty(prefix = "jingfang.security.xss-protected", name = "enabled")
     public XSSDefendFilter xssDefendFilter(SecurityProperties securityProperties) {
         SecurityProperties.XssProtected xssProtected = securityProperties.getXssProtected();
         return new XSSDefendFilter(xssProtected.trusted);
