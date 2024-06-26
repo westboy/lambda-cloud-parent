@@ -1,6 +1,6 @@
 package com.jingfang.security.utils;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.context.SecurityContext;
 import com.jingfang.security.context.SecurityContextHolder;
 
@@ -18,31 +18,31 @@ import java.util.function.Supplier;
  */
 public class OperatorUtils {
 
-    public static Principal getOperator() {
-        return getOperatorOrDefault(() -> new Principal() {
+    public static LoginUser getOperator() {
+        return getOperatorOrDefault(() -> new LoginUser() {
             @Override
-            public Serializable getUsername() {
-                return "default";
+            public String getUsername() {
+                return "guest";
             }
 
             @Override
             public String getCredentials() {
-                return "default";
+                return "guest";
             }
 
             @Override
-            public Set<Serializable> getRoles() {
+            public Set<String> getRoles() {
                 return Collections.emptySet();
             }
 
             @Override
-            public Set<Serializable> getPermissions() {
+            public Set<String> getPermissions() {
                 return Collections.emptySet();
             }
         });
     }
 
-    public static Principal getOperatorOrDefault(@NotNull Supplier<Principal> defaultOperator) {
+    public static LoginUser getOperatorOrDefault(@NotNull Supplier<LoginUser> defaultOperator) {
         SecurityContext context = SecurityContextHolder.getContext();
         try {
             return Objects.requireNonNull(context.getPrincipal());

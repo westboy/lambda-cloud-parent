@@ -1,7 +1,7 @@
 package com.jingfang.security.web.authentication;
 
 import cn.hutool.core.util.StrUtil;
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.core.utils.Assert;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.exception.AuthenticationException;
@@ -47,7 +47,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
     }
 
     @Override
-    public Principal attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         if (!RequestMethod.POST.name().equals(request.getMethod())) {
             throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
         }
@@ -109,18 +109,18 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
         request.setAttribute(deviceParameter, device);
 
 
-        Principal principal = userDetailService.loginByUsername(username, loginType);
-        if (principal == null) {
+        LoginUser loginUser = userDetailService.loginByUsername(username, loginType);
+        if (loginUser == null) {
             throw new AuthenticationException("用户不存在！");
         }
-        String credentials = principal.getCredentials();
+        String credentials = loginUser.getCredentials();
         boolean matches = passwordEncoder.matches(password, credentials);
         if (!matches) {
             securityLockingStrategy.loginFailure(username);
             throw new AuthenticationException("密码错误！");
         }
         securityLockingStrategy.loginSuccess(username);
-        return principal;
+        return loginUser;
     }
 
     private String obtainDevice(HttpServletRequest request) {

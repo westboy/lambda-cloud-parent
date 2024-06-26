@@ -1,6 +1,6 @@
 package com.jingfang.security.context;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,12 +18,12 @@ import lombok.ToString;
 public class SecurityContextImpl implements SecurityContext {
     private static final long serialVersionUID = 570L;
 
-    private Principal principal;
+    private LoginUser principal;
 
     public SecurityContextImpl() {
     }
 
-    public SecurityContextImpl(Principal principal) {
-        this.principal = principal;
+    public SecurityContextImpl(LoginUser loginUser) {
+        this.principal = loginUser;
     }
 }

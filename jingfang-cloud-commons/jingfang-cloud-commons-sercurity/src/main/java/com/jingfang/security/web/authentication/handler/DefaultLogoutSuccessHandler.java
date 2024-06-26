@@ -1,6 +1,6 @@
 package com.jingfang.security.web.authentication.handler;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.cloud.web.RequestTimeHolder;
 import com.jingfang.security.handler.LogoutSuccessHandler;
@@ -23,9 +23,9 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler, Applic
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Principal principal) throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException {
         long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
-        applicationEventPublisher.publishEvent(new UserLogoutEvent(principal, cast));
+        applicationEventPublisher.publishEvent(new UserLogoutEvent(loginUser, cast));
         if (WebHttpUtils.isAjaxRequest(request)) {
             response.setStatus(HttpStatus.OK.value());
             response.getWriter().flush();

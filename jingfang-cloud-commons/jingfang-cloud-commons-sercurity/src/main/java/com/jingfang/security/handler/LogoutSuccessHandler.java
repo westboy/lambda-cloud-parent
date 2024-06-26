@@ -1,6 +1,6 @@
 package com.jingfang.security.handler;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,9 +19,9 @@ public interface LogoutSuccessHandler {
      *
      * @param request
      * @param response
-     * @param principal
+     * @param loginUser
      * @throws IOException
      * @throws ServletException
      */
-    void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Principal principal) throws IOException, ServletException;
+    void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException;
 }

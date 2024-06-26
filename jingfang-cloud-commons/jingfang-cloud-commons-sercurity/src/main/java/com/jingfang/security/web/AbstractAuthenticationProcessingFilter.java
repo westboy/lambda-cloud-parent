@@ -8,7 +8,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.context.SecurityContext;
 import com.jingfang.security.context.SecurityContextHolder;
 import com.jingfang.security.exception.AuthenticationException;
@@ -47,8 +47,8 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
             chain.doFilter(request, response);
         } else {
             try {
-                Principal principal = this.attemptAuthentication(request, response);
-                this.successfulAuthentication(request, response, chain, principal);
+                LoginUser loginUser = this.attemptAuthentication(request, response);
+                this.successfulAuthentication(request, response, chain, loginUser);
             } catch (Exception exception) {
                 if (exception instanceof AuthenticationException) {
                     this.unsuccessfulAuthentication(request, response, (AuthenticationException) exception);
@@ -81,16 +81,16 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
      * @throws IOException
      * @throws ServletException
      */
-    public abstract Principal attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException;
+    public abstract LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException;
 
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Principal principal) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser) throws IOException, ServletException {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setPrincipal(principal);
+        context.setPrincipal(loginUser);
         SecurityContextHolder.setContext(context);
         if (this.logger.isDebugEnabled()) {
-            this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", principal));
+            this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", loginUser));
         }
-        this.successHandler.onAuthenticationSuccess(request, response, principal);
+        this.successHandler.onAuthenticationSuccess(request, response, loginUser);
     }
 
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {

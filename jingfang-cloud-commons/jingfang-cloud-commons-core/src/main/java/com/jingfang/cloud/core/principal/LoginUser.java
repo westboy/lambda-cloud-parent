@@ -1,6 +1,6 @@
 package com.jingfang.cloud.core.principal;
 
-import java.io.Serializable;
+import java.security.Principal;
 import java.util.Set;
 
 /**
@@ -8,16 +8,28 @@ import java.util.Set;
  *
  * @author jpjoo
  */
-public interface Principal {
+public interface LoginUser extends Principal {
+
+    /**
+     * name
+     *
+     * @return
+     */
+    @Override
+    default String getName() {
+        return getUsername();
+    }
 
     /**
      * username
+     *
      * @return
      */
-    Serializable getUsername();
+    String getUsername();
 
     /**
      * password
+     *
      * @return
      */
     String getCredentials();
@@ -27,13 +39,13 @@ public interface Principal {
      *
      * @return
      */
-    Set<Serializable> getRoles();
+    Set<String> getRoles();
 
     /**
      * permissions
      *
      * @return
      */
-    Set<Serializable> getPermissions();
+    Set<String> getPermissions();
 
 }

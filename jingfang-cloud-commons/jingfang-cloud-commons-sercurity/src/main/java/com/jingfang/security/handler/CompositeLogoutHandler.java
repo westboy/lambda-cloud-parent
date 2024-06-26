@@ -1,6 +1,6 @@
 package com.jingfang.security.handler;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.core.utils.Assert;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,9 +26,9 @@ public final class CompositeLogoutHandler implements LogoutHandler {
         this.logoutHandlers = logoutHandlers;
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response, Principal principal) {
+    public void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
         for (LogoutHandler handler : this.logoutHandlers) {
-            handler.logout(request, response, principal);
+            handler.logout(request, response, loginUser);
         }
     }
 }

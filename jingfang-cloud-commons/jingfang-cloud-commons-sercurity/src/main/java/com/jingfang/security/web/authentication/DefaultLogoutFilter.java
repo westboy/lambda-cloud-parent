@@ -9,7 +9,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.context.SecurityContextHolder;
 import com.jingfang.security.handler.CompositeLogoutHandler;
 import com.jingfang.security.handler.LogoutHandler;
@@ -50,12 +50,12 @@ public class DefaultLogoutFilter extends GenericFilterBean {
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (this.requiresLogout(request, response)) {
-            Principal principal = SecurityContextHolder.getContext().getPrincipal();
+            LoginUser loginUser = SecurityContextHolder.getContext().getPrincipal();
             if (this.logger.isDebugEnabled()) {
-                this.logger.debug(LogMessage.format("Logging out [%s]", principal));
+                this.logger.debug(LogMessage.format("Logging out [%s]", loginUser));
             }
-            this.handler.logout(request, response, principal);
-            this.logoutSuccessHandler.onLogoutSuccess(request, response, principal);
+            this.handler.logout(request, response, loginUser);
+            this.logoutSuccessHandler.onLogoutSuccess(request, response, loginUser);
         } else {
             chain.doFilter(request, response);
         }

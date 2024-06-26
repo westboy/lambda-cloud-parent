@@ -2,10 +2,9 @@ package com.jingfang.security.web.authentication.handler;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.cloud.web.RequestTimeHolder;
 import com.jingfang.security.enums.LoginType;
@@ -40,14 +39,14 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
 
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Principal principal) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException {
         //获取用户登录时的IP,需要Nginx做相关配置防止IP伪造
         String remoteAddr = ServletUtil.getClientIP(request);
         //获取用户登录时的端口
         int remotePort = request.getRemotePort();
         long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
         //发布登录时间
-        applicationEventPublisher.publishEvent(new UserLoginEvent(principal, cast, remoteAddr, remotePort));
+        applicationEventPublisher.publishEvent(new UserLoginEvent(loginUser, cast, remoteAddr, remotePort));
         //sa-token 登录
         //登录设备
         String device = (String) request.getAttribute("device");
@@ -56,7 +55,7 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
         //获取stpLogic
         StpLogic stpLogic = LoginType.getStpLogic(loginType);
         //用户登录
-        stpLogic.login(principal.getUsername(), device);
+        stpLogic.login(loginUser.getUsername(), device);
         //获取token
         SaTokenInfo tokenInfo = stpLogic.getTokenInfo();
         if (WebHttpUtils.isAjaxRequest(request)) {

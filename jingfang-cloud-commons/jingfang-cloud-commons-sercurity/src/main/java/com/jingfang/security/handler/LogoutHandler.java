@@ -1,6 +1,6 @@
 package com.jingfang.security.handler;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,7 +16,7 @@ public interface LogoutHandler {
      *
      * @param request
      * @param response
-     * @param principal
+     * @param loginUser
      */
-    void logout(HttpServletRequest request, HttpServletResponse response, Principal principal);
+    void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser);
 }

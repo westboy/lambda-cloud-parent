@@ -1,6 +1,6 @@
 package com.jingfang.security.context;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 
 import java.io.Serializable;
 
@@ -17,12 +17,12 @@ public interface SecurityContext extends Serializable {
      *
      * @return
      */
-    Principal getPrincipal();
+    LoginUser getPrincipal();
 
     /**
      * 设置用户
      *
-     * @param principal
+     * @param loginUser
      */
-    void setPrincipal(Principal principal);
+    void setPrincipal(LoginUser loginUser);
 }

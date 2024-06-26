@@ -1,6 +1,6 @@
 package com.jingfang.security.handler;
 
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -21,12 +21,12 @@ public interface AuthenticationSuccessHandler {
      * @param request
      * @param response
      * @param chain
-     * @param principal
+     * @param loginUser
      * @throws IOException
      * @throws ServletException
      */
-    default void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Principal principal) throws IOException, ServletException {
-        this.onAuthenticationSuccess(request, response, principal);
+    default void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser) throws IOException, ServletException {
+        this.onAuthenticationSuccess(request, response, loginUser);
         chain.doFilter(request, response);
     }
 
@@ -35,9 +35,9 @@ public interface AuthenticationSuccessHandler {
      *
      * @param request
      * @param response
-     * @param principal
+     * @param loginUser
      * @throws IOException
      * @throws ServletException
      */
-    void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Principal principal) throws IOException, ServletException;
+    void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException;
 }

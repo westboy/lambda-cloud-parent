@@ -2,7 +2,7 @@ package com.jingfang.security.inteceptor;
 
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.stp.StpLogic;
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.context.SecurityContext;
 import com.jingfang.security.context.SecurityContextHolder;
 import com.jingfang.security.context.SecurityContextImpl;
@@ -45,8 +45,8 @@ public class SecureInterceptor implements SaParamFunction<Object> {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         if (securityContext == null) {
             try {
-                Principal principal = userDetailService.loginByUsername((String) stpLogic.getLoginId(), stpLogic.getLoginType());
-                SecurityContextHolder.setContext(new SecurityContextImpl(principal));
+                LoginUser loginUser = userDetailService.loginByUsername((String) stpLogic.getLoginId(), stpLogic.getLoginType());
+                SecurityContextHolder.setContext(new SecurityContextImpl(loginUser));
                 log.info("reload principal context");
             } catch (Exception exception) {
                 stpLogic.logout();

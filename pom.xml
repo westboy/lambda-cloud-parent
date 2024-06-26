@@ -11,6 +11,7 @@
     <modules>
         <module>jingfang-cloud-commons</module>
         <module>jingfang-cloud-extensions</module>
+        <module>jingfang-cloud-commons/jingfang-cloud-commons-websocket</module>
     </modules>
 
     <properties>

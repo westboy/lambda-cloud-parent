@@ -1,7 +1,7 @@
 package com.jingfang.security.service;
 
 import cn.dev33.satoken.stp.StpInterface;
-import com.jingfang.cloud.core.principal.Principal;
+import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.exception.AuthenticationException;
 
 /**
@@ -20,6 +20,6 @@ public interface UserDetailService extends StpInterface {
      * @return
      * @throws AuthenticationException
      */
-    Principal loginByUsername(String username, String loginType) throws AuthenticationException;
+    LoginUser loginByUsername(String username, String loginType) throws AuthenticationException;
 
 }
