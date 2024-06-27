@@ -165,7 +165,7 @@ public class KafkaAutoConfiguration {
                 new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setConsumerFactory(kafkaConsumerFactory);
-        factory.setRecordMessageConverter(new StringJsonMessageConverter());
+        factory.setMessageConverter(new StringJsonMessageConverter());
         if (recordFilterStrategy != null) {
             factory.setRecordFilterStrategy(recordFilterStrategy);
         }
@@ -180,7 +180,7 @@ public class KafkaAutoConfiguration {
                 new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setConsumerFactory(kafkaConsumerFactory);
-        factory.setRecordMessageConverter(new StringJsonMessageConverter(objectMapper));
+        factory.setMessageConverter(new StringJsonMessageConverter(objectMapper));
         if (recordFilterStrategy != null) {
             factory.setRecordFilterStrategy(recordFilterStrategy);
         }
@@ -196,7 +196,7 @@ public class KafkaAutoConfiguration {
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setConsumerFactory(kafkaConsumerFactory);
         factory.setBatchListener(true);
-        factory.setBatchMessageConverter(new BatchMessagingMessageConverter(new StringJsonMessageConverter(objectMapper)));
+        factory.setMessageConverter(new BatchMessagingMessageConverter(new StringJsonMessageConverter(objectMapper)));
         return factory;
     }
 

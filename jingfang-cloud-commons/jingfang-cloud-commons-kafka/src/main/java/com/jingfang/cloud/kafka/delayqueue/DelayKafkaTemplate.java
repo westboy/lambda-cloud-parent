@@ -11,8 +11,6 @@ import org.springframework.validation.annotation.Validated;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
-import java.util.concurrent.CompletableFuture;
-
 import static com.jingfang.cloud.kafka.delayqueue.DelayConsumerRecord.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -31,7 +29,7 @@ public class DelayKafkaTemplate {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public CompletableFuture<SendResult<String, String>> send(@NotBlank String topic, @NotBlank String payload,
+    public ListenableFuture<SendResult<String, String>> send(@NotBlank String topic, @NotBlank String payload,
                                                               @Min(value = 1, message = "最小延迟时长1(秒)") int delay) {
         long millis = System.currentTimeMillis();
         DelayLevel delayLevel = new DelayLevel(delay);
@@ -49,7 +47,7 @@ public class DelayKafkaTemplate {
     }
 
 
-    protected CompletableFuture<SendResult<String, String>> send(ProducerRecord<String, String> producerRecord) {
+    protected ListenableFuture<SendResult<String, String>> send(ProducerRecord<String, String> producerRecord) {
         return kafkaTemplate.send(producerRecord);
     }
 }

@@ -27,6 +27,8 @@
         <module>jingfang-cloud-commons-lucene</module>
         <module>jingfang-cloud-commons-datasource</module>
         <module>jingfang-cloud-commons-liquibase</module>
+        <module>jingfang-cloud-commons-websocket</module>
+        <module>jingfang-cloud-commons-kafka</module>
     </modules>
 
 </project>
