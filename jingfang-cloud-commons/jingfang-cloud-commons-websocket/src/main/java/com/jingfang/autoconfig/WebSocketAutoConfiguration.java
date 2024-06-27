@@ -1,6 +1,7 @@
 package com.jingfang.autoconfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -16,6 +17,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 @EnableConfigurationProperties(WebsocketProperties.class)
+@ConditionalOnProperty(prefix = "jingfang.websocket", name = "enabled", matchIfMissing = true)
 public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigurer {
     private WebsocketProperties websocketProperties;
 
