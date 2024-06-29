@@ -6,11 +6,11 @@ import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Part;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * MultipartMinioClient
@@ -32,11 +32,9 @@ public class MultipartMinioClient extends MinioAsyncClient {
      * @param headers          消息头
      * @param extraQueryParams 额外查询参数
      */
-    public String multipartUpload(String bucket, String region, String objectName, Multimap<String, String> headers, Multimap<String, String> extraQueryParams)
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InternalException,
-            XmlParserException, InterruptedException, ExecutionException {
-        CompletableFuture<CreateMultipartUploadResponse> response = this.createMultipartUploadAsync(bucket, region, objectName, headers, extraQueryParams);
-        return response.get().result().uploadId();
+    public CompletableFuture<CreateMultipartUploadResponse> createMultipartUploadAsync(String bucket, String region, String objectName, Multimap<String, String> headers, Multimap<String, String> extraQueryParams)
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InternalException, XmlParserException {
+        return super.createMultipartUploadAsync(bucket, region, objectName, headers, extraQueryParams);
     }
 
     /**
@@ -51,13 +49,14 @@ public class MultipartMinioClient extends MinioAsyncClient {
      * @param partNumber       Part number.
      * @param extraHeaders     Extra headers for request (Optional).
      * @param extraQueryParams Extra query parameters for request (Optional).
-     * @throws IOException
-     * @throws XmlParserException
-     * @throws NoSuchAlgorithmException
-     * @throws InternalException
-     * @throws InsufficientDataException
-     * @throws InvalidKeyException
+     * @throws IOException:
+     * @throws XmlParserException:
+     * @throws NoSuchAlgorithmException:
+     * @throws InternalException:
+     * @throws InsufficientDataException:
+     * @throws InvalidKeyException:
      */
+    @Override
     public CompletableFuture<UploadPartResponse> uploadPartAsync(String bucketName, String region, String objectName, Object data,
                                                                  long length, String uploadId, int partNumber, Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams)
             throws InvalidKeyException, InsufficientDataException, InternalException, NoSuchAlgorithmException, XmlParserException, IOException {
