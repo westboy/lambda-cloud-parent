@@ -22,56 +22,53 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DefaultWebSocketChannelRepository implements WebSocketChannelRepository {
 
-
-    private final Cache<String, Set<String>> cache1;
-
+    private final Cache<String, Set<String>> localCache;
 
     public DefaultWebSocketChannelRepository(long timeout) {
-        this.cache1 = Caffeine.newBuilder()
+        this.localCache = Caffeine.newBuilder()
                 .refreshAfterWrite(timeout / 2, TimeUnit.SECONDS)
                 .expireAfterWrite(timeout, TimeUnit.SECONDS)
                 .build(new CacheLoader<String, Set<String>>() {
                     @Override
                     public @Nullable Set<String> load(@NonNull String uid) {
-                        Set<String> sesssions = cache1.getIfPresent(uid);
-                        if (sesssions != null) {
-                            log.debug("reloading... {}: {}", uid, sesssions);
+                        Set<String> sessions = localCache.getIfPresent(uid);
+                        if (sessions != null) {
+                            log.debug("reloading... {}: {}", uid, sessions);
                         }
-                        return sesssions;
+                        return sessions;
                     }
                 });
     }
 
     @Override
     public void add(String uid, String sid) {
-        Set<String> sessions = cache1.get(uid, i -> new HashSet<>());
+        Set<String> sessions = localCache.get(uid, i -> new HashSet<>());
         Objects.requireNonNull(sessions);
         sessions.add(sid);
-        cache1.put(uid, sessions);
+        localCache.put(uid, sessions);
     }
-
 
     @Override
     public void removeAll(String uid) {
-        cache1.invalidate(uid);
+        localCache.invalidate(uid);
     }
 
     @Override
     public void remove(String uid, String sid) {
-        Set<String> sessions = cache1.getIfPresent(uid);
+        Set<String> sessions = localCache.getIfPresent(uid);
         if (Objects.nonNull(sessions)) {
             sessions.remove(sid);
             if (sessions.isEmpty()) {
-                cache1.invalidate(uid);
+                localCache.invalidate(uid);
             } else {
-                cache1.put(uid, sessions);
+                localCache.put(uid, sessions);
             }
         }
     }
 
     @Override
     public Set<String> get(String uid) {
-        return cache1.getIfPresent(uid);
+        return localCache.getIfPresent(uid);
     }
 
     @Override
@@ -82,13 +79,13 @@ public class DefaultWebSocketChannelRepository implements WebSocketChannelReposi
 
     @Override
     public long size() {
-        return cache1.asMap().keySet().size();
+        return localCache.asMap().keySet().size();
     }
 
     @Override
     public Set<String> getOnlineUsers() {
         Set<String> onlineUsers = Sets.newHashSet();
-        cache1.asMap().forEach((k, v) -> {
+        localCache.asMap().forEach((k, v) -> {
             if (CollectionUtils.isNotEmpty(v)) {
                 onlineUsers.add(k);
             }
@@ -99,7 +96,7 @@ public class DefaultWebSocketChannelRepository implements WebSocketChannelReposi
     @Override
     public Set<String> getOnlineUsers(Set<String> uids) {
         Set<String> onlineUsers = Sets.newHashSet();
-        cache1.getAllPresent(uids).forEach((k, v) -> {
+        localCache.getAllPresent(uids).forEach((k, v) -> {
             if (CollectionUtils.isNotEmpty(v)) {
                 onlineUsers.add(k);
             }

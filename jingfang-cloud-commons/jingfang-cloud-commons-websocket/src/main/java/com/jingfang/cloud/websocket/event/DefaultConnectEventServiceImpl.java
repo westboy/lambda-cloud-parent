@@ -27,7 +27,7 @@ public class DefaultConnectEventServiceImpl implements WsConnectEventService {
         String sid = info.getSessionId();
         String framework = info.getFramework();
         if (user != null && framework != null) {
-            String uid = (String) user.getUsername();
+            String uid = user.getUsername();
             repository.add(uid, sid);
             log.debug("Connected -> [sid : {}, uid : {}]", sid, uid);
         }
@@ -39,7 +39,7 @@ public class DefaultConnectEventServiceImpl implements WsConnectEventService {
         String sid = info.getSessionId();
         String framework = info.getFramework();
         if (user != null && framework != null) {
-            String uid = (String) user.getUsername();
+            String uid = user.getUsername();
             repository.remove(uid, sid);
             log.debug("Disconnect -> [sid : {}, uid : {}]", sid, uid);
         }

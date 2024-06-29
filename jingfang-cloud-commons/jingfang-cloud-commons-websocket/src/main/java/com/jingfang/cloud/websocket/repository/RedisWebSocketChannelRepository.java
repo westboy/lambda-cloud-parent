@@ -24,8 +24,8 @@ import static com.jingfang.cloud.websocket.Constants.COLON;
 @Slf4j
 public class RedisWebSocketChannelRepository implements WebSocketChannelRepository {
 
-    private static final String KEY = "jingfang:onlineuser:";
-    private static final String ONLINE_KEY = "jingfang:onlineusers";
+    private static final String KEY = "jingfang:websocket:onlineuser:";
+    private static final String ONLINE_KEY = "jingfang:websocket:onlineusers";
     private static final String SCRIPT1 = "if redis.call('SADD', KEYS[1], ARGV[1]) == 1 then return redis.call('SADD', KEYS[2], ARGV[2]) else return 0 end";
     private static final String SCRIPT2 = "if redis.call('DEL', KEYS[1]) == 1 then return redis.call('SREM', KEYS[2]) else return 0 end";
     private static final String SCRIPT3 = "if redis.call('SREM', KEYS[1], ARGV[1]) == 1 then return redis.call('SREM', KEYS[2], ARGV[2]) else return 0 end";
@@ -80,8 +80,8 @@ public class RedisWebSocketChannelRepository implements WebSocketChannelReposito
     }
 
     @Override
-    public Set<String> getOnlineUsers(Set<String> uids) {
-        return template.boundSetOps(getOnlineKey()).union(uids);
+    public Set<String> getOnlineUsers(Set<String> ids) {
+        return template.boundSetOps(getOnlineKey()).union(ids);
     }
 
     private String getUserKey(String uid) {

@@ -1,9 +1,19 @@
 package com.jingfang.autoconfig;
 
+import cn.hutool.extra.spring.SpringUtil;
+import com.jingfang.cloud.websocket.ChannelStoreMode;
+import com.jingfang.cloud.websocket.event.DefaultConnectEventServiceImpl;
+import com.jingfang.cloud.websocket.event.WsConnectEventService;
+import com.jingfang.cloud.websocket.repository.DefaultWebSocketChannelRepository;
+import com.jingfang.cloud.websocket.repository.RedisWebSocketChannelRepository;
+import com.jingfang.cloud.websocket.repository.WebSocketChannelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -24,6 +34,21 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     @Autowired
     public void setWebsocketProperties(WebsocketProperties websocketProperties) {
         this.websocketProperties = websocketProperties;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public WebSocketChannelRepository webSocketChannelRepository() {
+        if (websocketProperties.channelStoreMode.equals(ChannelStoreMode.REDIS)) {
+            StringRedisTemplate template = SpringUtil.getBean(StringRedisTemplate.class);
+            return new RedisWebSocketChannelRepository(template);
+        }
+        return new DefaultWebSocketChannelRepository(7 * 24 * 60 * 60);
+    }
+
+    @Bean
+    public WsConnectEventService wsConnectEventService(WebSocketChannelRepository wsChannelRepository) {
+        return new DefaultConnectEventServiceImpl(wsChannelRepository);
     }
 
     @Override
