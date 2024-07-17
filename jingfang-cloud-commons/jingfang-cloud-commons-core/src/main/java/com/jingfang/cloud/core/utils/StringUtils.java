@@ -13,7 +13,6 @@ public class StringUtils {
     private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
     private static final String NUMBERS = "0123456789";
     private static final String SPECIAL_CHARS = "!@#$%^&*()_+=-[]{};:,.<>?/";
-    //private static final   String passwordRegex="^(?=.*[a-z])(?=.*[A-Z])(?=.*[\\d\\!\\@\\#\\$\\%\\^&\\*\\(\\)_\\+\\=\\-\\[\\]\\{\\};\\:\\,\\.\\<\\>\\?\\/]).{8,}$";//"^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\!\\@\\#\\$\\%\\^&\\*\\(\\)_\\+\\=\\-\\[\\]\\{\\};\\:\\,\\.\\<\\>\\?\\/]).{8,}";
     private static final String ALL_CHARS = CHAR_LOWER + CHAR_UPPER + NUMBERS+SPECIAL_CHARS ;
     private static Random random = new Random();
 
@@ -80,7 +79,7 @@ public class StringUtils {
      * @return 符合规则返回true
      */
     public static boolean isPhoneLegal(String str) {
-        return isChinaPhoneLegal(str) || isHKPhoneLegal(str);
+        return isChinaPhoneLegal(str) || isHongKongPhoneLegal(str);
     }
 
     /**
@@ -114,7 +113,7 @@ public class StringUtils {
      * @param str
      * @return 正确返回true
      */
-    private static boolean isHKPhoneLegal(String str) {
+    private static boolean isHongKongPhoneLegal(String str) {
         // ^ 匹配输入字符串开始的位置
         // \d 匹配一个或多个数字，其中 \ 要转义，所以是 \\d
         // $ 匹配输入字符串结尾的位置
@@ -147,9 +146,6 @@ public class StringUtils {
      * 随机生成密码，最少4位 ，包含大小写字母、数字、特殊字符
      * */
     public static String genRandomPassword(int len){
-        if(len<5){
-            return null;
-        }
         StringBuilder builder = new StringBuilder(len);
         builder.append(genRandomStr(CHAR_LOWER,1));
         builder.append(genRandomStr(CHAR_UPPER,1));
