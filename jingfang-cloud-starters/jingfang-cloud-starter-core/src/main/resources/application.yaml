@@ -101,15 +101,10 @@ logging:
     'liquibase.lockservice': 'INFO'
 
 # MyBatisPlus配置
-# https://baomidou.com/config/
 mybatis-plus:
-  # 不支持多包, 如有需要可在注解配置 或 提升扫包等级
-  # 例如 com.**.**.mapper
-  mapperPackage: com.jingfang.**.mapper
-  # 对应的 XML 文件位置
-  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  mapperPackage: com.jingfang.cloud.**.mapper
   # 实体扫描，多个package用逗号或者分号分隔
-  typeAliasesPackage: com.jingfang.**.domain
+  typeAliasesPackage: com.jingfang.cloud.**.domain
   # 启动时是否检查 MyBatis XML 文件的存在，默认不检查
   checkConfigLocation: false
   configuration:

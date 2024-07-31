@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.apache.ibatis.type.JdbcType;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,6 +32,7 @@ import java.util.Properties;
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
 @Import({MybatisPlusAutoConfiguration.class})
+@MapperScan("${mybatis-plus.mapperPackage}")
 public class MyBatisAutoConfiguration {
 
 
