@@ -2,7 +2,6 @@ package com.jingfang.autoconfig;
 
 
 import com.jingfang.cloud.core.jackson.mapper.DefaultObjectMapper;
-import com.jingfang.cloud.kafka.Factory;
 import com.jingfang.cloud.kafka.Template;
 import com.jingfang.cloud.kafka.delayqueue.DelayKafkaTemplate;
 import com.jingfang.cloud.kafka.producer.internals.DefaultPartitioner;
@@ -143,7 +142,7 @@ public class KafkaAutoConfiguration {
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
-    @Bean(name = Factory.STRING)
+    @Bean(name = "stringContainerFactory")
     public KafkaListenerContainerFactory<?> stringContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<Object, Object> kafkaConsumerFactory) {
@@ -157,7 +156,7 @@ public class KafkaAutoConfiguration {
         return factory;
     }
 
-    @Bean(name = Factory.JSON)
+    @Bean(name = "jsonContainerFactory")
     public KafkaListenerContainerFactory<?> jsonContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<Object, Object> kafkaConsumerFactory) {
@@ -172,7 +171,7 @@ public class KafkaAutoConfiguration {
         return factory;
     }
 
-    @Bean(name = Factory.OBJECT)
+    @Bean(name = "objectContainerFactory")
     public KafkaListenerContainerFactory<?> objectContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<Object, Object> kafkaConsumerFactory, DefaultObjectMapper objectMapper) {
@@ -187,7 +186,7 @@ public class KafkaAutoConfiguration {
         return factory;
     }
 
-    @Bean(name = Factory.BATCH)
+    @Bean(name = "batchObjectContainerFactory")
     public KafkaListenerContainerFactory<?> batchObjectContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<Object, Object> kafkaConsumerFactory, DefaultObjectMapper objectMapper) {

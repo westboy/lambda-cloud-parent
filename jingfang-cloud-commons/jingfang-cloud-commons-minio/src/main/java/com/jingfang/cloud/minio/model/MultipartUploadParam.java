@@ -5,6 +5,11 @@ import io.minio.messages.Part;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
+/**
+ * MultipartUploadParam
+ *
+ * @author jpjoo
+ */
 @Getter
 @Service
 public class MultipartUploadParam {
