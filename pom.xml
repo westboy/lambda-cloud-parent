@@ -6,7 +6,7 @@
 
     <groupId>com.jingfang.cloud</groupId>
     <artifactId>jingfang-cloud-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version> <!--SNAPSHOT  RELEASES -->
 
     <packaging>pom</packaging>
 
@@ -305,7 +305,7 @@
             </dependency>
             <dependency>
                 <groupId>cn.hutool</groupId>
-                <artifactId>hutool-core</artifactId>
+                <artifactId>hutool-all</artifactId>
                 <version>5.8.29</version>
             </dependency>
             <dependency>
