@@ -114,7 +114,6 @@
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-core</artifactId>
             <version>${satoken.version}</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
