@@ -37,7 +37,7 @@
         <redisson.version>3.17.3</redisson.version>
         <fastjson.version>1.2.83</fastjson.version>
         <springdoc.version>1.6.8</springdoc.version>
-        <liquibase.version>4.23.2</liquibase.version>
+        <liquibase.version>4.29.1</liquibase.version>
         <jackson-bom.version>2.15.2</jackson-bom.version>
         <spring-boot.version>2.7.18</spring-boot.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
