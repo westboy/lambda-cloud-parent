@@ -19,7 +19,7 @@ import java.util.function.Function;
  */
 public class FernetUtils {
 
-    private static final Validator<byte[]> byteValidator = new Validator<byte[]>() {
+    private static final Validator<byte[]> BYTE_VALIDATOR = new Validator<byte[]>() {
         public Function<byte[], byte[]> getTransformer() {
             return bytes -> bytes;
         }
@@ -53,13 +53,7 @@ public class FernetUtils {
         Assert.notNull(keyBody, "key is not exist");
         Assert.notNull(encryptedBytes, "encrypt is not exist");
         final Token token = Token.fromBytes(Base64.getUrlDecoder().decode(encryptedBytes));
-        return token.validateAndDecrypt(new Key(keyBody), byteValidator);
-    }
-
-
-    public static void main(String[] args) {
-        final byte[] payload = FernetUtils.fernetDecrypt("F:\\Documents\\WeChat Files\\westboynet\\FileStorage\\File\\2024-08\\filekey.key", "F:\\Documents\\WeChat Files\\westboynet\\FileStorage\\File\\2024-08\\encrypted.csv");
-        System.out.println(new String(payload, StandardCharsets.UTF_8));
+        return token.validateAndDecrypt(new Key(keyBody), BYTE_VALIDATOR);
     }
 
 }
