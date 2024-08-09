@@ -111,7 +111,7 @@ public class CustomizableConnectionConfiguration extends RedisConnectionConfigur
 
     private void applyProperties(
             LettuceClientConfigurationBuilder builder) {
-        if (this.properties.isSsl()) {
+        if (this.properties.getSsl().isEnabled()) {
             builder.useSsl();
         }
         if (this.properties.getTimeout() != null) {

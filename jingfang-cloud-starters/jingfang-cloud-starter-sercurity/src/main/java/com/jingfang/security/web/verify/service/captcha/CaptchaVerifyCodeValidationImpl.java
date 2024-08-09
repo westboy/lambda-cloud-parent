@@ -2,7 +2,7 @@ package com.jingfang.security.web.verify.service.captcha;
 
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.servlet.ServletUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.jingfang.autoconfig.SecurityProperties;
 import com.jingfang.cloud.mvc.WebHttpUtils;
@@ -16,10 +16,10 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
 
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
@@ -44,7 +44,7 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
     public boolean support(HttpServletRequest request) {
         final SecurityProperties.Verify verify = securityProperties.getForm().getVerify();
         boolean captchaEnabled = verify.isEnabled();
-        boolean isPostMethod = ServletUtil.isPostMethod(request);
+        boolean isPostMethod = JakartaServletUtil.isPostMethod(request);
         return captchaEnabled && isPostMethod && matcher.match(securityProperties.getForm().getLoginProcessingUrl(), request.getRequestURI());
     }
 

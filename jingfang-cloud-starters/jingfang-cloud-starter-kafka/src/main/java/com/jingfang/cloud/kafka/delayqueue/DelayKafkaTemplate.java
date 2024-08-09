@@ -1,5 +1,7 @@
 package com.jingfang.cloud.kafka.delayqueue;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Headers;
@@ -8,8 +10,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
+import java.util.concurrent.CompletableFuture;
 
 import static com.jingfang.cloud.kafka.delayqueue.DelayConsumerRecord.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -29,8 +30,8 @@ public class DelayKafkaTemplate {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public ListenableFuture<SendResult<String, String>> send(@NotBlank String topic, @NotBlank String payload,
-                                                              @Min(value = 1, message = "最小延迟时长1(秒)") int delay) {
+    public CompletableFuture<SendResult<String, String>> send(@NotBlank String topic, @NotBlank String payload,
+                                                             @Min(value = 1, message = "最小延迟时长1(秒)") int delay) {
         long millis = System.currentTimeMillis();
         DelayLevel delayLevel = new DelayLevel(delay);
         int partition = delayLevel.getPartition();
@@ -47,7 +48,7 @@ public class DelayKafkaTemplate {
     }
 
 
-    protected ListenableFuture<SendResult<String, String>> send(ProducerRecord<String, String> producerRecord) {
+    protected CompletableFuture<SendResult<String, String>> send(ProducerRecord<String, String> producerRecord) {
         return kafkaTemplate.send(producerRecord);
     }
 }

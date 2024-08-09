@@ -2,8 +2,8 @@ package com.jingfang.security.handler;
 
 import com.jingfang.cloud.core.principal.LoginUser;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * LogoutHandler

@@ -75,7 +75,7 @@ public class KafkaAutoConfiguration {
     @Bean
     @Primary
     public ProducerFactory<?, ?> kafkaProducerFactory() {
-        Map<String, Object> producerProperties = this.properties.buildProducerProperties();
+        Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
         producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class);
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -93,7 +93,7 @@ public class KafkaAutoConfiguration {
 
     @Bean(name = JSON_PRODUCER_FACTORY)
     public ProducerFactory<String, Object> jsonProducerFactory() {
-        Map<String, Object> producerProperties = this.properties.buildProducerProperties();
+        Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
         producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class);
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -111,7 +111,7 @@ public class KafkaAutoConfiguration {
 
     @Bean(name = OBJECT_PRODUCER_FACTORY)
     public ProducerFactory<String, Object> objectProducerFactory(DefaultObjectMapper objectMapper) {
-        Map<String, Object> producerProperties = this.properties.buildProducerProperties();
+        Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
         producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class);
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -136,7 +136,7 @@ public class KafkaAutoConfiguration {
     @Bean
     @Primary
     public ConsumerFactory<?, ?> kafkaConsumerFactory() {
-        Map<String, Object> consumerProperties = this.properties.buildConsumerProperties();
+        Map<String, Object> consumerProperties = this.properties.buildConsumerProperties(null);
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
@@ -164,7 +164,7 @@ public class KafkaAutoConfiguration {
                 new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setConsumerFactory(kafkaConsumerFactory);
-        factory.setMessageConverter(new StringJsonMessageConverter());
+        factory.setRecordMessageConverter(new StringJsonMessageConverter());
         if (recordFilterStrategy != null) {
             factory.setRecordFilterStrategy(recordFilterStrategy);
         }
@@ -179,7 +179,7 @@ public class KafkaAutoConfiguration {
                 new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setConsumerFactory(kafkaConsumerFactory);
-        factory.setMessageConverter(new StringJsonMessageConverter(objectMapper));
+        factory.setRecordMessageConverter(new StringJsonMessageConverter(objectMapper));
         if (recordFilterStrategy != null) {
             factory.setRecordFilterStrategy(recordFilterStrategy);
         }
@@ -195,7 +195,7 @@ public class KafkaAutoConfiguration {
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setConsumerFactory(kafkaConsumerFactory);
         factory.setBatchListener(true);
-        factory.setMessageConverter(new BatchMessagingMessageConverter(new StringJsonMessageConverter(objectMapper)));
+        factory.setBatchMessageConverter(new BatchMessagingMessageConverter(new StringJsonMessageConverter(objectMapper)));
         return factory;
     }
 

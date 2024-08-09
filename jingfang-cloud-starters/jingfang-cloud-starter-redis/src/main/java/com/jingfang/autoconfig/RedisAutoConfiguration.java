@@ -229,7 +229,7 @@ public class RedisAutoConfiguration {
                     }
                     break;
                 default:
-                    String prefix = properties.isSsl() ? REDISS_PROTOCOL_PREFIX : REDIS_PROTOCOL_PREFIX;
+                    String prefix = properties.getSsl().isEnabled() ? REDISS_PROTOCOL_PREFIX : REDIS_PROTOCOL_PREFIX;
                     SingleServerConfig singleServerConfig = config.useSingleServer()
                             .setAddress(prefix + properties.getHost() + "COLON" + properties.getPort())
                             .setConnectTimeout(timeout)

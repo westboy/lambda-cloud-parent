@@ -2,7 +2,8 @@ package com.jingfang.security.web.authentication.handler;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.hutool.extra.servlet.ServletUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.mvc.WebHttpUtils;
@@ -16,9 +17,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.http.MediaType;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -41,7 +42,7 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException {
         //获取用户登录时的IP,需要Nginx做相关配置防止IP伪造
-        String remoteAddr = ServletUtil.getClientIP(request);
+        String remoteAddr = JakartaServletUtil.getClientIP(request);
         //获取用户登录时的端口
         int remotePort = request.getRemotePort();
         long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();

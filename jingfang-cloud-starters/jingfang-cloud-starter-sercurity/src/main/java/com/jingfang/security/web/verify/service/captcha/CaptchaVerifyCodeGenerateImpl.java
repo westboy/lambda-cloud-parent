@@ -1,13 +1,11 @@
 package com.jingfang.security.web.verify.service.captcha;
 
 import cn.hutool.captcha.CaptchaUtil;
-import cn.hutool.captcha.CircleCaptcha;
 import cn.hutool.captcha.GifCaptcha;
 import cn.hutool.captcha.generator.MathGenerator;
-import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.math.Calculator;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.extra.servlet.ServletUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.jingfang.autoconfig.SecurityProperties;
@@ -15,17 +13,14 @@ import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.exception.VerifyCodeValidationException;
 import com.jingfang.security.web.verify.service.VerifyCodeService;
 import com.jingfang.security.web.verify.store.CaptchaStore;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.util.AntPathMatcher;
 
-import javax.imageio.ImageIO;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
@@ -63,7 +58,7 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
     public boolean support(HttpServletRequest request) {
         final SecurityProperties.Verify verify = securityProperties.getForm().getVerify();
         boolean captchaEnabled = verify.isEnabled();
-        boolean isGetMethod = ServletUtil.isGetMethod(request);
+        boolean isGetMethod = JakartaServletUtil.isGetMethod(request);
         return captchaEnabled && isGetMethod && matcher.match(verify.getUrl(), request.getRequestURI());
     }
 

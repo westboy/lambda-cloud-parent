@@ -3,8 +3,8 @@ package com.jingfang.security.utils;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.context.SecurityContext;
 import com.jingfang.security.context.SecurityContextHolder;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Objects;

@@ -6,7 +6,7 @@
 
     <groupId>com.jingfang.cloud</groupId>
     <artifactId>jingfang-cloud-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version> <!--SNAPSHOT  RELEASES -->
+    <version>1.0.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -16,21 +16,20 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>22</maven.compiler.source>
+        <maven.compiler.target>22</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
+        <java.version>22</java.version>
         <gson.version>2.9.1</gson.version>
         <slf4j.version>2.0.5</slf4j.version>
         <mysql.version>8.2.0</mysql.version>
-        <nacos.version>1.4.6</nacos.version>
         <bcpkix.version>1.77</bcpkix.version>
         <bcprov.version>1.77</bcprov.version>
         <jsr305.version>3.0.2</jsr305.version>
         <quartz.version>2.3.2</quartz.version>
         <okhttp.version>4.12.0</okhttp.version>
         <aspectj.version>1.9.5</aspectj.version>
-        <lombok.version>1.18.28</lombok.version>
+        <lombok.version>1.18.34</lombok.version>
         <swagger.version>2.2.0</swagger.version>
         <calcite.version>1.35.0</calcite.version>
         <guava.version>32.1.2-jre</guava.version>
@@ -38,8 +37,8 @@
         <fastjson.version>1.2.83</fastjson.version>
         <springdoc.version>1.6.8</springdoc.version>
         <liquibase.version>4.29.1</liquibase.version>
-        <jackson-bom.version>2.15.2</jackson-bom.version>
-        <spring-boot.version>2.7.18</spring-boot.version>
+        <jackson-bom.version>2.17.2</jackson-bom.version>
+        <spring-boot.version>3.3.2</spring-boot.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <spring-webmvc.version>5.3.29</spring-webmvc.version>
@@ -53,17 +52,17 @@
         <!-- 插件版本 -->
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-jxr-plugin.version>3.3.0</maven-jxr-plugin.version>
-        <maven-pmd-plugin.version>3.21.2</maven-pmd-plugin.version>
-        <maven-help-plugin.version>3.4.0</maven-help-plugin.version>
-        <maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
-        <maven-clean-plugin.version>3.3.1</maven-clean-plugin.version>
+        <maven-pmd-plugin.version>3.24.0</maven-pmd-plugin.version>
+        <maven-help-plugin.version>3.4.1</maven-help-plugin.version>
+        <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
+        <maven-clean-plugin.version>3.4.0</maven-clean-plugin.version>
         <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
-        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
-        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-        <maven-jacoco-plugin.version>0.8.11</maven-jacoco-plugin.version>
-        <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
-        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-deploy-plugin.version>3.1.2</maven-deploy-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
+        <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
+        <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     </properties>
 
@@ -93,14 +92,14 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2021.0.8</version>
+                <version>2023.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-                <version>2021.0.1.0</version>
+                <version>2023.0.1.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -119,7 +118,7 @@
             <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
-                <version>1.8.8</version>
+                <version>1.9.22</version>
             </dependency>
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
@@ -501,6 +500,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <parameters>true</parameters>
                     <annotationProcessorPaths>
@@ -530,6 +530,10 @@
                             <version>0.2.0</version>
                         </path>
                     </annotationProcessorPaths>
+                    <basedir/>
+                    <buildDirectory/>
+                    <outputDirectory/>
+                    <projectArtifact/>
                 </configuration>
             </plugin>
             <plugin>
@@ -575,49 +579,8 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <configuration>
-                    <rulesets>
-                        <ruleset>/rulesets/java/ali-comment.xml</ruleset>
-                        <ruleset>/rulesets/java/ali-constant.xml</ruleset>
-                        <ruleset>/rulesets/java/ali-flowcontrol.xml</ruleset>
-                        <ruleset>/rulesets/java/ali-naming.xml</ruleset>
-                        <ruleset>/rulesets/java/ali-oop.xml</ruleset>
-                        <ruleset>/rulesets/java/ali-orm.xml</ruleset>
-                        <ruleset>/rulesets/java/ali-other.xml</ruleset>
-                        <ruleset>/rulesets/java/ali-set.xml</ruleset>
-                    </rulesets>
-                    <linkXRef>false</linkXRef>
-                    <printFailingErrors>true</printFailingErrors>
-                    <excludeRoots>
-                        <excludeRoot>${basedir}/target/generated-sources</excludeRoot>
-                    </excludeRoots>
-                    <skipEmptyReport>true</skipEmptyReport>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.alibaba.p3c</groupId>
-                        <artifactId>p3c-pmd</artifactId>
-                        <version>2.1.1</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
+                <version>${maven-deploy-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
