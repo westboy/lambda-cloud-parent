@@ -43,7 +43,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     }
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (!this.requiresAuthentication(request, response)) {
+        if (!this.requiresAuthentication(request)) {
             chain.doFilter(request, response);
         } else {
             try {
@@ -60,7 +60,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         }
     }
 
-    protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
+    protected boolean requiresAuthentication(HttpServletRequest request) {
         if (ANT_PATH_MATCHER.match(this.filterProcessesUrl, request.getRequestURI())) {
             return true;
         } else {

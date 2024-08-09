@@ -17,11 +17,11 @@ public interface LogoutSuccessHandler {
     /**
      * 退出成功
      *
-     * @param request
-     * @param response
-     * @param loginUser
-     * @throws IOException
-     * @throws ServletException
+     * @param request request
+     * @param response response
+     * @param loginUser loginUser
+     * @throws IOException IOException
+     * @throws ServletException ServletException
      */
     void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException;
 }

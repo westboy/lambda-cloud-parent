@@ -14,9 +14,9 @@ public interface LogoutHandler {
     /**
      * 退出处理器
      *
-     * @param request
-     * @param response
-     * @param loginUser
+     * @param request  request
+     * @param response response
+     * @param loginUser loginUser
      */
     void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser);
 }

@@ -1,19 +1,18 @@
 package com.jingfang.security.web.verify;
 
-import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.web.verify.service.VerifyCodeService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
-import org.springframework.web.filter.GenericFilterBean;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
+import org.springframework.web.filter.GenericFilterBean;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

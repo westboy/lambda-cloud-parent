@@ -1,7 +1,6 @@
 package com.jingfang.cloud.mvc;
 
 import cn.hutool.extra.servlet.JakartaServletUtil;
-import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Maps;
 import jakarta.servlet.http.Cookie;
@@ -56,7 +55,7 @@ public final class WebHttpUtils {
             String redirect = redirectUrl.toString();
             String symbol = redirect.contains("?") ? "&" : "?";
             return redirect + symbol
-                    + "auth=" + URLEncoder.encode(tokens, UTF_8.name());
+                    + "auth=" + URLEncoder.encode(tokens, UTF_8);
         }
         return null;
     }
@@ -216,6 +215,6 @@ public final class WebHttpUtils {
     }
 
     public static boolean isAbsoluteUrl(String url) {
-        return url != null ? ABSOLUTE_URL.matcher(url).matches() : false;
+        return url != null && ABSOLUTE_URL.matcher(url).matches();
     }
 }

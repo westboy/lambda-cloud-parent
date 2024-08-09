@@ -3,7 +3,6 @@ package com.jingfang.security.web.authentication.handler;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
-import cn.hutool.extra.servlet.JakartaServletUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.mvc.WebHttpUtils;
@@ -11,15 +10,16 @@ import com.jingfang.cloud.web.RequestTimeHolder;
 import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.web.events.UserLoginEvent;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNullApi;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -40,7 +40,7 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
 
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException {
         //获取用户登录时的IP,需要Nginx做相关配置防止IP伪造
         String remoteAddr = JakartaServletUtil.getClientIP(request);
         //获取用户登录时的端口
@@ -89,7 +89,7 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
     }
 
     @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+    public void setApplicationEventPublisher(ApplicationEventPublisher  applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 }

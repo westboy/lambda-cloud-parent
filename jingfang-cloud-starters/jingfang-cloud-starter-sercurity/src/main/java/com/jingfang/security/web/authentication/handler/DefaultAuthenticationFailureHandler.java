@@ -2,16 +2,15 @@ package com.jingfang.security.web.authentication.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.exception.model.ErrorModel;
-import com.jingfang.cloud.core.jackson.mapper.DefaultObjectMapper;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -29,7 +28,7 @@ public class DefaultAuthenticationFailureHandler implements AuthenticationFailur
     }
 
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception) throws IOException, ServletException {
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception) throws IOException {
         if (WebHttpUtils.isAjaxRequest(request)) {
             try (PrintWriter writer = response.getWriter()) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());

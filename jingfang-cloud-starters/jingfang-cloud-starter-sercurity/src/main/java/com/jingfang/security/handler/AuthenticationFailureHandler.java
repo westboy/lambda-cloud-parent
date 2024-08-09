@@ -14,11 +14,11 @@ public interface AuthenticationFailureHandler {
     /**
      * 认证失败
      *
-     * @param request
-     * @param response
-     * @param exception
-     * @throws IOException
-     * @throws ServletException
+     * @param request request
+     * @param response response
+     * @param exception exception
+     * @throws IOException IOException
+     * @throws ServletException ServletException
      */
     void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception) throws IOException, ServletException;
 }

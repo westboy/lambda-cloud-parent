@@ -1,7 +1,5 @@
 package com.jingfang.autoconfig;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.jackson.mapper.DefaultObjectMapper;
 import com.jingfang.cloud.redis.customize.CustomizableConnectionConfiguration;
 import com.jingfang.cloud.redis.customize.RedissonConfigurationCustomizer;
@@ -42,7 +40,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -128,8 +125,7 @@ public class RedisAutoConfiguration {
                 channel.pipeline().addLast(new ChannelDuplexHandler() {
                     @Override
                     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
-                        if (evt instanceof IdleStateEvent) {
-                            IdleStateEvent stateEvent = (IdleStateEvent) evt;
+                        if (evt instanceof IdleStateEvent stateEvent) {
                             if (stateEvent.state() == IdleState.ALL_IDLE) {
                                 log.debug("Heartbeat detection triggers disconnection...");
                                 ctx.disconnect();

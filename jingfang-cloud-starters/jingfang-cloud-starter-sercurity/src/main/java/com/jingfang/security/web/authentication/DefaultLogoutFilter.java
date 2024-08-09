@@ -49,7 +49,7 @@ public class DefaultLogoutFilter extends GenericFilterBean {
     }
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (this.requiresLogout(request, response)) {
+        if (this.requiresLogout(request)) {
             LoginUser loginUser = SecurityContextHolder.getContext().getPrincipal();
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug(LogMessage.format("Logging out [%s]", loginUser));
@@ -61,7 +61,7 @@ public class DefaultLogoutFilter extends GenericFilterBean {
         }
     }
 
-    protected boolean requiresLogout(HttpServletRequest request, HttpServletResponse response) {
+    protected boolean requiresLogout(HttpServletRequest request) {
         if (antPathMatcher.match(this.filterProcessesUrl, request.getRequestURI())) {
             return true;
         } else {

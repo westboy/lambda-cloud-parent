@@ -177,8 +177,7 @@ public class GlobalControllerAdvice {
         for (ObjectError error : objectErrors) {
             String field = error.getObjectName();
             String defaultMessage = error.getDefaultMessage();
-            if (error instanceof FieldError) {
-                FieldError fieldError = (FieldError) error;
+            if (error instanceof FieldError fieldError) {
                 field = fieldError.getField();
             }
             errors.add(new ArgumentError(field, defaultMessage));
