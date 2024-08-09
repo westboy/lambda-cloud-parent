@@ -164,6 +164,12 @@
             <version>3.5.6</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.macasaet.fernet</groupId>
+            <artifactId>fernet-java8</artifactId>
+            <version>1.4.2</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
 </project>
