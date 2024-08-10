@@ -2,9 +2,7 @@ package com.jingfang.autoconfig;
 
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.interceptor.SaInterceptor;
-import cn.dev33.satoken.stp.StpLogic;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.inteceptor.SecureExtendInterceptor;
@@ -30,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -38,10 +35,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import java.util.List;
 

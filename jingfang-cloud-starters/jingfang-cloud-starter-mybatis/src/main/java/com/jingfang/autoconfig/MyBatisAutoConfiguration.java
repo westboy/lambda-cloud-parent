@@ -1,4 +1,5 @@
-package com.jingfang.cloud.autoconfig;
+package com.jingfang.autoconfig;
+
 
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
@@ -8,6 +9,7 @@ import com.jingfang.cloud.mybatis.extend.ExtendLogicSqlInjector;
 import com.jingfang.cloud.mybatis.interceptor.InsertBatchInterceptor;
 import com.jingfang.cloud.mybatis.meta.GlobalMetaObjectHandler;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.apache.ibatis.type.JdbcType;
@@ -19,6 +21,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+
 import javax.sql.DataSource;
 import java.util.Properties;
 
@@ -29,10 +32,10 @@ import java.util.Properties;
  */
 @Slf4j
 @Configuration
+@MapperScan("${mybatis-plus.mapperPackage}")
+@Import({MybatisPlusAutoConfiguration.class})
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
-@Import({MybatisPlusAutoConfiguration.class})
-@MapperScan("${mybatis-plus.mapperPackage}")
 public class MyBatisAutoConfiguration {
 
 

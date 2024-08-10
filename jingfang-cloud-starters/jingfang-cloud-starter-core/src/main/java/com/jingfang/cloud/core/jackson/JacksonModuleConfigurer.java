@@ -1,4 +1,4 @@
-package com.jingfang.autoconfig;
+package com.jingfang.cloud.core.jackson;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;

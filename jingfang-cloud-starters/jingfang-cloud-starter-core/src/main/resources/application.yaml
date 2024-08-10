@@ -71,7 +71,7 @@ spring:
         min-idle: 1
         max-active: 10
         max-wait: -1
-    mode: ${spring.redis.run-model:STANDALONE}
+    mode: ${spring.redis.model:STANDALONE}
 xxl:
   job:
     executor:
@@ -103,12 +103,9 @@ logging:
 # MyBatisPlus配置
 mybatis-plus:
   mapperPackage: com.jingfang.cloud.**.mapper
-  # 实体扫描，多个package用逗号或者分号分隔
   typeAliasesPackage: com.jingfang.cloud.**.domain
-  # 启动时是否检查 MyBatis XML 文件的存在，默认不检查
   checkConfigLocation: false
   configuration:
-    # 自动驼峰命名规则（camel case）映射
     mapUnderscoreToCamelCase: true
     # MyBatis 自动映射策略
     # NONE：不启用 PARTIAL：只对非嵌套 resultMap 自动映射 FULL：对所有 resultMap 自动映射
@@ -124,12 +121,8 @@ mybatis-plus:
     # 是否打印 Logo banner
     banner: true
     dbConfig:
-      # 主键类型
-      # AUTO 自增 NONE 空 INPUT 用户输入 ASSIGN_ID 雪花 ASSIGN_UUID 唯一 UUID
       idType: ASSIGN_ID
-      # 逻辑已删除值
       logicDeleteValue: 1
-      # 逻辑未删除值
       logicNotDeleteValue: 0
       insertStrategy: NOT_NULL
       updateStrategy: NOT_NULL

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.jingfang.cloud.core.jackson.JacksonModuleConfigurer;
 import com.jingfang.cloud.core.jackson.mapper.DefaultObjectMapper;
 import com.jingfang.cloud.core.jackson.text.ExtendDateFormat;
 import com.jingfang.cloud.mvc.filter.OrderedTimeHandlerFilter;
@@ -17,6 +18,7 @@ import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -40,6 +42,7 @@ import java.util.Locale;
  * @author Jin
  */
 @Slf4j
+@Import(JacksonModuleConfigurer.class)
 @Configuration(proxyBeanMethods = false)
 public class WebMvcAutoConfiguration {
 

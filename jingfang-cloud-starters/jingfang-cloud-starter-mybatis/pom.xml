@@ -15,18 +15,18 @@
         <dependency>
             <groupId>com.jingfang.cloud</groupId>
             <artifactId>jingfang-cloud-starter-core</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jingfang.cloud</groupId>
             <artifactId>jingfang-cloud-starter-sercurity</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <!--Mybatis plus-->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <version>${mybatis-plus.version}</version>
         </dependency>
     </dependencies>
