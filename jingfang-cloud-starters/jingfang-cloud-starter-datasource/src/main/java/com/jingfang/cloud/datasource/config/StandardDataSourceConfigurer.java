@@ -43,8 +43,8 @@ public class StandardDataSourceConfigurer {
 
     @Bean
     @Primary
-    public DynamicRoutingDataSource dataSource() {
-        DynamicRoutingDataSource dataSource = new DynamicRoutingDataSource();
+    public DynamicRoutingDataSource dynamicRoutingDataSource(DynamicDataSourceProvider dynamicDataSourceProvider) {
+        DynamicRoutingDataSource dataSource = new DynamicRoutingDataSource(Collections.singletonList(dynamicDataSourceProvider));
         dataSource.setPrimary(PRIMARY_DATASOURCE);
         dataSource.setStrategy(LoadBalanceDynamicDataSourceStrategy.class);
         dataSource.setStrict(false);
