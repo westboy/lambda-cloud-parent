@@ -48,6 +48,7 @@
         <log4j2.version>2.23.1</log4j2.version>
         <satoken.version>1.38.0</satoken.version>
         <minio.version>8.5.11</minio.version>
+        <p6spy.version>3.9.1</p6spy.version>
         <!-- 插件版本 -->
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-jxr-plugin.version>3.3.0</maven-jxr-plugin.version>
@@ -187,7 +188,7 @@
             <dependency>
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
-                <version>1.5.1</version>
+                <version>1.5</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -416,6 +417,11 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
                 <version>5.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>p6spy</groupId>
+                <artifactId>p6spy</artifactId>
+                <version>${p6spy.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

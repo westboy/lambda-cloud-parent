@@ -30,6 +30,7 @@
         <module>jingfang-cloud-starter-liquibase</module>
         <module>jingfang-cloud-starter-websocket</module>
         <module>jingfang-cloud-starter-kafka</module>
+        <module>jingfang-cloud-starter-gateway</module>
     </modules>
 
 </project>
