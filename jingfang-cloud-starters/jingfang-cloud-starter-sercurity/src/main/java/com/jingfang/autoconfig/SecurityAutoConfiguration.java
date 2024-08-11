@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -63,6 +64,7 @@ public class SecurityAutoConfiguration {
     public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
         this.secureExtendInterceptor = secureExtendInterceptor;
     }
+
     @Autowired
     public void setSecurityProperties(SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
@@ -74,19 +76,9 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    @Primary
+    @ConfigurationProperties(prefix = "jingfang.security.sa-token")
     public SaTokenConfig getSaTokenConfigPrimary() {
-        SaTokenConfig config = new SaTokenConfig();
-        config.setTokenName(securityProperties.getTokenName());
-        config.setTokenStyle(securityProperties.getTokenStyle());
-        config.setTokenPrefix(securityProperties.getTokenPrefix());
-        config.setTimeout(securityProperties.getTokenTimeout());
-        config.setActiveTimeout(securityProperties.getActiveTimeout());
-        config.setIsConcurrent(!securityProperties.getEnableKickOut());
-        config.setIsShare(securityProperties.getEnableTokenShare());
-        config.setIsLog(securityProperties.getEnableLogPrint());
-        config.setJwtSecretKey(securityProperties.getJwtSecretKey());
-        return config;
+        return new SaTokenConfig();
     }
 
     @Bean
@@ -108,11 +100,14 @@ public class SecurityAutoConfiguration {
                 interceptorRegistry
                         .addInterceptor(saInterceptor)
                         .addPathPatterns("/**")
-                        .excludePathPatterns(securityProperties.getAllIgnoreList());
+                        .excludePathPatterns(securityProperties.getSaToken().getAllIgnoreList());
             }
 
             private SaInterceptor getSaInterceptor() {
-                return new SaInterceptor(new SecureInterceptor(userDetailService, secureExtendInterceptor)).isAnnotation(securityProperties.getEnableMethodAnnotation());
+                Boolean methodAnnotation = securityProperties.getSaToken()
+                        .getEnableMethodAnnotation();
+                return new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
+                        .isAnnotation(methodAnnotation);
             }
         };
     }

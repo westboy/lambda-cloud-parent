@@ -32,7 +32,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
     private String usernameParameter = "username";
     private String passwordParameter = "password";
     private String loginTypeParameter = "loginType";
-    private String deviceParameter = "device";
+    private String deviceParameter = "loginDevice";
     private SecurityLockingStrategy securityLockingStrategy;
     private UserDetailService userDetailService;
     private PasswordEncoder passwordEncoder;
@@ -124,7 +124,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
     }
 
     private String obtainDevice(HttpServletRequest request) {
-        return request.getParameter("device");
+        return request.getParameter(this.deviceParameter);
     }
 
     @Nullable

@@ -1,25 +1,24 @@
 package com.jingfang.security.web;
 
-import java.io.IOException;
+import com.jingfang.cloud.core.principal.LoginUser;
+import com.jingfang.security.context.SecurityContextHolder;
+import com.jingfang.security.exception.AuthenticationException;
+import com.jingfang.security.handler.AuthenticationFailureHandler;
+import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import com.jingfang.cloud.core.principal.LoginUser;
-import com.jingfang.security.context.SecurityContext;
-import com.jingfang.security.context.SecurityContextHolder;
-import com.jingfang.security.exception.AuthenticationException;
-import com.jingfang.security.handler.AuthenticationFailureHandler;
-import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.log.LogMessage;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
+
+import java.io.IOException;
 
 /**
  * AbstractAuthenticationProcessingFilter
@@ -84,9 +83,6 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     public abstract LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException;
 
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser) throws IOException, ServletException {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setPrincipal(loginUser);
-        SecurityContextHolder.setContext(context);
         if (this.logger.isDebugEnabled()) {
             this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", loginUser));
         }

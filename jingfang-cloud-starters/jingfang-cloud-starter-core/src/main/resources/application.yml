@@ -127,8 +127,18 @@ mybatis-plus:
       insertStrategy: NOT_NULL
       updateStrategy: NOT_NULL
       where-strategy: NOT_NULL
-
 jingfang:
+  security:
+    sa-token:
+      token-name: Authorization
+      token-prefix: Bearer
+      token-style: random-64
+      timeout: 4363200
+      jwt-secret-key: jf-token-secret
+      active-timeout: -1
+      is-share: true
+      is-print: false
+      is-concurrent: true
   api-docs:
     production: false
     enabled: true

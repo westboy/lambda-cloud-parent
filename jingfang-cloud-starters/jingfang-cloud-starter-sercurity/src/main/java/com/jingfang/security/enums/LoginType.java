@@ -18,17 +18,17 @@ public enum LoginType {
     /**
      * 管理员
      */
-    ADMIN("admin", "管理员登录", new StpLogic("admin")),
+    ADMIN("admin", "管理用户登录", new StpLogic("admin")),
 
     /**
      * 用户
      */
-    USER("user", "用户登录", new StpLogic("user"));
+    USER("user", "普通用户登录", new StpLogic("user"));
 
     final String code;
 
     final String desc;
-
+    @Getter
     final StpLogic stpLogic;
 
 
@@ -41,6 +41,14 @@ public enum LoginType {
     public static LoginType get(String id) {
         return Arrays.stream(LoginType.values()).filter(loginModeEnum -> loginModeEnum.code.equals(id))
                 .findFirst().orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
+    }
+
+    public static StpLogic getActiveStpLogic() {
+        return Arrays.stream(LoginType.values())
+                .map(LoginType::getStpLogic)
+                .filter(StpLogic::isLogin)
+                .findFirst()
+                .orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
     }
 
     public static StpLogic getStpLogic(String id) {

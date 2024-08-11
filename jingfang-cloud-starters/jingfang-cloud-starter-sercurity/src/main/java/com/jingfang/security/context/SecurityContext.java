@@ -15,12 +15,12 @@ public interface SecurityContext extends Serializable {
     /**
      * 获取用户
      *
-     * @return
+     * @return LoginUser
      */
     LoginUser getPrincipal();
 
     /**
-     * 设置用户
+     * 设置用户 loginUser
      *
      * @param loginUser
      */

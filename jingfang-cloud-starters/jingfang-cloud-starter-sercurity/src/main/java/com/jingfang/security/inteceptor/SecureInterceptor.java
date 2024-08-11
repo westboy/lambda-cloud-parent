@@ -21,18 +21,15 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 @Slf4j
 public class SecureInterceptor implements SaParamFunction<Object> {
 
-    private final UserDetailService userDetailService;
     private final SecureExtendInterceptor secureExtendInterceptor;
 
-    public SecureInterceptor(UserDetailService userDetailService, SecureExtendInterceptor secureExtendInterceptor) {
-        this.userDetailService = userDetailService;
+    public SecureInterceptor(SecureExtendInterceptor secureExtendInterceptor) {
         this.secureExtendInterceptor = secureExtendInterceptor;
     }
 
     @Override
     public void run(Object handler) {
-        if (handler instanceof HandlerMethod) {
-            HandlerMethod handlerMethod = (HandlerMethod) handler;
+        if (handler instanceof HandlerMethod handlerMethod) {
             if (handlerMethod.getBeanType().isAssignableFrom(BasicErrorController.class)) {
                 return;
             }
@@ -40,21 +37,9 @@ public class SecureInterceptor implements SaParamFunction<Object> {
         if (handler instanceof ResourceHttpRequestHandler) {
             return;
         }
-        StpLogic stpLogic = LoginType.ADMIN.getStpLogic().isLogin() ? LoginType.ADMIN.getStpLogic() : LoginType.USER.getStpLogic();
-        stpLogic.checkLogin();
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        if (securityContext == null) {
-            try {
-                LoginUser loginUser = userDetailService.loginByUsername((String) stpLogic.getLoginId(), stpLogic.getLoginType());
-                SecurityContextHolder.setContext(new SecurityContextImpl(loginUser));
-                log.info("reload principal context");
-            } catch (Exception exception) {
-                stpLogic.logout();
-                log.info("reload principal context fail", exception);
-            }
-        }
+
         if (secureExtendInterceptor != null) {
-            secureExtendInterceptor.handle(handler, stpLogic);
+            secureExtendInterceptor.handle(handler, LoginType.getActiveStpLogic());
         }
     }
 }

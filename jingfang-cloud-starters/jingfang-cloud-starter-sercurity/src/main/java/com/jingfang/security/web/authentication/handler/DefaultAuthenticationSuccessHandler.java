@@ -1,5 +1,6 @@
 package com.jingfang.security.web.authentication.handler;
 
+import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
@@ -50,13 +51,15 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
         applicationEventPublisher.publishEvent(new UserLoginEvent(loginUser, cast, remoteAddr, remotePort));
         //sa-token 登录
         //登录设备
-        String device = (String) request.getAttribute("device");
+        String device = (String) request.getAttribute("loginDevice");
         //多用户类型支持
         String loginType = (String) request.getAttribute("loginType");
         //获取stpLogic
         StpLogic stpLogic = LoginType.getStpLogic(loginType);
         //用户登录
         stpLogic.login(loginUser.getUsername(), device);
+        //存储用户信息
+        stpLogic.getTokenSession().set("loginUser", loginUser);
         //获取token
         SaTokenInfo tokenInfo = stpLogic.getTokenInfo();
         if (WebHttpUtils.isAjaxRequest(request)) {
@@ -89,7 +92,7 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
     }
 
     @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher  applicationEventPublisher) {
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 }

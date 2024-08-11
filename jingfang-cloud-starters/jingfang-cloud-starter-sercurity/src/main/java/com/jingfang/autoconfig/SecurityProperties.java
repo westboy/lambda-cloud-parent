@@ -1,5 +1,6 @@
 package com.jingfang.autoconfig;
 
+import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.util.SaTokenConsts;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
@@ -32,36 +33,29 @@ public class SecurityProperties {
             "*.ico",
             "*.js");
 
-    private String tokenName = "Authorization";
-    private String tokenPrefix = "Bearer";
-    private String tokenStyle = SaTokenConsts.TOKEN_STYLE_RANDOM_32;
-    private Integer tokenTimeout = 30 * 24 * 60 * 60;
-    /**
-     * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
-     */
-    private Boolean enableMethodAnnotation = true;
-    /**
-     * 是否允许同一账号多地同时登录（为 true 时允许一起登录，为 false 时新登录挤掉旧登录）
-     */
-    private Boolean enableKickOut = true;
-    /**
-     * 在多人登录同一账号时，是否共用一个 token （为 true 时所有登录共用一个 token，为 false 时每次登录新建一个 token）
-     */
-    private Boolean enableTokenShare = true;
+    @NestedConfigurationProperty
+    public ExtendSaTokenConfig saToken = new ExtendSaTokenConfig();
 
-    private Boolean enableLogPrint = false;
 
-    private String jwtSecretKey = "jf-token-secret";
+    @Getter
+    @Setter
+    public static class ExtendSaTokenConfig extends SaTokenConfig {
+        /**
+         * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
+         */
+        private Boolean enableMethodAnnotation = true;
 
-    private List<String> ignored;
+        /**
+         * 忽略拦截的配置
+         */
+        private List<String> ignored;
 
-    private Long activeTimeout = -1L;
-
-    public List<String> getAllIgnoreList() {
-        if (CollUtil.isEmpty(ignored)) {
-            return DEFAULT_IGNORE_PATH_LIST;
+        public List<String> getAllIgnoreList() {
+            if (CollUtil.isEmpty(ignored)) {
+                return DEFAULT_IGNORE_PATH_LIST;
+            }
+            return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignored);
         }
-        return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignored);
     }
 
     @NestedConfigurationProperty
