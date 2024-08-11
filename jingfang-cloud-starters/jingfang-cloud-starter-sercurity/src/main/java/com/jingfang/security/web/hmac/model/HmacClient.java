@@ -55,7 +55,7 @@ public class HmacClient implements LoginUser {
 
     @Override
     public Set<String> getRoles() {
-        return Set.of();
+        return Set.of("ROLE_HMAC");
     }
 
     @Override

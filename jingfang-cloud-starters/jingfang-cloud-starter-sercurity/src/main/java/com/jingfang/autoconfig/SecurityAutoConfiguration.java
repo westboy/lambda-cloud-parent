@@ -24,6 +24,7 @@ import com.jingfang.security.web.authentication.handler.DefaultLogoutHandler;
 import com.jingfang.security.web.authentication.handler.DefaultLogoutSuccessHandler;
 import com.jingfang.security.web.authentication.locking.RedisLockingStrategy;
 import com.jingfang.security.web.hmac.HmacAuthenticationProcessingFilter;
+import com.jingfang.security.web.hmac.service.MemoryHmacClientService;
 import com.jingfang.security.web.verify.VerifyCodeFilter;
 import com.jingfang.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
 import com.jingfang.security.web.verify.service.captcha.CaptchaVerifyCodeValidationImpl;
@@ -142,18 +143,25 @@ public class SecurityAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(value = "jingfang.security.hmac", name = "enabled")
+    public UserDetailService hmacClientService(@Autowired(required = false) HmacClientService userDetailService) {
+        return new MemoryHmacClientService(userDetailService, securityProperties.hmac.getClients());
+    }
+
+    @Bean
     public FilterRegistrationBean<DefaultAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
                                                                                                                AuthenticationFailureHandler authenticationFailureHandler,
                                                                                                                AuthenticationSuccessHandler authenticationSuccessHandler,
                                                                                                                PasswordEncoder passwordEncoder,
-                                                                                                               @Autowired(required = false) UserDetailService userDetailService
+                                                                                                               UserDetailService hmacClientService
     ) {
         FilterRegistrationBean<DefaultAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         DefaultAuthenticationProcessingFilter processingFilter = new DefaultAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
         processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
         processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        processingFilter.setUserDetailService(userDetailService);
+        processingFilter.setUserDetailService(hmacClientService);
         processingFilter.setPasswordEncoder(passwordEncoder);
         filterRegistrationBean.setFilter(processingFilter);
         filterRegistrationBean.addUrlPatterns("/*");
