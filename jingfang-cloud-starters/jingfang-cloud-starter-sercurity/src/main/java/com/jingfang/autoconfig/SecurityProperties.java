@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +36,34 @@ public class SecurityProperties {
     @NestedConfigurationProperty
     public ExtendSaTokenConfig saToken = new ExtendSaTokenConfig();
 
+    Hmac hmac = new Hmac();
+
+
+    @Getter
+    @Setter
+    public static class Hmac {
+        /**
+         * 是否开启HMac认证
+         */
+        boolean enabled = false;
+        /**
+         * 允许的客户端
+         */
+        List<Client> clients = new ArrayList<>();
+
+        @Getter
+        @Setter
+        public static class Client {
+            /**
+             * 客户端ID
+             */
+            String appid;
+            /**
+             * 客户端密钥
+             */
+            String secret;
+        }
+    }
 
     @Getter
     @Setter

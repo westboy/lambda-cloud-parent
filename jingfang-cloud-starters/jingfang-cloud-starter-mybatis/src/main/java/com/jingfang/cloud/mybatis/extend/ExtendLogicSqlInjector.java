@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.jingfang.cloud.mybatis.annotation.TableCodeField;
 import com.jingfang.cloud.mybatis.extend.method.*;
+import org.apache.ibatis.session.Configuration;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,7 @@ public class ExtendLogicSqlInjector extends DefaultSqlInjector {
      * @return
      */
     @Override
-    public List<AbstractMethod> getMethodList(Class<?> mapperClass, TableInfo tableInfo) {
+    public List<AbstractMethod> getMethodList(Configuration configuration, Class<?> mapperClass, TableInfo tableInfo) {
         Stream.Builder<AbstractMethod> builder = Stream.<AbstractMethod>builder()
                 .add(new Insert())
                 .add(new Delete())

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.exception.model.ErrorModel;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;

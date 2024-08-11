@@ -1,4 +1,4 @@
-package com.jingfang.cloud.mybatis.meta;
+package com.jingfang.cloud.mybatis.handler;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.jingfang.cloud.core.principal.LoginUser;

@@ -42,11 +42,12 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     }
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (!this.requiresAuthentication(request)) {
+        if (this.nonRequiresAuthentication(request)) {
             chain.doFilter(request, response);
         } else {
             try {
-                LoginUser loginUser = this.attemptAuthentication(request, response);
+                HttpServletRequest wrapRequest = this.wrapRequest(request);
+                LoginUser loginUser = this.attemptAuthentication(wrapRequest, response);
                 this.successfulAuthentication(request, response, chain, loginUser);
             } catch (Exception exception) {
                 if (exception instanceof AuthenticationException) {
@@ -59,14 +60,18 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         }
     }
 
-    protected boolean requiresAuthentication(HttpServletRequest request) {
+    protected HttpServletRequest wrapRequest(HttpServletRequest request) throws IOException {
+        return request;
+    }
+
+    protected boolean nonRequiresAuthentication(HttpServletRequest request) throws IOException {
         if (ANT_PATH_MATCHER.match(this.filterProcessesUrl, request.getRequestURI())) {
-            return true;
+            return false;
         } else {
             if (this.logger.isTraceEnabled()) {
                 this.logger.trace(LogMessage.format("Did not match request to %s", filterProcessesUrl));
             }
-            return false;
+            return true;
         }
     }
 

@@ -17,13 +17,7 @@ public class DefaultLogoutHandler implements LogoutHandler {
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
-        StpLogic adminStpLogic = LoginType.ADMIN.getStpLogic();
-        if (adminStpLogic.isLogin()) {
-            adminStpLogic.logout();
-        }
-        StpLogic userStpLogic = LoginType.USER.getStpLogic();
-        if (userStpLogic.isLogin()) {
-            userStpLogic.logout();
-        }
+        StpLogic stpLogic = LoginType.getActiveStpLogic();
+        stpLogic.logout();
     }
 }

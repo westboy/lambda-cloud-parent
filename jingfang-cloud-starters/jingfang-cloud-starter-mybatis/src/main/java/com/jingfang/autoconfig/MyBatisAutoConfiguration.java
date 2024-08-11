@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.jingfang.cloud.mybatis.extend.ExtendLogicSqlInjector;
 import com.jingfang.cloud.mybatis.interceptor.InsertBatchInterceptor;
-import com.jingfang.cloud.mybatis.meta.GlobalMetaObjectHandler;
+import com.jingfang.cloud.mybatis.handler.GlobalMetaObjectHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.ibatis.mapping.DatabaseIdProvider;

@@ -1,6 +1,5 @@
 package com.jingfang.security.web.authentication.handler;
 
-import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
@@ -11,7 +10,6 @@ import com.jingfang.cloud.web.RequestTimeHolder;
 import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.web.events.UserLoginEvent;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +17,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.http.MediaType;
-import org.springframework.lang.NonNullApi;
 
 import java.io.IOException;
 

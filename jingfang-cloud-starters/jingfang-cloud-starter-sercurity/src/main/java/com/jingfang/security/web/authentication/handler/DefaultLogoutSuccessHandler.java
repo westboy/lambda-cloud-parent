@@ -34,6 +34,7 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler, Applic
         }
     }
 
+    @SuppressWarnings("all")
     @Override
     public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
