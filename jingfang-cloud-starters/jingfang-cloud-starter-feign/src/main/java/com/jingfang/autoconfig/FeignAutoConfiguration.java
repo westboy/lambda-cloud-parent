@@ -47,7 +47,7 @@ public class FeignAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "feign.client.retry", name = "enabled", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "spring.cloud.openfeign.client.retry", name = "enabled", matchIfMissing = true)
     public Retryer retryer(ExtendFeignClientProperties properties) {
         int maxAttempts = properties.getRetry().getMaxAttempts();
         return new Retryer.Default(100, MINUTES.toMillis(1), maxAttempts);
