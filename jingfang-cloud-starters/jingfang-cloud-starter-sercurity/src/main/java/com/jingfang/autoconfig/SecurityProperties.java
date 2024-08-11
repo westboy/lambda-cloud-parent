@@ -1,7 +1,6 @@
 package com.jingfang.autoconfig;
 
 import cn.dev33.satoken.config.SaTokenConfig;
-import cn.dev33.satoken.util.SaTokenConsts;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

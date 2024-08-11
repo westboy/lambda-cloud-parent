@@ -9,24 +9,35 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jingfang.cloud.core.jackson.JacksonModuleConfigurer;
 import com.jingfang.cloud.core.jackson.mapper.DefaultObjectMapper;
 import com.jingfang.cloud.core.jackson.text.ExtendDateFormat;
+import com.jingfang.cloud.core.propertis.CorsProperties;
+import com.jingfang.cloud.mvc.StringToDateConverter;
 import com.jingfang.cloud.mvc.filter.OrderedTimeHandlerFilter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
@@ -44,12 +55,56 @@ import java.util.Locale;
 @Slf4j
 @Import(JacksonModuleConfigurer.class)
 @Configuration(proxyBeanMethods = false)
-public class WebMvcAutoConfiguration {
-
+public class WebMvcAutoConfiguration implements WebMvcConfigurer{
     public WebMvcAutoConfiguration() {
         log.trace("initializing...");
     }
 
+    private CorsProperties corsProperties;
+    private LocalValidatorFactoryBean defaultValidator;
+
+    @Autowired
+    public void setCorsProperties(CorsProperties corsProperties) {
+        this.corsProperties = corsProperties;
+    }
+
+    @Autowired
+    public void setDefaultValidator(LocalValidatorFactoryBean defaultValidator) {
+        this.defaultValidator = defaultValidator;
+    }
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new StringToDateConverter());
+    }
+
+    @Override
+    public Validator getValidator() {
+        return defaultValidator;
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
+        List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+        if (CollectionUtils.isNotEmpty(allowedOrigins)) {
+            registration.allowedOrigins(allowedOrigins.toArray(new String[0]));
+        }
+        registration.allowCredentials(true)
+                .allowedOriginPatterns(CorsProperties.ALL_PATH)
+                .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
+                .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
+                .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
+                .maxAge(corsProperties.getMaxAge());
+    }
+
+
+
+    @Bean
+    @ConfigurationProperties(prefix = "jingfang.web.cors")
+    public CorsProperties corsProperties(){
+        return new CorsProperties();
+    }
 
     @Primary
     @Bean("jacksonObjectMapper")
@@ -133,7 +188,6 @@ public class WebMvcAutoConfiguration {
             return resolver;
         }
     }
-
 
     @Bean
     @ConditionalOnMissingBean
