@@ -56,7 +56,7 @@ import java.util.List;
 @Slf4j
 @AutoConfiguration
 @EnableConfigurationProperties({SecurityProperties.class})
-public class SecurityAutoConfiguration {
+public class SecurityAutoConfiguration implements WebMvcConfigurer {
 
     public SecurityAutoConfiguration() {
         log.trace("initializing...");
@@ -76,8 +76,9 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
+    @Primary
     @ConfigurationProperties(prefix = "jingfang.security.sa-token")
-    public SaTokenConfig getSaTokenConfigPrimary() {
+    public SaTokenConfig getSaTokenConfig() {
         return new SaTokenConfig();
     }
 
@@ -88,36 +89,27 @@ public class SecurityAutoConfiguration {
         return new XSSDefendFilter(xssProtected.trusted);
     }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry interceptorRegistry) {
+        interceptorRegistry
+                .addInterceptor(new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
+                        .isAnnotation(securityProperties.getSaToken().getEnableMethodAnnotation()))
+                .addPathPatterns("/**")
+                .excludePathPatterns(securityProperties.getSaToken().getAllIgnoreList());
+    }
+
     @Bean
-    @Primary
-    public WebMvcConfigurer saTokenWebConfigurer() {
-        List<String> allIgnoreList = securityProperties.getSaToken().getAllIgnoreList();
-        return new WebMvcConfigurer() {
-
-
-            @SuppressWarnings("NullableProblems")
-            @Override
-            public void addInterceptors(InterceptorRegistry interceptorRegistry) {
-                interceptorRegistry
-                        .addInterceptor(new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
-                                .isAnnotation(securityProperties.getSaToken().getEnableMethodAnnotation()))
-                        .addPathPatterns("/**")
-                        .excludePathPatterns(allIgnoreList);
-            }
-
-            @Bean
-            public SaServletFilter getSaServletFilter() {
-                return new SaServletFilter()
-                        .addInclude("/**")
-                        .addExclude(allIgnoreList.toArray(new String[0]))
-                        .setAuth(_ -> {
-                            if (SaManager.getConfig().getCheckSameToken()) {
-                                SaSameUtil.checkCurrentRequestToken();
-                            }
-                        })
-                        .setError(_ -> SaResult.error("认证失败，无法访问系统资源").setCode(HttpStatus.UNAUTHORIZED.value()));
-            }
-        };
+    @ConditionalOnProperty(prefix = "jingfang.security.sa-token", name = "check-same-token")
+    public SaServletFilter getSaServletFilter() {
+        return new SaServletFilter()
+                .addInclude("/**")
+                .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
+                .setAuth(_ -> {
+                    if (SaManager.getConfig().getCheckSameToken()) {
+                        SaSameUtil.checkCurrentRequestToken();
+                    }
+                })
+                .setError(_ -> SaResult.error("认证失败，无法访问系统资源").setCode(HttpStatus.UNAUTHORIZED.value()));
     }
 
     @Bean

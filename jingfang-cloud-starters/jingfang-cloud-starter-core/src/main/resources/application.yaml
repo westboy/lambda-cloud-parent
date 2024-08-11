@@ -65,12 +65,6 @@ spring:
     time-zone: Asia/Shanghai
     date-format: yyyy-MM-dd HH:mm:ss
   redis:
-    lettuce:
-      pool:
-        max-idle: 8
-        min-idle: 1
-        max-active: 10
-        max-wait: -1
     mode: ${spring.redis.model:STANDALONE}
 xxl:
   job:
