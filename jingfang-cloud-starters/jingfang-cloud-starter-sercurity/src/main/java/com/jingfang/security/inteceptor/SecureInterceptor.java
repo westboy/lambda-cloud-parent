@@ -38,8 +38,12 @@ public class SecureInterceptor implements SaParamFunction<Object> {
             return;
         }
 
+        StpLogic stpLogic = LoginType.getActiveStpLogic();
+
+        stpLogic.checkLogin();
+
         if (secureExtendInterceptor != null) {
-            secureExtendInterceptor.handle(handler, LoginType.getActiveStpLogic());
+            secureExtendInterceptor.handle(handler, stpLogic);
         }
     }
 }

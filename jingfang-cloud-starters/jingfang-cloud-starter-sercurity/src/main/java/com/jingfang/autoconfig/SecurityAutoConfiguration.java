@@ -1,7 +1,11 @@
 package com.jingfang.autoconfig;
 
+import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
+import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
+import cn.dev33.satoken.same.SaSameUtil;
+import cn.dev33.satoken.util.SaResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
@@ -26,6 +30,7 @@ import com.jingfang.security.web.verify.store.RedisCaptchaStore;
 import com.jingfang.security.web.xss.XSSDefendFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,6 +40,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -48,7 +54,7 @@ import java.util.List;
  * @author jpjoo
  */
 @Slf4j
-@Configuration
+@AutoConfiguration
 @EnableConfigurationProperties({SecurityProperties.class})
 public class SecurityAutoConfiguration {
 
@@ -58,7 +64,6 @@ public class SecurityAutoConfiguration {
 
     private SecurityProperties securityProperties;
     private SecureExtendInterceptor secureExtendInterceptor;
-    private UserDetailService userDetailService;
 
     @Autowired(required = false)
     public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
@@ -68,11 +73,6 @@ public class SecurityAutoConfiguration {
     @Autowired
     public void setSecurityProperties(SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
-    }
-
-    @Autowired(required = false)
-    public void setUserDetailService(UserDetailService userDetailService) {
-        this.userDetailService = userDetailService;
     }
 
     @Bean
@@ -90,24 +90,32 @@ public class SecurityAutoConfiguration {
 
     @Bean
     @Primary
-    public WebMvcConfigurer saInterceptorWebConfigurer() {
+    public WebMvcConfigurer saTokenWebConfigurer() {
+        List<String> allIgnoreList = securityProperties.getSaToken().getAllIgnoreList();
         return new WebMvcConfigurer() {
+
 
             @SuppressWarnings("NullableProblems")
             @Override
             public void addInterceptors(InterceptorRegistry interceptorRegistry) {
-                SaInterceptor saInterceptor = getSaInterceptor();
                 interceptorRegistry
-                        .addInterceptor(saInterceptor)
+                        .addInterceptor(new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
+                                .isAnnotation(securityProperties.getSaToken().getEnableMethodAnnotation()))
                         .addPathPatterns("/**")
-                        .excludePathPatterns(securityProperties.getSaToken().getAllIgnoreList());
+                        .excludePathPatterns(allIgnoreList);
             }
 
-            private SaInterceptor getSaInterceptor() {
-                Boolean methodAnnotation = securityProperties.getSaToken()
-                        .getEnableMethodAnnotation();
-                return new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
-                        .isAnnotation(methodAnnotation);
+            @Bean
+            public SaServletFilter getSaServletFilter() {
+                return new SaServletFilter()
+                        .addInclude("/**")
+                        .addExclude(allIgnoreList.toArray(new String[0]))
+                        .setAuth(_ -> {
+                            if (SaManager.getConfig().getCheckSameToken()) {
+                                SaSameUtil.checkCurrentRequestToken();
+                            }
+                        })
+                        .setError(_ -> SaResult.error("认证失败，无法访问系统资源").setCode(HttpStatus.UNAUTHORIZED.value()));
             }
         };
     }
