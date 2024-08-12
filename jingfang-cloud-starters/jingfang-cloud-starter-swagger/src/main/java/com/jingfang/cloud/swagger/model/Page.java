@@ -12,7 +12,7 @@ import java.util.List;
 @Schema(description = "分页信息")
 public class Page<T> {
 
-    @Schema(required = true, description = "当前页码")
+    @Schema(description = "当前页码")
     private Integer number;
 
     @Schema(description = "每页的数据量")

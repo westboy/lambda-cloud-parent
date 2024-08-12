@@ -27,7 +27,6 @@ public class SecurityProperties {
 
     private static final List<String> DEFAULT_IGNORE_PATH_LIST = Lists.newArrayList(
             "/public/**",
-            "/swagger-ui.html",
             "/v3/**",
             "/anon/**",
             "*.html",
