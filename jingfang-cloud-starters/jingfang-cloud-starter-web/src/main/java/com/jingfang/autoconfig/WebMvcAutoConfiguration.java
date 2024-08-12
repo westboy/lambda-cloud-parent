@@ -15,6 +15,7 @@ import com.jingfang.cloud.mvc.filter.OrderedTimeHandlerFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
@@ -54,55 +55,46 @@ import java.util.Locale;
  */
 @Slf4j
 @Import(JacksonModuleConfigurer.class)
-@Configuration(proxyBeanMethods = false)
-public class WebMvcAutoConfiguration implements WebMvcConfigurer{
+@AutoConfiguration
+public class WebMvcAutoConfiguration{
     public WebMvcAutoConfiguration() {
         log.trace("initializing...");
     }
 
-    private CorsProperties corsProperties;
-    private LocalValidatorFactoryBean defaultValidator;
+    @Bean
+    @SuppressWarnings("all")
+    public WebMvcConfigurer webMvcConfigurer(CorsProperties corsProperties,LocalValidatorFactoryBean defaultValidator) {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addFormatters(FormatterRegistry registry) {
+                registry.addConverter(new StringToDateConverter());
+            }
 
-    @Autowired
-    public void setCorsProperties(CorsProperties corsProperties) {
-        this.corsProperties = corsProperties;
+            @Override
+            public Validator getValidator() {
+                return defaultValidator;
+            }
+
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
+                List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+                if (CollectionUtils.isNotEmpty(allowedOrigins)) {
+                    registration.allowedOrigins(allowedOrigins.toArray(new String[0]));
+                }
+                registration.allowCredentials(true)
+                        .allowedOriginPatterns(CorsProperties.ALL_PATH)
+                        .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
+                        .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
+                        .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
+                        .maxAge(corsProperties.getMaxAge());
+            }
+        };
     }
-
-    @Autowired
-    public void setDefaultValidator(LocalValidatorFactoryBean defaultValidator) {
-        this.defaultValidator = defaultValidator;
-    }
-
-    @Override
-    public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new StringToDateConverter());
-    }
-
-    @Override
-    public Validator getValidator() {
-        return defaultValidator;
-    }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
-        List<String> allowedOrigins = corsProperties.getAllowedOrigins();
-        if (CollectionUtils.isNotEmpty(allowedOrigins)) {
-            registration.allowedOrigins(allowedOrigins.toArray(new String[0]));
-        }
-        registration.allowCredentials(true)
-                .allowedOriginPatterns(CorsProperties.ALL_PATH)
-                .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
-                .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
-                .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
-                .maxAge(corsProperties.getMaxAge());
-    }
-
-
 
     @Bean
     @ConfigurationProperties(prefix = "jingfang.web.cors")
-    public CorsProperties corsProperties(){
+    public CorsProperties corsProperties() {
         return new CorsProperties();
     }
 

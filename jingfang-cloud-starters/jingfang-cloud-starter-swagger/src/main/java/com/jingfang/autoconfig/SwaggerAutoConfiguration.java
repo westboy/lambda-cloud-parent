@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.GroupedOpenApi;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -49,7 +49,7 @@ public class SwaggerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "jingfang.swagger", name = "enabled", havingValue = "false")
+    @ConditionalOnProperty(prefix = "jingfang.api-docs", name = "enabled", havingValue = "false")
     public SwaggerDisabledFilter swaggerDisabledFilter(SwaggerProperties properties) {
         return new SwaggerDisabledFilter(properties.getDocUri());
     }

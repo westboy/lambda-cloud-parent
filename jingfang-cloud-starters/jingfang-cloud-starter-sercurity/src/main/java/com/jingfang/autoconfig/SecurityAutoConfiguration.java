@@ -26,9 +26,9 @@ import com.jingfang.security.web.authentication.locking.RedisLockingStrategy;
 import com.jingfang.security.web.hmac.HmacAuthenticationProcessingFilter;
 import com.jingfang.security.web.hmac.service.MemoryHmacClientService;
 import com.jingfang.security.web.verify.VerifyCodeFilter;
+import com.jingfang.security.web.verify.service.VerifyCodeService;
 import com.jingfang.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
 import com.jingfang.security.web.verify.service.captcha.CaptchaVerifyCodeValidationImpl;
-import com.jingfang.security.web.verify.service.VerifyCodeService;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import com.jingfang.security.web.verify.store.RedisCaptchaStore;
 import com.jingfang.security.web.xss.XSSDefendFilter;
@@ -42,6 +42,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -58,9 +59,9 @@ import java.util.List;
  * @author jpjoo
  */
 @Slf4j
-@AutoConfiguration
+@AutoConfiguration(after = WebMvcAutoConfiguration.class)
 @EnableConfigurationProperties({SecurityProperties.class})
-public class SecurityAutoConfiguration implements WebMvcConfigurer {
+public class SecurityAutoConfiguration {
 
     public SecurityAutoConfiguration() {
         log.trace("initializing...");
@@ -93,13 +94,23 @@ public class SecurityAutoConfiguration implements WebMvcConfigurer {
         return new XSSDefendFilter(xssProtected.trusted);
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry interceptorRegistry) {
-        interceptorRegistry
-                .addInterceptor(new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
-                        .isAnnotation(securityProperties.getSaToken().getEnableMethodAnnotation()))
-                .addPathPatterns("/**")
-                .excludePathPatterns(securityProperties.getSaToken().getAllIgnoreList());
+    @Bean
+    public WebMvcConfigurer saTokenWebMvcConfigurer() {
+        var secureInterceptor = new SecureInterceptor(secureExtendInterceptor);
+        var enableMethodAnnotation = securityProperties.getSaToken().getEnableMethodAnnotation();
+        var allIgnoreList = securityProperties.getSaToken().getAllIgnoreList();
+        return new WebMvcConfigurer() {
+            @SuppressWarnings("all")
+            @Override
+            public void addInterceptors(InterceptorRegistry interceptorRegistry) {
+                interceptorRegistry
+                        .addInterceptor(
+                                new SaInterceptor(secureInterceptor)
+                                .isAnnotation(enableMethodAnnotation))
+                        .addPathPatterns("/**")
+                        .excludePathPatterns(allIgnoreList);
+            }
+        };
     }
 
     @Bean
@@ -143,13 +154,6 @@ public class SecurityAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(value = "jingfang.security.hmac", name = "enabled")
-    public UserDetailService hmacClientService(@Autowired(required = false) HmacClientService userDetailService) {
-        return new MemoryHmacClientService(userDetailService, securityProperties.hmac.getClients());
-    }
-
-    @Bean
     public FilterRegistrationBean<DefaultAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
                                                                                                                AuthenticationFailureHandler authenticationFailureHandler,
                                                                                                                AuthenticationSuccessHandler authenticationSuccessHandler,
@@ -169,21 +173,39 @@ public class SecurityAutoConfiguration implements WebMvcConfigurer {
         return filterRegistrationBean;
     }
 
-    @Bean
-    @ConditionalOnProperty(value = "jingfang.security.hmac", name = "enabled")
-    public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
-            AuthenticationFailureHandler authenticationFailureHandler,
-            AuthenticationSuccessHandler authenticationSuccessHandler,
-            @Autowired(required = false) HmacClientService userDetailService
-    ) {
-        FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-        HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(userDetailService, new HmacShaEncoder());
-        processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-        processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        filterRegistrationBean.setFilter(processingFilter);
-        filterRegistrationBean.addUrlPatterns("/*");
-        filterRegistrationBean.setOrder(30);
-        return filterRegistrationBean;
+    @Configuration
+    @ConditionalOnProperty(prefix = "jingfang.security.hmac", name = "enabled")
+    public static class HmacConfiguration {
+
+        private SecurityProperties securityProperties;
+
+        @Autowired
+        public void setSecurityProperties(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public UserDetailService hmacClientService(@Autowired(required = false) HmacClientService userDetailService) {
+            return new MemoryHmacClientService(userDetailService, securityProperties.hmac.getClients());
+        }
+
+        @Bean
+        public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
+                @Lazy AuthenticationFailureHandler authenticationFailureHandler,
+                @Lazy AuthenticationSuccessHandler authenticationSuccessHandler,
+                @Autowired(required = false) HmacClientService userDetailService
+        ) {
+            FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(userDetailService, new HmacShaEncoder());
+            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            filterRegistrationBean.setFilter(processingFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(30);
+            return filterRegistrationBean;
+        }
+
     }
 
     @Bean
