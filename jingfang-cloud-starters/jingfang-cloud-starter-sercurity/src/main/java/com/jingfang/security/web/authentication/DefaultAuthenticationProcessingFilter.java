@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.core.utils.Assert;
 import com.jingfang.cloud.mvc.WebHttpUtils;
+import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.service.UserDetailService;
 import com.jingfang.security.web.AbstractAuthenticationProcessingFilter;
@@ -98,7 +99,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
         }
 
         if (StrUtil.isEmpty(loginType)) {
-            loginType = "admin";
+            loginType = LoginType.ADMIN.getCode();
         }
 
         request.setAttribute(loginTypeParameter, loginType);

@@ -25,6 +25,7 @@ import com.jingfang.security.web.authentication.handler.DefaultLogoutHandler;
 import com.jingfang.security.web.authentication.handler.DefaultLogoutSuccessHandler;
 import com.jingfang.security.web.authentication.locking.RedisLockingStrategy;
 import com.jingfang.security.web.hmac.HmacAuthenticationProcessingFilter;
+import com.jingfang.security.web.hmac.handler.HmacAuthenticationSuccessHandler;
 import com.jingfang.security.web.hmac.service.MemoryHmacClientService;
 import com.jingfang.security.web.verify.VerifyCodeFilter;
 import com.jingfang.security.web.verify.service.VerifyCodeService;
@@ -162,6 +163,7 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "jingfang.security.form", name = "enabled")
     public FilterRegistrationBean<DefaultAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
                                                                                                                AuthenticationFailureHandler authenticationFailureHandler,
                                                                                                                AuthenticationSuccessHandler authenticationSuccessHandler,
@@ -197,16 +199,20 @@ public class SecurityAutoConfiguration {
         public HmacClientService hmacClientService(@Autowired(required = false) UserDetailService userDetailService) {
             return new MemoryHmacClientService(userDetailService, securityProperties.hmac.getClients());
         }
+        @Bean
+        public AuthenticationSuccessHandler hmacAuthenticationSuccessHandler() {
+            return new HmacAuthenticationSuccessHandler();
+        }
 
         @Bean
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
                 @Lazy AuthenticationFailureHandler authenticationFailureHandler,
-                @Lazy AuthenticationSuccessHandler authenticationSuccessHandler,
+                @Lazy AuthenticationSuccessHandler hmacAuthenticationSuccessHandler,
                 @Autowired(required = false) HmacClientService hmacClientService
         ) {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
-            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            processingFilter.setAuthenticationSuccessHandler(hmacAuthenticationSuccessHandler);
             processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");

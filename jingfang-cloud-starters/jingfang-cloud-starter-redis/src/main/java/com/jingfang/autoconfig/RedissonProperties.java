@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author westboy
  */
 @Data
-@ConfigurationProperties(prefix = "spring.redis.redisson")
+@ConfigurationProperties(prefix = "spring.data.redis.redisson")
 public class RedissonProperties {
     /**
      * 是否启用

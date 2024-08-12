@@ -29,6 +29,8 @@ public class HmacClient implements LoginUser {
     private Date expired;
     private boolean enabled;
     private String tenantId;
+    private Set<String> roles = Set.of("ROLE_HMAC");
+    private Set<String> permissions = Set.of();
 
     public HmacClient() {
     }
@@ -42,26 +44,15 @@ public class HmacClient implements LoginUser {
 
 
     @Override
-    @JsonIgnore
     public String getUsername() {
         return this.appid;
     }
 
-    @JsonIgnore
     @Override
     public String getCredentials() {
         return this.secret;
     }
 
-    @Override
-    public Set<String> getRoles() {
-        return Set.of("ROLE_HMAC");
-    }
-
-    @Override
-    public Set<String> getPermissions() {
-        return Set.of();
-    }
 
     @JsonIgnore
     public Set<String> getWhitelist() {

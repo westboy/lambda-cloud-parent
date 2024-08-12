@@ -3,6 +3,7 @@ package com.jingfang.security.web.hmac;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.core.utils.Assert;
 import com.jingfang.cloud.mvc.WebHttpUtils;
+import com.jingfang.security.enums.LoginType;
 import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.exception.BadCredentialsException;
 import com.jingfang.security.exception.UsernameNotFoundException;
@@ -29,7 +30,8 @@ import java.util.Set;
 @Slf4j
 public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    private static final String REQUEST_HMAC_RUN_AS = "hmac-run-as";
+    private static final String REQUEST_HMAC_RUN_USER = "hmac-run-user";
+    private static final String REQUEST_HMAC_TYPE = "hmac-run-type";
     private final HmacClientService hmacClientService;
     private final HmacShaEncoder passwordEncoder;
 
@@ -40,6 +42,10 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Override
+    protected boolean doNextFilter() {
+        return true;
+    }
 
     protected HmacClient retrieveUser(String username, String remoteAddr) {
         LoginUser loadedUser = this.hmacClientService.loadClientByAppid(username);
@@ -74,13 +80,20 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
                     log.error("actual: {}, expected: {}, salt: {}", digest, encodedPassword, salt);
                     throw new BadCredentialsException("Password does not match stored value");
                 }
-                // hmac认证成功后，查看是否有hmac-run-as 参数标记
-                String runUserId = requestWrapper.getParameter(REQUEST_HMAC_RUN_AS);
+
+                String runUserType = requestWrapper.getParameter(REQUEST_HMAC_TYPE);
+                if (runUserType == null) {
+                    runUserType = LoginType.ADMIN.getCode();
+                }
+
+                String runUserId = requestWrapper.getParameter(REQUEST_HMAC_RUN_USER);
                 if (runUserId != null) {
-                    String[] tokens = runUserId.split("_");
-                    hmacClient = hmacClientService.loginByUsername(tokens[0], tokens[1]);
+                    hmacClient = hmacClientService.loginByUsername(runUserId, runUserType);
                     log.debug("hmac user {} changed to user: {}", hmacClient.getUsername(), runUserId);
                 }
+
+                request.setAttribute("loginType", runUserType);
+                request.setAttribute("loginDevice", "default");
                 return hmacClient;
             } else {
                 throw new BadCredentialsException("此请求不支持 Hmac 认证失败！");
