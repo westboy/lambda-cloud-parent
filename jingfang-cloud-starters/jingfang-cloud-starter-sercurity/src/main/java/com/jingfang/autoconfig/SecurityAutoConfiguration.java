@@ -7,6 +7,7 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.same.SaSameUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jingfang.cloud.core.exception.model.ErrorModel;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.inteceptor.SecureExtendInterceptor;
@@ -124,7 +125,14 @@ public class SecurityAutoConfiguration {
                         SaSameUtil.checkCurrentRequestToken();
                     }
                 })
-                .setError(_ -> SaResult.error("认证失败，无法访问系统资源").setCode(HttpStatus.UNAUTHORIZED.value()));
+                .setError(e -> {
+                    ErrorModel errorModel = new ErrorModel();
+                    errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    errorModel.setTimestamp(System.currentTimeMillis());
+                    errorModel.setMessage(e.getMessage());
+                    return errorModel;
+                });
     }
 
     @Bean

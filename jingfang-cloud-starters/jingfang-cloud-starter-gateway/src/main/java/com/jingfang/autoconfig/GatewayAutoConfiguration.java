@@ -4,7 +4,7 @@ package com.jingfang.autoconfig;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.util.SaResult;
+import com.jingfang.cloud.core.exception.model.ErrorModel;
 import com.jingfang.cloud.core.propertis.CorsProperties;
 import com.jingfang.cloud.gateway.filter.*;
 import com.jingfang.cloud.gateway.predicate.BackendRoutePredicateFactory;
@@ -70,7 +70,7 @@ public class GatewayAutoConfiguration {
         public RouterFunction<ServerResponse> routerFunction() {
             RequestPredicate predicate = GET("/doc.html").or(GET("/v3/api-docs/**"))
                     .or(GET("/swagger-resources/**"));
-            return route(predicate, r -> ServerResponse.status(HttpStatus.NOT_FOUND).build());
+            return route(predicate, _ -> ServerResponse.status(HttpStatus.NOT_FOUND).build());
         }
     }
 
@@ -120,7 +120,14 @@ public class GatewayAutoConfiguration {
                     SaRouter.match("/**")
                             .notMatch(gatewayFirewallProperties.getWhites())
                             .check(_ -> StpUtil.checkLogin());
-                }).setError(_ -> SaResult.error("认证失败，无法访问系统资源").setCode(HttpStatus.UNAUTHORIZED.value()));
+                }).setError(e -> {
+                    ErrorModel errorModel = new ErrorModel();
+                    errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    errorModel.setTimestamp(System.currentTimeMillis());
+                    errorModel.setMessage(e.getMessage());
+                    return errorModel;
+                });
     }
 
     @Bean
