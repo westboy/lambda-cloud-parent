@@ -131,7 +131,7 @@ public class SecurityAutoConfiguration {
                     errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
                     errorModel.setTimestamp(System.currentTimeMillis());
                     errorModel.setMessage(e.getMessage());
-                    return errorModel;
+                    return errorModel.toJsonString();
                 });
     }
 
