@@ -18,6 +18,7 @@
             <artifactId>jingfang-cloud-starter-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.jingfang.cloud</groupId>
             <artifactId>jingfang-cloud-starter-logger</artifactId>

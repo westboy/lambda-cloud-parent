@@ -106,7 +106,7 @@ public class SecurityAutoConfiguration {
                 interceptorRegistry
                         .addInterceptor(
                                 new SaInterceptor(secureInterceptor)
-                                .isAnnotation(enableMethodAnnotation))
+                                        .isAnnotation(enableMethodAnnotation))
                         .addPathPatterns("/**")
                         .excludePathPatterns(allIgnoreList);
             }
@@ -158,14 +158,14 @@ public class SecurityAutoConfiguration {
                                                                                                                AuthenticationFailureHandler authenticationFailureHandler,
                                                                                                                AuthenticationSuccessHandler authenticationSuccessHandler,
                                                                                                                PasswordEncoder passwordEncoder,
-                                                                                                               UserDetailService hmacClientService
+                                                                                                               @Autowired(required = false) UserDetailService userDetailService
     ) {
         FilterRegistrationBean<DefaultAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         DefaultAuthenticationProcessingFilter processingFilter = new DefaultAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
         processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
         processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        processingFilter.setUserDetailService(hmacClientService);
+        processingFilter.setUserDetailService(userDetailService);
         processingFilter.setPasswordEncoder(passwordEncoder);
         filterRegistrationBean.setFilter(processingFilter);
         filterRegistrationBean.addUrlPatterns("/*");
@@ -186,7 +186,7 @@ public class SecurityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public UserDetailService hmacClientService(@Autowired(required = false) HmacClientService userDetailService) {
+        public HmacClientService hmacClientService(@Autowired(required = false) UserDetailService userDetailService) {
             return new MemoryHmacClientService(userDetailService, securityProperties.hmac.getClients());
         }
 
@@ -194,10 +194,10 @@ public class SecurityAutoConfiguration {
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
                 @Lazy AuthenticationFailureHandler authenticationFailureHandler,
                 @Lazy AuthenticationSuccessHandler authenticationSuccessHandler,
-                @Autowired(required = false) HmacClientService userDetailService
+                @Autowired(required = false) HmacClientService hmacClientService
         ) {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(userDetailService, new HmacShaEncoder());
+            HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
             processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
             processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);

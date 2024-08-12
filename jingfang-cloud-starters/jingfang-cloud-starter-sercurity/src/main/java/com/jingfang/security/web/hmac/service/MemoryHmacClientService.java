@@ -31,14 +31,4 @@ public class MemoryHmacClientService implements HmacClientService {
     public LoginUser loginByUsername(String username, String loginType) throws AuthenticationException {
         return userDetailService.loginByUsername(username, loginType);
     }
-
-    @Override
-    public List<String> getPermissionList(Object loginId, String loginType) {
-        return List.of();
-    }
-
-    @Override
-    public List<String> getRoleList(Object loginId, String loginType) {
-        return List.of();
-    }
 }
