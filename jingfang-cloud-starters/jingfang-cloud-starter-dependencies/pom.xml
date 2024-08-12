@@ -19,6 +19,16 @@
             </dependency>
             <dependency>
                 <groupId>com.jingfang.cloud</groupId>
+                <artifactId>jingfang-cloud-starter-gateway</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jingfang.cloud</groupId>
+                <artifactId>jingfang-cloud-starter-feign</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jingfang.cloud</groupId>
                 <artifactId>jingfang-cloud-starter-actuator</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
@@ -80,6 +90,11 @@
             <dependency>
                 <groupId>com.jingfang.cloud</groupId>
                 <artifactId>jingfang-cloud-starter-web</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jingfang.cloud</groupId>
+                <artifactId>jingfang-cloud-starter-websocket</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
         </dependencies>

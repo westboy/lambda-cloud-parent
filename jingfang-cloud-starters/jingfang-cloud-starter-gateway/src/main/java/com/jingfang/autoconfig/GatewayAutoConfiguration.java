@@ -8,7 +8,7 @@ import cn.dev33.satoken.util.SaResult;
 import com.jingfang.cloud.core.propertis.CorsProperties;
 import com.jingfang.cloud.gateway.filter.*;
 import com.jingfang.cloud.gateway.predicate.BackendRoutePredicateFactory;
-import com.jingfang.cloud.gateway.properties.GatewayAccessProperties;
+import com.jingfang.cloud.gateway.properties.GatewayFirewallProperties;
 import com.jingfang.cloud.gateway.service.RouterEnhancer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -51,7 +51,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
  */
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(org.springframework.cloud.gateway.config.GatewayAutoConfiguration.class)
-@EnableConfigurationProperties(GatewayAccessProperties.class)
+@EnableConfigurationProperties(GatewayFirewallProperties.class)
 public class GatewayAutoConfiguration {
 
     private static final String INDEX = "/index.html";
@@ -111,19 +111,20 @@ public class GatewayAutoConfiguration {
      * 注册 Sa-Token 全局过滤器
      */
     @Bean
-    public SaReactorFilter getSaReactorFilter(GatewayAccessProperties gatewayAccessProperties) {
+    @ConditionalOnProperty(prefix = "jingfang.web.firewall",name = "enabled")
+    public SaReactorFilter getSaReactorFilter(GatewayFirewallProperties gatewayFirewallProperties) {
         return new SaReactorFilter()
                 .addInclude("/**")
                 .addExclude("/favicon.ico", "/actuator/**")
                 .setAuth(_ -> {
                     SaRouter.match("/**")
-                            .notMatch(gatewayAccessProperties.getWhites())
+                            .notMatch(gatewayFirewallProperties.getWhites())
                             .check(_ -> StpUtil.checkLogin());
                 }).setError(_ -> SaResult.error("认证失败，无法访问系统资源").setCode(HttpStatus.UNAUTHORIZED.value()));
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "jingfang.web.cors", name = "enable", havingValue = "true")
+    @ConditionalOnProperty(prefix = "jingfang.web.cors", name = "enabled", havingValue = "true")
     public CorsWebFilter corsWebFilter(CorsProperties corsProperties) {
         CorsConfiguration corsConfig = new CorsConfiguration();
         List<String> allowedOrigins = corsProperties.getAllowedOrigins();

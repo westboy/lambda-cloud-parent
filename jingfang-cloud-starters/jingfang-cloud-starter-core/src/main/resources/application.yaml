@@ -134,7 +134,6 @@ jingfang:
       is-print: false
       is-concurrent: true
   api-docs:
-    production: false
     enabled: true
     title: "${spring.application.name} Api Documents"
   liquibase:

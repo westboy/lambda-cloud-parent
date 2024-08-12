@@ -33,7 +33,7 @@ public class CorsProperties {
             "x-requested-with"
     });
 
-    private boolean enable;
+    private boolean enabled;
 
     @Nullable
     private List<String> allowedOrigins;

@@ -10,11 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@Configuration
-@RefreshScope
-@ConfigurationProperties(prefix = "jingfang.web")
-public class GatewayAccessProperties {
+@ConfigurationProperties(prefix = "jingfang.web.firewall")
+public class GatewayFirewallProperties {
+
+    private Boolean enabled = false;
 
     private List<String> whites = new ArrayList<>();
 
