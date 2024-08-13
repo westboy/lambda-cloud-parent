@@ -1,7 +1,6 @@
 package com.jingfang.security.web;
 
 import com.jingfang.cloud.core.principal.LoginUser;
-import com.jingfang.security.context.SecurityContextHolder;
 import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
@@ -102,7 +101,6 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     }
 
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        SecurityContextHolder.clearContext();
         this.logger.trace("Failed to process authentication request", failed);
         this.logger.trace("Cleared SecurityContextHolder");
         this.logger.trace("Handling authentication failure");

@@ -48,4 +48,18 @@ public interface LoginUser extends Principal {
      */
     Set<String> getPermissions();
 
+    /**
+     * AccountLocked
+     *
+     * @return
+     */
+    Boolean getAccountLocked();
+
+    /**
+     * AccountExpired
+     *
+     * @return
+     */
+    Boolean getAccountExpired();
+
 }

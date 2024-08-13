@@ -153,7 +153,7 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-extension</artifactId>
-            <version>3.5.6</version>
+            <version>${mybatis-plus.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -161,6 +161,12 @@
             <artifactId>fernet-java8</artifactId>
             <version>1.4.2</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-core</artifactId>
+            <version>${satoken.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

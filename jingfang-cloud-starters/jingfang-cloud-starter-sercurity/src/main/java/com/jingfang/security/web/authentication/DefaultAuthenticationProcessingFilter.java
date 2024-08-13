@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.core.utils.Assert;
 import com.jingfang.cloud.mvc.WebHttpUtils;
-import com.jingfang.security.enums.LoginType;
+import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.service.UserDetailService;
 import com.jingfang.security.web.AbstractAuthenticationProcessingFilter;

@@ -6,7 +6,6 @@ import com.jingfang.cloud.core.exception.model.ErrorModel;
  *
  * @author Jin
  */
-@SuppressWarnings("serial")
 public class FeignUnauthorizedException extends AbstractFeignException {
 
 	public FeignUnauthorizedException(ErrorModel model) {

@@ -1,5 +1,6 @@
-package com.jingfang.security.enums;
+package com.jingfang.cloud.core.principal;
 
+import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.stp.StpLogic;
 import lombok.Getter;
 
@@ -40,7 +41,7 @@ public enum LoginType {
 
     public static LoginType get(String id) {
         return Arrays.stream(LoginType.values()).filter(loginModeEnum -> loginModeEnum.code.equals(id))
-                .findFirst().orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
+                .findFirst().orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆类型"));
     }
 
     public static StpLogic getActiveStpLogic() {
@@ -48,7 +49,7 @@ public enum LoginType {
                 .map(LoginType::getStpLogic)
                 .filter(StpLogic::isLogin)
                 .findFirst()
-                .orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
+                .orElseThrow(() -> new SaTokenException("无权访问，请重试！"));
     }
 
     public static StpLogic getStpLogic(String id) {

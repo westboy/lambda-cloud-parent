@@ -53,6 +53,16 @@ public class HmacClient implements LoginUser {
         return this.secret;
     }
 
+    @Override
+    public Boolean getAccountLocked() {
+        return false;
+    }
+
+    @Override
+    public Boolean getAccountExpired() {
+        return false;
+    }
+
 
     @JsonIgnore
     public Set<String> getWhitelist() {

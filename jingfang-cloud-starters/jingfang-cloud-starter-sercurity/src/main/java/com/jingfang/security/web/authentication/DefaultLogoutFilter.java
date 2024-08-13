@@ -1,23 +1,23 @@
 
 package com.jingfang.security.web.authentication;
 
-import java.io.IOException;
+import com.jingfang.cloud.core.principal.LoginUser;
+import com.jingfang.security.handler.CompositeLogoutHandler;
+import com.jingfang.security.handler.LogoutHandler;
+import com.jingfang.security.handler.LogoutSuccessHandler;
+import com.jingfang.security.utils.OperatorUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import com.jingfang.cloud.core.principal.LoginUser;
-import com.jingfang.security.context.SecurityContextHolder;
-import com.jingfang.security.handler.CompositeLogoutHandler;
-import com.jingfang.security.handler.LogoutHandler;
-import com.jingfang.security.handler.LogoutSuccessHandler;
 import org.springframework.core.log.LogMessage;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
+
+import java.io.IOException;
 
 /**
  * DefaultLogoutFilter
@@ -50,7 +50,7 @@ public class DefaultLogoutFilter extends GenericFilterBean {
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (this.requiresLogout(request)) {
-            LoginUser loginUser = SecurityContextHolder.getContext().getPrincipal();
+            LoginUser loginUser  = OperatorUtils.getOperator();
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug(LogMessage.format("Logging out [%s]", loginUser));
             }

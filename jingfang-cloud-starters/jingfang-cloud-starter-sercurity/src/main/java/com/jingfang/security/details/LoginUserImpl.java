@@ -1,0 +1,31 @@
+package com.jingfang.security.details;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jingfang.cloud.core.principal.LoginUser;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.util.Set;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+public class LoginUserImpl implements LoginUser {
+
+    private String username;
+    @JsonIgnore
+    private String password;
+    private Boolean accountExpired;
+    private Boolean accountLocked;
+    private Set<String> roles = Set.of();
+    private Set<String> permissions = Set.of();
+    @JsonIgnore
+    @Override
+    public String getCredentials() {
+        return password;
+    }
+
+}

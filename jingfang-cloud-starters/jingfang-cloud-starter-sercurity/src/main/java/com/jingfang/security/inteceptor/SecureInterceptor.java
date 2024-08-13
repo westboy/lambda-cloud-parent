@@ -2,7 +2,7 @@ package com.jingfang.security.inteceptor;
 
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.stp.StpLogic;
-import com.jingfang.security.enums.LoginType;
+import com.jingfang.cloud.core.principal.LoginType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.web.method.HandlerMethod;

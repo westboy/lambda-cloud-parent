@@ -5,7 +5,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import com.google.common.collect.Maps;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.websocket.Constants;
-import com.jingfang.security.enums.LoginType;
+import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.security.exception.AuthenticationException;
 import com.jingfang.security.service.UserDetailService;
 import lombok.extern.slf4j.Slf4j;

@@ -1,10 +1,12 @@
 package com.jingfang.autoconfig;
 
 
+import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import com.jingfang.cloud.core.exception.model.ErrorModel;
+import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.cloud.core.propertis.CorsProperties;
 import com.jingfang.cloud.gateway.filter.*;
 import com.jingfang.cloud.gateway.predicate.BackendRoutePredicateFactory;
@@ -21,6 +23,7 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.unit.DataSize;
@@ -81,6 +84,7 @@ public class GatewayAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "jingfang.security.sa-token", name = "check-same-token")
     public ForwardAuthFilter forwardAuthFilter() {
         return new ForwardAuthFilter();
     }
@@ -107,11 +111,18 @@ public class GatewayAutoConfiguration {
         return new CorsProperties();
     }
 
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "jingfang.security.sa-token")
+    public SaTokenConfig saTokenConfig() {
+        return new SaTokenConfig();
+    }
+
     /**
      * 注册 Sa-Token 全局过滤器
      */
     @Bean
-    @ConditionalOnProperty(prefix = "jingfang.web.firewall",name = "enabled")
+    @ConditionalOnProperty(prefix = "jingfang.web.firewall", name = "enabled")
     public SaReactorFilter getSaReactorFilter(GatewayFirewallProperties gatewayFirewallProperties) {
         return new SaReactorFilter()
                 .addInclude("/**")
@@ -119,7 +130,7 @@ public class GatewayAutoConfiguration {
                 .setAuth(_ -> {
                     SaRouter.match("/**")
                             .notMatch(gatewayFirewallProperties.getWhites())
-                            .check(_ -> StpUtil.checkLogin());
+                            .check(_ -> LoginType.getActiveStpLogic().checkLogin());
                 }).setError(e -> {
                     ErrorModel errorModel = new ErrorModel();
                     errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());

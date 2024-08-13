@@ -2,7 +2,7 @@ package com.jingfang.security.web.hmac.handler;
 
 import cn.dev33.satoken.stp.StpLogic;
 import com.jingfang.cloud.core.principal.LoginUser;
-import com.jingfang.security.enums.LoginType;
+import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,5 +26,7 @@ public class HmacAuthenticationSuccessHandler implements AuthenticationSuccessHa
         StpLogic stpLogic = LoginType.getStpLogic(loginType);
         //用户登录
         stpLogic.login(loginUser.getUsername(), device);
+        //持久化当前用户
+        stpLogic.getTokenSession().set("loginUser", loginUser);
     }
 }

@@ -123,6 +123,12 @@
             <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
             <version>${satoken.version}</version>
         </dependency>
+        <!-- Sa-Token 整合 Redis （使用 jackson 序列化方式） -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-jackson</artifactId>
+            <version>${satoken.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

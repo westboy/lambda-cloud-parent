@@ -1,13 +1,14 @@
 package com.jingfang.autoconfig;
 
-import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.context.model.SaRequest;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.same.SaSameUtil;
-import cn.dev33.satoken.util.SaResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.exception.model.ErrorModel;
+import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.handler.AuthenticationFailureHandler;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.inteceptor.SecureExtendInterceptor;
@@ -34,6 +35,7 @@ import com.jingfang.security.web.verify.service.captcha.CaptchaVerifyCodeValidat
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import com.jingfang.security.web.verify.store.RedisCaptchaStore;
 import com.jingfang.security.web.xss.XSSDefendFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -122,7 +124,9 @@ public class SecurityAutoConfiguration {
                 .addInclude("/**")
                 .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
                 .setAuth(_ -> {
-                    if (SaManager.getConfig().getCheckSameToken()) {
+                    HttpServletRequest currentRequest = WebHttpUtils.getCurrentRequest();
+                    boolean hmacRequest = WebHttpUtils.isHmacRequest(currentRequest);
+                    if (!hmacRequest) {
                         SaSameUtil.checkCurrentRequestToken();
                     }
                 })
@@ -199,20 +203,15 @@ public class SecurityAutoConfiguration {
         public HmacClientService hmacClientService(@Autowired(required = false) UserDetailService userDetailService) {
             return new MemoryHmacClientService(userDetailService, securityProperties.hmac.getClients());
         }
-        @Bean
-        public AuthenticationSuccessHandler hmacAuthenticationSuccessHandler() {
-            return new HmacAuthenticationSuccessHandler();
-        }
 
         @Bean
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
-                @Lazy AuthenticationFailureHandler authenticationFailureHandler,
-                @Lazy AuthenticationSuccessHandler hmacAuthenticationSuccessHandler,
+                AuthenticationFailureHandler authenticationFailureHandler,
                 @Autowired(required = false) HmacClientService hmacClientService
         ) {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
-            processingFilter.setAuthenticationSuccessHandler(hmacAuthenticationSuccessHandler);
+            processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
             processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");

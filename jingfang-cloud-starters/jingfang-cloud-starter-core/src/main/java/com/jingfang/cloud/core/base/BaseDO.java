@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -19,16 +20,17 @@ import java.time.LocalDateTime;
 @Setter
 public abstract class BaseDO implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -2694074995776393995L;
 
     @TableField(fill = FieldFill.INSERT)
-    private Serializable createUser;
+    private String createUser;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(fill = FieldFill.UPDATE)
-    private Serializable updateUser;
+    private String updateUser;
 
     @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime updateTime;

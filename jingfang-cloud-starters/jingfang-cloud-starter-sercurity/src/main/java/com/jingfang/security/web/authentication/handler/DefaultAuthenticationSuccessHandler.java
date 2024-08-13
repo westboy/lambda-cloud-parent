@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.cloud.web.RequestTimeHolder;
-import com.jingfang.security.enums.LoginType;
+import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.security.handler.AuthenticationSuccessHandler;
 import com.jingfang.security.web.events.UserLoginEvent;
 import jakarta.servlet.http.HttpServletRequest;
