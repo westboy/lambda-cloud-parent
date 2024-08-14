@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-data-26</artifactId>
+            <artifactId>redisson-spring-data-33</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

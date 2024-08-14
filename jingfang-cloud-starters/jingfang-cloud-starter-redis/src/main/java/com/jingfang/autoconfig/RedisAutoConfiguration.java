@@ -174,7 +174,7 @@ public class RedisAutoConfiguration {
 
     @Configuration
     @ConditionalOnClass(RedissonClient.class)
-    @ConditionalOnProperty(prefix = "spring.redis.redisson", name = "enabled", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "spring.data.redis.redisson", name = "enabled", matchIfMissing = true)
     static class RedissonAutoConfiguration {
 
         @Lazy
