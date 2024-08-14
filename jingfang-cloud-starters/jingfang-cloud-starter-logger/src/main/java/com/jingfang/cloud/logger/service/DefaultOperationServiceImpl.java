@@ -3,6 +3,8 @@ package com.jingfang.cloud.logger.service;
 import com.jingfang.cloud.logger.model.OperationBody;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.jingfang.cloud.core.exception.model.ErrorModel.GSON;
+
 
 /**
  * @author jpjoo
@@ -17,6 +19,6 @@ public class DefaultOperationServiceImpl implements OperationService {
      */
     @Override
     public void save(OperationBody operationBody) {
-
+        log.info("save OPERATION LOGGER: {}", GSON.toJson(operationBody));
     }
 }
