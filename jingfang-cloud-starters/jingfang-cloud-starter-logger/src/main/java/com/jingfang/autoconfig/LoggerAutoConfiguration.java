@@ -1,11 +1,10 @@
 package com.jingfang.autoconfig;
 
-import com.jingfang.cloud.logger.LoggingExtendProperties;
 import com.jingfang.cloud.logger.advices.OperationLoggerAdvice;
 import com.jingfang.cloud.logger.service.DefaultOperationServiceImpl;
 import com.jingfang.cloud.logger.service.OperationService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,9 +17,8 @@ import org.springframework.context.annotation.Configuration;
  * @author jpjoo
  */
 @Slf4j
-@Configuration(proxyBeanMethods = false)
-@AutoConfigureAfter(KafkaAutoConfiguration.class)
-@EnableConfigurationProperties(LoggingExtendProperties.class)
+@AutoConfiguration(after =KafkaAutoConfiguration.class )
+@EnableConfigurationProperties(LoggingProperties.class)
 public class LoggerAutoConfiguration {
     public LoggerAutoConfiguration() {
         log.trace("initializing...");

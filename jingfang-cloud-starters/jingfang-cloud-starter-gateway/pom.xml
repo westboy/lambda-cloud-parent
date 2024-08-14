@@ -20,10 +20,6 @@
                     <groupId>org.liquibase</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>influxdb-client-core</artifactId>
-                    <groupId>com.influxdb</groupId>
-                </exclusion>
-                <exclusion>
                     <artifactId>mybatis-plus-annotation</artifactId>
                     <groupId>com.baomidou</groupId>
                 </exclusion>
@@ -51,6 +47,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jingfang-cloud-starter-logger</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jingfang-cloud-starter-actuator</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -63,30 +64,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>spring-boot-starter-logging</artifactId>
-                    <groupId>org.springframework.boot</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-log4j2</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>log4j-slf4j-impl</artifactId>
-                    <groupId>org.apache.logging.log4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

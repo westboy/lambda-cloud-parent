@@ -1,13 +1,9 @@
-package com.jingfang.cloud.logger;
+package com.jingfang.autoconfig;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.boot.logging.LogLevel;
-
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * LoggingExtendProperties
@@ -16,13 +12,8 @@ import java.util.Map;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "logging")
-public class LoggingExtendProperties {
-
-    /**
-     * 日志级别
-     */
-    Map<String, LogLevel> level = Collections.emptyMap();
+@ConfigurationProperties(prefix = "jingfang.logging")
+public class LoggingProperties {
 
     /**
      * 操作日志相关配置
@@ -32,7 +23,6 @@ public class LoggingExtendProperties {
 
     /**
      * 操作日志相关配置
-     *
      */
     @Setter
     @Getter

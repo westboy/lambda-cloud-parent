@@ -32,14 +32,13 @@ abstract class AbstractAdvice<T extends Annotation> {
 
     Method getMethodToExecute(final JoinPoint jp) throws NoSuchMethodException {
         final Signature sig = jp.getSignature();
-        if (!(sig instanceof MethodSignature)) {
+        if (!(sig instanceof MethodSignature sing)) {
             throw new NotSupportedException("This annotation is only valid on a method.");
         }
-        final MethodSignature msig = (MethodSignature) sig;
         final Object target = jp.getTarget();
 
-        String name = msig.getName();
-        Class<?>[] parameters = msig.getParameterTypes();
+        String name = sing.getName();
+        Class<?>[] parameters = sing.getParameterTypes();
 
         return target.getClass().getMethod(name, parameters);
     }

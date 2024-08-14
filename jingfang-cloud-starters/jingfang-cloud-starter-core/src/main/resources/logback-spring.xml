@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%yellow(%d{yyyy-MM-dd HH:mm:ss}) %magenta([%thread]) %highlight(%level) %cyan(%logger{36}:%L) - %msg%n</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+    </appender>
+
+    <include resource="logback/logback-common.xml" />
+
+    <root level="info">
+        <appender-ref ref="console"/>
+    </root>
+</configuration>

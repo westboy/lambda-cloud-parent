@@ -71,15 +71,8 @@ xxl:
     executor:
       app-name: ${spring.application.name}
       ip-address: ${spring.cloud.client.ip-address}
-logging:
   level:
     'com.jingfang.cloud': INFO
-    'com.netflix.discovery.DiscoveryClient': 'OFF'
-    'org.apache.tomcat.util.modeler.Registry': 'OFF'
-    'com.netflix.discovery.InstanceInfoReplicator': 'ERROR'
-    'com.netflix.discovery.TimedSupervisorTask': 'OFF'
-    'com.netflix.config.AbstractPollingScheduler': 'OFF'
-    'com.netflix.eureka.resources.InstanceResource': 'ERROR'
     'org.apache.kafka.clients.producer.ProducerConfig': 'OFF'
     'org.apache.kafka.clients.consumer.ConsumerConfig': 'OFF'
     'org.springframework.boot.actuate.endpoint.EndpointId': 'OFF'

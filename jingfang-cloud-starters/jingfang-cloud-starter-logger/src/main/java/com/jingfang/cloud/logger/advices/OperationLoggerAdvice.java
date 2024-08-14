@@ -6,7 +6,6 @@ import org.apache.commons.lang.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.MDC;
 import org.springframework.util.StopWatch;
 
@@ -23,13 +22,8 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
 
     private OperationService operationService;
 
-    @SuppressWarnings("EmptyMethod")
-    @Pointcut("@annotation(com.jingfang.cloud.logger.annotation.OperationLog)")
-    public void newLogger() {
-        //do nothing..
-    }
 
-    @Around("newLogger()")
+    @Around("@annotation(com.jingfang.cloud.logger.annotation.OperationLog)")
     protected Object obtain(final ProceedingJoinPoint pjp) throws Throwable {
         return execute(pjp);
     }
@@ -44,9 +38,8 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         final String methodName = getDeclaredMethodName(method);
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         try {
-            Object result = pjp.proceed();
             //todo
-            return result;
+            return pjp.proceed();
         } finally {
             clock.stop();
             try {
