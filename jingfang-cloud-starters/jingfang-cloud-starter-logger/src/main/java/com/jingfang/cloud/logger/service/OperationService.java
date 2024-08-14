@@ -1,6 +1,6 @@
 package com.jingfang.cloud.logger.service;
 
-import com.jingfang.cloud.logger.advices.LogContext;
+import com.jingfang.cloud.logger.model.OperationBody;
 
 /**
  * @author jpjoo
@@ -9,7 +9,7 @@ public interface OperationService {
     /**
      * 保存操作日志
      *
-     * @param context
+     * @param operationBody operationBody
      */
-    void save(LogContext context);
+    void save(OperationBody operationBody);
 }

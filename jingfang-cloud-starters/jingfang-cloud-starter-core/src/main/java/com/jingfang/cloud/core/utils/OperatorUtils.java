@@ -1,4 +1,4 @@
-package com.jingfang.security.utils;
+package com.jingfang.cloud.core.utils;
 
 import cn.dev33.satoken.stp.StpLogic;
 import com.jingfang.cloud.core.principal.LoginUser;

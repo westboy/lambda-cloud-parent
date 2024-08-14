@@ -17,7 +17,7 @@ public @interface OperationLog {
 
     String value() default "";
 
-    String module() default "系统内置";
+    String module() default "模块";
 
     String type() default "";
 }

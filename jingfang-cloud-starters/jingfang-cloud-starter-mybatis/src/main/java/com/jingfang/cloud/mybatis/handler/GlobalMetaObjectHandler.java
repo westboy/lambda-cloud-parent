@@ -2,7 +2,7 @@ package com.jingfang.cloud.mybatis.handler;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.jingfang.cloud.core.principal.LoginUser;
-import com.jingfang.security.utils.OperatorUtils;
+import com.jingfang.cloud.core.utils.OperatorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import java.time.LocalDateTime;

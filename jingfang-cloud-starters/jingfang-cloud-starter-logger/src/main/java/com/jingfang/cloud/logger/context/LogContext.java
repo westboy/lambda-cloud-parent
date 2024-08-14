@@ -1,4 +1,4 @@
-package com.jingfang.cloud.logger.advices;
+package com.jingfang.cloud.logger.context;
 
 import org.slf4j.MDC;
 
@@ -17,7 +17,7 @@ public final class LogContext {
         MDC.put(DETAIL, detail);
     }
 
-    static String getDetail() {
+    public static String getDetail() {
         return MDC.get(DETAIL);
     }
 

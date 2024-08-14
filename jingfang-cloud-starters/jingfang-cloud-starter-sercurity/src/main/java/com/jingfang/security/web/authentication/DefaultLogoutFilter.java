@@ -5,7 +5,7 @@ import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.handler.CompositeLogoutHandler;
 import com.jingfang.security.handler.LogoutHandler;
 import com.jingfang.security.handler.LogoutSuccessHandler;
-import com.jingfang.security.utils.OperatorUtils;
+import com.jingfang.cloud.core.utils.OperatorUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;

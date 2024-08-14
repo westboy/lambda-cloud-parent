@@ -3,7 +3,7 @@ package com.jingfang.security.service;
 import cn.dev33.satoken.stp.StpInterface;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.security.exception.AuthenticationException;
-import com.jingfang.security.utils.OperatorUtils;
+import com.jingfang.cloud.core.utils.OperatorUtils;
 
 import java.util.List;
 
