@@ -38,7 +38,7 @@ dubbo:
   consumer:
     check: false
   registry:
-    address: 'nacos://${spring.cloud.nacos.discovery.server-addr}'
+    address: 'nacos://${spring.cloud.nacos.discovery.server-addr}?username=${spring.cloud.nacos.username}&password=${spring.cloud.nacos.password}'
     group: ${spring.cloud.nacos.discovery.group}
     parameters:
       namespace: ${spring.cloud.nacos.discovery.namespace}
