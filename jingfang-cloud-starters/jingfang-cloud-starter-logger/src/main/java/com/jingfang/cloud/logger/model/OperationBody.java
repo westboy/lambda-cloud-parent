@@ -22,7 +22,7 @@ public class OperationBody {
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "操作人员")
     String operator;
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "操作类型")
-    String operation;
+    String httpMethod;
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "操作时间")
     Date time;
     @JsonProperty("cast")

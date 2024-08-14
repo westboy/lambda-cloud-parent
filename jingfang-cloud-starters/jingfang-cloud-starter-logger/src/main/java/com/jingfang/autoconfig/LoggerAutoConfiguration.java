@@ -37,7 +37,7 @@ public class LoggerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public OperationService defaultOperationService() {
+    public OperationService operationService() {
         return new DefaultOperationServiceImpl();
     }
 

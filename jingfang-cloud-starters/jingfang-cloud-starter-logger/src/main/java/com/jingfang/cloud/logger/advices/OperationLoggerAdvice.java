@@ -79,7 +79,7 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         operationBody.setIpaddress(JakartaServletUtil.getClientIP(httpRequest));
         operationBody.setMethod(methodName);
         String operationType = StringUtils.isBlank(operationLogger.type()) ? httpMethod.name() : operationLogger.type();
-        operationBody.setOperation(operationType);
+        operationBody.setHttpMethod(operationType);
         operationBody.setModule(operationLogger.module());
         operationBody.setOperatorId(loginUser.getUsername());
 
