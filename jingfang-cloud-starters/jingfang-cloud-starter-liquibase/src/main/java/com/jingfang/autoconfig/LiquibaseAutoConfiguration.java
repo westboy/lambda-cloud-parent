@@ -36,7 +36,7 @@ public class LiquibaseAutoConfiguration {
     }
 
     @Primary
-    @Bean("jfLiquibase")
+    @Bean("defaultLiquibase")
     public SpringLiquibase liquibase(LiquibaseProperties properties) {
         String url = properties.getUrl();
         String username = properties.getUsername();
@@ -46,12 +46,12 @@ public class LiquibaseAutoConfiguration {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setChangeLog("classpath:META-INF/db/changelogs/jingfang-master.xml");
         liquibase.setDataSource(dataSource);
-        liquibase.setContexts("jf_cloud");
+        liquibase.setContexts("ingfang_cloud_liquibase");
         return liquibase;
     }
 
     @Bean
-    @DependsOn("jfLiquibase")
+    @DependsOn("defaultLiquibase")
     public LiquibaseFinishedPublisher liquibaseFinishedPublisher(SpringLiquibase jfLiquibase,
                                                                  List<LiquibasePostExecutor> executors) {
         DataSource dataSource = jfLiquibase.getDataSource();
