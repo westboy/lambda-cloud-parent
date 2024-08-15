@@ -18,10 +18,6 @@ public class WebsocketProperties {
      */
     boolean enabled = false;
     /**
-     * 允许跨域
-     */
-    String origins = "*";
-    /**
      * 固定前缀
      */
     String appPrefix = "/app";

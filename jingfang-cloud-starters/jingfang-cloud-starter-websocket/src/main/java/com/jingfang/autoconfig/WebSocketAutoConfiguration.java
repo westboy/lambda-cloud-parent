@@ -4,6 +4,8 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.jingfang.cloud.websocket.ChannelStoreMode;
 import com.jingfang.cloud.websocket.event.DefaultConnectEventServiceImpl;
 import com.jingfang.cloud.websocket.event.WsConnectEventService;
+import com.jingfang.cloud.websocket.interceptor.DefaultAuthenticationChannelInterceptor;
+import com.jingfang.cloud.websocket.interceptor.IpHandshakeInterceptor;
 import com.jingfang.cloud.websocket.repository.DefaultWebSocketChannelRepository;
 import com.jingfang.cloud.websocket.repository.RedisWebSocketChannelRepository;
 import com.jingfang.cloud.websocket.repository.WebSocketChannelRepository;
@@ -18,7 +20,9 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -62,10 +66,20 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
         registry.setApplicationDestinationPrefixes(websocketProperties.getAppPrefix());
     }
 
+    @Bean
+    public ChannelInterceptor channelInterceptor() {
+     return new DefaultAuthenticationChannelInterceptor();
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(channelInterceptor());
+    }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint(websocketProperties.getEndpoint())
-                .setAllowedOrigins(websocketProperties.getOrigins())
+                .addInterceptors(new IpHandshakeInterceptor())
                 .withSockJS()
                 .setStreamBytesLimit(524288)
                 .setHttpMessageCacheSize(1000)

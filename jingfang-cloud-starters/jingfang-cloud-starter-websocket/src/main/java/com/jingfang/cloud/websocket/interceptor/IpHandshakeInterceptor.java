@@ -21,8 +21,7 @@ public class IpHandshakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(@NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response,
                                    @NonNull WebSocketHandler wsHandler, @NonNull Map<String, Object> attributes) {
         // Set ip attribute to WebSocket session
-        if (request instanceof ServletServerHttpRequest) {
-            ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
+        if (request instanceof ServletServerHttpRequest servletRequest) {
             String ipAddress = servletRequest.getServletRequest().getHeader("X-FORWARDED-FOR");
             if (ipAddress == null) {
                 ipAddress = servletRequest.getServletRequest().getRemoteAddr();
