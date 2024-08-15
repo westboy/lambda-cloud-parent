@@ -39,11 +39,6 @@
             </dependency>
             <dependency>
                 <groupId>com.jingfang.cloud</groupId>
-                <artifactId>jingfang-cloud-starter-feign</artifactId>
-                <version>${project.parent.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jingfang.cloud</groupId>
                 <artifactId>jingfang-cloud-starter-liquibase</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
