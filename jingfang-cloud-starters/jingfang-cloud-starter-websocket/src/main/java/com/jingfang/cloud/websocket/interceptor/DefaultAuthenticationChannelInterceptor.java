@@ -87,7 +87,7 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
     public static String getAccessToken(StompHeaderAccessor accessor) {
         List<String> payloads = accessor.getNativeHeader(AUTHORIZATION);
         if (CollectionUtils.isNotEmpty(payloads)) {
-            String payload = payloads.get(0);
+            String payload = payloads.getFirst();
             if (StringUtils.isNotBlank(payload) && payload.startsWith(BEARER)) {
                 return payload.replace(BEARER, StringUtils.EMPTY);
             }

@@ -2,8 +2,6 @@
 
 <included>
 
-    <springProperty scope="context" name="log.path" source="spring.application.name"/>
-
     <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %level %logger{36} - %msg%n"/>
 
     <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">

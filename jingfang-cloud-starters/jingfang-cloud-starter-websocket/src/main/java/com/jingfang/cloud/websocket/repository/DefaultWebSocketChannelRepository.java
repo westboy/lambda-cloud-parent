@@ -28,7 +28,7 @@ public class DefaultWebSocketChannelRepository implements WebSocketChannelReposi
         this.localCache = Caffeine.newBuilder()
                 .refreshAfterWrite(timeout / 2, TimeUnit.SECONDS)
                 .expireAfterWrite(timeout, TimeUnit.SECONDS)
-                .build(new CacheLoader<String, Set<String>>() {
+                .build(new CacheLoader<>() {
                     @Override
                     public @Nullable Set<String> load(@NonNull String uid) {
                         Set<String> sessions = localCache.getIfPresent(uid);

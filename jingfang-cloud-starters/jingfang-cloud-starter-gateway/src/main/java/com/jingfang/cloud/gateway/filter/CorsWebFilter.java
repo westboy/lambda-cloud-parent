@@ -41,19 +41,19 @@ public class CorsWebFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         CorsConfiguration corsConfiguration = this.configSource.getCorsConfiguration(exchange);
+
         if (CorsUtils.isPreFlightRequest(request)) {
             this.processor.process(corsConfiguration, exchange);
             return Mono.empty();
         }
-        Mono<Void> mono = chain.filter(exchange);
-        ServerHttpResponse response = exchange.getResponse();
-        if (CorsUtils.isCorsRequest(request) && !response.isCommitted()) {
-            mono.then(Mono.just(exchange)).map(serverWebExchange -> {
+
+        if (CorsUtils.isCorsRequest(request) && !exchange.getResponse().isCommitted()) {
+            return chain.filter(exchange).then(Mono.just(exchange)).map(serverWebExchange -> {
                 this.processor.process(corsConfiguration, serverWebExchange);
                 return serverWebExchange;
             }).then();
         }
-        return mono;
+        return chain.filter(exchange);
     }
 
 }

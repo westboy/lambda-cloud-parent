@@ -7,10 +7,14 @@ import com.jingfang.cloud.websocket.event.WsConnectEventService;
 import com.jingfang.cloud.websocket.repository.DefaultWebSocketChannelRepository;
 import com.jingfang.cloud.websocket.repository.RedisWebSocketChannelRepository;
 import com.jingfang.cloud.websocket.repository.WebSocketChannelRepository;
+import io.undertow.server.DefaultByteBufferPool;
+import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -67,6 +71,16 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
                 .setHttpMessageCacheSize(1000)
                 .setDisconnectDelay(30000)
                 .setSessionCookieNeeded(false);
+    }
+
+    @Bean
+    public WebServerFactoryCustomizer<UndertowServletWebServerFactory> webServerFactoryWebServerFactoryCustomizer() {
+        return factory -> factory.addDeploymentInfoCustomizers(deploymentInfo -> {
+            WebSocketDeploymentInfo webSocketDeploymentInfo = new WebSocketDeploymentInfo();
+            webSocketDeploymentInfo.setBuffers(new DefaultByteBufferPool(false, 512));
+            deploymentInfo.addServletContextAttribute("io.undertow.websockets.jsr.WebSocketDeploymentInfo", webSocketDeploymentInfo);
+        });
+
     }
 
 }

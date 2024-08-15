@@ -34,10 +34,10 @@ public class WsEventHandler {
             for (String topic : s.topics()) {
                 List<WsSubscribeEvent> events;
                 if (this.subscribeListMap.containsKey(topic)) {
+                    events = this.subscribeListMap.get(topic);
+                } else {
                     events = new ArrayList<>();
                     this.subscribeListMap.put(topic, events);
-                } else {
-                    events = this.subscribeListMap.get(topic);
                 }
                 events.add(s);
             }
