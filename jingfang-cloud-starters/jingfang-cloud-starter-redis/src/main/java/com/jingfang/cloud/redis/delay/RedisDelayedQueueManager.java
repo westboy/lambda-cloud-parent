@@ -59,7 +59,7 @@ public class RedisDelayedQueueManager<T> implements CommandLineRunner, Initializ
     @Override
     public void run(String... args) {
         scheduler = new ScheduledThreadPoolExecutor(1,
-                new ThreadFactoryBuilder().setNameFormat("JingFangCloud DelayedQueueJob-%d")
+                new ThreadFactoryBuilder().setNameFormat("jingfang cloud delayed queue Job-%d")
                         .setDaemon(true)
                         .build());
         RedisDelayedWorker<T> worker = new RedisDelayedWorker<>(config, listener);
@@ -80,7 +80,7 @@ public class RedisDelayedQueueManager<T> implements CommandLineRunner, Initializ
             this.blockingFairQueue = redissonClient.getBlockingQueue(config.getName());
             this.delayedQueue = redissonClient.getDelayedQueue(blockingFairQueue);
         } else {
-            throw new NotSupportedException("如果你想使用延迟队列，请开启此配置: \n spring.redis.redisson.enabled: true");
+            throw new NotSupportedException("如果你想使用延迟队列，请开启此配置: \n spring.data.redis.redisson.enabled: true");
         }
     }
 }

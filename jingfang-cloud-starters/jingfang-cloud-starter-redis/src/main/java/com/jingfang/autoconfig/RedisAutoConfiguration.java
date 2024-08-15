@@ -111,7 +111,6 @@ public class RedisAutoConfiguration {
      * @see <a href="https://www.cnblogs.com/hushaojun/p/16285486.html">cnblogs</a>
      * @see <a href="https://github.com/lettuce-io/lettuce-core/issues/1428">github</a>
      */
-
     @Bean
     @SuppressWarnings("AnonymousInnerClassMayBeStatic")
     @Description("解决redis使用lettuce间接性超时问题（15分钟左右）")
@@ -227,7 +226,7 @@ public class RedisAutoConfiguration {
                 default:
                     String prefix = properties.getSsl().isEnabled() ? REDISS_PROTOCOL_PREFIX : REDIS_PROTOCOL_PREFIX;
                     SingleServerConfig singleServerConfig = config.useSingleServer()
-                            .setAddress(prefix + properties.getHost() + "COLON" + properties.getPort())
+                            .setAddress(prefix + properties.getHost() + ":" + properties.getPort())
                             .setConnectTimeout(timeout)
                             .setKeepAlive(true)
                             .setPingConnectionInterval(redissonProperties.getPingConnectionInterval())
@@ -245,7 +244,6 @@ public class RedisAutoConfiguration {
             }
             return Redisson.create(config);
         }
-
 
         @Bean
         @ConditionalOnMissingBean({RedisConnectionFactory.class})
