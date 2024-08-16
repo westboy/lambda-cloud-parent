@@ -53,7 +53,7 @@ public class WsSessionInfo<T extends AbstractSubProtocolEvent> {
     }
 
     public String getIp() {
-        return (String) this.sessionAttributes.get(IP_ADDRESS);
+        return (String) this.getSessionAttribute(IP_ADDRESS);
     }
 
     public AbstractSubProtocolEvent getEvent() {
@@ -61,10 +61,13 @@ public class WsSessionInfo<T extends AbstractSubProtocolEvent> {
     }
 
     public Object getSessionAttribute(String name) {
+        if (this.sessionAttributes == null) {
+            return null;
+        }
         return this.sessionAttributes.get(name);
     }
 
     public String getFramework() {
-        return (String) this.sessionAttributes.get(Constants.X_WEBSOCKET_FRAMEWORK);
+        return (String) getSessionAttribute(Constants.X_WEBSOCKET_FRAMEWORK);
     }
 }
