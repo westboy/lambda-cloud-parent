@@ -29,10 +29,6 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-tomcat</artifactId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>hibernate-validator</artifactId>
-                    <groupId>org.hibernate</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

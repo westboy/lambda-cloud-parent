@@ -43,10 +43,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <exclusions>
                 <exclusion>
-                    <artifactId>hibernate-validator</artifactId>
-                    <groupId>org.hibernate</groupId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-tomcat</artifactId>
                 </exclusion>

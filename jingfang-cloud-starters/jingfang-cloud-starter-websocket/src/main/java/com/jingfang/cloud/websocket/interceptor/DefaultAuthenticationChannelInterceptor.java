@@ -1,17 +1,15 @@
 package com.jingfang.cloud.websocket.interceptor;
 
+import cn.dev33.satoken.session.SaSession;
 import cn.hutool.core.lang.Opt;
-import cn.hutool.core.text.CharSequenceUtil;
 import com.google.common.collect.Maps;
+import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.cloud.core.principal.LoginUser;
 import com.jingfang.cloud.websocket.Constants;
-import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.security.exception.AuthenticationException;
-import com.jingfang.security.service.UserDetailService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -22,6 +20,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 
 import java.util.List;
 import java.util.Map;
+
 import static com.jingfang.cloud.mvc.WebHttpUtils.AUTHORIZATION;
 import static com.jingfang.cloud.mvc.WebHttpUtils.BEARER;
 
@@ -32,13 +31,6 @@ import static com.jingfang.cloud.mvc.WebHttpUtils.BEARER;
  */
 @Slf4j
 public class DefaultAuthenticationChannelInterceptor implements ChannelInterceptor {
-
-    private UserDetailService userDetailService;
-
-    @Autowired
-    public void setUserDetailService(UserDetailService userDetailService) {
-        this.userDetailService = userDetailService;
-    }
 
     @Override
     public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
@@ -63,8 +55,8 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
             try {
                 String accessToken = getAccessToken(accessor);
                 if (StringUtils.isNotBlank(accessToken)) {
-                    Opt<LoginUser> loginUserOpt = Opt.ofNullable(getLoginUser(LoginType.ADMIN,accessToken))
-                            .or(() -> Opt.ofNullable(getLoginUser(LoginType.USER,accessToken)));
+                    Opt<LoginUser> loginUserOpt = Opt.ofNullable(getLoginUser(LoginType.ADMIN, accessToken))
+                            .or(() -> Opt.ofNullable(getLoginUser(LoginType.USER, accessToken)));
                     accessor.setUser(loginUserOpt.orElseThrow(() -> new AuthenticationException("用户不能存在!")));
                 } else {
                     throw new AuthenticationException("认证失败！");
@@ -77,11 +69,8 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
     }
 
     private LoginUser getLoginUser(LoginType loginType, String accessToken) {
-        String username = loginType.getStpLogic().getLoginIdNotHandle(accessToken);
-        if (CharSequenceUtil.isNotEmpty(username)) {
-            return userDetailService.loginByUsername(username, loginType.getCode());
-        }
-        return null;
+        SaSession tokenSessionByToken = loginType.getStpLogic().getTokenSessionByToken(accessToken);
+        return (LoginUser) tokenSessionByToken.get("loginUser");
     }
 
     public static String getAccessToken(StompHeaderAccessor accessor) {
