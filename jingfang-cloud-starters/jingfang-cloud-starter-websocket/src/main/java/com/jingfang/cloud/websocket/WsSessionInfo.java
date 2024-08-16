@@ -37,13 +37,13 @@ public class WsSessionInfo<T extends AbstractSubProtocolEvent> {
         this.messageAccessor = StompHeaderAccessor.wrap(event.getMessage());
         this.sessionId = messageAccessor.getSessionId();
         this.topic = messageAccessor.getDestination();
-        Object simpConnectMessage = messageAccessor.getHeader(Constants.SIMPLE_CONNECT_MESSAGE);
+        Object simpConnectMessage = messageAccessor.getHeader(Constants.SIMPE_CONNECT_MESSAGE);
         if (simpConnectMessage != null) {
             this.connectAccessor = StompHeaderAccessor.wrap((Message<?>) simpConnectMessage);
             this.sessionAttributes = this.connectAccessor.getSessionAttributes();
         }
         if (this.sessionAttributes == null) {
-            this.sessionAttributes = messageAccessor.getSessionAttributes();
+            this.sessionAttributes = this.messageAccessor.getSessionAttributes();
         }
     }
 
