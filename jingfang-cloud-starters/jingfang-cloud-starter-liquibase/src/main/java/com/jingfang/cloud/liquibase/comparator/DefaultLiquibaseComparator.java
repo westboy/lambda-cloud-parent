@@ -15,9 +15,9 @@ public class DefaultLiquibaseComparator implements Comparator<String> {
      * 需要强制要求优先级顺序的配置
      */
     private static final String[] FORCED_SORT = {
-            "jf-datasource-changelog.xml"
+            "jingfang-datasource-changelog.xml"
     };
-    public static final String ADDITIONAL = "jf-additional-changelog.xml";
+    public static final String ADDITIONAL = "jingfang-additional-changelog.xml";
 
     @Override
     public int compare(String o1, String o2) {
