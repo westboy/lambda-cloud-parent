@@ -79,6 +79,7 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint(websocketProperties.getEndpoint())
+                .setAllowedOrigins(websocketProperties.getOrigins())
                 .addInterceptors(new IpHandshakeInterceptor())
                 .withSockJS()
                 .setStreamBytesLimit(524288)
