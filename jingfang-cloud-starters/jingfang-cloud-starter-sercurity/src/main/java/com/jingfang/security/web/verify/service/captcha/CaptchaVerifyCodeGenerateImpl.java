@@ -1,6 +1,7 @@
 package com.jingfang.security.web.verify.service.captcha;
 
 import cn.hutool.captcha.CaptchaUtil;
+import cn.hutool.captcha.CircleCaptcha;
 import cn.hutool.captcha.GifCaptcha;
 import cn.hutool.captcha.generator.MathGenerator;
 import cn.hutool.core.math.Calculator;
@@ -69,10 +70,10 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
 
 
     public void writeCaptcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        GifCaptcha captcha = CaptchaUtil.createGifCaptcha(
+        CircleCaptcha captcha = CaptchaUtil.createCircleCaptcha(
                 securityProperties.getForm().getVerify().getCaptchaWidth(),
                 securityProperties.getForm().getVerify().getCaptchaHeight(),
-                securityProperties.getForm().getVerify().getCaptchaCodeCount());
+                securityProperties.getForm().getVerify().getCaptchaCodeCount(),3);
         MathGenerator mathGenerator = new MathGenerator(securityProperties.getForm().getVerify().getCaptchaNumberLength());
         captcha.setGenerator(mathGenerator);
         String captchaId = IdUtil.fastUUID();
