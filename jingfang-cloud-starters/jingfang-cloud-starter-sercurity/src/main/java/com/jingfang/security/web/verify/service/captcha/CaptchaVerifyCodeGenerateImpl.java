@@ -2,8 +2,6 @@ package com.jingfang.security.web.verify.service.captcha;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.CircleCaptcha;
-import cn.hutool.captcha.GifCaptcha;
-import cn.hutool.captcha.generator.MathGenerator;
 import cn.hutool.core.math.Calculator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
@@ -12,6 +10,7 @@ import com.google.common.collect.Maps;
 import com.jingfang.autoconfig.SecurityProperties;
 import com.jingfang.cloud.mvc.WebHttpUtils;
 import com.jingfang.security.exception.VerifyCodeValidationException;
+import com.jingfang.security.web.verify.generator.MathGenerator;
 import com.jingfang.security.web.verify.service.VerifyCodeService;
 import com.jingfang.security.web.verify.store.CaptchaStore;
 import jakarta.servlet.FilterChain;
