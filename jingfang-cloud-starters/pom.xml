@@ -19,7 +19,7 @@
         <module>jingfang-cloud-starter-mybatis</module>
         <module>jingfang-cloud-starter-redis</module>
         <module>jingfang-cloud-starter-sercurity</module>
-        <module>jingfang-cloud-starter-minio</module>
+        <module>jingfang-cloud-starter-oss</module>
         <module>jingfang-cloud-starter-logger</module>
         <module>jingfang-cloud-starter-web</module>
         <module>jingfang-cloud-starter-swagger</module>

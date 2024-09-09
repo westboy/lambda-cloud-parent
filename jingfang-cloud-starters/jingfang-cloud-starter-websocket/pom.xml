@@ -33,6 +33,11 @@
         </dependency>
         <dependency>
             <groupId>com.jingfang.cloud</groupId>
+            <artifactId>jingfang-cloud-starter-test</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jingfang.cloud</groupId>
             <artifactId>jingfang-cloud-starter-web</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
