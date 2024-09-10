@@ -30,7 +30,9 @@ public class OssAutoConfiguration {
     public OssClientManager getOssClientManager() {
         OssClientManager ossClientManager = new OssClientManager();
         for (OssProperties.Config config : ossProperties.getConfigs()) {
-            ossClientManager.set(config.getName(), new OssClient(config));
+            OssClient ossClient = new OssClient(config);
+            ossClient.createBucket();
+            ossClientManager.set(config.getName(), ossClient);
         }
         return ossClientManager;
     }
