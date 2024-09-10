@@ -92,6 +92,11 @@
                 <artifactId>jingfang-cloud-starter-websocket</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.jingfang.cloud</groupId>
+                <artifactId>jingfang-cloud-starter-oss</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
