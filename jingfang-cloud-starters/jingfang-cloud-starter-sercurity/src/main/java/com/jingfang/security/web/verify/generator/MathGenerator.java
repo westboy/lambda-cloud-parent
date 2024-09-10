@@ -38,10 +38,20 @@ public class MathGenerator implements CodeGenerator {
     @Override
     public String generate() {
         final int limit = getLimit();
-        String number1 = Integer.toString(RandomUtil.randomInt(limit));
-        String number2 = Integer.toString(RandomUtil.randomInt(limit, Integer.parseInt(number1)));
-        number1 = StrUtil.padAfter(number1, this.numberLength, CharUtil.SPACE);
-        number2 = StrUtil.padAfter(number2, this.numberLength, CharUtil.SPACE);
+
+        int v1 = RandomUtil.randomInt(limit);
+        int v2 = RandomUtil.randomInt(limit);
+
+        String number1 = Integer.toString(v1);
+        String number2 = Integer.toString(v2);
+
+        if(v1>v2){
+            number1 = StrUtil.padAfter(number1, this.numberLength, CharUtil.SPACE);
+            number2 = StrUtil.padAfter(number2, this.numberLength, CharUtil.SPACE);
+        }else {
+            number1 = StrUtil.padAfter(number2, this.numberLength, CharUtil.SPACE);
+            number2 = StrUtil.padAfter(number1, this.numberLength, CharUtil.SPACE);
+        }
 
         return StrUtil.builder()
                 .append(number1)
