@@ -553,19 +553,6 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>maven-releases</id>
-            <name>releases</name>
-            <url>http://192.168.130.243:8081/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven-snapshots</id>
-            <name>snapshots</name>
-            <url>http://192.168.130.243:8081/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <reporting>
         <plugins>
             <plugin>
