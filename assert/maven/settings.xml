@@ -9,10 +9,9 @@
             <id>mirror</id>
             <mirrorOf>central,jcenter,!rdc-releases,!rdc-snapshots</mirrorOf>
             <name>mirror</name>
-            <url>https://192.168.130.243:8443/repository/maven-public/</url>
+            <url>https://maven.aliyun.com/repository/public</url>
         </mirror>
     </mirrors>
-
     <servers>
         <server>
             <id>rdc-releases</id>
@@ -25,7 +24,6 @@
             <password>delopyment</password>
         </server>
     </servers>
-
     <profiles>
         <profile>
             <id>rdc</id>
@@ -40,7 +38,7 @@
             <repositories>
                 <repository>
                     <id>central</id>
-                    <url>https://192.168.130.243:8443/repository/maven-public/</url>
+                    <url>https://maven.aliyun.com/repository/public</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>
@@ -50,7 +48,7 @@
                 </repository>
                 <repository>
                     <id>snapshots</id>
-                    <url>https://192.168.130.243:8443/repository/maven-public/</url>
+                    <url>https://maven.aliyun.com/repository/public</url>
                     <releases>
                         <enabled>false</enabled>
                     </releases>
