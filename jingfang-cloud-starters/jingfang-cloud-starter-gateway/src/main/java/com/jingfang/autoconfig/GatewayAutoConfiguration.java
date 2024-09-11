@@ -4,7 +4,6 @@ package com.jingfang.autoconfig;
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
-import cn.dev33.satoken.stp.StpUtil;
 import com.jingfang.cloud.core.exception.model.ErrorModel;
 import com.jingfang.cloud.core.principal.LoginType;
 import com.jingfang.cloud.core.propertis.CorsProperties;
@@ -149,7 +148,7 @@ public class GatewayAutoConfiguration {
         if (CollectionUtils.isNotEmpty(allowedOrigins)) {
             corsConfig.setAllowedOrigins(allowedOrigins);
         } else {
-            corsConfig.setAllowedOrigins(Collections.singletonList(CorsProperties.ALL_PATH));
+            corsConfig.setAllowedOrigins(Collections.singletonList(CorsProperties.ALL));
         }
         corsConfig.setMaxAge(corsProperties.getMaxAge());
         CorsProperties.ALLOWED_METHOD.forEach(method -> corsConfig.addAllowedMethod(HttpMethod.valueOf(method)));

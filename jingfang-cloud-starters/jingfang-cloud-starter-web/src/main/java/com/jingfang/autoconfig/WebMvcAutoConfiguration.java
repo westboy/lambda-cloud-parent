@@ -14,7 +14,6 @@ import com.jingfang.cloud.mvc.StringToDateConverter;
 import com.jingfang.cloud.mvc.filter.OrderedTimeHandlerFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -56,14 +55,14 @@ import java.util.Locale;
 @Slf4j
 @Import(JacksonModuleConfigurer.class)
 @AutoConfiguration
-public class WebMvcAutoConfiguration{
+public class WebMvcAutoConfiguration {
     public WebMvcAutoConfiguration() {
         log.trace("initializing...");
     }
 
     @Bean
     @SuppressWarnings("all")
-    public WebMvcConfigurer webMvcConfigurer(CorsProperties corsProperties,LocalValidatorFactoryBean defaultValidator) {
+    public WebMvcConfigurer webMvcConfigurer(CorsProperties corsProperties, LocalValidatorFactoryBean defaultValidator) {
         return new WebMvcConfigurer() {
             @Override
             public void addFormatters(FormatterRegistry registry) {
@@ -77,17 +76,20 @@ public class WebMvcAutoConfiguration{
 
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
-                List<String> allowedOrigins = corsProperties.getAllowedOrigins();
-                if (CollectionUtils.isNotEmpty(allowedOrigins)) {
-                    registration.allowedOrigins(allowedOrigins.toArray(new String[0]));
+                if (corsProperties.isEnabled()) {
+                    CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
+                    List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+                    if (CollectionUtils.isNotEmpty(allowedOrigins)) {
+                        registration.allowedOriginPatterns(allowedOrigins.toArray(new String[0]));
+                    } else {
+                        registration.allowedOriginPatterns(CorsProperties.ALL);
+                    }
+                    registration.allowCredentials(true)
+                            .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
+                            .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
+                            .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
+                            .maxAge(corsProperties.getMaxAge());
                 }
-                registration.allowCredentials(true)
-                        .allowedOriginPatterns(CorsProperties.ALL_PATH)
-                        .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
-                        .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
-                        .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
-                        .maxAge(corsProperties.getMaxAge());
             }
         };
     }

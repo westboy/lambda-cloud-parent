@@ -12,6 +12,8 @@ public class CorsProperties {
 
     public static final String ALL_PATH = "/**";
 
+    public static final String ALL = "*";
+
     public static final ImmutableSet<String> ALLOWED_METHOD = ImmutableSet.copyOf(new String[]{
             "DELETE",
             "GET",
@@ -35,7 +37,7 @@ public class CorsProperties {
 
     private boolean enabled;
 
-    @Nullable
+
     private List<String> allowedOrigins;
 
     private long maxAge = 3600L;
