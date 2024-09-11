@@ -12,6 +12,7 @@
             <url>https://192.168.130.243:8443/repository/maven-public/</url>
         </mirror>
     </mirrors>
+
     <servers>
         <server>
             <id>rdc-releases</id>
@@ -24,6 +25,7 @@
             <password>delopyment</password>
         </server>
     </servers>
+
     <profiles>
         <profile>
             <id>rdc</id>
