@@ -15,13 +15,13 @@
     <servers>
         <server>
             <id>rdc-releases</id>
-            <username>admin</username>
-            <password>cmai.nexus</password>
+            <username>delopyment</username>
+            <password>delopyment</password>
         </server>
         <server>
             <id>rdc-snapshots</id>
-            <username>admin</username>
-            <password>cmai.nexus</password>
+            <username>delopyment</username>
+            <password>delopyment</password>
         </server>
     </servers>
     <profiles>
