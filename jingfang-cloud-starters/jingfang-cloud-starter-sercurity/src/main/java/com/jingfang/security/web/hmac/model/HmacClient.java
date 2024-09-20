@@ -29,11 +29,6 @@ public class HmacClient implements LoginUser {
     private Date expired;
     private boolean enabled;
     private String tenantId;
-    private Set<String> roles = Set.of("ROLE_HMAC");
-    private Set<String> permissions = Set.of();
-
-    public HmacClient() {
-    }
 
     public HmacClient(String appid, String secret) {
         this.appid = appid;
@@ -42,22 +37,22 @@ public class HmacClient implements LoginUser {
         this.expired = Date.from(LocalDate.of(9999, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
-
     @Override
     public String getUsername() {
         return this.appid;
     }
 
+    @JsonIgnore
     @Override
     public String getCredentials() {
         return this.secret;
     }
-
+    @JsonIgnore
     @Override
     public Boolean getAccountLocked() {
         return false;
     }
-
+    @JsonIgnore
     @Override
     public Boolean getAccountExpired() {
         return false;

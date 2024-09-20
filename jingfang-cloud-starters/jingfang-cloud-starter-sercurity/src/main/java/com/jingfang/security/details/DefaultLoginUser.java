@@ -35,6 +35,7 @@ public class DefaultLoginUser implements LoginUser {
         return password;
     }
 
+    @JsonIgnore
     @Override
     public String getName() {
         return id;

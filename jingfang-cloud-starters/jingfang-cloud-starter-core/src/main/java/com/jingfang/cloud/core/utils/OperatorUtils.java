@@ -33,16 +33,6 @@ public class OperatorUtils {
         }
 
         @Override
-        public Set<String> getRoles() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Set<String> getPermissions() {
-            return Collections.emptySet();
-        }
-
-        @Override
         public Boolean getAccountLocked() {
             return true;
         }

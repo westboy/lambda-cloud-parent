@@ -1,7 +1,6 @@
 package com.jingfang.cloud.core.principal;
 
 import java.security.Principal;
-import java.util.Set;
 
 /**
  * Principal
@@ -22,21 +21,8 @@ public interface LoginUser extends Principal {
      *
      * @return
      */
+
     String getCredentials();
-
-    /**
-     * roles
-     *
-     * @return
-     */
-    Set<String> getRoles();
-
-    /**
-     * permissions
-     *
-     * @return
-     */
-    Set<String> getPermissions();
 
     /**
      * AccountLocked
