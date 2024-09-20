@@ -18,14 +18,14 @@ public class GlobalMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         LoginUser loginUser = OperatorUtils.getOperator();
-        this.strictInsertFill(metaObject, "createUser", String.class, loginUser.getUsername().toString());
+        this.strictInsertFill(metaObject, "createUser", String.class, loginUser.getName());
         this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
         LoginUser loginUser = OperatorUtils.getOperator();
-        this.strictUpdateFill(metaObject, "updateUser", String.class, loginUser.getUsername().toString());
+        this.strictUpdateFill(metaObject, "updateUser", String.class, loginUser.getName());
         this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
     }
 }

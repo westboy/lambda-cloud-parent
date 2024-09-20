@@ -18,7 +18,6 @@ public interface BaseWrapper<E, V> {
      * entityVO
      *
      * @param entity
-     * @return
      */
     V entityVO(E entity);
 

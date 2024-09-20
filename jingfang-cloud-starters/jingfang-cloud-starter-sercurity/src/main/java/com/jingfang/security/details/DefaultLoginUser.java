@@ -13,14 +13,21 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class LoginUserImpl implements LoginUser {
+public class DefaultLoginUser implements LoginUser {
+
+    private String id;
 
     private String username;
+
     @JsonIgnore
     private String password;
+
     private Boolean accountExpired;
+
     private Boolean accountLocked;
+
     private Set<String> roles = Set.of();
+
     private Set<String> permissions = Set.of();
     @JsonIgnore
     @Override
@@ -28,4 +35,8 @@ public class LoginUserImpl implements LoginUser {
         return password;
     }
 
+    @Override
+    public String getName() {
+        return id;
+    }
 }

@@ -37,6 +37,6 @@ public abstract class BaseDO implements Serializable {
 
     @JsonIgnore
     @TableLogic(value = "0",delval = "1")
-    private Boolean deletedFlag;
+    private Boolean delFlag;
 
 }

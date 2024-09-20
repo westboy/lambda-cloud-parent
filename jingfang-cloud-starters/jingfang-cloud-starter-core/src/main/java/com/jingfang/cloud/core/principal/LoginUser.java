@@ -11,16 +11,6 @@ import java.util.Set;
 public interface LoginUser extends Principal {
 
     /**
-     * name
-     *
-     * @return
-     */
-    @Override
-    default String getName() {
-        return getUsername();
-    }
-
-    /**
      * username
      *
      * @return
