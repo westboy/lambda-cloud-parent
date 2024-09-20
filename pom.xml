@@ -40,7 +40,7 @@
         <jackson-bom.version>2.17.2</jackson-bom.version>
         <spring-boot.version>3.3.2</spring-boot.version>
         <mapstruct.version>1.6.0.RC1</mapstruct.version>
-        <mybatis-plus.version>3.5.7</mybatis-plus.version>
+        <mybatis-plus.version>3.5.8</mybatis-plus.version>
         <google-collections.version>1.0</google-collections.version>
         <dynamic-datasource.version>4.3.1</dynamic-datasource.version>
         <lucene.version>7.3.0</lucene.version>
@@ -51,6 +51,8 @@
         <knife4j.version>4.5.0</knife4j.version>
         <!-- undertow 版本 -->
         <version.xnio>3.8.14.Final</version.xnio>
+        <!-- djl 版本 -->
+        <djl.version>0.29.0</djl.version>
         <!-- 插件版本 -->
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-jxr-plugin.version>3.3.0</maven-jxr-plugin.version>
@@ -109,6 +111,14 @@
                 <groupId>com.playtika.testcontainers</groupId>
                 <artifactId>testcontainers-spring-boot-bom</artifactId>
                 <version>2.3.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- djl -->
+            <dependency>
+                <groupId>ai.djl</groupId>
+                <artifactId>bom</artifactId>
+                <version>${djl.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -402,9 +412,9 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                 <version>${spring-boot.version}</version>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
