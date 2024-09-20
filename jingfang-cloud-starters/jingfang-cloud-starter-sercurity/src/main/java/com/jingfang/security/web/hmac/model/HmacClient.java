@@ -72,4 +72,8 @@ public class HmacClient implements LoginUser {
         return new HashSet<>(Arrays.asList(hosts.split(",")));
     }
 
+    @Override
+    public String getName() {
+        return appid;
+    }
 }
