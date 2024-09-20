@@ -18,6 +18,11 @@ public class OperatorUtils {
 
     private static final LoginUser defaultUser = new LoginUser() {
         @Override
+        public String getName() {
+            return "guest";
+        }
+
+        @Override
         public String getUsername() {
             return "guest";
         }
