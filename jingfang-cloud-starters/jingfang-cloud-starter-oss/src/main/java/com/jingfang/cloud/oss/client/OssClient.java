@@ -14,10 +14,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import com.jingfang.autoconfig.OssProperties;
 import com.jingfang.cloud.core.exception.IllegalStateException;
 import com.jingfang.cloud.oss.enums.AccessPolicyType;
@@ -29,6 +26,7 @@ import com.jingfang.cloud.oss.model.UploadObjectResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Date;
 
@@ -120,7 +118,7 @@ public class OssClient {
             putObjectRequest.setCannedAcl(getAccessPolicy().getAcl());
             client.putObject(putObjectRequest);
         } catch (Exception e) {
-            throw new OssException("上传文件失败！",e);
+            throw new OssException("上传文件失败！", e);
         }
         return UploadObjectResult.builder().url(config.getEndpoint() + "/" + dest).key(dest).build();
     }
@@ -129,7 +127,26 @@ public class OssClient {
         try {
             client.deleteObject(config.getBucket(), dest);
         } catch (Exception e) {
-            throw new OssException("文件删除失败！",e);
+            throw new OssException("文件删除失败！", e);
+        }
+    }
+
+    public S3Object getObject(String dest) {
+        try {
+            return client.getObject(config.getBucket(), dest);
+        } catch (Exception e) {
+            throw new OssException("文件获取失败！", e);
+        }
+    }
+
+    public void outStream(String dest, OutputStream outputStream) {
+        try {
+            S3Object object = client.getObject(config.getBucket(), dest);
+            IoUtil.copy(object.getObjectContent(), outputStream);
+            IoUtil.close(object);
+            IoUtil.close(outputStream);
+        } catch (Exception e) {
+            throw new OssException("文件删除失败！", e);
         }
     }
 
