@@ -6,6 +6,8 @@ import com.jingfang.cloud.core.exception.feign.AbstractFeignException;
 import com.jingfang.cloud.core.exception.feign.FeignArgumentNotValidException;
 import com.jingfang.cloud.core.exception.model.ArgumentError;
 import com.jingfang.cloud.core.exception.model.ErrorModel;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +17,9 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import com.jingfang.cloud.core.exception.IllegalArgumentException;
+import com.jingfang.cloud.core.exception.IllegalStateException;
+import com.jingfang.cloud.core.exception.IllegalAccessException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -24,8 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,15 +53,15 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ErrorModel handler400V1(Exception exception, HttpServletRequest request) {
         ErrorModel model = handler400(request);
-        model.setMessage("请求参数错误, "+exception.getMessage());
+        model.setMessage("请求参数错误, " + exception.getMessage());
         return model;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({IllegalArgumentException.class,HttpMessageNotReadableException.class})
+    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class})
     public ErrorModel handler400V2(Exception exception, HttpServletRequest request) {
         ErrorModel model = handler400(request);
-        model.setMessage("请求参数错误, "+exception.getMessage());
+        model.setMessage("请求参数错误, " + exception.getMessage());
         return model;
     }
 
@@ -66,7 +69,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(ConstraintViolationException.class)
     public ErrorModel handler400(ConstraintViolationException exception, HttpServletRequest request) {
         ErrorModel model = handler400(request);
-        model.setMessage("请求参数错误, "+exception.getMessage());
+        model.setMessage("请求参数错误, " + exception.getMessage());
         return model;
     }
 
@@ -93,9 +96,9 @@ public class GlobalControllerAdvice {
         model.setPath(request.getRequestURI());
         model.setTimestamp(System.currentTimeMillis());
         model.setStatus(HttpStatus.UNAUTHORIZED.value());
-        if(exception instanceof SaTokenException){
-            model.setError(String.valueOf(((SaTokenException)exception).getCode()));
-        }else {
+        if (exception instanceof SaTokenException) {
+            model.setError(String.valueOf(((SaTokenException) exception).getCode()));
+        } else {
             model.setError(exception.getMessage());
         }
         model.setMessage(exception.getMessage());
@@ -110,7 +113,7 @@ public class GlobalControllerAdvice {
         model.setTimestamp(System.currentTimeMillis());
         model.setStatus(HttpStatus.FORBIDDEN.value());
         model.setError(HttpStatus.FORBIDDEN.getReasonPhrase());
-        model.setMessage("无效请求，"+exception.getMessage());
+        model.setMessage("无效请求，" + exception.getMessage());
         return model;
     }
 

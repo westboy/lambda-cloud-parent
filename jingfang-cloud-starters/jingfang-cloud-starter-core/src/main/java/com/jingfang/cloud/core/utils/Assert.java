@@ -3,6 +3,8 @@ package com.jingfang.cloud.core.utils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import com.jingfang.cloud.core.exception.IllegalArgumentException;
+import com.jingfang.cloud.core.exception.IllegalStateException;
 
 import java.util.Collection;
 import java.util.Map;
