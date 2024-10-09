@@ -12,7 +12,6 @@
 
     <modules>
         <module>jingfang-cloud-starters</module>
-        <module>jingfang-cloud-extensions</module>
     </modules>
 
     <properties>

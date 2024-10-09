@@ -30,6 +30,9 @@ public class HmacClient implements LoginUser {
     private boolean enabled;
     private String tenantId;
 
+    public HmacClient() {
+    }
+
     public HmacClient(String appid, String secret) {
         this.appid = appid;
         this.secret = secret;
