@@ -32,6 +32,7 @@
         <module>jingfang-cloud-starter-kafka</module>
         <module>jingfang-cloud-starter-gateway</module>
         <module>jingfang-cloud-starter-test</module>
+        <module>jingfang-cloud-starter-dubbo</module>
     </modules>
 
 </project>
