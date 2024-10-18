@@ -23,7 +23,7 @@ public class RedisCaptchaStore implements CaptchaStore {
     public boolean validate(String token, String inputCode) {
         String verifyCode = (String) RedisUtils.me().get(REDIS_CAPTCHA_STORE_KEY + token);
         if (verifyCode == null) {
-            throw new VerifyCodeExpireException("Your verify code is expired");
+            throw new VerifyCodeExpireException("验证码已过期!");
         }
         boolean matched = verifyCode.equalsIgnoreCase(inputCode);
         if (matched) {
