@@ -3,6 +3,7 @@ package com.jingfang.cloud.oss.client;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.Protocol;
@@ -22,6 +23,8 @@ import com.jingfang.cloud.oss.enums.OssType;
 import com.jingfang.cloud.oss.enums.PolicyType;
 import com.jingfang.cloud.oss.exception.OssException;
 import com.jingfang.cloud.oss.model.UploadObjectResult;
+import com.jingfang.cloud.oss.model.UploadPartTag;
+import com.jingfang.cloud.redis.utils.RedisUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -110,6 +113,57 @@ public class OssClient {
             throw new OssException("文件上传异常！", e);
         }
 
+    }
+
+    public void uploadPart(File file, String dest, int partNumber, int partTotalNumber) {
+        try {
+
+            String KEY = "s3-upload:part-" + dest + "-" + partNumber;
+
+            String uploadId = (String) RedisUtils.me().hGet(KEY, "uploadId");
+
+            if (uploadId == null) {
+                InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(config.getBucket(), dest);
+                InitiateMultipartUploadResult initResponse = client.initiateMultipartUpload(initRequest);
+                uploadId = initResponse.getUploadId();
+            }
+
+
+            String partETags = (String) RedisUtils.me().hGet(KEY, "partETags");
+
+            UploadPartTag uploadPartTag;
+
+            if (StrUtil.isNotEmpty(partETags)) {
+                uploadPartTag = JSONUtil.toBean(partETags, UploadPartTag.class);
+            } else {
+                uploadPartTag = new UploadPartTag();
+            }
+
+            UploadPartRequest uploadRequest = new UploadPartRequest()
+                    .withBucketName(config.getBucket())
+                    .withKey(dest)
+                    .withUploadId(uploadId)
+                    .withPartNumber(partNumber)
+                    .withFileOffset(partNumber - 1)
+                    .withFile(file)
+                    .withPartSize(file.length());
+
+            UploadPartResult uploadResult = client.uploadPart(uploadRequest);
+
+            uploadPartTag.addPartETag(uploadResult.getPartETag());
+
+            if (partNumber == partTotalNumber) {
+                CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(config.getBucket(), dest,
+                        uploadId, uploadPartTag.getPartETags());
+                client.completeMultipartUpload(compRequest);
+
+            } else {
+                RedisUtils.me().hPut(KEY, "partETags", JSONUtil.toJsonStr(uploadPartTag));
+            }
+
+        } catch (Exception e) {
+            throw new OssException("上传文件失败！", e);
+        }
     }
 
     public UploadObjectResult upload(File file, String dest) {
