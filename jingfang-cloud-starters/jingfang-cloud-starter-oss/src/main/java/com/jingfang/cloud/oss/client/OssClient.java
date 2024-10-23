@@ -126,6 +126,7 @@ public class OssClient {
                 InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(config.getBucket(), dest);
                 InitiateMultipartUploadResult initResponse = client.initiateMultipartUpload(initRequest);
                 uploadId = initResponse.getUploadId();
+                RedisUtils.me().hPut(KEY, "uploadId", uploadId);
             }
 
 
