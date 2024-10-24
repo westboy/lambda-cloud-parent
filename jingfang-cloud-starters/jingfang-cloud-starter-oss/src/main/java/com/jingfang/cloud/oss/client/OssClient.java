@@ -129,7 +129,6 @@ public class OssClient {
                 RedisUtils.me().hPut(KEY, "uploadId", uploadId);
             }
 
-
             String partETags = (String) RedisUtils.me().hGet(KEY, "partETags");
 
             UploadPartTag uploadPartTag;
@@ -157,7 +156,6 @@ public class OssClient {
                 CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(config.getBucket(), dest,
                         uploadId, uploadPartTag.getPartETags());
                 client.completeMultipartUpload(compRequest);
-
             } else {
                 RedisUtils.me().hPut(KEY, "partETags", JSONUtil.toJsonStr(uploadPartTag));
             }
