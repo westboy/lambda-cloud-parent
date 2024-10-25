@@ -47,7 +47,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
             try {
                 HttpServletRequest wrapRequest = this.wrapRequest(request);
                 LoginUser loginUser = this.attemptAuthentication(wrapRequest, response);
-                this.successfulAuthentication(request, response, chain, loginUser);
+                this.successfulAuthentication(wrapRequest, response, chain, loginUser);
             } catch (Exception exception) {
                 if (exception instanceof AuthenticationException) {
                     this.unsuccessfulAuthentication(request, response, (AuthenticationException) exception);
