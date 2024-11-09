@@ -27,7 +27,7 @@ import java.util.jar.Manifest;
 @Component
 public class PathResourceResolver extends PathMatchingResourcePatternResolver implements InfoContributor {
 
-    private static final String LOCATION_PATTERN = "classpath*:com/jingfanf/cloud/**/*.class";
+    private static final String LOCATION_PATTERN = "classpath*:com/jingfang/cloud/**/*.class";
 
     public Map<String, Object> initialization() {
         Map<String, Object> outcomes = new HashMap<>(16);
