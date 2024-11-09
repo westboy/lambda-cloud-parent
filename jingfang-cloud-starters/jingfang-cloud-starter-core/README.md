@@ -1,7 +1,7 @@
 # jingfang-cloud-core
 
 ## 简介
- core 模块提供了核心依赖，包括日志、lombok、mybatis、hutool等一般情况下，项目只需要依赖
+ core 模块提供了核心依赖，包括日志、lombok、mybatis、hutool等。一般情况下，项目只需要依赖这一个核心包即可进入正常的开发编码，提高开发效率。
  
 ## 项目依赖
   没有当前脚手架依赖
