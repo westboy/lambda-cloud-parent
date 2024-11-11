@@ -25,6 +25,13 @@ public interface LoginUser extends Principal {
     String getCredentials();
 
     /**
+     * orgId
+     *
+     * @return
+     */
+    String getOrgId();
+
+    /**
      * AccountLocked
      *
      * @return

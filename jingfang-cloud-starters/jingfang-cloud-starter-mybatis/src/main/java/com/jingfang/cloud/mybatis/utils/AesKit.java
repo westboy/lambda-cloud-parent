@@ -1,4 +1,4 @@
-package com.jingfang.cloud.mybatis.kit;
+package com.jingfang.cloud.mybatis.utils;
 
 import cn.hutool.core.codec.Base64Decoder;
 import cn.hutool.core.codec.Base64Encoder;

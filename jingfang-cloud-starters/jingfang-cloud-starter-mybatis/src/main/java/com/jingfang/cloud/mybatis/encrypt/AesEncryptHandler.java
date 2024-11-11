@@ -1,7 +1,7 @@
 package com.jingfang.cloud.mybatis.encrypt;
 
 import cn.hutool.core.util.StrUtil;
-import com.jingfang.cloud.mybatis.kit.AesKit;
+import com.jingfang.cloud.mybatis.utils.AesKit;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 

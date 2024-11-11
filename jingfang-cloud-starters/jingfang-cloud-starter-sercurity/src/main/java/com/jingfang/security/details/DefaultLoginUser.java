@@ -35,6 +35,11 @@ public class DefaultLoginUser implements LoginUser {
         return password;
     }
 
+    @Override
+    public String getOrgId() {
+        return "";
+    }
+
     @JsonIgnore
     @Override
     public String getName() {

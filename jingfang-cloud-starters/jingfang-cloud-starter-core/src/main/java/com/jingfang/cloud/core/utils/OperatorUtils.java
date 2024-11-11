@@ -33,6 +33,11 @@ public class OperatorUtils {
         }
 
         @Override
+        public String getOrgId() {
+            return "guest";
+        }
+
+        @Override
         public Boolean getAccountLocked() {
             return true;
         }

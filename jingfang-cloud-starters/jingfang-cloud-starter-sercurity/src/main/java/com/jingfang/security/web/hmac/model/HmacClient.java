@@ -50,6 +50,12 @@ public class HmacClient implements LoginUser {
     public String getCredentials() {
         return this.secret;
     }
+
+    @Override
+    public String getOrgId() {
+        return "";
+    }
+
     @JsonIgnore
     @Override
     public Boolean getAccountLocked() {
