@@ -57,17 +57,10 @@ public interface PurviewModeStrategy {
      * @param mode
      */
     static PurviewModeStrategy getInstance(Purview.Mode mode) {
-        PurviewModeStrategy strategy;
-        switch (mode) {
-            case INNER:
-                strategy = new PurviewModeInnerStrategy();
-                break;
-            case STATISTICS:
-                strategy = new PurviewModeStatisticsStrategy();
-                break;
-            default:
-                strategy = new PurviewModeQueryStrategy();
-        }
-        return strategy;
+        return switch (mode) {
+            case INNER -> new PurviewModeInnerStrategy();
+            case STATISTICS -> new PurviewModeStatisticsStrategy();
+            default -> new PurviewModeQueryStrategy();
+        };
     }
 }
