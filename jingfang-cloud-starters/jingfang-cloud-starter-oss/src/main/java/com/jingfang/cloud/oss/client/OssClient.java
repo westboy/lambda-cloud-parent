@@ -115,15 +115,24 @@ public class OssClient {
 
     }
 
-    public void uploadPart(File file, String dest, int partNumber, int partTotalNumber) {
-        try {
+    public void uploadPart(File file,String dest, int partNumber, int partTotalNumber) {
+        uploadPart(file, "application/octet-stream", dest, partNumber, partTotalNumber);
+    }
 
+    public void uploadPart(File file,String contentType, String dest, int partNumber, int partTotalNumber) {
+        try {
             String KEY = "s3-upload:part-" + dest + "-" + partTotalNumber;
+            if ((partNumber == 1) && RedisUtils.me().hasKey(KEY)) {
+                RedisUtils.me().delete(KEY);
+            }
 
             String uploadId = (String) RedisUtils.me().hGet(KEY, "uploadId");
 
             if (uploadId == null) {
                 InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(config.getBucket(), dest);
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType(contentType);
+                initRequest.withObjectMetadata(metadata);
                 InitiateMultipartUploadResult initResponse = client.initiateMultipartUpload(initRequest);
                 uploadId = initResponse.getUploadId();
                 RedisUtils.me().hPut(KEY, "uploadId", uploadId);
