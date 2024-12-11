@@ -89,8 +89,8 @@ xxl:
 
 # MyBatisPlus配置
 mybatis-plus:
-  mapperPackage: com.jingfang.cloud.**.mapper
-  typeAliasesPackage: com.jingfang.cloud.**.domain
+  mapperPackage: ${jingfang.mybatis.mapperPackage:com.jingfang.cloud.**.mapper}
+  typeAliasesPackage: ${jingfang.mybatis.typeAliasesPackage:com.jingfang.cloud.**.domain}
   checkConfigLocation: false
   configuration:
     mapUnderscoreToCamelCase: true
