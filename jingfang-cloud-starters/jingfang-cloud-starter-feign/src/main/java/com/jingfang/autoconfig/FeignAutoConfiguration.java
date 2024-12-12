@@ -31,7 +31,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
  */
 @Slf4j
 @Configuration(proxyBeanMethods = false)
-@EnableFeignClients(basePackages = "com.jingfang.cloud")
+@EnableFeignClients(basePackages = "${spring.cloud.openfeign.client.basePackage:com.jingfang.cloud}")
 @EnableConfigurationProperties(ExtendFeignClientProperties.class)
 public class FeignAutoConfiguration {
 
