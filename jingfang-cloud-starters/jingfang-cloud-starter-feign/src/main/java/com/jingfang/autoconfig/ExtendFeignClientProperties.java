@@ -17,6 +17,8 @@ import org.springframework.cloud.openfeign.FeignClientProperties;
 @ConfigurationProperties(prefix = "spring.cloud.openfeign.client")
 public class ExtendFeignClientProperties extends FeignClientProperties {
 
+    String basePackage = "com.jingfang.cloud";
+
     Retry retry = new Retry();
 
     Ssl ssl = new Ssl();
