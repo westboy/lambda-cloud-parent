@@ -32,7 +32,7 @@ import java.util.Properties;
  */
 @Slf4j
 @Configuration
-@MapperScan("${mybatis-plus.mapperPackage}")
+@MapperScan("${mybatis-plus.mapperPackage:com.jingfang.cloud.**.mapper}")
 @Import({MybatisPlusAutoConfiguration.class})
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)

@@ -17,7 +17,7 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "mybatis-plus")
 public class MybatisPlusExtendProperties {
 
-    private String mapperPackage = "";
+    private String mapperPackage = "com.jingfang.cloud.**.mapper";
 
     private Map<String, String> databaseIdMap = new HashMap<>();
 

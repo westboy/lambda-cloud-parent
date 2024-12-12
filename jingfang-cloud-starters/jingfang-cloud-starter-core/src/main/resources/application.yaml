@@ -89,20 +89,11 @@ xxl:
 
 # MyBatisPlus配置
 mybatis-plus:
-  mapperPackage: ${jingfang.mybatis.mapperPackage:com.jingfang.cloud.**.mapper}
-  typeAliasesPackage: ${jingfang.mybatis.typeAliasesPackage:com.jingfang.cloud.**.domain}
   checkConfigLocation: false
   configuration:
     mapUnderscoreToCamelCase: true
-    # MyBatis 自动映射策略
-    # NONE：不启用 PARTIAL：只对非嵌套 resultMap 自动映射 FULL：对所有 resultMap 自动映射
     autoMappingBehavior: PARTIAL
-    # MyBatis 自动映射时未知列或未知属性处理策
-    # NONE：不做处理 WARNING：打印相关警告 FAILING：抛出异常和详细信息
     autoMappingUnknownColumnBehavior: NONE
-    # 更详细的日志输出 会有性能损耗 org.apache.ibatis.logging.stdout.StdOutImpl
-    # 关闭日志记录 (可单纯使用 p6spy 分析) org.apache.ibatis.logging.nologging.NoLoggingImpl
-    # 默认日志输出 org.apache.ibatis.logging.slf4j.Slf4jImpl
     logImpl: org.apache.ibatis.logging.nologging.NoLoggingImpl
   global-config:
     # 是否打印 Logo banner
