@@ -39,16 +39,4 @@ feign:
         readTimeoutMillis: 5000
 ```
 
-
-此外，需要在主应用类上添加`@EnableFeignClients`注解以启用Feign客户端：
-```java
-@SpringBootApplication
-@EnableFeignClients
-public class YourApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(YourApplication.class, args);
-    }
-}
-```
-
 通过上述配置和依赖添加，你可以在项目中使用`jingfang-cloud-starter-feign`提供的Feign客户端功能，简化服务间的调用和通信。
