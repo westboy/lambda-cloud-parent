@@ -2,39 +2,86 @@
 <settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+    <!-- **需要修改成自己的本地仓库-->
     <localRepository>E:\Maven-Repo</localRepository>
 
+    <!-- 镜像设置，用于指定中央仓库的镜像，以提高依赖项下载的速度 -->
     <mirrors>
+        <!-- 阿里私服 -->
         <mirror>
+            <!-- 该镜像的唯一标识符, id用来区分不同的 mirror 元素, 同时会套用使用 server 中 id 相同授权配置链接到镜像 -->
             <id>mirror</id>
+            <!-- mirrorOf表示被镜像的服务器的id,
+              必须与 repository 节点设置的 ID 一致。但是 This must not match the mirror id
+             | mirrorOf 的配置语法:
+             | *           = 匹配所有远程仓库。 这样所有 pom 中定义的仓库都不生效
+             | external:*  = 匹配除 localhost、使用 file:// 协议外的所有远程仓库
+             | repo1,repo2 = 匹配仓库 repo1 和 repo2
+             | *,!repo1    = 匹配所有远程仓库, repo1 除外
+             |-->
             <mirrorOf>central,jcenter,!rdc-releases,!rdc-snapshots</mirrorOf>
+            <!-- 镜像名称, 无特殊作用, 可视为简述 -->
             <name>mirror</name>
+            <!-- 镜像地址 -->
             <url>https://maven.aliyun.com/repository/public</url>
         </mirror>
     </mirrors>
+    <!-- 进行远程服务器访问时所需的授权配置信息。通过系统唯一的 server-id 进行唯一关联 -->
     <servers>
         <server>
+            <!-- 这是 server 的 id, 该 id 与 distributionManagement 中 repository 元素的id 相匹配 -->
             <id>rdc-releases</id>
+            <!-- **改成自己的鉴权用户名 -->
             <username>delopyment</username>
+            <!-- **改成自己的鉴权密码 -->
             <password>delopyment</password>
         </server>
         <server>
+            <!-- 这是 server 的 id, 该 id 与 distributionManagement 中 repository 元素的id 相匹配 -->
             <id>rdc-snapshots</id>
+            <!-- **改成自己的鉴权用户名 -->
             <username>delopyment</username>
+            <!-- **改成自己的鉴权密码 -->
             <password>delopyment</password>
         </server>
     </servers>
+    <!--
+     | 构建方法的配置清单, maven 将根据不同环境参数来使用这些构建配置。
+     | settings.xml 中的 profile 元素是 pom.xml 中 profile 元素的裁剪版本。
+     | settings.xml 负责的是整体的构建过程, pom.xml 负责单独的项目对象构建过程。
+     | settings.xml 只包含了id, activation, repositories, pluginRepositories 和 properties 元素。
+     |
+     | 如果 settings 中的 profile 被激活, 它的值会覆盖任何其它定义在 pom.xml 中或 profile.xml 中的相同 id 的 profile。
+     |
+     | 查看当前激活的 profile:
+     |   mvn help:active-profiles
+     |-->
     <profiles>
         <profile>
+            <!-- 该配置的唯一标识符 -->
             <id>rdc</id>
+            <!-- 扩展属性设置。扩展属性可以在 POM 中的任何地方通过 ${扩展属性名} 进行引用
+             |
+             | 属性引用方式（包括扩展属性, 共 5 种属性可以引用）:
+             |
+             | env.x                  : 引用 shell 环境变量, 例如, "env.PATH"指代了 $path 环境变量（在 Linux / Windows 上是 %PATH% ）.
+             | project.x              : 引用 pom.xml（根元素就是 project） 中 xml 元素内容.例如 ${project.artifactId} 可以获取 pom.xml 中设置的 <artifactId /> 元素的内容
+             | settings.x             : 引用 setting.xml（根元素就是 setting） 中 xml 元素内容, 例如 ${settings.offline}
+             | Java System Properties : 所有可通过 java.lang.System.getProperties() 访问的属性都能在通过 ${property_name} 访问, 例如 ${java.home}
+             | x                      : 在 <properties/> 或者 外部文件 中设置的属性, 都可以 ${someVar} 的形式使用
+             |
+             |-->
             <properties>
+                <!-- **需要改成自己的私有仓库地址-->
                 <altReleaseDeploymentRepository>
                     rdc-releases::default::https://192.168.130.243:8443/repository/maven-releases/
                 </altReleaseDeploymentRepository>
+                <!-- **需要改成自己的私有仓库地址-->
                 <altSnapshotDeploymentRepository>
                     rdc-snapshots::default::https://192.168.130.243:8443/repository/maven-snapshots/
                 </altSnapshotDeploymentRepository>
             </properties>
+            <!-- 远程仓库列表 -->
             <repositories>
                 <repository>
                     <id>central</id>
@@ -56,6 +103,7 @@
                         <enabled>true</enabled>
                     </snapshots>
                 </repository>
+                <!-- **需要改成自己的私有仓库地址-->
                 <repository>
                     <id>rdc-snapshots</id>
                     <url>https://192.168.130.243:8443/repository/maven-snapshots/</url>
@@ -66,6 +114,7 @@
                         <enabled>true</enabled>
                     </snapshots>
                 </repository>
+                <!-- **需要改成自己的私有仓库地址-->
                 <repository>
                     <id>rdc-releases</id>
                     <url>https://192.168.130.243:8443/repository/maven-releases/</url>
@@ -77,6 +126,10 @@
                     </snapshots>
                 </repository>
             </repositories>
+            <!--
+             | maven 插件的远程仓库配置。maven 插件实际上是一种特殊类型的 artifact。
+             | 插件仓库独立于 artifact 仓库。pluginRepositories 元素的结构和 repositories 元素的结构类似。
+             |-->
             <pluginRepositories>
                 <pluginRepository>
                     <id>central</id>
@@ -90,6 +143,7 @@
                 </pluginRepository>
                 <pluginRepository>
                     <id>rdc-snapshots</id>
+                    <!-- **需要改成自己的私有仓库地址-->
                     <url>https://192.168.130.243:8443/repository/maven-snapshots/</url>
                     <releases>
                         <enabled>false</enabled>
@@ -100,6 +154,7 @@
                 </pluginRepository>
                 <pluginRepository>
                     <id>rdc-releases</id>
+                    <!-- **需要改成自己的私有仓库地址-->
                     <url>https://192.168.130.243:8443/repository/maven-releases/</url>
                     <releases>
                         <enabled>true</enabled>
@@ -114,6 +169,7 @@
             </activation>
         </profile>
     </profiles>
+    <!--手动激活profiles的列表-->
     <activeProfiles>
         <activeProfile>rdc</activeProfile>
     </activeProfiles>
