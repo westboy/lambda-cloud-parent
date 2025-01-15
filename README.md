@@ -9,7 +9,7 @@
 jingfang-cloud-parent
 ├── jingfang-cloud-starters
 │   ├── jingfang-cloud-starter-actuator #提供核心依赖，包括日志、lombok、mybatis、hutool等。一般情况下，项目只需要依赖这一个核心包即可进入正常的开发编码，提高开发效率。
-│   ├── jingfang-cloud-starter-core #提供所有的脚手架组件依赖集合，当时用到大多数组建的时候，用户避免一个一个的组件引入。
+│   ├── jingfang-cloud-core #提供所有的脚手架组件依赖集合，当时用到大多数组建的时候，用户避免一个一个的组件引入。
 │   ├── jingfang-cloud-starter-datasource #提供数据源的支持，包括动态数据源和标准数据源。
 │   ├── jingfang-cloud-starter-dependencies #模块管理了所有脚手架组件的依赖，包括日志、lombok、mybatis、hutool等。用户只需要依赖这一个核心包即可进入正常的开发编码，提高开发效率。
 │   ├── jingfang-cloud-starter-dubbo #模块提供了一套完整的 Dubbo 微服务解决方案。它集成了 Dubbo、Spring Boot、Spring Cloud 等常用技术，用于构建高性能、高可用的分布式系统。

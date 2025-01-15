@@ -10,10 +10,6 @@
 
     <packaging>pom</packaging>
 
-    <modules>
-        <module>jingfang-cloud-starters</module>
-    </modules>
-
     <properties>
         <maven.compiler.source>22</maven.compiler.source>
         <maven.compiler.target>22</maven.compiler.target>
@@ -56,7 +52,7 @@
         <!-- 插件版本 -->
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-jxr-plugin.version>3.3.0</maven-jxr-plugin.version>
-        <maven-pmd-plugin.version>3.24.0</maven-pmd-plugin.version>
+        <maven-pmd-plugin.version>3.26.0</maven-pmd-plugin.version>
         <maven-help-plugin.version>3.4.1</maven-help-plugin.version>
         <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
         <maven-clean-plugin.version>3.4.0</maven-clean-plugin.version>
@@ -69,6 +65,29 @@
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     </properties>
+
+    <modules>
+        <module>jingfang-cloud-core</module>
+        <module>jingfang-cloud-starter-feign</module>
+        <module>jingfang-cloud-starter-dependencies</module>
+        <module>jingfang-cloud-starter-mybatis</module>
+        <module>jingfang-cloud-starter-redis</module>
+        <module>jingfang-cloud-starter-sercurity</module>
+        <module>jingfang-cloud-starter-oss</module>
+        <module>jingfang-cloud-starter-logger</module>
+        <module>jingfang-cloud-starter-web</module>
+        <module>jingfang-cloud-starter-swagger</module>
+        <module>jingfang-cloud-starter-actuator</module>
+        <module>jingfang-cloud-starter-plugin</module>
+        <module>jingfang-cloud-starter-lucene</module>
+        <module>jingfang-cloud-starter-datasource</module>
+        <module>jingfang-cloud-starter-liquibase</module>
+        <module>jingfang-cloud-starter-websocket</module>
+        <module>jingfang-cloud-starter-kafka</module>
+        <module>jingfang-cloud-starter-gateway</module>
+        <module>jingfang-cloud-starter-test</module>
+        <module>jingfang-cloud-starter-dubbo</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -554,6 +573,38 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <configuration>
+                    <linkXRef>false</linkXRef>
+                    <printFailingErrors>true</printFailingErrors>
+                    <excludeRoots>
+                        <excludeRoot>${basedir}/target/generated-sources</excludeRoot>
+                    </excludeRoots>
+                    <skipEmptyReport>true</skipEmptyReport>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.alibaba.p3c</groupId>
+                        <artifactId>p3c-pmd</artifactId>
+                        <version>2.1.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-core</artifactId>
+                        <version>6.40.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
