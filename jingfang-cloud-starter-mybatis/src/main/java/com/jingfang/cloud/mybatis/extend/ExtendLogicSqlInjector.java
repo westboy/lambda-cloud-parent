@@ -26,7 +26,7 @@ public class ExtendLogicSqlInjector extends DefaultSqlInjector {
      * 如果只需增加方法，保留MP自带方法
      * 可以super.getMethodList() 再add
      *
-     * @return
+     * @return List<AbstractMethod>
      */
     @Override
     public List<AbstractMethod> getMethodList(Configuration configuration, Class<?> mapperClass, TableInfo tableInfo) {
@@ -39,13 +39,15 @@ public class ExtendLogicSqlInjector extends DefaultSqlInjector {
                 .add(new SelectMaps())
                 .add(new SelectObjs())
                 .add(new SelectList())
+                .add(new InsertAll())
                 .add(new OracleInsertAllBatch())
                 .add(new MysqlInsertAllBatch());
         if (tableInfo.havePK()) {
             builder.add(new DeleteById())
+                    .add(new DeleteByIds())
                     .add(new UpdateById())
                     .add(new SelectById())
-                    .add(new SelectBatchByIds());
+                    .add(new SelectByIds());
         }
         Optional<TableFieldInfo> codeField0 = getCodeField(tableInfo);
         if (codeField0.isPresent()) {
