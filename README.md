@@ -1,4 +1,4 @@
-## 关于 jingfang-cloud
+## 关于 lamuda-cloud
 
 基于 Spring Cloud 的微服务架构开发框架，集成了各种常用的中间件，提供了一套完整的微服务解决方案。它包含了多个子模块，每个子模块提供不同的功能。
 用于支持快速创建微服务脚手架，组件内提供了一些基础的配置。在中小型项目下业务开发人员只需要专注于业务开发，不用考虑框架层的各种配置。
@@ -6,27 +6,27 @@
 ## 项目层级及项目介绍
 
 ```
-jingfang-cloud-parent
-     ├── jingfang-cloud-core
-     ├── jingfang-cloud-starter-actuator 
-     ├── jingfang-cloud-starter-datasource 
-     ├── jingfang-cloud-starter-dependencies 
-     ├── jingfang-cloud-starter-dubbo 
-     ├── jingfang-cloud-starter-feign 
-     ├── jingfang-cloud-starter-gateway 
-     ├── jingfang-cloud-starter-kafka 扩充kafka 增加延迟队列功能
-     ├── jingfang-cloud-starter-liquibase 
-     ├── jingfang-cloud-starter-logger 
-     ├── jingfang-cloud-starter-lucene 
-     ├── jingfang-cloud-starter-mybatis 
-     ├── jingfang-cloud-starter-oss 
-     ├── jingfang-cloud-starter-plugin 
-     ├── jingfang-cloud-starter-redis 
-     ├── jingfang-cloud-starter-security 
-     ├── jingfang-cloud-starter-swagger 
-     ├── jingfang-cloud-starter-test
-     ├── jingfang-cloud-starter-web 
-     └── jingfang-cloud-starter-websocket
+lamuda-cloud-parent
+     ├── lamuda-cloud-core
+     ├── lamuda-cloud-starter-actuator 
+     ├── lamuda-cloud-starter-datasource 
+     ├── lamuda-cloud-starter-dependencies 
+     ├── lamuda-cloud-starter-dubbo 
+     ├── lamuda-cloud-starter-feign 
+     ├── lamuda-cloud-starter-gateway 
+     ├── lamuda-cloud-starter-kafka 扩充kafka 增加延迟队列功能
+     ├── lamuda-cloud-starter-liquibase 
+     ├── lamuda-cloud-starter-logger 
+     ├── lamuda-cloud-starter-lucene 
+     ├── lamuda-cloud-starter-mybatis 
+     ├── lamuda-cloud-starter-oss 
+     ├── lamuda-cloud-starter-plugin 
+     ├── lamuda-cloud-starter-redis 
+     ├── lamuda-cloud-starter-security 
+     ├── lamuda-cloud-starter-swagger 
+     ├── lamuda-cloud-starter-test
+     ├── lamuda-cloud-starter-web 
+     └── lamuda-cloud-starter-websocket
 ```
 
 ## 系统版本号

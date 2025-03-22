@@ -1,0 +1,33 @@
+package com.lamuda.cloud.websocket.event;
+
+import com.lamuda.cloud.websocket.WsSessionInfo;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
+
+/**
+ * 处理订阅相关事件
+ * @author jpjoo
+ */
+public interface WsSubscribeEvent {
+
+    /**
+     * 获取要处理的订阅主题
+     *
+     * @return String[]
+     */
+    String[] topics();
+
+    /**
+     * 订阅事件
+     *
+     * @param info:
+     */
+    default void subscribeEvent(WsSessionInfo<SessionSubscribeEvent> info) {}
+
+    /**
+     * 取消订阅事件
+     *
+     * @param info:
+     */
+    default void unsubscribeEvent(WsSessionInfo<SessionUnsubscribeEvent> info) {}
+}
