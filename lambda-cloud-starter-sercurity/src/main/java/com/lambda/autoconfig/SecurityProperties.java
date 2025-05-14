@@ -240,4 +240,51 @@ public class SecurityProperties {
         boolean enabled = false;
         Set<String> trusted = Sets.newHashSet();
     }
+
+    /**
+     * 短信登陆配置
+     */
+    SmsLogin smsLogin = new SmsLogin();
+
+
+    @Setter
+    @Getter
+    public static class SmsLogin {
+        /**
+         * 是否开启短信登录
+         */
+        boolean enabled = false;
+
+        /**
+         * 短信登录地址
+         */
+        String loginPath = "/sms-login";
+        /**
+         * 短信验证码地址
+         */
+        String verifyPath = "/sms-code";
+        /**
+         * 验证码接收的参数名
+         */
+        String code = "sms_code";
+        /**
+         * 手机号接收参数名
+         */
+        String mobile = "sms_mobile";
+
+        /**
+         * 短信验证码有效分钟
+         */
+        int validMinutes = 3;
+
+        /**
+         * 短信验证码可重发秒
+         */
+        int resendSeconds = 60;
+
+        /**
+         * 默认登录验证码 不开启验证码登录
+         */
+        boolean verify = false;
+    }
 }
