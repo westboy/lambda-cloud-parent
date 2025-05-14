@@ -17,7 +17,6 @@ public abstract class BasePageDTO<T> {
     private Integer pageSize = Integer.MAX_VALUE;
 
     public Page<T> getPage() {
-
         return new Page<>(pageNum, pageSize);
     }
 
