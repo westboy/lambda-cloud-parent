@@ -5,9 +5,6 @@ import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.principal.LoginType;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * OperatorUtils
  *
