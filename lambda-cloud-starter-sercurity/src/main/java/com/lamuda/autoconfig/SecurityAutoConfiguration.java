@@ -1,0 +1,271 @@
+package com.lambda.autoconfig;
+
+import cn.dev33.satoken.config.SaTokenConfig;
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.context.model.SaRequest;
+import cn.dev33.satoken.filter.SaServletFilter;
+import cn.dev33.satoken.interceptor.SaInterceptor;
+import cn.dev33.satoken.same.SaSameUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lambda.cloud.core.exception.model.ErrorModel;
+import com.lambda.cloud.mvc.WebHttpUtils;
+import com.lambda.security.handler.AuthenticationFailureHandler;
+import com.lambda.security.handler.AuthenticationSuccessHandler;
+import com.lambda.security.inteceptor.SecureExtendInterceptor;
+import com.lambda.security.inteceptor.SecureInterceptor;
+import com.lambda.security.password.HmacShaEncoder;
+import com.lambda.security.password.StandardPasswordEncoder;
+import com.lambda.security.service.HmacClientService;
+import com.lambda.security.service.UserDetailService;
+import com.lambda.security.web.SecurityLockingStrategy;
+import com.lambda.security.web.authentication.DefaultAuthenticationProcessingFilter;
+import com.lambda.security.web.authentication.DefaultLogoutFilter;
+import com.lambda.security.web.authentication.handler.DefaultAuthenticationFailureHandler;
+import com.lambda.security.web.authentication.handler.DefaultAuthenticationSuccessHandler;
+import com.lambda.security.web.authentication.handler.DefaultLogoutHandler;
+import com.lambda.security.web.authentication.handler.DefaultLogoutSuccessHandler;
+import com.lambda.security.web.authentication.locking.RedisLockingStrategy;
+import com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter;
+import com.lambda.security.web.hmac.handler.HmacAuthenticationSuccessHandler;
+import com.lambda.security.web.hmac.service.MemoryHmacClientService;
+import com.lambda.security.web.verify.VerifyCodeFilter;
+import com.lambda.security.web.verify.service.VerifyCodeService;
+import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
+import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeValidationImpl;
+import com.lambda.security.web.verify.store.CaptchaStore;
+import com.lambda.security.web.verify.store.RedisCaptchaStore;
+import com.lambda.security.web.xss.XSSDefendFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+
+
+/**
+ * Sa-Token 配置类
+ *
+ * @author jpjoo
+ */
+@Slf4j
+@AutoConfiguration(after = WebMvcAutoConfiguration.class)
+@EnableConfigurationProperties({SecurityProperties.class})
+public class SecurityAutoConfiguration {
+
+    public SecurityAutoConfiguration() {
+        log.trace("initializing...");
+    }
+
+    private SecurityProperties securityProperties;
+    private SecureExtendInterceptor secureExtendInterceptor;
+
+    @Autowired(required = false)
+    public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
+        this.secureExtendInterceptor = secureExtendInterceptor;
+    }
+
+    @Autowired
+    public void setSecurityProperties(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
+    }
+
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "lambda.security.sa-token")
+    public SaTokenConfig getSaTokenConfig() {
+        return new SaTokenConfig();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "lambda.security.xss-protected", name = "enabled")
+    public XSSDefendFilter xssDefendFilter(SecurityProperties securityProperties) {
+        SecurityProperties.XssProtected xssProtected = securityProperties.getXssProtected();
+        return new XSSDefendFilter(xssProtected.trusted);
+    }
+
+    @Bean
+    public WebMvcConfigurer saTokenWebMvcConfigurer() {
+        var secureInterceptor = new SecureInterceptor(secureExtendInterceptor);
+        var enableMethodAnnotation = securityProperties.getSaToken().getEnableMethodAnnotation();
+        var allIgnoreList = securityProperties.getSaToken().getAllIgnoreList();
+        return new WebMvcConfigurer() {
+            @SuppressWarnings("all")
+            @Override
+            public void addInterceptors(InterceptorRegistry interceptorRegistry) {
+                interceptorRegistry
+                        .addInterceptor(
+                                new SaInterceptor(secureInterceptor)
+                                        .isAnnotation(enableMethodAnnotation))
+                        .addPathPatterns("/**")
+                        .excludePathPatterns(allIgnoreList);
+            }
+        };
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "lambda.security.sa-token", name = "check-same-token")
+    public SaServletFilter getSaServletFilter() {
+        return new SaServletFilter()
+                .addInclude("/**")
+                .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
+                .setAuth(_ -> {
+                    HttpServletRequest currentRequest = WebHttpUtils.getCurrentRequest();
+                    boolean hmacRequest = WebHttpUtils.isHmacRequest(currentRequest);
+                    if (!hmacRequest) {
+                        SaSameUtil.checkCurrentRequestToken();
+                    }
+                })
+                .setError(e -> {
+                    ErrorModel errorModel = new ErrorModel();
+                    errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    errorModel.setTimestamp(System.currentTimeMillis());
+                    errorModel.setMessage(e.getMessage());
+                    return errorModel.toJsonString();
+                });
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SecurityLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
+        SecurityProperties.Form.LockStrategy lockStrategy = securityProperties.getForm().getLockStrategy();
+        return new RedisLockingStrategy(lockStrategy.getFailureMaxTimes(), lockStrategy.getDuration(), lockStrategy.getTimeUnit(), stringRedisTemplate);
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean
+    public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
+        return new DefaultAuthenticationFailureHandler(objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public AuthenticationSuccessHandler authenticationSuccessHandler(ObjectMapper objectMapper) {
+        return new DefaultAuthenticationSuccessHandler(objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PasswordEncoder passwordEncoder() {
+        return new StandardPasswordEncoder();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "lambda.security.form", name = "enabled")
+    public FilterRegistrationBean<DefaultAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
+                                                                                                               AuthenticationFailureHandler authenticationFailureHandler,
+                                                                                                               AuthenticationSuccessHandler authenticationSuccessHandler,
+                                                                                                               PasswordEncoder passwordEncoder,
+                                                                                                               @Autowired(required = false) UserDetailService userDetailService
+    ) {
+        FilterRegistrationBean<DefaultAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        DefaultAuthenticationProcessingFilter processingFilter = new DefaultAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
+        processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
+        processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        processingFilter.setUserDetailService(userDetailService);
+        processingFilter.setPasswordEncoder(passwordEncoder);
+        filterRegistrationBean.setFilter(processingFilter);
+        filterRegistrationBean.addUrlPatterns("/*");
+        filterRegistrationBean.setOrder(30);
+        return filterRegistrationBean;
+    }
+
+    @Configuration
+    @ConditionalOnProperty(prefix = "lambda.security.hmac", name = "enabled")
+    public static class HmacConfiguration {
+
+        private SecurityProperties securityProperties;
+
+        @Autowired
+        public void setSecurityProperties(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public HmacClientService hmacClientService(@Autowired(required = false) UserDetailService userDetailService) {
+            return new MemoryHmacClientService(userDetailService, securityProperties.hmac.getClients());
+        }
+
+        @Bean
+        public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
+                AuthenticationFailureHandler authenticationFailureHandler,
+                @Autowired(required = false) HmacClientService hmacClientService
+        ) {
+            FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
+            processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
+            processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            filterRegistrationBean.setFilter(processingFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(30);
+            return filterRegistrationBean;
+        }
+
+    }
+
+    @Bean
+    public DefaultLogoutHandler defaultLogoutHandler() {
+        return new DefaultLogoutHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public DefaultLogoutSuccessHandler defaultLogoutSuccessHandler() {
+        return new DefaultLogoutSuccessHandler();
+    }
+
+    @Bean
+    public FilterRegistrationBean<DefaultLogoutFilter> defaultLogoutFilter(DefaultLogoutHandler defaultLogoutHandler, DefaultLogoutSuccessHandler defaultLogoutSuccessHandler) {
+        FilterRegistrationBean<DefaultLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        DefaultLogoutFilter defaultLogoutFilter = new DefaultLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), defaultLogoutSuccessHandler, defaultLogoutHandler);
+        filterRegistrationBean.setFilter(defaultLogoutFilter);
+        filterRegistrationBean.addUrlPatterns("/*");
+        filterRegistrationBean.setOrder(40);
+        return filterRegistrationBean;
+    }
+
+
+    @Bean
+    public CaptchaStore redisCaptchaStore() {
+        return new RedisCaptchaStore();
+    }
+
+    @Bean
+    public VerifyCodeService captchaVerifyCodeGenerate(ObjectMapper objectMapper, CaptchaStore redisCaptchaStore) {
+        return new CaptchaVerifyCodeGenerateImpl(securityProperties, objectMapper, redisCaptchaStore);
+    }
+
+    @Bean
+    public VerifyCodeService captchaVerifyCodeValidation(CaptchaStore redisCaptchaStore) {
+        return new CaptchaVerifyCodeValidationImpl(securityProperties, redisCaptchaStore);
+    }
+
+    @Bean
+    public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, AuthenticationFailureHandler authenticationFailureHandler) {
+        FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
+        verifyCodeFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        filterRegistrationBean.setFilter(verifyCodeFilter);
+        filterRegistrationBean.addUrlPatterns("/*");
+        filterRegistrationBean.setOrder(20);
+        return filterRegistrationBean;
+    }
+}

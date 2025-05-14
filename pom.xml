@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.lamuda.cloud</groupId>
-    <artifactId>lamuda-cloud-parent</artifactId>
+    <groupId>com.lambda.cloud</groupId>
+    <artifactId>lambda-cloud-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
@@ -67,26 +67,26 @@
     </properties>
 
     <modules>
-        <module>lamuda-cloud-core</module>
-        <module>lamuda-cloud-starter-feign</module>
-        <module>lamuda-cloud-starter-dependencies</module>
-        <module>lamuda-cloud-starter-mybatis</module>
-        <module>lamuda-cloud-starter-redis</module>
-        <module>lamuda-cloud-starter-sercurity</module>
-        <module>lamuda-cloud-starter-oss</module>
-        <module>lamuda-cloud-starter-logger</module>
-        <module>lamuda-cloud-starter-web</module>
-        <module>lamuda-cloud-starter-swagger</module>
-        <module>lamuda-cloud-starter-actuator</module>
-        <module>lamuda-cloud-starter-plugin</module>
-        <module>lamuda-cloud-starter-lucene</module>
-        <module>lamuda-cloud-starter-datasource</module>
-        <module>lamuda-cloud-starter-liquibase</module>
-        <module>lamuda-cloud-starter-websocket</module>
-        <module>lamuda-cloud-starter-kafka</module>
-        <module>lamuda-cloud-starter-gateway</module>
-        <module>lamuda-cloud-starter-test</module>
-        <module>lamuda-cloud-starter-dubbo</module>
+        <module>lambda-cloud-core</module>
+        <module>lambda-cloud-starter-feign</module>
+        <module>lambda-cloud-starter-dependencies</module>
+        <module>lambda-cloud-starter-mybatis</module>
+        <module>lambda-cloud-starter-redis</module>
+        <module>lambda-cloud-starter-sercurity</module>
+        <module>lambda-cloud-starter-oss</module>
+        <module>lambda-cloud-starter-logger</module>
+        <module>lambda-cloud-starter-web</module>
+        <module>lambda-cloud-starter-swagger</module>
+        <module>lambda-cloud-starter-actuator</module>
+        <module>lambda-cloud-starter-plugin</module>
+        <module>lambda-cloud-starter-lucene</module>
+        <module>lambda-cloud-starter-datasource</module>
+        <module>lambda-cloud-starter-liquibase</module>
+        <module>lambda-cloud-starter-websocket</module>
+        <module>lambda-cloud-starter-kafka</module>
+        <module>lambda-cloud-starter-gateway</module>
+        <module>lambda-cloud-starter-test</module>
+        <module>lambda-cloud-starter-dubbo</module>
     </modules>
 
     <dependencyManagement>
