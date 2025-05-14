@@ -87,6 +87,7 @@
         <module>lambda-cloud-starter-gateway</module>
         <module>lambda-cloud-starter-test</module>
         <module>lambda-cloud-starter-dubbo</module>
+        <module>lambda-cloud-starter-sms</module>
     </modules>
 
     <dependencyManagement>
