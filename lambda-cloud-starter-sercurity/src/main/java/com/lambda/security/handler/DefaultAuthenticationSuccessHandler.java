@@ -1,15 +1,14 @@
-package com.lambda.security.web.authentication.handler;
+package com.lambda.security.handler;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
-import com.lambda.cloud.core.principal.LoginType;
-import com.lambda.security.handler.AuthenticationSuccessHandler;
-import com.lambda.security.web.events.UserLoginEvent;
+import com.lambda.security.events.UserLoginEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +83,6 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
             } else {
                 WebHttpUtils.sendRedirect(request, response, "/");
             }
-
         }
     }
 

@@ -46,7 +46,7 @@ liquibase 可以通过维护xml，把数据库的变更跟随版本记录，简�
 ```
 编写总的changelog文件，用来引入后面需要新建的其他：init、后续维护的update文件夹
 
-总的changelog文件的文件名格式：lambda-项目名简称-changelog.xml。例如：lambda-core-changelog.xml
+总的changelog文件的文件名格式：lambda-项目名简称-changelog.xml。例如：lambda-changelog.xml
 ```
 - resources
     - META-INF
@@ -54,7 +54,7 @@ liquibase 可以通过维护xml，把数据库的变更跟随版本记录，简�
             - changelogs
                 - init
                 - update
-                - lambda-core-changelog.xml
+                - lambda-changelog.xml
 ```
 在里面引入同包下的其他文件夹里面的changelog.xml文件：
 
@@ -81,8 +81,8 @@ liquibase 可以通过维护xml，把数据库的变更跟随版本记录，简�
         - db
             - changelogs
               - init
-                - lambda-core-create-table.xml
-                - lambda-core-insert-data.xml
+                - lambda-create-table.xml
+                - lambda-insert-data.xml
 ```
 
 ### 初始化表
@@ -103,7 +103,7 @@ liquibase 可以通过维护xml，把数据库的变更跟随版本记录，简�
 changset语句：
 
 1. **changSet**标签：书写changset语句的外标签
-    - id：**lambda-项目名简称-年月日秒序号**(202407232501)。示例：lambda-core-202407232501
+    - id：**lambda-项目名简称-年月日秒序号**(202407232501)。示例：lambda-202407232501
     - author：作者名称。示例：echo
 2. **preConditions**标签：**前置判断条件**
     - onFail：如果判断条件为false，需要执行的策略。一般用MARK_RAN，即错误跳过，继续执行下一个。
@@ -129,7 +129,7 @@ changset语句：
 完整示例：
 
 ```xml
-<changeSet id="lambda-core-202407232501" author="echo">
+<changeSet id="lambda-202407232501" author="echo">
     <preConditions onFail="MARK_RAN">
         <not>
             <tableExists tableName="decoction_info"/>
@@ -155,7 +155,7 @@ changset语句：
 ### 初始化数据
 
 1. changSet标签：书写changset语句的外标签
-    - id：lambda-项目名简称-年月日秒序号(202407232501)。示例：lambda-core-202407232501
+    - id：lambda-项目名简称-年月日秒序号(202407232501)。示例：lambda-202407232501
     - author：作者名称。示例：echo
 2. preConditions标签：前置判断条件
     - onFail：如果判断条件为false，需要执行的策略。一般用MARK_RAN，即错误跳过，继续执行下一个。
@@ -181,7 +181,7 @@ changset语句：
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
     
 <!--    INSERT INTO `cmai_server_core`.`dict_info` (`id`, `code`, `type`, `name`, `value`, `notes`, `sort`, `create_time`, `update_time`, `create_user`, `update_user`, `del_flag`, `state`) VALUES (568804692331593728, 'PEOPLE_TYPE', 1, '普通人群', 2, '', '2', '2024-04-18 14:26:47', '2024-04-18 14:26:47', 550622042005700608, 550622042005700608, 0, 1);-->
-    <changeSet id="cmai-core-202407251001" author="zsl">
+    <changeSet id="lambda-202407251001" author="zsl">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT COUNT(1) FROM DUAL WHERE EXISTS(SELECT 1 FROM dict_info WHERE ID = 568804692331593728 )
@@ -228,7 +228,7 @@ changset语句：
 #### 添加字段
 
 ```xml
-	<changeSet id="cmai-core-202407251001" author="zsl">
+	<changeSet id="lambda-202407251001" author="zsl">
         <addColumn tableName="user_info">
             <column name="chn_code" type="varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci" remarks="中国中药饮片代码"/>
         </addColumn>
@@ -259,7 +259,7 @@ changset语句：
 #### 修改字段
 
 ```xml
-<changeSet id="cmai-core-202407251001" author="zsl">
+<changeSet id="lambda-202407251001" author="zsl">
     <!-- 修改名称+类型 -->
 	<renameColumn tableName="tb2_member" oldColumnName="nick_name" newColumnName="nick_name_new" columnDataType="varchar(20)"/>
     <!-- 修改类型 -->
@@ -285,7 +285,7 @@ changset语句：
 #### 添加数据
 
 ```xml
-<changeSet id="lambda-core-202407232501" author="echo">
+<changeSet id="lambda-202407232501" author="echo">
     <insert tableName="tb2_member">  
             <column  name="mobile"  value="132"/>  
     </insert>
@@ -297,7 +297,7 @@ changset语句：
 #### 修改数据
 
 ```xml
-<changeSet id="lambda-core-202407232501" author="echo">
+<changeSet id="lambda-202407232501" author="echo">
 	<update  tableName="tb2_member">
 	    <column name="mobile" value="address value"/>
 	    <where>id=100</where>
@@ -310,7 +310,7 @@ changset语句：
 #### 删除数据
 
 ```xml
-<changeSet id="lambda-core-202407232501" author="echo">
+<changeSet id="lambda-202407232501" author="echo">
 	<delete  tableName="tb2_member">  
         <where>id=100</where>  
     </delete> 

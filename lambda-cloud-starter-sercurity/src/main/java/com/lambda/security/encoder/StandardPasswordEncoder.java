@@ -1,4 +1,4 @@
-package com.lambda.security.password;
+package com.lambda.security.encoder;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,9 +1,8 @@
-package com.lambda.security.web.authentication.handler;
+package com.lambda.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.security.handler.AuthenticationFailureHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
@@ -49,7 +48,7 @@ public class DefaultAuthenticationFailureHandler implements AuthenticationFailur
             if (StringUtils.isNotBlank(redirectUrl)) {
                 WebHttpUtils.sendRedirect(request, response, redirectUrl);
             } else {
-                WebHttpUtils.sendRedirect(request, response, "/404");
+                WebHttpUtils.sendRedirect(request, response, "/401");
             }
         }
     }

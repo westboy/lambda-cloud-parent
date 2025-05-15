@@ -1,4 +1,4 @@
-package com.lambda.security.password;
+package com.lambda.security.encoder;
 
 import org.springframework.security.crypto.codec.Hex;
 import org.springframework.security.crypto.codec.Utf8;

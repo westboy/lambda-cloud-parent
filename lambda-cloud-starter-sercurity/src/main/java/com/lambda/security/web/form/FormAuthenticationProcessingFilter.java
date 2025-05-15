@@ -1,4 +1,4 @@
-package com.lambda.security.web.authentication;
+package com.lambda.security.web.form;
 
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.principal.LoginUser;
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Setter
 @Getter
-public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
+public class FormAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
     public static final String LOGIN_FORM_PARAMETERS = "loginFormParameters";
     private String usernameParameter = "username";
     private String passwordParameter = "password";
@@ -38,7 +38,7 @@ public class DefaultAuthenticationProcessingFilter extends AbstractAuthenticatio
     private UserDetailService userDetailService;
     private PasswordEncoder passwordEncoder;
 
-    public DefaultAuthenticationProcessingFilter(String defaultFilterProcessesUrl) {
+    public FormAuthenticationProcessingFilter(String defaultFilterProcessesUrl) {
         super(defaultFilterProcessesUrl);
     }
 

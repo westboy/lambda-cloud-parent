@@ -7,7 +7,7 @@ import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.exception.UsernameNotFoundException;
-import com.lambda.security.password.HmacShaEncoder;
+import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.service.HmacClientService;
 import com.lambda.security.utils.HmacUtils;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;

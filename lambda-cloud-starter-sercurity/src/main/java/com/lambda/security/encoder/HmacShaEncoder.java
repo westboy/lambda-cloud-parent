@@ -1,4 +1,4 @@
-package com.lambda.security.password;
+package com.lambda.security.encoder;
 
 import com.lambda.cloud.core.utils.Assert;
 import lombok.extern.slf4j.Slf4j;

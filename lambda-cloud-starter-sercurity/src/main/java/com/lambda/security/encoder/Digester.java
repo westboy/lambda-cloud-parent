@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lambda.security.password;
+package com.lambda.security.encoder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

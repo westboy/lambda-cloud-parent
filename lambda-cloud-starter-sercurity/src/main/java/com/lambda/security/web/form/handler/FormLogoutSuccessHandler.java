@@ -1,10 +1,10 @@
-package com.lambda.security.web.authentication.handler;
+package com.lambda.security.web.form.handler;
 
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
 import com.lambda.security.handler.LogoutSuccessHandler;
-import com.lambda.security.web.events.UserLogoutEvent;
+import com.lambda.security.events.UserLogoutEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ import java.io.IOException;
  *
  * @author jpjoo
  */
-public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler, ApplicationEventPublisherAware {
+public class FormLogoutSuccessHandler implements LogoutSuccessHandler, ApplicationEventPublisherAware {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Override

@@ -1,5 +1,5 @@
 
-package com.lambda.security.web.authentication;
+package com.lambda.security.web.form;
 
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.security.handler.CompositeLogoutHandler;
@@ -24,20 +24,20 @@ import java.io.IOException;
  *
  * @author jpjoo
  */
-public class DefaultLogoutFilter extends GenericFilterBean {
+public class FormLogoutFilter extends GenericFilterBean {
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
     private final LogoutHandler handler;
     private final LogoutSuccessHandler logoutSuccessHandler;
     private final String filterProcessesUrl;
 
-    public DefaultLogoutFilter(LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
+    public FormLogoutFilter(LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
         this.handler = new CompositeLogoutHandler(handlers);
         Assert.notNull(logoutSuccessHandler, "logoutSuccessHandler cannot be null");
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.filterProcessesUrl = "/logout";
     }
 
-    public DefaultLogoutFilter(String filterProcessesUrl, LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
+    public FormLogoutFilter(String filterProcessesUrl, LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
         Assert.notNull(logoutSuccessHandler, "logoutSuccessHandler cannot be null");
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.filterProcessesUrl = filterProcessesUrl;

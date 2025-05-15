@@ -1,7 +1,6 @@
-package com.lambda.security.web.authentication.locking;
+package com.lambda.security.web.form.locking;
 
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.text.MessageFormat;

@@ -1,4 +1,4 @@
-package com.lambda.security.web.authentication.locking;
+package com.lambda.security.web.form.locking;
 
 import com.lambda.security.web.SecurityLockingStrategy;
 import lombok.Getter;

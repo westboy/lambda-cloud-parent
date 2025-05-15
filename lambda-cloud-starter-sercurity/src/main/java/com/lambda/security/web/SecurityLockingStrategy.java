@@ -1,6 +1,6 @@
 package com.lambda.security.web;
 
-import com.lambda.security.web.authentication.locking.UserLoginLimitTracker;
+import com.lambda.security.web.form.locking.UserLoginLimitTracker;
 
 import java.util.concurrent.TimeUnit;
 

@@ -1,4 +1,4 @@
-package com.lambda.security.web.events;
+package com.lambda.security.events;
 
 import com.lambda.cloud.core.principal.LoginUser;
 import lombok.Getter;

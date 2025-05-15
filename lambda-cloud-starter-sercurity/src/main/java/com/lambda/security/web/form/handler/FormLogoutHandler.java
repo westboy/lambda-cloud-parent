@@ -1,4 +1,4 @@
-package com.lambda.security.web.authentication.handler;
+package com.lambda.security.web.form.handler;
 
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.principal.LoginUser;
@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author jpjoo
  */
-public class DefaultLogoutHandler implements LogoutHandler {
+public class FormLogoutHandler implements LogoutHandler {
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {

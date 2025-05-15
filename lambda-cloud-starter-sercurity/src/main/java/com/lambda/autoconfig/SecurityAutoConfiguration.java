@@ -7,22 +7,22 @@ import cn.dev33.satoken.same.SaSameUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
+import com.lambda.security.encoder.HmacShaEncoder;
+import com.lambda.security.encoder.StandardPasswordEncoder;
 import com.lambda.security.handler.AuthenticationFailureHandler;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
+import com.lambda.security.handler.DefaultAuthenticationFailureHandler;
+import com.lambda.security.handler.DefaultAuthenticationSuccessHandler;
 import com.lambda.security.inteceptor.SecureExtendInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
-import com.lambda.security.password.HmacShaEncoder;
-import com.lambda.security.password.StandardPasswordEncoder;
 import com.lambda.security.service.HmacClientService;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.SecurityLockingStrategy;
-import com.lambda.security.web.authentication.DefaultAuthenticationProcessingFilter;
-import com.lambda.security.web.authentication.DefaultLogoutFilter;
-import com.lambda.security.web.authentication.handler.DefaultAuthenticationFailureHandler;
-import com.lambda.security.web.authentication.handler.DefaultAuthenticationSuccessHandler;
-import com.lambda.security.web.authentication.handler.DefaultLogoutHandler;
-import com.lambda.security.web.authentication.handler.DefaultLogoutSuccessHandler;
-import com.lambda.security.web.authentication.locking.RedisLockingStrategy;
+import com.lambda.security.web.form.FormAuthenticationProcessingFilter;
+import com.lambda.security.web.form.FormLogoutFilter;
+import com.lambda.security.web.form.handler.FormLogoutHandler;
+import com.lambda.security.web.form.handler.FormLogoutSuccessHandler;
+import com.lambda.security.web.form.locking.RedisLockingStrategy;
 import com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter;
 import com.lambda.security.web.hmac.handler.HmacAuthenticationSuccessHandler;
 import com.lambda.security.web.hmac.service.MemoryHmacClientService;
@@ -68,26 +68,6 @@ public class SecurityAutoConfiguration {
         log.trace("initializing...");
     }
 
-    private SecurityProperties securityProperties;
-    private SecureExtendInterceptor secureExtendInterceptor;
-
-    @Autowired(required = false)
-    public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
-        this.secureExtendInterceptor = secureExtendInterceptor;
-    }
-
-    @Autowired
-    public void setSecurityProperties(SecurityProperties securityProperties) {
-        this.securityProperties = securityProperties;
-    }
-
-    @Bean
-    @Primary
-    @ConfigurationProperties(prefix = "lambda.security.sa-token")
-    public SaTokenConfig getSaTokenConfig() {
-        return new SaTokenConfig();
-    }
-
     @Bean
     @ConditionalOnProperty(prefix = "lambda.security.xss-protected", name = "enabled")
     public XSSDefendFilter xssDefendFilter(SecurityProperties securityProperties) {
@@ -95,93 +75,70 @@ public class SecurityAutoConfiguration {
         return new XSSDefendFilter(xssProtected.trusted);
     }
 
-    @Bean
-    public WebMvcConfigurer saTokenWebMvcConfigurer() {
-        var secureInterceptor = new SecureInterceptor(secureExtendInterceptor);
-        var enableMethodAnnotation = securityProperties.getSaToken().getEnableMethodAnnotation();
-        var allIgnoreList = securityProperties.getSaToken().getAllIgnoreList();
-        return new WebMvcConfigurer() {
-            @SuppressWarnings("all")
-            @Override
-            public void addInterceptors(InterceptorRegistry interceptorRegistry) {
-                interceptorRegistry
-                        .addInterceptor(
-                                new SaInterceptor(secureInterceptor)
-                                        .isAnnotation(enableMethodAnnotation))
-                        .addPathPatterns("/**")
-                        .excludePathPatterns(allIgnoreList);
-            }
-        };
-    }
+    @Configuration
+    public static class SaTokenConfiguration {
 
-    @Bean
-    @ConditionalOnProperty(prefix = "lambda.security.sa-token", name = "check-same-token")
-    public SaServletFilter getSaServletFilter() {
-        return new SaServletFilter()
-                .addInclude("/**")
-                .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
-                .setAuth(_ -> {
-                    HttpServletRequest currentRequest = WebHttpUtils.getCurrentRequest();
-                    boolean hmacRequest = WebHttpUtils.isHmacRequest(currentRequest);
-                    if (!hmacRequest) {
-                        SaSameUtil.checkCurrentRequestToken();
-                    }
-                })
-                .setError(e -> {
-                    ErrorModel errorModel = new ErrorModel();
-                    errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
-                    errorModel.setTimestamp(System.currentTimeMillis());
-                    errorModel.setMessage(e.getMessage());
-                    return errorModel.toJsonString();
-                });
-    }
+        private SecurityProperties securityProperties;
+        private SecureExtendInterceptor secureExtendInterceptor;
 
-    @Bean
-    @ConditionalOnMissingBean
-    public SecurityLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
-        SecurityProperties.Form.LockStrategy lockStrategy = securityProperties.getForm().getLockStrategy();
-        return new RedisLockingStrategy(lockStrategy.getFailureMaxTimes(), lockStrategy.getDuration(), lockStrategy.getTimeUnit(), stringRedisTemplate);
-    }
+        @Autowired(required = false)
+        public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
+            this.secureExtendInterceptor = secureExtendInterceptor;
+        }
 
+        @Autowired
+        public void setSecurityProperties(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
-        return new DefaultAuthenticationFailureHandler(objectMapper);
-    }
+        @Bean
+        @Primary
+        @ConfigurationProperties(prefix = "lambda.security.sa-token")
+        public SaTokenConfig getSaTokenConfig() {
+            return new SaTokenConfig();
+        }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AuthenticationSuccessHandler authenticationSuccessHandler(ObjectMapper objectMapper) {
-        return new DefaultAuthenticationSuccessHandler(objectMapper);
-    }
+        @Bean
+        public WebMvcConfigurer saTokenWebMvcConfigurer() {
+            var secureInterceptor = new SecureInterceptor(secureExtendInterceptor);
+            var enableMethodAnnotation = securityProperties.getSaToken().getEnableMethodAnnotation();
+            var allIgnoreList = securityProperties.getSaToken().getAllIgnoreList();
+            return new WebMvcConfigurer() {
+                @SuppressWarnings("all")
+                @Override
+                public void addInterceptors(InterceptorRegistry interceptorRegistry) {
+                    interceptorRegistry
+                            .addInterceptor(
+                                    new SaInterceptor(secureInterceptor)
+                                            .isAnnotation(enableMethodAnnotation))
+                            .addPathPatterns("/**")
+                            .excludePathPatterns(allIgnoreList);
+                }
+            };
+        }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public PasswordEncoder passwordEncoder() {
-        return new StandardPasswordEncoder();
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "lambda.security.form", name = "enabled")
-    public FilterRegistrationBean<DefaultAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
-                                                                                                               AuthenticationFailureHandler authenticationFailureHandler,
-                                                                                                               AuthenticationSuccessHandler authenticationSuccessHandler,
-                                                                                                               PasswordEncoder passwordEncoder,
-                                                                                                               @Autowired(required = false) UserDetailService userDetailService
-    ) {
-        FilterRegistrationBean<DefaultAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-        DefaultAuthenticationProcessingFilter processingFilter = new DefaultAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
-        processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
-        processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-        processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        processingFilter.setUserDetailService(userDetailService);
-        processingFilter.setPasswordEncoder(passwordEncoder);
-        filterRegistrationBean.setFilter(processingFilter);
-        filterRegistrationBean.addUrlPatterns("/*");
-        filterRegistrationBean.setOrder(30);
-        return filterRegistrationBean;
+        @Bean
+        @ConditionalOnProperty(prefix = "lambda.security.sa-token", name = "check-same-token")
+        public SaServletFilter getSaServletFilter() {
+            return new SaServletFilter()
+                    .addInclude("/**")
+                    .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
+                    .setAuth(_ -> {
+                        HttpServletRequest currentRequest = WebHttpUtils.getCurrentRequest();
+                        boolean hmacRequest = WebHttpUtils.isHmacRequest(currentRequest);
+                        if (!hmacRequest) {
+                            SaSameUtil.checkCurrentRequestToken();
+                        }
+                    })
+                    .setError(e -> {
+                        ErrorModel errorModel = new ErrorModel();
+                        errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+                        errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                        errorModel.setTimestamp(System.currentTimeMillis());
+                        errorModel.setMessage(e.getMessage());
+                        return errorModel.toJsonString();
+                    });
+        }
     }
 
     @Configuration
@@ -202,13 +159,26 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
+        @ConditionalOnMissingBean
+        public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
+            return new DefaultAuthenticationFailureHandler(objectMapper);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public AuthenticationSuccessHandler authenticationSuccessHandler() {
+            return new HmacAuthenticationSuccessHandler();
+        }
+
+        @Bean
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
                 AuthenticationFailureHandler authenticationFailureHandler,
+                AuthenticationSuccessHandler authenticationSuccessHandler,
                 @Autowired(required = false) HmacClientService hmacClientService
         ) {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
-            processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
+            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
             processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
@@ -218,51 +188,112 @@ public class SecurityAutoConfiguration {
 
     }
 
-    @Bean
-    public DefaultLogoutHandler defaultLogoutHandler() {
-        return new DefaultLogoutHandler();
-    }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public DefaultLogoutSuccessHandler defaultLogoutSuccessHandler() {
-        return new DefaultLogoutSuccessHandler();
-    }
+    @Configuration
+    @ConditionalOnProperty(prefix = "lambda.security.form", name = "enabled")
+    public static class FormConfiguration {
 
-    @Bean
-    public FilterRegistrationBean<DefaultLogoutFilter> defaultLogoutFilter(DefaultLogoutHandler defaultLogoutHandler, DefaultLogoutSuccessHandler defaultLogoutSuccessHandler) {
-        FilterRegistrationBean<DefaultLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-        DefaultLogoutFilter defaultLogoutFilter = new DefaultLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), defaultLogoutSuccessHandler, defaultLogoutHandler);
-        filterRegistrationBean.setFilter(defaultLogoutFilter);
-        filterRegistrationBean.addUrlPatterns("/*");
-        filterRegistrationBean.setOrder(40);
-        return filterRegistrationBean;
-    }
+        private SecurityProperties securityProperties;
+
+        @Autowired
+        public void setSecurityProperties(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public SecurityLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
+            SecurityProperties.Form.LockStrategy lockStrategy = securityProperties.getForm().getLockStrategy();
+            return new RedisLockingStrategy(lockStrategy.getFailureMaxTimes(), lockStrategy.getDuration(), lockStrategy.getTimeUnit(), stringRedisTemplate);
+        }
 
 
-    @Bean
-    public CaptchaStore redisCaptchaStore() {
-        return new RedisCaptchaStore();
+        @Bean
+        @ConditionalOnMissingBean
+        public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
+            return new DefaultAuthenticationFailureHandler(objectMapper);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public AuthenticationSuccessHandler authenticationSuccessHandler(ObjectMapper objectMapper) {
+            return new DefaultAuthenticationSuccessHandler(objectMapper);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public PasswordEncoder passwordEncoder() {
+            return new StandardPasswordEncoder();
+        }
+
+        @Bean
+        public FilterRegistrationBean<FormAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
+                                                                                                                AuthenticationFailureHandler authenticationFailureHandler,
+                                                                                                                AuthenticationSuccessHandler authenticationSuccessHandler,
+                                                                                                                PasswordEncoder passwordEncoder,
+                                                                                                                @Autowired(required = false) UserDetailService userDetailService
+        ) {
+            FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            FormAuthenticationProcessingFilter processingFilter = new FormAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
+            processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
+            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            processingFilter.setUserDetailService(userDetailService);
+            processingFilter.setPasswordEncoder(passwordEncoder);
+            filterRegistrationBean.setFilter(processingFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(30);
+            return filterRegistrationBean;
+        }
+
+        @Bean
+        public FormLogoutHandler formLogoutHandler() {
+            return new FormLogoutHandler();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public FormLogoutSuccessHandler formLogoutSuccessHandler() {
+            return new FormLogoutSuccessHandler();
+        }
+
+        @Bean
+        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(FormLogoutHandler formLogoutHandler, FormLogoutSuccessHandler formLogoutSuccessHandler) {
+            FilterRegistrationBean<FormLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), formLogoutSuccessHandler, formLogoutHandler);
+            filterRegistrationBean.setFilter(formLogoutFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(40);
+            return filterRegistrationBean;
+        }
+
+
+        @Bean
+        public CaptchaStore redisCaptchaStore() {
+            return new RedisCaptchaStore();
+        }
+
+        @Bean
+        public VerifyCodeService captchaVerifyCodeGenerate(ObjectMapper objectMapper, CaptchaStore redisCaptchaStore) {
+            return new CaptchaVerifyCodeGenerateImpl(securityProperties, objectMapper, redisCaptchaStore);
+        }
+
+        @Bean
+        public VerifyCodeService captchaVerifyCodeValidation(CaptchaStore redisCaptchaStore) {
+            return new CaptchaVerifyCodeValidationImpl(securityProperties, redisCaptchaStore);
+        }
+
+        @Bean
+        public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, AuthenticationFailureHandler authenticationFailureHandler) {
+            FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
+            verifyCodeFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            filterRegistrationBean.setFilter(verifyCodeFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(20);
+            return filterRegistrationBean;
+        }
+
     }
 
-    @Bean
-    public VerifyCodeService captchaVerifyCodeGenerate(ObjectMapper objectMapper, CaptchaStore redisCaptchaStore) {
-        return new CaptchaVerifyCodeGenerateImpl(securityProperties, objectMapper, redisCaptchaStore);
-    }
-
-    @Bean
-    public VerifyCodeService captchaVerifyCodeValidation(CaptchaStore redisCaptchaStore) {
-        return new CaptchaVerifyCodeValidationImpl(securityProperties, redisCaptchaStore);
-    }
-
-    @Bean
-    public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, AuthenticationFailureHandler authenticationFailureHandler) {
-        FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-        VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
-        verifyCodeFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        filterRegistrationBean.setFilter(verifyCodeFilter);
-        filterRegistrationBean.addUrlPatterns("/*");
-        filterRegistrationBean.setOrder(20);
-        return filterRegistrationBean;
-    }
 }
