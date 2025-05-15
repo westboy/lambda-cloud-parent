@@ -1,4 +1,4 @@
-package com.lambda.security.details;
+package com.lambda.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.principal.LoginUser;

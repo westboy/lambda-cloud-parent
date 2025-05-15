@@ -51,10 +51,10 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
 
     @Override
     public boolean support(HttpServletRequest request) {
-        final SecurityProperties.SmsLogin smsLogin = securityProperties.getSmsLogin();
-        boolean captchaEnabled = smsLogin.isEnabled();
-        boolean isGetMethod = JakartaServletUtil.isGetMethod(request);
-        return captchaEnabled && isGetMethod && matcher.match(smsLogin.getVerifyPath(), request.getRequestURI());
+        final SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
+        return smsLogin.isEnabled()
+                && JakartaServletUtil.isPostMethod(request)
+                && matcher.match(smsLogin.getVerifyPath(), request.getRequestURI());
     }
 
     @Override
@@ -65,7 +65,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
 
     public void sendVerifyCode(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            SecurityProperties.SmsLogin smsLogin = securityProperties.getSmsLogin();
+            SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
             String mobile = request.getParameter(smsLogin.getMobile());
             Assert.isTrue(StringUtils.isNotBlank(mobile), "the parameter mobile can't be empty");
             String loginTypeParameter = "loginType";
@@ -99,7 +99,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
         if (code == null) {
             return true;
         }
-        int sumSeconds = securityProperties.getSmsLogin().getResendSeconds() * ONE_SECOND;
+        int sumSeconds = securityProperties.getSms().getResendSeconds() * ONE_SECOND;
         return code.getCreateTimeMillis() + sumSeconds < System.currentTimeMillis();
     }
 }

@@ -244,7 +244,8 @@ public class SecurityProperties {
     /**
      * 短信登陆配置
      */
-    SmsLogin smsLogin = new SmsLogin();
+    @NestedConfigurationProperty
+    public SmsLogin sms = new SmsLogin();
 
 
     @Setter

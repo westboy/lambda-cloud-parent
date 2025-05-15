@@ -7,6 +7,7 @@ import cn.dev33.satoken.same.SaSameUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
+import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.encoder.StandardPasswordEncoder;
 import com.lambda.security.handler.*;
@@ -183,7 +184,7 @@ public class SecurityAutoConfiguration {
                 AuthenticationSuccessHandler authenticationSuccessHandler
         ) {
             FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(securityProperties.getSmsLogin().getLoginPath());
+            SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(securityProperties.getSms().getLoginPath());
             processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
             processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);
@@ -198,8 +199,14 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public VerifyCodeService smsVerifyCodeGenerate(ObjectMapper objectMapper, SmsVerifyCodeStore<String> smsVerifyCodeStore) {
-            return new SmsVerifyCodeGenerateImpl(securityProperties, objectMapper, smsVerifyCodeStore);
+        public VerifyCodeService smsVerifyCodeGenerate(ObjectMapper objectMapper,
+                                                       SmsVerifyCodeStore<String> smsVerifyCodeStore,
+                                                       SmsMessageSender smsMessageSender,
+                                                       UserDetailService userDetailService) {
+            SmsVerifyCodeGenerateImpl smsVerifyCodeGenerate = new SmsVerifyCodeGenerateImpl(securityProperties, objectMapper, smsVerifyCodeStore);
+            smsVerifyCodeGenerate.setUserDetailService(userDetailService);
+            smsVerifyCodeGenerate.setSmsMessageSender(smsMessageSender);
+            return smsVerifyCodeGenerate;
         }
 
         @Bean

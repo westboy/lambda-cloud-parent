@@ -42,10 +42,12 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
 
     @Override
     public boolean support(HttpServletRequest request) {
-        final SecurityProperties.SmsLogin smsLogin = securityProperties.getSmsLogin();
-        boolean captchaEnabled = smsLogin.isEnabled();
-        boolean isPostMethod = JakartaServletUtil.isPostMethod(request);
-        return captchaEnabled && isPostMethod && matcher.match(smsLogin.getLoginPath(), request.getRequestURI());
+        final SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
+        return smsLogin.isEnabled()
+                &&
+                JakartaServletUtil.isPostMethod(request)
+                &&
+                matcher.match(smsLogin.getLoginPath(), request.getRequestURI());
     }
 
     @Override
@@ -91,15 +93,15 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
     }
 
     public String obtainMobileParameter(HttpServletRequest request) {
-        return request.getParameter(securityProperties.getSmsLogin().getMobile());
+        return request.getParameter(securityProperties.getSms().getMobile());
     }
 
     public String obtainCodeParameter(HttpServletRequest request) {
-        return request.getParameter(securityProperties.getSmsLogin().getCode());
+        return request.getParameter(securityProperties.getSms().getCode());
     }
 
     private void checkValid(SmsVerifyCode<String> code) {
-        int sumSeconds = securityProperties.getSmsLogin().getValidMinutes() * VerifyCodeService.ONE_SECOND;
+        int sumSeconds = securityProperties.getSms().getValidMinutes() * VerifyCodeService.ONE_SECOND;
         boolean b = code.getCreateTimeMillis() + sumSeconds > System.currentTimeMillis();
         Assert.isTrue(b, "verify code invalid");
     }

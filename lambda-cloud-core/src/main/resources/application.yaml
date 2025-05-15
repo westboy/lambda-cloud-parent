@@ -109,8 +109,3 @@ lambda:
       is-concurrent: true
   api-docs:
     title: "${spring.application.name} Api Documents"
-  liquibase:
-    url: ${spring.datasource.url:${spring.shardingsphere.datasource.master.jdbc-url}}
-    username: ${spring.datasource.username:${spring.shardingsphere.datasource.master.username}}
-    password: ${spring.datasource.password:${spring.shardingsphere.datasource.master.password}}
-    driver-class-name: ${spring.datasource.driver-class-name:${spring.shardingsphere.datasource.master.driver-class-name}}

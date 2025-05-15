@@ -64,11 +64,13 @@ public class SmsAutoConfiguration {
             return new SmsMessageSender() {
                 @Override
                 public SmsSendResult sendVerifyCode(String phone, String code, int expire) {
+                    log.info("MockSendVerifyCode: phone={}, code={}, expire={}", phone, code, expire);
                     return new SmsSendResult(true, "mock", "mock", "mock");
                 }
 
                 @Override
                 public SmsSendResult sendMessage(String phone, String templateId, String params) {
+                    log.info("MockSendMessage: phone={}, templateId={}, params={}", phone, templateId, params);
                     return new SmsSendResult(true, "mock", "mock", "mock");
                 }
 
