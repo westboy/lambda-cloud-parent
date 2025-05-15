@@ -1,12 +1,9 @@
-#\u5141\u8BB8\u66FF\u6362\u7684\u9ED8\u8BA4\u503C
 server:
   servlet:
     session:
       persistent: false
       tracking-modes: COOKIE
-  # undertow 配置
   undertow:
-    # HTTP post内容的最大大小。当值为-1时，默认值为大小是无限的
     max-http-post-size: -1
     # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
     # 每块buffer的空间大小,越小的空间被利用越充分
@@ -86,7 +83,6 @@ xxl:
     'org.springframework.context.annotation.AnnotationConfigApplicationContext': 'OFF'
     'org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver': 'ERROR'
     'liquibase.lockservice': 'INFO'
-
 # MyBatisPlus配置
 mybatis-plus:
   checkConfigLocation: false
@@ -112,7 +108,7 @@ lambda:
       token-prefix: Bearer
       token-style: random-64
       timeout: 4363200
-      jwt-secret-key: jf-token-secret
+      jwt-secret-key: lambda-token-secret
       active-timeout: -1
       is-share: true
       is-print: false
