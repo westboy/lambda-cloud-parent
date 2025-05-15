@@ -11,16 +11,16 @@ public interface Converter<A, B> {
     /**
      * doForward
      *
-     * @param a
-     * @return
+     * @param a A
+     * @return B
      */
     B doForward(A a);
 
     /**
      * doBackward
      *
-     * @param b
-     * @return
+     * @param b B
+     * @return A
      */
     A doBackward(B b);
 }

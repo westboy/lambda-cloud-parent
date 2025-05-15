@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * EntityWrapper
+ * BaseWrapper
  *
  * @author Jin
  */
@@ -17,15 +17,15 @@ public interface BaseWrapper<E, V> {
     /**
      * entityVO
      *
-     * @param entity
+     * @param entity E
      */
     V entityVO(E entity);
 
     /**
      * treeVO
      *
-     * @param list
-     * @return
+     * @param list List<TreeNode<V>>
+     * @return List<TreeNode<V>>
      */
     default List<TreeNode<V>> treeVO(List<TreeNode<V>> list) {
         return null;
@@ -34,8 +34,8 @@ public interface BaseWrapper<E, V> {
     /**
      * listVO
      *
-     * @param list
-     * @return
+     * @param list List<E>
+     * @return List<E>
      */
     default List<V> listVO(List<E> list) {
         return list.stream().map(this::entityVO).collect(Collectors.toList());
@@ -44,8 +44,8 @@ public interface BaseWrapper<E, V> {
     /**
      * pageVO
      *
-     * @param pages
-     * @return
+     * @param pages IPage<E>
+     * @return IPage<V>
      */
     default IPage<V> pageVO(IPage<E> pages) {
         List<V> records = this.listVO(pages.getRecords());

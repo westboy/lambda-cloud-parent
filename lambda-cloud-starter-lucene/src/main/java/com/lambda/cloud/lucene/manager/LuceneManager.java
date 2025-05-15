@@ -43,18 +43,17 @@ public class LuceneManager {
     /**
      * 创建索引
      *
-     * @param abstractIndexObject
-     * @throws IOException
+     * @param abstractIndexObject AbstractIndexObject
      */
     @SneakyThrows
-    public void create(AbstractIndexObject abstractIndexObject) throws IOException {
+    public void create(AbstractIndexObject abstractIndexObject) {
         IndexWriter indexWriter = getIndexWriter();
         try {
             Long result = indexWriter.addDocument(IndexObjectUtil.indexObjectToDocument(abstractIndexObject));
             log.info("====[ 创建索引: {} ]====", result);
             indexWriter.commit();
         } catch (Exception e) {
-            log.error("创建索引失败！",e);
+            log.error("创建索引失败！", e);
             indexWriter.rollback();
         } finally {
             indexWriter.close();
@@ -65,8 +64,7 @@ public class LuceneManager {
     /**
      * 更新索引
      *
-     * @param abstractIndexObject
-     * @throws IOException
+     * @param abstractIndexObject AbstractIndexObject
      */
     public void update(AbstractIndexObject abstractIndexObject) throws IOException {
         IndexWriter indexWriter = getIndexWriter();
@@ -86,8 +84,7 @@ public class LuceneManager {
     /**
      * 删除索引
      *
-     * @param id
-     * @throws IOException
+     * @param id String
      */
     public void delete(String id) throws IOException {
         IndexWriter indexWriter = getIndexWriter();
@@ -105,7 +102,6 @@ public class LuceneManager {
     /**
      * 删除全部索引
      *
-     * @throws IOException
      */
     public void deleteAll() throws IOException {
         IndexWriter indexWriter = getIndexWriter();

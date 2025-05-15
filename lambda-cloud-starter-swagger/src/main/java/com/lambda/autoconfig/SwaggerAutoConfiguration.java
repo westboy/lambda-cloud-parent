@@ -3,7 +3,6 @@ package com.lambda.autoconfig;
 
 import com.lambda.cloud.swagger.converter.PageConverter;
 import com.lambda.cloud.swagger.filter.SwaggerDisabledFilter;
-import com.lambda.cloud.swagger.SwaggerProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

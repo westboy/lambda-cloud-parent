@@ -2,8 +2,8 @@ package com.lambda.cloud.core.jackson.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.lambda.cloud.core.jackson.dser.CustomLocalDateTimeDeserializer;
-import com.lambda.cloud.core.jackson.ser.CustomLocalDateTimeSerializer;
+import com.lambda.cloud.core.jackson.deserializer.LambdaCloudLocalDateTimeDeserializer;
+import com.lambda.cloud.core.jackson.serializer.LambdaCloudLocalDateTimeSerializer;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
 
 import java.time.LocalDateTime;
@@ -27,8 +27,8 @@ public class DefaultObjectMapper extends ObjectMapper {
         this.setSerializationInclusion(NON_EMPTY);
         this.activateDefaultTyping(getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
         JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new CustomLocalDateTimeSerializer());
-        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
+        javaTimeModule.addSerializer(LocalDateTime.class, new LambdaCloudLocalDateTimeSerializer());
+        javaTimeModule.addDeserializer(LocalDateTime.class, new LambdaCloudLocalDateTimeDeserializer());
         this.registerModule(javaTimeModule);
     }
 

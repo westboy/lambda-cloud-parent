@@ -24,7 +24,6 @@ import java.util.jar.Manifest;
  * @author jin
  */
 @Slf4j
-@Component
 public class PathResourceResolver extends PathMatchingResourcePatternResolver implements InfoContributor {
 
     private static final String LOCATION_PATTERN = "classpath*:com/lambda/cloud/**/*.class";

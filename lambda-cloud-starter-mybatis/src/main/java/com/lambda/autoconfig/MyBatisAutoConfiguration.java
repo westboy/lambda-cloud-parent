@@ -79,7 +79,7 @@ public class MyBatisAutoConfiguration {
     /**
      * 批量插入攔截器
      *
-     * @return
+     * @return InsertBatchInterceptor
      */
     @Bean
     @Order(30)

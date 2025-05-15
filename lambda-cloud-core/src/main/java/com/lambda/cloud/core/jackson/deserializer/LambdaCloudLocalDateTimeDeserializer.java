@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.jackson.dser;
+package com.lambda.cloud.core.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -13,10 +13,12 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 
 /**
+ * CustomLocalDateTimeDeserializer
+ *
  * @author Jin
  */
-@SuppressWarnings({"squid:S110", "PMD"})
-public class CustomLocalDateTimeDeserializer extends LocalDateTimeDeserializer {
+@SuppressWarnings("all")
+public class LambdaCloudLocalDateTimeDeserializer extends LocalDateTimeDeserializer {
 
     private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd[[' 'HH][:mm][:ss]]")
@@ -27,7 +29,6 @@ public class CustomLocalDateTimeDeserializer extends LocalDateTimeDeserializer {
             .toFormatter();
 
     @Override
-    @SuppressWarnings({"AlibabaUndefineMagicConstant", "squid:S3776"})
     public LocalDateTime deserialize(JsonParser parser, DeserializationContext context) throws IOException {
         if (parser.hasToken(JsonToken.VALUE_NUMBER_INT)) {
             long value = parser.getValueAsLong();

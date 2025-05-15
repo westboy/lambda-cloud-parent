@@ -12,8 +12,8 @@ public abstract class BaseVO<V,E>  implements Converter<V, E> {
 
     /**
      * doForward
-     * @param v
-     * @return
+     * @param  v V
+     * @return E
      */
     @Override
     public E doForward(V v) {
@@ -22,8 +22,8 @@ public abstract class BaseVO<V,E>  implements Converter<V, E> {
 
     /**
      * doBackward
-     * @param e
-     * @return
+     * @param e E
+     * @return V
      */
     @Override
     public V doBackward(E e) {

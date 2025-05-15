@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.jackson.ser;
+package com.lambda.cloud.core.jackson.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -7,13 +7,17 @@ import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.data.domain.Page;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
+ * PageSerializer
+ *
  * @author Jin
  */
 @JsonComponent
 public class PageSerializer extends JsonSerializer<Page<?>> implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Override

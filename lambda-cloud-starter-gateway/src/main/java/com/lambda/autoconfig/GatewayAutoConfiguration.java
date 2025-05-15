@@ -11,12 +11,14 @@ import com.lambda.cloud.gateway.filter.*;
 import com.lambda.cloud.gateway.predicate.BackendRoutePredicateFactory;
 import com.lambda.cloud.gateway.properties.GatewayFirewallProperties;
 import com.lambda.cloud.gateway.service.RouterEnhancer;
+import com.lambda.cloud.gateway.swagger.SwaggerResourceController;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.netty.NettyServerCustomizer;
+import org.springframework.cloud.gateway.config.GatewayProperties;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
@@ -187,5 +189,10 @@ public class GatewayAutoConfiguration {
             }
             return httpServer;
         };
+    }
+
+    @Bean
+    public SwaggerResourceController swaggerResourceController(GatewayProperties gatewayProperties) {
+        return new SwaggerResourceController(gatewayProperties);
     }
 }

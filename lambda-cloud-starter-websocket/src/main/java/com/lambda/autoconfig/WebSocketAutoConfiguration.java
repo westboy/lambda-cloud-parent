@@ -4,6 +4,8 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.cloud.websocket.ChannelStoreMode;
 import com.lambda.cloud.websocket.event.DefaultConnectEventServiceImpl;
 import com.lambda.cloud.websocket.event.WsConnectEventService;
+import com.lambda.cloud.websocket.event.WsEventHandler;
+import com.lambda.cloud.websocket.event.WsSubscribeEvent;
 import com.lambda.cloud.websocket.interceptor.DefaultAuthenticationChannelInterceptor;
 import com.lambda.cloud.websocket.interceptor.IpHandshakeInterceptor;
 import com.lambda.cloud.websocket.repository.DefaultWebSocketChannelRepository;
@@ -26,6 +28,8 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+import java.util.List;
 
 /**
  * WebSocketAutoConfiguration
@@ -68,7 +72,7 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
 
     @Bean
     public ChannelInterceptor channelInterceptor() {
-     return new DefaultAuthenticationChannelInterceptor();
+        return new DefaultAuthenticationChannelInterceptor();
     }
 
     @Override
@@ -96,6 +100,11 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
             deploymentInfo.addServletContextAttribute("io.undertow.websockets.jsr.WebSocketDeploymentInfo", webSocketDeploymentInfo);
         });
 
+    }
+
+    @Bean
+    public WsEventHandler wsEventHandler(List<WsConnectEventService> connectEventServices, List<WsSubscribeEvent> subscribeEvents) {
+        return new WsEventHandler(connectEventServices, subscribeEvents);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.actuator.MeterHelper;
+import com.lambda.cloud.actuator.resolver.PathResourceResolver;
 import io.micrometer.core.aop.CountedAspect;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -39,6 +40,10 @@ public class ActuatorAutoConfiguration {
     @Bean
     public MeterHelper meterHelper(MeterRegistry meterRegistry) {
         return new MeterHelper(meterRegistry);
+    }
+    @Bean
+    public PathResourceResolver pathResourceResolver() {
+        return new PathResourceResolver();
     }
 
 }

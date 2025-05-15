@@ -1,4 +1,4 @@
-package com.lambda.cloud.swagger;
+package com.lambda.autoconfig;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -17,7 +17,6 @@ import java.util.Map;
  * @author jpjoo
  */
 @Slf4j
-@Component
 public class WsEventHandler {
 
     private final List<WsConnectEventService> connectEventServices;

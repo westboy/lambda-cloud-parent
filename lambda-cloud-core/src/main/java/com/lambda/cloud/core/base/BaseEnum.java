@@ -9,7 +9,7 @@ public interface BaseEnum<I> {
     /**
      * getCode
      *
-     * @return
+     * @return I
      */
     I getCode();
 }
