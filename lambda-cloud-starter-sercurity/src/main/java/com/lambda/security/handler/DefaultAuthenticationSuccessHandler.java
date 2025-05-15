@@ -25,6 +25,7 @@ import java.io.IOException;
  * @author jpjoo
  */
 @Slf4j
+@SuppressWarnings("all")
 public class DefaultAuthenticationSuccessHandler implements AuthenticationSuccessHandler, ApplicationEventPublisherAware {
 
     private ApplicationEventPublisher applicationEventPublisher;

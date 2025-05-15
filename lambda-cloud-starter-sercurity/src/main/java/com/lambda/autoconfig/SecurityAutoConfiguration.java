@@ -9,10 +9,7 @@ import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.encoder.StandardPasswordEncoder;
-import com.lambda.security.handler.AuthenticationFailureHandler;
-import com.lambda.security.handler.AuthenticationSuccessHandler;
-import com.lambda.security.handler.DefaultAuthenticationFailureHandler;
-import com.lambda.security.handler.DefaultAuthenticationSuccessHandler;
+import com.lambda.security.handler.*;
 import com.lambda.security.inteceptor.SecureExtendInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
 import com.lambda.security.service.HmacClientService;
@@ -20,23 +17,27 @@ import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.SecurityLockingStrategy;
 import com.lambda.security.web.form.FormAuthenticationProcessingFilter;
 import com.lambda.security.web.form.FormLogoutFilter;
-import com.lambda.security.web.form.handler.FormLogoutHandler;
-import com.lambda.security.web.form.handler.FormLogoutSuccessHandler;
 import com.lambda.security.web.form.locking.RedisLockingStrategy;
 import com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter;
 import com.lambda.security.web.hmac.handler.HmacAuthenticationSuccessHandler;
 import com.lambda.security.web.hmac.service.MemoryHmacClientService;
+import com.lambda.security.web.sms.SmsAuthenticationProcessingFilter;
 import com.lambda.security.web.verify.VerifyCodeFilter;
 import com.lambda.security.web.verify.service.VerifyCodeService;
 import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
 import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeValidationImpl;
-import com.lambda.security.web.verify.store.CaptchaStore;
-import com.lambda.security.web.verify.store.RedisCaptchaStore;
+import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
+import com.lambda.security.web.verify.service.captcha.store.RedisCaptchaStore;
+import com.lambda.security.web.verify.service.sms.SmsVerifyCodeGenerateImpl;
+import com.lambda.security.web.verify.service.sms.SmsVerifyCodeValidationImpl;
+import com.lambda.security.web.verify.service.sms.store.InMemorySmsVerifyCodeStore;
+import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -141,6 +142,73 @@ public class SecurityAutoConfiguration {
         }
     }
 
+    @Bean
+    @ConditionalOnExpression("${lambda.security.form.enabled:false} || ${lambda.security.sms.enabled:false}")
+    public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, AuthenticationFailureHandler authenticationFailureHandler) {
+        FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
+        verifyCodeFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        filterRegistrationBean.setFilter(verifyCodeFilter);
+        filterRegistrationBean.addUrlPatterns("/*");
+        filterRegistrationBean.setOrder(20);
+        return filterRegistrationBean;
+    }
+
+    @Configuration
+    @ConditionalOnProperty(prefix = "lambda.security.sms", name = "enabled")
+    public static class SmsConfiguration {
+
+        private SecurityProperties securityProperties;
+
+        @Autowired
+        public void setSecurityProperties(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
+            return new DefaultAuthenticationFailureHandler(objectMapper);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public AuthenticationSuccessHandler authenticationSuccessHandler(ObjectMapper objectMapper) {
+            return new DefaultAuthenticationSuccessHandler(objectMapper);
+        }
+
+        @Bean
+        public FilterRegistrationBean<SmsAuthenticationProcessingFilter> smsAuthenticationProcessingFilter(
+                AuthenticationFailureHandler authenticationFailureHandler,
+                AuthenticationSuccessHandler authenticationSuccessHandler
+        ) {
+            FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(securityProperties.getSmsLogin().getLoginPath());
+            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            filterRegistrationBean.setFilter(processingFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(30);
+            return filterRegistrationBean;
+        }
+
+        @Bean
+        public SmsVerifyCodeStore<String> smsVerifyCodeStore() {
+            return new InMemorySmsVerifyCodeStore();
+        }
+
+        @Bean
+        public VerifyCodeService smsVerifyCodeGenerate(ObjectMapper objectMapper, SmsVerifyCodeStore<String> smsVerifyCodeStore) {
+            return new SmsVerifyCodeGenerateImpl(securityProperties, objectMapper, smsVerifyCodeStore);
+        }
+
+        @Bean
+        public VerifyCodeService smsVerifyCodeValidation(SmsVerifyCodeStore<String> smsVerifyCodeStore) {
+            return new SmsVerifyCodeValidationImpl(securityProperties, smsVerifyCodeStore);
+        }
+
+    }
+
     @Configuration
     @ConditionalOnProperty(prefix = "lambda.security.hmac", name = "enabled")
     public static class HmacConfiguration {
@@ -187,7 +255,6 @@ public class SecurityAutoConfiguration {
         }
 
     }
-
 
     @Configuration
     @ConditionalOnProperty(prefix = "lambda.security.form", name = "enabled")
@@ -247,20 +314,20 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public FormLogoutHandler formLogoutHandler() {
-            return new FormLogoutHandler();
+        public DefaultLogoutHandler formLogoutHandler() {
+            return new DefaultLogoutHandler();
         }
 
         @Bean
         @ConditionalOnMissingBean
-        public FormLogoutSuccessHandler formLogoutSuccessHandler() {
-            return new FormLogoutSuccessHandler();
+        public DefaultLogoutSuccessHandler formLogoutSuccessHandler() {
+            return new DefaultLogoutSuccessHandler();
         }
 
         @Bean
-        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(FormLogoutHandler formLogoutHandler, FormLogoutSuccessHandler formLogoutSuccessHandler) {
+        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(DefaultLogoutHandler defaultLogoutHandler, DefaultLogoutSuccessHandler defaultLogoutSuccessHandler) {
             FilterRegistrationBean<FormLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), formLogoutSuccessHandler, formLogoutHandler);
+            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), defaultLogoutSuccessHandler, defaultLogoutHandler);
             filterRegistrationBean.setFilter(formLogoutFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(40);
@@ -281,17 +348,6 @@ public class SecurityAutoConfiguration {
         @Bean
         public VerifyCodeService captchaVerifyCodeValidation(CaptchaStore redisCaptchaStore) {
             return new CaptchaVerifyCodeValidationImpl(securityProperties, redisCaptchaStore);
-        }
-
-        @Bean
-        public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, AuthenticationFailureHandler authenticationFailureHandler) {
-            FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
-            verifyCodeFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-            filterRegistrationBean.setFilter(verifyCodeFilter);
-            filterRegistrationBean.addUrlPatterns("/*");
-            filterRegistrationBean.setOrder(20);
-            return filterRegistrationBean;
         }
 
     }

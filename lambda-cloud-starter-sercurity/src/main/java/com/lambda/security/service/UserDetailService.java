@@ -14,15 +14,14 @@ import java.util.List;
 public interface UserDetailService extends StpInterface {
 
 
-    /**
-     * 用户登录
-     *
-     * @param username
-     * @param loginType
-     * @return
-     * @throws AuthenticationException
-     */
-    LoginUser loginByUsername(String username, String loginType) throws AuthenticationException;
+    default LoginUser loginByUsername(String username, String loginType) throws AuthenticationException {
+        throw new AuthenticationException("用户名登录暂未实现！");
+    }
+
+
+    default LoginUser loginByMobile(String mobile, String loginType) throws AuthenticationException {
+        throw new AuthenticationException("手机号登录暂未实现！");
+    }
 
     @Override
     default List<String> getPermissionList(Object loginId, String loginType) {

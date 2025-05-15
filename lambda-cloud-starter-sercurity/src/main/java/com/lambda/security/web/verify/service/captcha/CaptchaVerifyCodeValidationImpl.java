@@ -10,7 +10,7 @@ import com.lambda.cloud.web.DefaultServletRequestWrapper;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.enums.LoginMode;
 import com.lambda.security.web.verify.service.VerifyCodeService;
-import com.lambda.security.web.verify.store.CaptchaStore;
+import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
@@ -28,6 +28,7 @@ import java.util.Map;
  *
  * @author jpjoo
  */
+@SuppressWarnings("all")
 public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
     private final AntPathMatcher matcher = new AntPathMatcher();
     private final SecurityProperties securityProperties;
@@ -62,8 +63,8 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
         if (StrUtil.isEmpty(loginMode)) {
             throw new VerifyCodeValidationException("登录模式不能为空!");
         }
-        boolean isPwdLogin = LoginMode.PWD.getCode().equals(loginMode);
-        if (!isPwdLogin) {
+
+        if (!LoginMode.PWD.getCode().equals(loginMode)||!LoginMode.MAIL.getCode().equals(loginMode)) {
             chain.doFilter(request, response);
             return;
         }

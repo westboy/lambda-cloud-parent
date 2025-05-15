@@ -1,6 +1,7 @@
 package com.lambda.security.web;
 
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.handler.AuthenticationFailureHandler;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
@@ -18,6 +19,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * AbstractAuthenticationProcessingFilter
@@ -26,6 +28,7 @@ import java.io.IOException;
  */
 @Slf4j
 public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean {
+    public static final String LOGIN_PARAMETERS = "loginParameters";
     protected static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
     private AuthenticationSuccessHandler successHandler;
     private AuthenticationFailureHandler failureHandler;
@@ -124,5 +127,15 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 
     protected AuthenticationFailureHandler getFailureHandler() {
         return this.failureHandler;
+    }
+
+    public Map<String, Object> getUserLoginForRequestBody(HttpServletRequest request) {
+        try {
+            Map<String, Object> loginParameters = WebHttpUtils.getRequestBody(request);
+            request.setAttribute(LOGIN_PARAMETERS, loginParameters);
+            return loginParameters;
+        } catch (Exception e) {
+            throw new AuthenticationException("获取用户数据失败！");
+        }
     }
 }

@@ -1,9 +1,8 @@
-package com.lambda.security.web.form.handler;
+package com.lambda.security.handler;
 
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
-import com.lambda.security.handler.LogoutSuccessHandler;
 import com.lambda.security.events.UserLogoutEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -19,7 +18,8 @@ import java.io.IOException;
  *
  * @author jpjoo
  */
-public class FormLogoutSuccessHandler implements LogoutSuccessHandler, ApplicationEventPublisherAware {
+@SuppressWarnings("all")
+public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler, ApplicationEventPublisherAware {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
@@ -34,7 +34,6 @@ public class FormLogoutSuccessHandler implements LogoutSuccessHandler, Applicati
         }
     }
 
-    @SuppressWarnings("all")
     @Override
     public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;

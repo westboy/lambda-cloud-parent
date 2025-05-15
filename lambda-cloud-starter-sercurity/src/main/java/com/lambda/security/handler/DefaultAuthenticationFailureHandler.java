@@ -17,6 +17,7 @@ import java.io.PrintWriter;
  *
  * @author jpjoo
  */
+@SuppressWarnings("all")
 public class DefaultAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
     private final ObjectMapper objectMapper;

@@ -1,4 +1,4 @@
-package com.lambda.security.web.verify.store;
+package com.lambda.security.web.verify.service.captcha.store;
 
 import com.lambda.cloud.redis.utils.RedisUtils;
 import com.lambda.security.exception.VerifyCodeExpireException;

@@ -3,7 +3,6 @@ package com.lambda.security.web.form;
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.service.UserDetailService;
@@ -29,7 +28,6 @@ import java.util.Map;
 @Setter
 @Getter
 public class FormAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
-    public static final String LOGIN_FORM_PARAMETERS = "loginFormParameters";
     private String usernameParameter = "username";
     private String passwordParameter = "password";
     private String loginTypeParameter = "loginType";
@@ -76,7 +74,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         username = username.trim();
 
         if (StringUtils.isBlank(username) && StringUtils.isBlank(password)) {
-            Map<String, Object> user = getUserFromRequestBody(request);
+            Map<String, Object> user = getUserLoginForRequestBody(request);
             if (MapUtils.isNotEmpty(user)) {
                 username = (String) user.getOrDefault(this.getUsernameParameter(), "");
                 password = (String) user.getOrDefault(this.getPasswordParameter(), "");
@@ -143,14 +141,6 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         return request.getParameter(this.usernameParameter);
     }
 
-    public Map<String, Object> getUserFromRequestBody(HttpServletRequest request) {
-        try {
-            Map<String, Object> loginParameters = WebHttpUtils.getRequestBody(request);
-            request.setAttribute(LOGIN_FORM_PARAMETERS, loginParameters);
-            return loginParameters;
-        } catch (Exception e) {
-            throw new AuthenticationException("获取用户数据失败！");
-        }
-    }
+
 
 }

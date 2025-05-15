@@ -1,4 +1,4 @@
-package com.lambda.security.web.verify.store;
+package com.lambda.security.web.verify.service.captcha.store;
 
 import java.util.concurrent.TimeUnit;
 

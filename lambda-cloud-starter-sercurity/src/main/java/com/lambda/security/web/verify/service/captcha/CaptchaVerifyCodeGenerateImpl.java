@@ -12,7 +12,7 @@ import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.web.verify.generator.MathGenerator;
 import com.lambda.security.web.verify.service.VerifyCodeService;
-import com.lambda.security.web.verify.store.CaptchaStore;
+import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
