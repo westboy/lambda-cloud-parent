@@ -19,6 +19,7 @@ public class SmsSendResult {
     /**
      * 请求是否成功
      */
+    @Builder.Default
     private boolean success = false;
 
     /**
