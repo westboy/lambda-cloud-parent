@@ -11,7 +11,9 @@ import com.lambda.cloud.core.jackson.mapper.DefaultObjectMapper;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
 import com.lambda.cloud.core.propertis.CorsProperties;
 import com.lambda.cloud.mvc.StringToDateConverter;
+import com.lambda.cloud.mvc.execption.GlobalControllerAdvice;
 import com.lambda.cloud.mvc.filter.OrderedTimeHandlerFilter;
+import com.lambda.cloud.mvc.filter.XframeOptionsFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -20,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -192,5 +195,18 @@ public class WebMvcAutoConfiguration {
     @Bean
     public OrderedTimeHandlerFilter timeHandlerFilter() {
         return new OrderedTimeHandlerFilter();
+    }
+
+    @Bean
+    public GlobalControllerAdvice globalControllerAdvice() {
+        return new GlobalControllerAdvice();
+    }
+
+    @Bean
+    public FilterRegistrationBean<XframeOptionsFilter> xframeOptionsFilter() {
+        FilterRegistrationBean<XframeOptionsFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new XframeOptionsFilter());
+        registrationBean.addUrlPatterns("*.html");
+        return registrationBean;
     }
 }

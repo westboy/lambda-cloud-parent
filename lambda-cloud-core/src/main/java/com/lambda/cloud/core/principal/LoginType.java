@@ -43,7 +43,7 @@ public enum LoginType {
         return Arrays.stream(LoginType.values())
                 .filter(loginModeEnum -> loginModeEnum.code.equals(id))
                 .findFirst()
-                .orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆类型"));
+                .orElseThrow((Supplier<RuntimeException>) () -> new SaTokenException("不支持的登陆类型"));
     }
 
     public static StpLogic getActiveStpLogic() {

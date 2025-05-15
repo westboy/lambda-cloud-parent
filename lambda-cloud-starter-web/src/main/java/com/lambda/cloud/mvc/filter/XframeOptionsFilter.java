@@ -8,7 +8,6 @@ import java.io.IOException;
 /**
  * @author Jin
  */
-@WebFilter(urlPatterns = "*.html")
 public class XframeOptionsFilter implements Filter {
 
     @Override
