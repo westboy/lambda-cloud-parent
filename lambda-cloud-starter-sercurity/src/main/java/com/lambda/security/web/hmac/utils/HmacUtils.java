@@ -1,4 +1,4 @@
-package com.lambda.security.utils;
+package com.lambda.security.web.hmac.utils;
 
 import com.lambda.cloud.core.utils.HmacGenerator;
 import com.lambda.security.web.hmac.model.HmacAuthorization;

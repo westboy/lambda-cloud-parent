@@ -8,7 +8,7 @@ import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.DefaultServletRequestWrapper;
-import com.lambda.security.enums.LoginMode;
+import com.lambda.security.LoginMode;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.web.verify.service.VerifyCodeService;
 import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;

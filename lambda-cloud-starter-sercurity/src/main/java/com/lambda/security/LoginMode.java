@@ -1,4 +1,4 @@
-package com.lambda.security.enums;
+package com.lambda.security;
 
 import lombok.Getter;
 

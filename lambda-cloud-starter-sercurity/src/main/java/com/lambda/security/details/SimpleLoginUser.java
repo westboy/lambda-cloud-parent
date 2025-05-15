@@ -13,7 +13,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class DefaultLoginUser implements LoginUser {
+public class SimpleLoginUser implements LoginUser {
 
     private String id;
 

@@ -9,7 +9,7 @@ import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.exception.UsernameNotFoundException;
 import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.service.HmacClientService;
-import com.lambda.security.utils.HmacUtils;
+import com.lambda.security.web.hmac.utils.HmacUtils;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import com.lambda.security.web.hmac.model.HmacAuthorization;
 import com.lambda.security.web.hmac.model.HmacClient;
