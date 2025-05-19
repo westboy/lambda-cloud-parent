@@ -46,7 +46,7 @@ public class LiquibaseAutoConfiguration {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setChangeLog("classpath:META-INF/db/changelogs/lambda-master.xml");
         liquibase.setDataSource(dataSource);
-        liquibase.setContexts("ingfang_cloud_liquibase");
+        liquibase.setContexts("lambda_cloud_liquibase");
         return liquibase;
     }
 
