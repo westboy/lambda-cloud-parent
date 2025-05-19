@@ -37,6 +37,7 @@ public abstract class BaseDO implements Serializable {
 
     @JsonIgnore
     @TableLogic(value = "0",delval = "1")
+    @TableField(fill = FieldFill.INSERT)
     private Boolean delFlag;
 
 }
