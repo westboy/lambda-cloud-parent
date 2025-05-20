@@ -1,15 +1,19 @@
 package com.lambda.security.web.verify.service.sms;
 
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
+import cn.hutool.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.cloud.sms.model.SmsSendResult;
+import com.lambda.cloud.web.LambdaServletRequestWrapper;
+import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.verify.service.VerifyCodeService;
+import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
 import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
 import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
 import com.lambda.security.web.verify.service.sms.model.SmsVerifyCodeResponse;
@@ -19,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.AntPathMatcher;
@@ -33,15 +38,12 @@ import java.io.IOException;
 @Slf4j
 public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     private final AntPathMatcher matcher = new AntPathMatcher();
-    private static final String TOKEN_KEY = "__token";
     private final SecurityProperties securityProperties;
     private final ObjectMapper objectMapper;
     private final SmsVerifyCodeStore<String> smsVerifyCodeStore;
 
     @Setter
     private String loginTypeParameter = "loginType";
-    @Setter
-    private String verifyCodeParameter = "verify";
     @Setter
     private CaptchaStore captchaStore;
     @Setter
@@ -65,19 +67,21 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     }
 
     @Override
-    public void execute(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException {
-        this.sendVerifyCode(request, response);
-    }
-
-
-    public void sendVerifyCode(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws IOException {
         try {
-            SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
-            String mobile = request.getParameter(smsLogin.getMobile());
-            if (StrUtil.isBlank(mobile)) {
-                throw new IllegalArgumentException("the parameter mobile can't be empty");
+            final SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
+            LambdaServletRequestWrapper request = getRequestWrapper(httpServletRequest);
+            JSONObject requestParam = getRequestParam(request);
+
+            if (MapUtils.isEmpty(requestParam)) {
+                chain.doFilter(request, httpServletResponse);
+                return;
             }
-            String loginType = request.getParameter(loginTypeParameter);
+
+            String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
+
+            String loginType = requestParam.getStr(loginTypeParameter);
+
             LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
 
             if (loginUser == null) {
@@ -97,24 +101,39 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             if (!candSend(verify)) {
                 throw new IllegalArgumentException("the sms code request repeatedly");
             }
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+            if (captchaStore != null) {
+
+                String verifyToken = requestParam.getStr(CaptchaVerifyCodeGenerateImpl.TOKEN_KEY);
+                Assert.isBlank(verifyToken, "__TOKEN不能为空!");
+
+                String verifyCode = requestParam.getStr(CaptchaVerifyCodeGenerateImpl.VERIFY_CODE_PARAMETER);
+                Assert.isBlank(verifyCode, "验证码不能为空!");
+
+                boolean verified = captchaStore.validate(verifyToken, verifyCode);
+                if (!verified) {
+                    throw new VerifyCodeValidationException("验证码不正确!");
+                }
+            }
+
+            httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
             String code = smsVerifyCodeStore.generate(mobile);
             SmsSendResult smsSendResult = smsMessageSender.sendVerifyCode(mobile, code, smsLogin.getValidMinutes());
             SmsVerifyCodeResponse smsVerifyCodeResponse = new SmsVerifyCodeResponse();
             smsVerifyCodeResponse.setId(smsSendResult.getId());
             smsVerifyCodeResponse.setResendSeconds(smsLogin.getResendSeconds());
             smsVerifyCodeResponse.setValidMinutes(smsLogin.getValidMinutes());
-            objectMapper.writeValue(response.getWriter(), smsVerifyCodeResponse);
+            objectMapper.writeValue(httpServletResponse.getWriter(), smsVerifyCodeResponse);
         } catch (Exception ex) {
-            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            httpServletResponse.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
             ErrorModel model = new ErrorModel();
-            model.setStatus(response.getStatus());
+            model.setStatus(httpServletResponse.getStatus());
             model.setError(HttpStatus.EXPECTATION_FAILED.getReasonPhrase());
             model.setMessage(ex.getMessage());
-            model.setPath(request.getRequestURI());
+            model.setPath(httpServletRequest.getRequestURI());
             model.setTimestamp(System.currentTimeMillis());
-            objectMapper.writeValue(response.getWriter(), model);
+            objectMapper.writeValue(httpServletResponse.getWriter(), model);
         }
     }
 

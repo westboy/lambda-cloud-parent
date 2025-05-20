@@ -6,7 +6,7 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.cloud.web.DefaultServletRequestWrapper;
+import com.lambda.cloud.web.LambdaServletRequestWrapper;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.LoginMode;
 import com.lambda.security.web.verify.service.VerifyCodeService;
@@ -51,7 +51,7 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
 
     @Override
     public void execute(HttpServletRequest httpServletRequest, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        DefaultServletRequestWrapper request = new DefaultServletRequestWrapper(httpServletRequest);
+        LambdaServletRequestWrapper request = new LambdaServletRequestWrapper(httpServletRequest);
         Map<String, Object> formRequest = WebHttpUtils.getFormRequest(request);
         JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(request);
         ajaxRequest.putAll(formRequest);

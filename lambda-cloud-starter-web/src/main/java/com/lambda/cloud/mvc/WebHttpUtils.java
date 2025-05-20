@@ -1,8 +1,8 @@
 package com.lambda.cloud.mvc;
 
 import cn.hutool.extra.servlet.JakartaServletUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.google.common.collect.Maps;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -122,7 +122,7 @@ public final class WebHttpUtils {
             String body = JakartaServletUtil.getBody(request);
             return JSONUtil.parseObj(body);
         } catch (Exception e) {
-            return Maps.newHashMap();
+            return new JSONObject();
         }
     }
 
