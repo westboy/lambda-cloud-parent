@@ -1,4 +1,4 @@
-package com.lambda.security.web.verify.service.sms;
+package com.lambda.security.web.verify.service.sms.model;
 
 import lombok.Getter;
 

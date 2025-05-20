@@ -11,11 +11,13 @@ import com.lambda.cloud.web.DefaultServletRequestWrapper;
 import com.lambda.security.LoginMode;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.web.verify.service.VerifyCodeService;
+import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
 import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
@@ -33,6 +35,8 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
     private final AntPathMatcher matcher = new AntPathMatcher();
     private final SecurityProperties securityProperties;
     private final SmsVerifyCodeStore<String> smsVerifyCodeStore;
+    @Setter
+    private String loginModeParameter = "loginMode";
 
     public SmsVerifyCodeValidationImpl(SecurityProperties securityProperties, SmsVerifyCodeStore<String> smsVerifyCodeStore) {
         this.securityProperties = securityProperties;
@@ -44,39 +48,25 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
     public boolean support(HttpServletRequest request) {
         final SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
         return smsLogin.isEnabled()
-                &&
-                JakartaServletUtil.isPostMethod(request)
-                &&
-                matcher.match(smsLogin.getLoginPath(), request.getRequestURI());
+                &&JakartaServletUtil.isPostMethod(request)
+                && matcher.match(smsLogin.getLoginPath(), request.getRequestURI());
     }
 
     @Override
     public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws ServletException, IOException {
-
-
-        String mobile = obtainMobileParameter(httpServletRequest);
-        String code = obtainCodeParameter(httpServletRequest);
-        String loginMode = obtainCodeParameter(httpServletRequest);
-
         DefaultServletRequestWrapper request = getRequestWrapper(httpServletRequest);
+        Map<String, Object> formRequest = WebHttpUtils.getFormRequest(request);
+        JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(request);
+        ajaxRequest.putAll(formRequest);
 
-        if (StringUtils.isEmpty(code) || StringUtils.isEmpty(mobile) || StringUtils.isEmpty(loginMode)) {
-
-            Map<String, Object> formRequest = WebHttpUtils.getFormRequest(request);
-            JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(request);
-            ajaxRequest.putAll(formRequest);
-
-            if (MapUtils.isEmpty(ajaxRequest)) {
-                chain.doFilter(request, httpServletResponse);
-                return;
-            }
-
-            mobile = ajaxRequest.getStr(securityProperties.getSms().getMobile());
-
-            code = ajaxRequest.getStr(securityProperties.getSms().getCode());
-
-            loginMode = ajaxRequest.getStr("loginMode");
+        if (MapUtils.isEmpty(ajaxRequest)) {
+            chain.doFilter(request, httpServletResponse);
+            return;
         }
+
+        String mobile = ajaxRequest.getStr(securityProperties.getSms().getMobile());
+        String code = ajaxRequest.getStr(securityProperties.getSms().getCode());
+        String loginMode = ajaxRequest.getStr(loginModeParameter);
 
         if (StrUtil.isEmpty(loginMode)) {
             throw new VerifyCodeValidationException("登录模式不能为空!");
@@ -90,7 +80,6 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
         if (StringUtils.isBlank(mobile)) {
             throw new VerifyCodeValidationException("mobile is not blank!");
         }
-
 
         if (StringUtils.isBlank(code)) {
             throw new VerifyCodeValidationException("code is not blank!");

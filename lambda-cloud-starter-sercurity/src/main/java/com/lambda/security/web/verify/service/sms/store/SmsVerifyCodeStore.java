@@ -1,7 +1,10 @@
 package com.lambda.security.web.verify.service.sms.store;
 
 
-import com.lambda.security.web.verify.service.sms.SmsVerifyCode;
+import cn.hutool.core.date.LocalDateTimeUtil;
+import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
+
+import java.time.LocalDateTime;
 
 /**
  * VerifyCodeStore
@@ -38,10 +41,17 @@ public interface SmsVerifyCodeStore<T> {
     /**
      * 验证是否可以重新发送
      *
-     * @param key  String
+     * @param key String
      * @return boolean
      */
-    boolean verifyReSend(String key);
+    default boolean verifyReSend(String key) {
+        SmsVerifyCode<T> code = get(key);
+        if (code == null) {
+            return true;
+        }
+        LocalDateTime created = LocalDateTimeUtil.of(code.getCreateTimeMillis());
+        return created.plusSeconds(getInterval()).isBefore(LocalDateTime.now());
+    }
 
     /**
      * 获取有效期，默认值: 300秒

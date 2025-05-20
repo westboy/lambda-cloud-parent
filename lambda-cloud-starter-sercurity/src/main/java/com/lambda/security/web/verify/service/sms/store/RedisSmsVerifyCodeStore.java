@@ -1,18 +1,15 @@
 package com.lambda.security.web.verify.service.sms.store;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lambda.cloud.core.utils.StringUtils;
-import com.lambda.security.exception.VerifyCodeValidationException;
-import com.lambda.security.web.verify.service.sms.SmsVerifyCode;
+import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
@@ -47,16 +44,9 @@ public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
     public SmsVerifyCode<String> get(String key) {
         String cache = stringRedisTemplate.opsForValue().get(getCommonKey(key));
         if (StringUtils.isEmpty(cache)) {
-            throw new VerifyCodeValidationException("code is expired");
+            return null;
         }
         return gson.fromJson(cache, new SmsVerifyCodeTypeToken().getType());
-    }
-
-    @Override
-    public boolean verifyReSend(String key) {
-        SmsVerifyCode<String> smsVerifyCode = get(key);
-        LocalDateTime created = LocalDateTimeUtil.of(smsVerifyCode.getCreateTimeMillis());
-        return created.plusSeconds(getInterval()).isBefore(LocalDateTime.now());
     }
 
     private String getCommonKey(String key) {

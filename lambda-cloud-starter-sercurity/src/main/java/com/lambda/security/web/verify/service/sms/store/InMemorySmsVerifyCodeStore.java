@@ -1,11 +1,9 @@
 package com.lambda.security.web.verify.service.sms.store;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.lambda.security.web.verify.service.sms.SmsVerifyCode;
+import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
 import org.springframework.lang.NonNull;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,14 +40,5 @@ public class InMemorySmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
         return map.get(key);
     }
 
-    @Override
-    public boolean verifyReSend(String key) {
-        SmsVerifyCode<String> code = get(key);
-        if (code == null) {
-            return true;
-        }
-        LocalDateTime created = LocalDateTimeUtil.of(code.getCreateTimeMillis());
-        return created.plusSeconds(getInterval()).isBefore(LocalDateTime.now());
-    }
 
 }
