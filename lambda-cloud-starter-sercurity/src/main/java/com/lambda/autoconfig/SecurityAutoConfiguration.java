@@ -6,6 +6,7 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.same.SaSameUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
+import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.security.encoder.HmacShaEncoder;
@@ -31,7 +32,7 @@ import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
 import com.lambda.security.web.verify.service.captcha.store.RedisCaptchaStore;
 import com.lambda.security.web.verify.service.sms.SmsVerifyCodeGenerateImpl;
 import com.lambda.security.web.verify.service.sms.SmsVerifyCodeValidationImpl;
-import com.lambda.security.web.verify.service.sms.store.InMemorySmsVerifyCodeStore;
+import com.lambda.security.web.verify.service.sms.store.RedisSmsVerifyCodeStore;
 import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -194,15 +195,16 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public SmsVerifyCodeStore<String> smsVerifyCodeStore() {
-            return new InMemorySmsVerifyCodeStore();
+        public SmsVerifyCodeStore<String> smsVerifyCodeStore(StringRedisTemplate stringRedisTemplate) {
+            return new RedisSmsVerifyCodeStore(stringRedisTemplate);
         }
 
         @Bean
         public VerifyCodeService smsVerifyCodeGenerate(ObjectMapper objectMapper,
                                                        SmsVerifyCodeStore<String> smsVerifyCodeStore,
                                                        SmsMessageSender smsMessageSender,
-                                                       UserDetailService userDetailService) {
+                                                       @Autowired(required = false) UserDetailService userDetailService) {
+            Assert.notNull(userDetailService, "userDetailService must not be null");
             SmsVerifyCodeGenerateImpl smsVerifyCodeGenerate = new SmsVerifyCodeGenerateImpl(securityProperties, objectMapper, smsVerifyCodeStore);
             smsVerifyCodeGenerate.setUserDetailService(userDetailService);
             smsVerifyCodeGenerate.setSmsMessageSender(smsMessageSender);
