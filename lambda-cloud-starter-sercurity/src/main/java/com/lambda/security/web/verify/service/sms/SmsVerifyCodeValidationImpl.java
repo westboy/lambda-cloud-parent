@@ -6,7 +6,6 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.LambdaServletRequestWrapper;
 import com.lambda.security.LoginMode;
 import com.lambda.security.exception.VerifyCodeValidationException;
@@ -23,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * 图形验证码校验过滤器
@@ -48,52 +46,48 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
     public boolean support(HttpServletRequest request) {
         final SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
         return smsLogin.isEnabled()
-                &&JakartaServletUtil.isPostMethod(request)
+                && JakartaServletUtil.isPostMethod(request)
                 && matcher.match(smsLogin.getLoginPath(), request.getRequestURI());
     }
 
     @Override
     public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws ServletException, IOException {
-        LambdaServletRequestWrapper request = getRequestWrapper(httpServletRequest);
-        Map<String, Object> formRequest = WebHttpUtils.getFormRequest(request);
-        JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(request);
-        ajaxRequest.putAll(formRequest);
-
-        if (MapUtils.isEmpty(ajaxRequest)) {
-            chain.doFilter(request, httpServletResponse);
+        LambdaServletRequestWrapper requestWrapper = getRequestWrapper(httpServletRequest);
+        JSONObject requestParam = getRequestParam(requestWrapper);
+        if (MapUtils.isEmpty(requestParam)) {
+            chain.doFilter(requestWrapper, httpServletResponse);
             return;
         }
 
-        String mobile = ajaxRequest.getStr(securityProperties.getSms().getMobile());
-        String code = ajaxRequest.getStr(securityProperties.getSms().getCode());
-        String loginMode = ajaxRequest.getStr(loginModeParameter);
+        String loginMode = requestParam.getStr(loginModeParameter);
 
         if (StrUtil.isEmpty(loginMode)) {
             throw new VerifyCodeValidationException("登录模式不能为空!");
         }
 
-        if (LoginMode.SMS.getCode().equals(loginMode)) {
-            chain.doFilter(httpServletRequest, httpServletResponse);
+        if (!LoginMode.SMS.getCode().equals(loginMode)) {
+            chain.doFilter(requestWrapper, httpServletResponse);
             return;
         }
 
+        String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
         if (StringUtils.isBlank(mobile)) {
             throw new VerifyCodeValidationException("mobile is not blank!");
         }
-
+        String code = requestParam.getStr(securityProperties.getSms().getCode());
         if (StringUtils.isBlank(code)) {
             throw new VerifyCodeValidationException("code is not blank!");
         }
 
         SmsVerifyCode<String> verifyCode = smsVerifyCodeStore.get(mobile);
 
-        checkValid(verifyCode);
+        this.checkValid(verifyCode);
 
         boolean verified = smsVerifyCodeStore.verify(mobile, code);
         if (!verified) {
             throw new VerifyCodeValidationException("code is not valid");
         }
-        chain.doFilter(request, httpServletResponse);
+        chain.doFilter(requestWrapper, httpServletResponse);
     }
 
     public String obtainMobileParameter(HttpServletRequest request) {

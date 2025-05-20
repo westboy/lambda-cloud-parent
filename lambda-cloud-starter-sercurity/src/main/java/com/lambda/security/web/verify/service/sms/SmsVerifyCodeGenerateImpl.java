@@ -41,7 +41,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     private final SecurityProperties securityProperties;
     private final ObjectMapper objectMapper;
     private final SmsVerifyCodeStore<String> smsVerifyCodeStore;
-
+    private final SecurityProperties.SmsLogin smsLogin;
     @Setter
     private String loginTypeParameter = "loginType";
     @Setter
@@ -51,10 +51,12 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     @Setter
     private SmsMessageSender smsMessageSender;
 
+
     public SmsVerifyCodeGenerateImpl(SecurityProperties securityProperties, ObjectMapper objectMapper, SmsVerifyCodeStore<String> smsVerifyCodeStore) {
         this.securityProperties = securityProperties;
         this.objectMapper = objectMapper;
         this.smsVerifyCodeStore = smsVerifyCodeStore;
+        this.smsLogin = securityProperties.getSms();
     }
 
 
@@ -69,7 +71,6 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     @Override
     public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws IOException {
         try {
-            SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
             LambdaServletRequestWrapper request = getRequestWrapper(httpServletRequest);
             JSONObject requestParam = getRequestParam(request);
 
@@ -79,6 +80,10 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             }
 
             String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
+
+            if (mobile == null) {
+                throw new IllegalArgumentException("the mobile is not exist");
+            }
 
             String loginType = requestParam.getStr(loginTypeParameter);
 
