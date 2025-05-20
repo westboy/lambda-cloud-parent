@@ -169,25 +169,25 @@ public class SecurityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
+        public AuthenticationFailureHandler smsAuthenticationFailureHandler(ObjectMapper objectMapper) {
             return new DefaultAuthenticationFailureHandler(objectMapper);
         }
 
         @Bean
         @ConditionalOnMissingBean
-        public AuthenticationSuccessHandler authenticationSuccessHandler(ObjectMapper objectMapper) {
+        public AuthenticationSuccessHandler smsAuthenticationSuccessHandler(ObjectMapper objectMapper) {
             return new DefaultAuthenticationSuccessHandler(objectMapper);
         }
 
         @Bean
         public FilterRegistrationBean<SmsAuthenticationProcessingFilter> smsAuthenticationProcessingFilter(
-                AuthenticationFailureHandler authenticationFailureHandler,
-                AuthenticationSuccessHandler authenticationSuccessHandler
+                AuthenticationFailureHandler smsAuthenticationFailureHandler,
+                AuthenticationSuccessHandler smsAuthenticationSuccessHandler
         ) {
             FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(securityProperties.getSms().getLoginPath());
-            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-            processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            processingFilter.setAuthenticationSuccessHandler(smsAuthenticationSuccessHandler);
+            processingFilter.setAuthenticationFailureHandler(smsAuthenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
@@ -237,7 +237,7 @@ public class SecurityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
+        public AuthenticationFailureHandler hmacAuthenticationFailureHandler(ObjectMapper objectMapper) {
             return new DefaultAuthenticationFailureHandler(objectMapper);
         }
 
@@ -249,14 +249,14 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
-                AuthenticationFailureHandler authenticationFailureHandler,
+                AuthenticationFailureHandler hmacAuthenticationFailureHandler,
                 AuthenticationSuccessHandler hmacAuthenticationSuccessHandler,
                 @Autowired(required = false) HmacClientService hmacClientService
         ) {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
             processingFilter.setAuthenticationSuccessHandler(hmacAuthenticationSuccessHandler);
-            processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            processingFilter.setAuthenticationFailureHandler(hmacAuthenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
@@ -286,13 +286,13 @@ public class SecurityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public AuthenticationFailureHandler authenticationFailureHandler(ObjectMapper objectMapper) {
+        public AuthenticationFailureHandler formAuthenticationFailureHandler(ObjectMapper objectMapper) {
             return new DefaultAuthenticationFailureHandler(objectMapper);
         }
 
         @Bean
         @ConditionalOnMissingBean
-        public AuthenticationSuccessHandler authenticationSuccessHandler(ObjectMapper objectMapper) {
+        public AuthenticationSuccessHandler formAuthenticationSuccessHandler(ObjectMapper objectMapper) {
             return new DefaultAuthenticationSuccessHandler(objectMapper);
         }
 
@@ -304,16 +304,16 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean<FormAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
-                                                                                                                AuthenticationFailureHandler authenticationFailureHandler,
-                                                                                                                AuthenticationSuccessHandler authenticationSuccessHandler,
+                                                                                                                AuthenticationFailureHandler formAuthenticationFailureHandler,
+                                                                                                                AuthenticationSuccessHandler formAuthenticationSuccessHandler,
                                                                                                                 PasswordEncoder passwordEncoder,
                                                                                                                 @Autowired(required = false) UserDetailService userDetailService
         ) {
             FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             FormAuthenticationProcessingFilter processingFilter = new FormAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
             processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
-            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-            processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            processingFilter.setAuthenticationSuccessHandler(formAuthenticationSuccessHandler);
+            processingFilter.setAuthenticationFailureHandler(formAuthenticationFailureHandler);
             processingFilter.setUserDetailService(userDetailService);
             processingFilter.setPasswordEncoder(passwordEncoder);
             filterRegistrationBean.setFilter(processingFilter);
