@@ -243,19 +243,19 @@ public class SecurityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        public AuthenticationSuccessHandler hmacAuthenticationSuccessHandler() {
             return new HmacAuthenticationSuccessHandler();
         }
 
         @Bean
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
                 AuthenticationFailureHandler authenticationFailureHandler,
-                AuthenticationSuccessHandler authenticationSuccessHandler,
+                AuthenticationSuccessHandler hmacAuthenticationSuccessHandler,
                 @Autowired(required = false) HmacClientService hmacClientService
         ) {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
-            processingFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            processingFilter.setAuthenticationSuccessHandler(hmacAuthenticationSuccessHandler);
             processingFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
