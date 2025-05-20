@@ -146,10 +146,10 @@ public class SecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnExpression("${lambda.security.form.enabled:false} || ${lambda.security.sms.enabled:false}")
-    public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, AuthenticationFailureHandler authenticationFailureHandler) {
+    public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, ObjectMapper objectMapper) {
         FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
-        verifyCodeFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        verifyCodeFilter.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(objectMapper));
         filterRegistrationBean.setFilter(verifyCodeFilter);
         filterRegistrationBean.addUrlPatterns("/*");
         filterRegistrationBean.setOrder(20);
