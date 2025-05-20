@@ -284,8 +284,8 @@ public class SecurityProperties {
         int resendSeconds = 60;
 
         /**
-         * 默认登录验证码 不开启验证码登录
+         * 请用验证码 不开启验证码登录
          */
-        boolean verify = false;
+        boolean enableVerify = false;
     }
 }

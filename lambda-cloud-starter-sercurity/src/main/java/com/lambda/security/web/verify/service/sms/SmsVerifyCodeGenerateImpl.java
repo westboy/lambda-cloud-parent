@@ -69,7 +69,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     @Override
     public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws IOException {
         try {
-            final SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
+            SecurityProperties.SmsLogin smsLogin = securityProperties.getSms();
             LambdaServletRequestWrapper request = getRequestWrapper(httpServletRequest);
             JSONObject requestParam = getRequestParam(request);
 
@@ -88,21 +88,17 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
                 throw new IllegalArgumentException("the mobile is not exist");
             }
 
-            if (loginUser.getAccountExpired() == null || !loginUser.getAccountExpired()) {
+            if (loginUser.getAccountExpired() == null || loginUser.getAccountExpired()) {
                 throw new IllegalArgumentException("the account is expired");
             }
 
             SmsVerifyCode<String> verify = smsVerifyCodeStore.get(mobile);
 
-            if (verify == null) {
-                throw new IllegalArgumentException("the sms code request repeatedly");
-            }
-
             if (!candSend(verify)) {
                 throw new IllegalArgumentException("the sms code request repeatedly");
             }
 
-            if (captchaStore != null) {
+            if (smsLogin.isEnableVerify()) {
 
                 String verifyToken = requestParam.getStr(CaptchaVerifyCodeGenerateImpl.TOKEN_KEY);
                 Assert.isBlank(verifyToken, "__TOKEN不能为空!");
