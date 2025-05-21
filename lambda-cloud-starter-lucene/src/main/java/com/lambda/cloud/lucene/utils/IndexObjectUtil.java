@@ -66,21 +66,27 @@ public class IndexObjectUtil {
                     }
                 } else if (ObjectUtil.equal(luceneField.field(), StoredField.class)) {
                     if (ObjectUtil.isNotNull(value)) {
-                        if (value instanceof Integer) {
-                            StoredField storedField = new StoredField(docFieldName, (Integer) value);
-                            doc.add(storedField);
-                        } else if (value instanceof Long) {
-                            StoredField storedField = new StoredField(docFieldName, (Long) value);
-                            doc.add(storedField);
-                        } else if (value instanceof Float) {
-                            StoredField storedField = new StoredField(docFieldName, (Float) value);
-                            doc.add(storedField);
-                        } else if (value instanceof Double) {
-                            StoredField storedField = new StoredField(docFieldName, (Double) value);
-                            doc.add(storedField);
-                        } else {
-                            StoredField storedField = new StoredField(docFieldName, (String) value);
-                            doc.add(storedField);
+                        switch (value) {
+                            case Integer i -> {
+                                StoredField storedField = new StoredField(docFieldName, i);
+                                doc.add(storedField);
+                            }
+                            case Long l -> {
+                                StoredField storedField = new StoredField(docFieldName, l);
+                                doc.add(storedField);
+                            }
+                            case Float v -> {
+                                StoredField storedField = new StoredField(docFieldName, v);
+                                doc.add(storedField);
+                            }
+                            case Double v -> {
+                                StoredField storedField = new StoredField(docFieldName, v);
+                                doc.add(storedField);
+                            }
+                            default -> {
+                                StoredField storedField = new StoredField(docFieldName, (String) value);
+                                doc.add(storedField);
+                            }
                         }
                     }
 
