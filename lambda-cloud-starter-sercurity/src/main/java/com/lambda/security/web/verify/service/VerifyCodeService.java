@@ -2,7 +2,7 @@ package com.lambda.security.web.verify.service;
 
 import cn.hutool.json.JSONObject;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.cloud.web.LambdaServletRequestWrapper;
+import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,8 +44,8 @@ public interface VerifyCodeService {
      * @param request request
      * @return DefaultServletRequestWrapper
      */
-    default LambdaServletRequestWrapper getRequestWrapper(HttpServletRequest request) {
-        return new LambdaServletRequestWrapper(request);
+    default LambdaHttpServletRequestWrapper getRequestWrapper(HttpServletRequest request) {
+        return new LambdaHttpServletRequestWrapper(request);
     }
 
     /**
@@ -54,7 +54,7 @@ public interface VerifyCodeService {
      * @param request LambdaServletRequestWrapper
      * @return JSONObject
      */
-    default JSONObject getRequestParam(LambdaServletRequestWrapper request) {
+    default JSONObject getRequestParam(LambdaHttpServletRequestWrapper request) {
         Map<String, Object> formRequest = WebHttpUtils.getFormRequest(request);
         Map<String, Object> ajaxRequest = WebHttpUtils.getRequestBody(request);
         ajaxRequest.putAll(formRequest);

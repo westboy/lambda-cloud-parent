@@ -9,7 +9,7 @@ import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.cloud.sms.model.SmsSendResult;
-import com.lambda.cloud.web.LambdaServletRequestWrapper;
+import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.verify.service.VerifyCodeService;
@@ -71,11 +71,11 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     @Override
     public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws IOException {
         try {
-            LambdaServletRequestWrapper request = getRequestWrapper(httpServletRequest);
-            JSONObject requestParam = getRequestParam(request);
+            LambdaHttpServletRequestWrapper httpServletRequestWrapper = getRequestWrapper(httpServletRequest);
+            JSONObject requestParam = getRequestParam(httpServletRequestWrapper);
 
             if (MapUtils.isEmpty(requestParam)) {
-                chain.doFilter(request, httpServletResponse);
+                chain.doFilter(httpServletRequestWrapper, httpServletResponse);
                 return;
             }
 

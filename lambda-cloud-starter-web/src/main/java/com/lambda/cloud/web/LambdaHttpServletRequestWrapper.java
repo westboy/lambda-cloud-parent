@@ -15,13 +15,13 @@ import java.io.BufferedReader;
  * @link org.springframework.web.util.ContentCachingRequestWrapper
  */
 @Slf4j
-public class LambdaServletRequestWrapper extends HttpServletRequestWrapper {
+public class LambdaHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
 
     private final String body;
 
     @SneakyThrows
-    public LambdaServletRequestWrapper(HttpServletRequest request) {
+    public LambdaHttpServletRequestWrapper(HttpServletRequest request) {
         super(request);
         this.body = IoUtil.readUtf8(request.getInputStream());
     }

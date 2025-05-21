@@ -6,7 +6,7 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.cloud.web.LambdaServletRequestWrapper;
+import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.LoginMode;
 import com.lambda.security.web.verify.service.VerifyCodeService;
@@ -50,13 +50,13 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
     }
 
     @Override
-    public void execute(HttpServletRequest httpServletRequest, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        LambdaServletRequestWrapper request = new LambdaServletRequestWrapper(httpServletRequest);
-        Map<String, Object> formRequest = WebHttpUtils.getFormRequest(request);
-        JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(request);
+    public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws ServletException, IOException {
+        LambdaHttpServletRequestWrapper httpServletRequestWrapper = new LambdaHttpServletRequestWrapper(httpServletRequest);
+        Map<String, Object> formRequest = WebHttpUtils.getFormRequest(httpServletRequestWrapper);
+        JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(httpServletRequestWrapper);
         ajaxRequest.putAll(formRequest);
         if (MapUtils.isEmpty(ajaxRequest)) {
-            chain.doFilter(request, response);
+            chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }
         String loginMode = ajaxRequest.getStr("loginMode");
@@ -65,7 +65,7 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
         }
 
         if (!LoginMode.PWD.getCode().equals(loginMode)||!LoginMode.MAIL.getCode().equals(loginMode)) {
-            chain.doFilter(request, response);
+            chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }
         String verifyCode = obtainVerifyCode(ajaxRequest);
@@ -80,7 +80,7 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
         if (!verified) {
             throw new VerifyCodeValidationException("验证码不正确!");
         }
-        chain.doFilter(request, response);
+        chain.doFilter(httpServletRequestWrapper, httpServletResponse);
     }
 
     private String obtainVerifyToken(Map<String, Object> map) {

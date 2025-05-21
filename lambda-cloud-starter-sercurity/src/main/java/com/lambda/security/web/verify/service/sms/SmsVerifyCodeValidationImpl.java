@@ -6,7 +6,7 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.cloud.web.LambdaServletRequestWrapper;
+import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
 import com.lambda.security.LoginMode;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.web.verify.service.VerifyCodeService;
@@ -52,10 +52,10 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
 
     @Override
     public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws ServletException, IOException {
-        LambdaServletRequestWrapper requestWrapper = getRequestWrapper(httpServletRequest);
-        JSONObject requestParam = getRequestParam(requestWrapper);
+        LambdaHttpServletRequestWrapper httpServletRequestWrapper = getRequestWrapper(httpServletRequest);
+        JSONObject requestParam = getRequestParam(httpServletRequestWrapper);
         if (MapUtils.isEmpty(requestParam)) {
-            chain.doFilter(requestWrapper, httpServletResponse);
+            chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }
 
@@ -66,7 +66,7 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
         }
 
         if (!LoginMode.SMS.getCode().equals(loginMode)) {
-            chain.doFilter(requestWrapper, httpServletResponse);
+            chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }
 
@@ -87,7 +87,7 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
         if (!verified) {
             throw new VerifyCodeValidationException("code is not valid");
         }
-        chain.doFilter(requestWrapper, httpServletResponse);
+        chain.doFilter(httpServletRequestWrapper, httpServletResponse);
     }
 
     public String obtainMobileParameter(HttpServletRequest request) {
