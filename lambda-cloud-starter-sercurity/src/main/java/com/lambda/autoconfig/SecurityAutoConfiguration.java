@@ -11,7 +11,10 @@ import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.encoder.StandardPasswordEncoder;
-import com.lambda.security.handler.*;
+import com.lambda.security.handler.impl.CommonAuthenticationFailureHandler;
+import com.lambda.security.handler.impl.CommonAuthenticationSuccessHandler;
+import com.lambda.security.handler.impl.CommonLogoutHandler;
+import com.lambda.security.handler.impl.CommonLogoutSuccessHandler;
 import com.lambda.security.inteceptor.SecureExtendInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
 import com.lambda.security.service.HmacClientService;
@@ -149,7 +152,7 @@ public class SecurityAutoConfiguration {
     public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, ObjectMapper objectMapper) {
         FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
-        verifyCodeFilter.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(objectMapper));
+        verifyCodeFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
         filterRegistrationBean.setFilter(verifyCodeFilter);
         filterRegistrationBean.addUrlPatterns("/*");
         filterRegistrationBean.setOrder(20);
@@ -173,8 +176,8 @@ public class SecurityAutoConfiguration {
         ) {
             FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(securityProperties.getSms().getLoginPath());
-            processingFilter.setAuthenticationSuccessHandler(new DefaultAuthenticationSuccessHandler(objectMapper));
-            processingFilter.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(objectMapper));
+            processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
+            processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
@@ -230,7 +233,7 @@ public class SecurityAutoConfiguration {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
             processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
-            processingFilter.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(objectMapper));
+            processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
@@ -272,8 +275,8 @@ public class SecurityAutoConfiguration {
             FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             FormAuthenticationProcessingFilter processingFilter = new FormAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
             processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
-            processingFilter.setAuthenticationSuccessHandler(new DefaultAuthenticationSuccessHandler(objectMapper));
-            processingFilter.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(objectMapper));
+            processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
+            processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             processingFilter.setUserDetailService(userDetailService);
             processingFilter.setPasswordEncoder(passwordEncoder);
             filterRegistrationBean.setFilter(processingFilter);
@@ -283,20 +286,20 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public DefaultLogoutHandler formLogoutHandler() {
-            return new DefaultLogoutHandler();
+        public CommonLogoutHandler formLogoutHandler() {
+            return new CommonLogoutHandler();
         }
 
         @Bean
         @ConditionalOnMissingBean
-        public DefaultLogoutSuccessHandler formLogoutSuccessHandler() {
-            return new DefaultLogoutSuccessHandler();
+        public CommonLogoutSuccessHandler formLogoutSuccessHandler() {
+            return new CommonLogoutSuccessHandler();
         }
 
         @Bean
-        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(DefaultLogoutHandler defaultLogoutHandler, DefaultLogoutSuccessHandler defaultLogoutSuccessHandler) {
+        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(CommonLogoutHandler commonLogoutHandler, CommonLogoutSuccessHandler commonLogoutSuccessHandler) {
             FilterRegistrationBean<FormLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), defaultLogoutSuccessHandler, defaultLogoutHandler);
+            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), commonLogoutSuccessHandler, commonLogoutHandler);
             filterRegistrationBean.setFilter(formLogoutFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(40);

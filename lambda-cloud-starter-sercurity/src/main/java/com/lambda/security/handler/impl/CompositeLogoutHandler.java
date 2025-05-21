@@ -1,8 +1,9 @@
-package com.lambda.security.handler;
+package com.lambda.security.handler.impl;
 
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 
+import com.lambda.security.handler.LogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;

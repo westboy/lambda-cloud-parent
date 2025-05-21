@@ -1,20 +1,20 @@
-package com.lambda.security.handler;
+package com.lambda.security.handler.impl;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
 import com.lambda.security.events.UserLoginEvent;
+import com.lambda.security.handler.AuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
@@ -26,26 +26,17 @@ import java.io.IOException;
  */
 @Slf4j
 @SuppressWarnings("all")
-public class DefaultAuthenticationSuccessHandler implements AuthenticationSuccessHandler, ApplicationEventPublisherAware {
-
-    private ApplicationEventPublisher applicationEventPublisher;
+public class CommonAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final ObjectMapper objectMapper;
 
-    public DefaultAuthenticationSuccessHandler(ObjectMapper objectMapper) {
+    public CommonAuthenticationSuccessHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException {
-        //获取用户登录时的IP,需要Nginx做相关配置防止IP伪造
-        String remoteAddr = JakartaServletUtil.getClientIP(request);
-        //获取用户登录时的端口
-        int remotePort = request.getRemotePort();
-        long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
-        //发布登录时间
-        applicationEventPublisher.publishEvent(new UserLoginEvent(loginUser, cast, remoteAddr, remotePort));
         //sa-token 登录
         //登录设备
         String device = (String) request.getAttribute("loginDevice");
@@ -85,10 +76,12 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
                 WebHttpUtils.sendRedirect(request, response, "/");
             }
         }
-    }
-
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        this.applicationEventPublisher = applicationEventPublisher;
+        //获取用户登录时的IP,需要Nginx做相关配置防止IP伪造
+        String remoteAddr = JakartaServletUtil.getClientIP(request);
+        //获取用户登录时的端口
+        int remotePort = request.getRemotePort();
+        long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
+        //发布登录事件
+        SpringUtil.publishEvent(new UserLoginEvent(loginUser, cast, remoteAddr, remotePort));
     }
 }

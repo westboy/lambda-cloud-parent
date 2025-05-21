@@ -2,7 +2,7 @@
 package com.lambda.security.web.form;
 
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.security.handler.CompositeLogoutHandler;
+import com.lambda.security.handler.impl.CompositeLogoutHandler;
 import com.lambda.security.handler.LogoutHandler;
 import com.lambda.security.handler.LogoutSuccessHandler;
 import com.lambda.cloud.core.utils.OperatorUtils;

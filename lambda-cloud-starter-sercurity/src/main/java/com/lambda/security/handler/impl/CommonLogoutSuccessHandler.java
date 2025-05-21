@@ -1,11 +1,11 @@
-package com.lambda.security.handler;
+package com.lambda.security.handler.impl;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
 import com.lambda.security.events.UserLogoutEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
+import com.lambda.security.handler.LogoutSuccessHandler;
 import org.springframework.http.HttpStatus;
 
 import jakarta.servlet.ServletException;
@@ -19,23 +19,16 @@ import java.io.IOException;
  * @author jpjoo
  */
 @SuppressWarnings("all")
-public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler, ApplicationEventPublisherAware {
-    private ApplicationEventPublisher applicationEventPublisher;
-
+public class CommonLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException {
-        long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
-        applicationEventPublisher.publishEvent(new UserLogoutEvent(loginUser, cast));
         if (WebHttpUtils.isAjaxRequest(request)) {
             response.setStatus(HttpStatus.OK.value());
             response.getWriter().flush();
         } else {
             WebHttpUtils.getRedirectParameter(request, "/");
         }
-    }
-
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        this.applicationEventPublisher = applicationEventPublisher;
+        long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
+        SpringUtil.publishEvent(new UserLogoutEvent(loginUser, cast));
     }
 }

@@ -1,8 +1,9 @@
-package com.lambda.security.handler;
+package com.lambda.security.handler.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
+import com.lambda.security.handler.AuthenticationFailureHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
@@ -18,11 +19,11 @@ import java.io.PrintWriter;
  * @author jpjoo
  */
 @SuppressWarnings("all")
-public class DefaultAuthenticationFailureHandler implements AuthenticationFailureHandler {
+public class CommonAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
     private final ObjectMapper objectMapper;
 
-    public DefaultAuthenticationFailureHandler(ObjectMapper objectMapper) {
+    public CommonAuthenticationFailureHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

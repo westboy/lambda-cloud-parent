@@ -1,9 +1,10 @@
-package com.lambda.security.handler;
+package com.lambda.security.handler.impl;
 
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.principal.LoginType;
 
+import com.lambda.security.handler.LogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -12,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author jpjoo
  */
-public class DefaultLogoutHandler implements LogoutHandler {
+public class CommonLogoutHandler implements LogoutHandler {
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
