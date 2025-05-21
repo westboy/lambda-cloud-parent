@@ -97,9 +97,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
                 throw new IllegalArgumentException("the account is expired");
             }
 
-            SmsVerifyCode<String> verify = smsVerifyCodeStore.get(mobile);
-
-            if (!candSend(verify)) {
+            if (!smsVerifyCodeStore.verifyReSend(mobile)) {
                 throw new IllegalArgumentException("the sms code request repeatedly");
             }
 
@@ -136,13 +134,5 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             model.setTimestamp(System.currentTimeMillis());
             objectMapper.writeValue(httpServletResponse.getWriter(), model);
         }
-    }
-
-    private boolean candSend(SmsVerifyCode<String> code) {
-        if (code == null) {
-            return true;
-        }
-        int sumSeconds = securityProperties.getSms().getResendSeconds() * ONE_SECOND;
-        return code.getCreateTimeMillis() + sumSeconds < System.currentTimeMillis();
     }
 }

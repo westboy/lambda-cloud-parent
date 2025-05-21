@@ -78,11 +78,11 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
             throw new VerifyCodeValidationException("code is not blank!");
         }
 
-        if (smsVerifyCodeStore.verifyReSend(mobile)) {
-            throw new VerifyCodeValidationException("code is expired!");
-        }
-
         SmsVerifyCode<String> verifyCode = smsVerifyCodeStore.get(mobile);
+
+        if (verifyCode == null) {
+            throw new VerifyCodeValidationException("code is not exist!");
+        }
 
         boolean verified = smsVerifyCodeStore.verify(mobile, code);
         if (!verified) {
