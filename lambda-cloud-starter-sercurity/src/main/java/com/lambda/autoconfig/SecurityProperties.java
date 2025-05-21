@@ -281,11 +281,11 @@ public class SecurityProperties {
         /**
          * 验证码接收的参数名
          */
-        String code = "sms_code";
+        String code = "code";
         /**
          * 手机号接收参数名
          */
-        String mobile = "sms_mobile";
+        String mobile = "mobile";
 
         /**
          * 短信验证码有效分钟
