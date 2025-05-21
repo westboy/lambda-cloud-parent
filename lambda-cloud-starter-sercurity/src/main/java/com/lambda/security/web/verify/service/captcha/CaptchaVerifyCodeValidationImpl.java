@@ -43,8 +43,8 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
 
     @Override
     public boolean support(HttpServletRequest request) {
-        final SecurityProperties.Verify verify = securityProperties.getForm().getVerify();
-        boolean captchaEnabled = verify.isEnabled();
+        final SecurityProperties.Verify verify = securityProperties.getVerify();
+        boolean captchaEnabled =securityProperties.getForm().isEnableVerify();
         boolean isPostMethod = JakartaServletUtil.isPostMethod(request);
         return captchaEnabled && isPostMethod && matcher.match(securityProperties.getForm().getLoginProcessingUrl(), request.getRequestURI());
     }

@@ -11,6 +11,8 @@ import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.encoder.StandardPasswordEncoder;
+import com.lambda.security.handler.LogoutHandler;
+import com.lambda.security.handler.LogoutSuccessHandler;
 import com.lambda.security.handler.impl.CommonAuthenticationFailureHandler;
 import com.lambda.security.handler.impl.CommonAuthenticationSuccessHandler;
 import com.lambda.security.handler.impl.CommonLogoutHandler;
@@ -147,16 +149,41 @@ public class SecurityAutoConfiguration {
         }
     }
 
-    @Bean
+    @Configuration
     @ConditionalOnExpression("${lambda.security.form.enabled:false} || ${lambda.security.sms.enabled:false}")
-    public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, ObjectMapper objectMapper) {
-        FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-        VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
-        verifyCodeFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
-        filterRegistrationBean.setFilter(verifyCodeFilter);
-        filterRegistrationBean.addUrlPatterns("/*");
-        filterRegistrationBean.setOrder(20);
-        return filterRegistrationBean;
+    public static class VerifyConfiguration {
+        private SecurityProperties securityProperties;
+
+        @Autowired
+        public void setSecurityProperties(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
+
+        @Bean
+        public CaptchaStore redisCaptchaStore() {
+            return new RedisCaptchaStore();
+        }
+
+        @Bean
+        public VerifyCodeService captchaVerifyCodeGenerate(ObjectMapper objectMapper, CaptchaStore redisCaptchaStore) {
+            return new CaptchaVerifyCodeGenerateImpl(securityProperties, objectMapper, redisCaptchaStore);
+        }
+
+        @Bean
+        public VerifyCodeService captchaVerifyCodeValidation(CaptchaStore redisCaptchaStore) {
+            return new CaptchaVerifyCodeValidationImpl(securityProperties, redisCaptchaStore);
+        }
+
+        @Bean
+        public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, ObjectMapper objectMapper) {
+            FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
+            verifyCodeFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            filterRegistrationBean.setFilter(verifyCodeFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(20);
+            return filterRegistrationBean;
+        }
     }
 
     @Configuration
@@ -193,11 +220,13 @@ public class SecurityAutoConfiguration {
         public VerifyCodeService smsVerifyCodeGenerate(ObjectMapper objectMapper,
                                                        SmsVerifyCodeStore<String> smsVerifyCodeStore,
                                                        SmsMessageSender smsMessageSender,
+                                                       CaptchaStore redisCaptchaStore,
                                                        @Autowired(required = false) UserDetailService userDetailService) {
             Assert.notNull(userDetailService, "userDetailService must not be null");
             SmsVerifyCodeGenerateImpl smsVerifyCodeGenerate = new SmsVerifyCodeGenerateImpl(securityProperties, objectMapper, smsVerifyCodeStore);
             smsVerifyCodeGenerate.setUserDetailService(userDetailService);
             smsVerifyCodeGenerate.setSmsMessageSender(smsMessageSender);
+            smsVerifyCodeGenerate.setCaptchaStore(redisCaptchaStore);
             return smsVerifyCodeGenerate;
         }
 
@@ -286,40 +315,24 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public CommonLogoutHandler formLogoutHandler() {
+        public LogoutHandler formLogoutHandler() {
             return new CommonLogoutHandler();
         }
 
         @Bean
         @ConditionalOnMissingBean
-        public CommonLogoutSuccessHandler formLogoutSuccessHandler() {
+        public LogoutSuccessHandler formLogoutSuccessHandler() {
             return new CommonLogoutSuccessHandler();
         }
 
         @Bean
-        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(CommonLogoutHandler commonLogoutHandler, CommonLogoutSuccessHandler commonLogoutSuccessHandler) {
+        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(LogoutHandler formLogoutHandler, LogoutSuccessHandler formLogoutSuccessHandler) {
             FilterRegistrationBean<FormLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), commonLogoutSuccessHandler, commonLogoutHandler);
+            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), formLogoutSuccessHandler, formLogoutHandler);
             filterRegistrationBean.setFilter(formLogoutFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(40);
             return filterRegistrationBean;
-        }
-
-
-        @Bean
-        public CaptchaStore redisCaptchaStore() {
-            return new RedisCaptchaStore();
-        }
-
-        @Bean
-        public VerifyCodeService captchaVerifyCodeGenerate(ObjectMapper objectMapper, CaptchaStore redisCaptchaStore) {
-            return new CaptchaVerifyCodeGenerateImpl(securityProperties, objectMapper, redisCaptchaStore);
-        }
-
-        @Bean
-        public VerifyCodeService captchaVerifyCodeValidation(CaptchaStore redisCaptchaStore) {
-            return new CaptchaVerifyCodeValidationImpl(securityProperties, redisCaptchaStore);
         }
 
     }

@@ -34,11 +34,38 @@ public class SecurityProperties {
             "*.ico",
             "*.js");
 
+    /**
+     * Sa-Token配置
+     */
     @NestedConfigurationProperty
-    public ExtendSaTokenConfig saToken = new ExtendSaTokenConfig();
+    ExtendSaTokenConfig saToken = new ExtendSaTokenConfig();
 
+    @Getter
+    @Setter
+    public static class ExtendSaTokenConfig extends SaTokenConfig {
+        /**
+         * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
+         */
+        private Boolean enableMethodAnnotation = true;
+
+        /**
+         * 忽略拦截的配置
+         */
+        private List<String> ignored;
+
+        public List<String> getAllIgnoreList() {
+            if (CollUtil.isEmpty(ignored)) {
+                return DEFAULT_IGNORE_PATH_LIST;
+            }
+            return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignored);
+        }
+    }
+
+    /**
+     * HMac配置
+     */
+    @NestedConfigurationProperty
     Hmac hmac = new Hmac();
-
 
     @Getter
     @Setter
@@ -66,29 +93,11 @@ public class SecurityProperties {
         }
     }
 
-    @Getter
-    @Setter
-    public static class ExtendSaTokenConfig extends SaTokenConfig {
-        /**
-         * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
-         */
-        private Boolean enableMethodAnnotation = true;
-
-        /**
-         * 忽略拦截的配置
-         */
-        private List<String> ignored;
-
-        public List<String> getAllIgnoreList() {
-            if (CollUtil.isEmpty(ignored)) {
-                return DEFAULT_IGNORE_PATH_LIST;
-            }
-            return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignored);
-        }
-    }
-
+    /**
+     * 表单登陆配置
+     */
     @NestedConfigurationProperty
-    public Form form = new Form();
+    Form form = new Form();
 
     @Getter
     @Setter
@@ -108,15 +117,16 @@ public class SecurityProperties {
         String loginProcessingUrl = "/login";
 
         /**
+         * 请用验证码 不开启验证码登录
+         */
+        boolean enableVerify = false;
+
+        /**
          * 表单请求参数
          */
         @NestedConfigurationProperty
         Parameters parameters = new Parameters();
-        /**
-         * 验证码相关配置
-         */
-        @NestedConfigurationProperty
-        Verify verify = new Verify();
+
         /**
          * 缓存相关配置
          */
@@ -198,13 +208,14 @@ public class SecurityProperties {
         }
     }
 
+    /**
+     * 验证码相关配置
+     */
+    @NestedConfigurationProperty
+    Verify verify = new Verify();
+
     @Data
     public static class Verify {
-        /**
-         * 是否开启验证码
-         */
-        private boolean enabled = false;
-
         /**
          * 开发模式
          */
@@ -231,6 +242,9 @@ public class SecurityProperties {
 
     }
 
+    /**
+     * Xss防护配置
+     */
     @NestedConfigurationProperty
     XssProtected xssProtected = new XssProtected();
 
@@ -245,7 +259,7 @@ public class SecurityProperties {
      * 短信登陆配置
      */
     @NestedConfigurationProperty
-    public SmsLogin sms = new SmsLogin();
+    SmsLogin sms = new SmsLogin();
 
 
     @Setter

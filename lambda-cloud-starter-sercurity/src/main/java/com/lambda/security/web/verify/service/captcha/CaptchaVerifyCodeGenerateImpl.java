@@ -56,8 +56,8 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
 
     @Override
     public boolean support(HttpServletRequest request) {
-        final SecurityProperties.Verify verify = securityProperties.getForm().getVerify();
-        boolean captchaEnabled = verify.isEnabled();
+        final SecurityProperties.Verify verify = securityProperties.getVerify();
+        boolean captchaEnabled = securityProperties.getForm().isEnableVerify();
         boolean isGetMethod = JakartaServletUtil.isGetMethod(request);
         return captchaEnabled && isGetMethod && matcher.match(verify.getUrl(), request.getRequestURI());
     }
@@ -70,17 +70,17 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
 
     public void writeCaptcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
         CircleCaptcha captcha = CaptchaUtil.createCircleCaptcha(
-                securityProperties.getForm().getVerify().getCaptchaWidth(),
-                securityProperties.getForm().getVerify().getCaptchaHeight(),
-                securityProperties.getForm().getVerify().getCaptchaCodeCount(),3);
-        MathGenerator mathGenerator = new MathGenerator(securityProperties.getForm().getVerify().getCaptchaNumberLength());
+                securityProperties.getVerify().getCaptchaWidth(),
+                securityProperties.getVerify().getCaptchaHeight(),
+                securityProperties.getVerify().getCaptchaCodeCount(),3);
+        MathGenerator mathGenerator = new MathGenerator(securityProperties.getVerify().getCaptchaNumberLength());
         captcha.setGenerator(mathGenerator);
         String captchaId = IdUtil.fastUUID();
         Integer captchaCode = (int) Calculator.conversion(captcha.getCode());
-        if (securityProperties.getForm().getVerify().isDevMode()) {
+        if (securityProperties.getVerify().isDevMode()) {
             log.info("验证码[ {}:{}, {}:{} ]", TOKEN_KEY, captchaId, VERIFY_CODE_PARAMETER, captchaCode);
         }
-        captchaStore.store(captchaId, captchaCode.toString(), securityProperties.getForm().getVerify().getTimeUnit(), securityProperties.getForm().getVerify().getDuration());
+        captchaStore.store(captchaId, captchaCode.toString(), securityProperties.getVerify().getTimeUnit(), securityProperties.getVerify().getDuration());
         if (WebHttpUtils.isAjaxRequest(request)) {
             try (PrintWriter writer = response.getWriter()) {
                 response.setHeader("Expires", "0");

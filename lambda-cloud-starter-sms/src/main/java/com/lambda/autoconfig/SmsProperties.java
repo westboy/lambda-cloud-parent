@@ -3,6 +3,7 @@ package com.lambda.autoconfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * SmsProperties
@@ -14,11 +15,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "lambda.sms")
 public class SmsProperties {
 
-    private Prod prod = new Prod();
+    /**
+     * 生产环境配置
+     */
+    @NestedConfigurationProperty
+    Prod prod = new Prod();
 
-    private AliYun aliyun = new AliYun();
+    @NestedConfigurationProperty
+    AliYun aliyun = new AliYun();
 
-    private Tencent tencent = new Tencent();
+    @NestedConfigurationProperty
+    Tencent tencent = new Tencent();
 
     @Getter
     @Setter
