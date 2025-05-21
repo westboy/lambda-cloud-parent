@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.lambda.autoconfig.SecurityProperties;
-import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
 import com.lambda.security.LoginMode;
 import com.lambda.security.exception.VerifyCodeValidationException;
@@ -62,7 +61,7 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
         String loginMode = requestParam.getStr(loginModeParameter);
 
         if (StrUtil.isEmpty(loginMode)) {
-            throw new VerifyCodeValidationException("登录模式不能为空!");
+            throw new VerifyCodeValidationException("loginMode is not blank!");
         }
 
         if (!LoginMode.SMS.getCode().equals(loginMode)) {
@@ -79,13 +78,15 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
             throw new VerifyCodeValidationException("code is not blank!");
         }
 
-        SmsVerifyCode<String> verifyCode = smsVerifyCodeStore.get(mobile);
+        if (smsVerifyCodeStore.verifyReSend(mobile)) {
+            throw new VerifyCodeValidationException("code is expired!");
+        }
 
-        this.checkValid(verifyCode);
+        SmsVerifyCode<String> verifyCode = smsVerifyCodeStore.get(mobile);
 
         boolean verified = smsVerifyCodeStore.verify(mobile, code);
         if (!verified) {
-            throw new VerifyCodeValidationException("code is not valid");
+            throw new VerifyCodeValidationException("code is not valid!");
         }
         chain.doFilter(httpServletRequestWrapper, httpServletResponse);
     }
@@ -97,11 +98,4 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
     public String obtainCodeParameter(HttpServletRequest request) {
         return request.getParameter(securityProperties.getSms().getCode());
     }
-
-    private void checkValid(SmsVerifyCode<String> code) {
-        int sumSeconds = securityProperties.getSms().getValidMinutes() * VerifyCodeService.ONE_SECOND;
-        boolean b = code.getCreateTimeMillis() + sumSeconds > System.currentTimeMillis();
-        Assert.isTrue(b, "verify code invalid");
-    }
-
 }

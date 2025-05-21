@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.utils.StringUtils;
 import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -15,11 +16,22 @@ import java.util.concurrent.TimeUnit;
 public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
     private final Gson gson = new Gson();
     private static final String PREFIX_KEY = "Authorization:login:smsVerify";
-
+    private final SecurityProperties.SmsLogin smsLogin;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public RedisSmsVerifyCodeStore(StringRedisTemplate stringRedisTemplate) {
+    public RedisSmsVerifyCodeStore(SecurityProperties.SmsLogin smsLogin, StringRedisTemplate stringRedisTemplate) {
+        this.smsLogin = smsLogin;
         this.stringRedisTemplate = stringRedisTemplate;
+    }
+
+    @Override
+    public long getPeriod() {
+        return smsLogin.getValidMinutes();
+    }
+
+    @Override
+    public long getInterval() {
+        return smsLogin.getResendSeconds();
     }
 
     @Override

@@ -17,7 +17,6 @@ import java.util.Map;
  * @author jpjoo
  */
 public interface VerifyCodeService {
-    Integer ONE_SECOND = 1000;
 
     /**
      * 检查是否支持该过滤器

@@ -213,7 +213,7 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public SmsVerifyCodeStore<String> smsVerifyCodeStore(StringRedisTemplate stringRedisTemplate) {
-            return new RedisSmsVerifyCodeStore(stringRedisTemplate);
+            return new RedisSmsVerifyCodeStore(securityProperties.getSms(), stringRedisTemplate);
         }
 
         @Bean
