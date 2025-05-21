@@ -20,6 +20,7 @@ public class GlobalMetaObjectHandler implements MetaObjectHandler {
         LoginUser loginUser = OperatorUtils.getOperator();
         this.strictInsertFill(metaObject, "createUser", String.class, loginUser.getName());
         this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
+        this.strictInsertFill(metaObject, "delFlag", Boolean.class, false);
     }
 
     @Override
