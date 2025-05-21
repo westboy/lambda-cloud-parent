@@ -199,12 +199,15 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean<SmsAuthenticationProcessingFilter> smsAuthenticationProcessingFilter(
-                ObjectMapper objectMapper
+                ObjectMapper objectMapper,
+                @Autowired(required = false) UserDetailService userDetailService
         ) {
+            Assert.notNull(userDetailService, "userDetailService must not be null");
             FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(securityProperties.getSms().getLoginPath());
             processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            processingFilter.setUserDetailService(userDetailService);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);

@@ -1,7 +1,6 @@
 package com.lambda.security.web.verify.service.sms.store;
 
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.json.JSONUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lambda.autoconfig.SecurityProperties;
@@ -37,8 +36,7 @@ public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
     @Override
     public String generate(String key) {
         String code = Integer.toString(RandomUtil.randomInt(1000, 9999));
-        String json = JSONUtil.toJsonStr(new SmsVerifyCode<>(code));
-        stringRedisTemplate.opsForValue().set(getCommonKey(key), json, getPeriod(), TimeUnit.SECONDS);
+        stringRedisTemplate.opsForValue().set(getCommonKey(key), gson.toJson(new SmsVerifyCode<>(code)), getPeriod(), TimeUnit.MINUTES);
         return code;
     }
 

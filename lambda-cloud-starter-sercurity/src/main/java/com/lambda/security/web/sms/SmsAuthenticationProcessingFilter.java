@@ -11,7 +11,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
@@ -46,64 +45,28 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
             throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
         }
 
-        String mobile = obtainMobileParameter(request);
-        String device = obtainDeviceParameter(request);
-        String loginType = obtainLoginTypeParameter(request);
+        Map<String, Object> smsLogin = getUserLoginForRequestBody(request);
+        if (MapUtils.isEmpty(smsLogin)) {
+            throw new AuthenticationException("Request body is empty");
+        }
+        String mobile = (String) smsLogin.getOrDefault(this.mobileParameter, "");
 
-        if (mobile == null) {
-            mobile = "";
+        if (StrUtil.isBlank(mobile)) {
+            throw new AuthenticationException("Mobile is empty");
         }
 
-        if (device == null) {
-            device = "";
-        }
-
-        if (loginType == null) {
-            loginType = "";
-        }
-
-        if (StringUtils.isBlank(mobile)) {
-            Map<String, Object> smsLogin = getUserLoginForRequestBody(request);
-            if (MapUtils.isNotEmpty(smsLogin)) {
-                mobile = (String) smsLogin.getOrDefault(this.userDetailService, "");
-                if (StringUtils.isBlank(loginType)) {
-                    loginType = (String) smsLogin.getOrDefault(this.loginTypeParameter, "admin");
-                }
-                if (StringUtils.isBlank(device)) {
-                    device = (String) smsLogin.getOrDefault(this.deviceParameter, "default");
-                }
-            }
-        }
-
-        if (StrUtil.isEmpty(loginType)) {
-            loginType = LoginType.ADMIN.getCode();
-        }
-
+        String loginType = (String) smsLogin.getOrDefault(this.loginTypeParameter, LoginType.ADMIN.getCode());
         request.setAttribute(loginTypeParameter, loginType);
 
-        if (StrUtil.isEmpty(device)) {
-            device = "default";
-        }
+        String device = (String) smsLogin.getOrDefault(this.deviceParameter, "default");
         request.setAttribute(deviceParameter, device);
 
         LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
 
         if (loginUser == null) {
-            throw new AuthenticationException("用户不存在！");
+            throw new AuthenticationException("User not found");
         }
 
         return loginUser;
-    }
-
-    public String obtainMobileParameter(HttpServletRequest request) {
-        return request.getParameter(mobileParameter);
-    }
-
-    public String obtainLoginTypeParameter(HttpServletRequest request) {
-        return request.getParameter(loginTypeParameter);
-    }
-
-    public String obtainDeviceParameter(HttpServletRequest request) {
-        return request.getParameter(deviceParameter);
     }
 }

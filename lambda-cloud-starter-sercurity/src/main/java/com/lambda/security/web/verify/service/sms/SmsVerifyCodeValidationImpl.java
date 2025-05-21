@@ -90,12 +90,4 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
         }
         chain.doFilter(httpServletRequestWrapper, httpServletResponse);
     }
-
-    public String obtainMobileParameter(HttpServletRequest request) {
-        return request.getParameter(securityProperties.getSms().getMobile());
-    }
-
-    public String obtainCodeParameter(HttpServletRequest request) {
-        return request.getParameter(securityProperties.getSms().getCode());
-    }
 }

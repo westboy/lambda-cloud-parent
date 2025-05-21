@@ -118,6 +118,9 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
             String code = smsVerifyCodeStore.generate(mobile);
             SmsSendResult smsSendResult = smsMessageSender.sendVerifyCode(mobile, code, smsLogin.getValidMinutes());
+            if (smsSendResult == null || !smsSendResult.isSuccess()) {
+                throw new IllegalArgumentException("the sms code send failed");
+            }
             SmsVerifyCodeResponse smsVerifyCodeResponse = new SmsVerifyCodeResponse();
             smsVerifyCodeResponse.setId(smsSendResult.getId());
             smsVerifyCodeResponse.setResendSeconds(smsLogin.getResendSeconds());

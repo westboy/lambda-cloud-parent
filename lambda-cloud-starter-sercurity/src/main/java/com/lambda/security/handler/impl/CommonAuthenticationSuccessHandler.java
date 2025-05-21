@@ -45,7 +45,7 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
         //获取stpLogic
         StpLogic stpLogic = LoginType.getStpLogic(loginType);
         //用户登录
-        stpLogic.login(loginUser.getUsername(), device);
+        stpLogic.login(loginUser.getName(), device);
         //存储用户信息
         stpLogic.getTokenSession().set("loginUser", loginUser);
         //获取token
