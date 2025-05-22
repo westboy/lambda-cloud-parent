@@ -49,13 +49,4 @@ public class AesEncryptHandler extends BaseTypeHandler<Object> {
         return AES.decrypt(columnValue, key);
     }
 
-    public static void main(String[] args) {
-        String key = AES.generateRandomKey();
-        String encrypt = AES.encrypt("11111111222", key);
-        System.out.println(encrypt);
-//        key = AES.generateRandomKey();
-        String decrypted = AES.decrypt(encrypt, key);
-        System.out.println(decrypted);
-    }
-
 }
