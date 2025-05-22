@@ -1,7 +1,7 @@
 package com.lambda.cloud.mybatis.utils;
 
-import com.lambda.cloud.mybatis.support.BoundSql;
-import com.lambda.cloud.mybatis.support.SqlSource;
+import com.lambda.cloud.mybatis.mapping.BoundSql;
+import com.lambda.cloud.mybatis.mapping.SqlSource;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.MappedStatement;

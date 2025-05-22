@@ -3,7 +3,7 @@ package com.lambda.cloud.mybatis.interceptor;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.toolkit.JdbcUtils;
-import com.lambda.cloud.mybatis.extend.ExtendBaseMapper;
+import com.lambda.cloud.mybatis.mapper.LambdaBaseMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.io.Resources;
@@ -43,7 +43,7 @@ public class InsertBatchInterceptor implements Interceptor {
         String method = ms.getId();
         String mapperName = method.substring(0, method.lastIndexOf(Constants.DOT));
         Class<?> clazz = Resources.classForName(mapperName);
-        if (ExtendBaseMapper.class.isAssignableFrom(clazz) && method.endsWith(COMMON_INSERT_BATCH_METHOD)) {
+        if (LambdaBaseMapper.class.isAssignableFrom(clazz) && method.endsWith(COMMON_INSERT_BATCH_METHOD)) {
             Configuration configuration = ms.getConfiguration();
             DbType dbType = JdbcUtils.getDbType(((Executor) invocation.getTarget()));
             String methodName;

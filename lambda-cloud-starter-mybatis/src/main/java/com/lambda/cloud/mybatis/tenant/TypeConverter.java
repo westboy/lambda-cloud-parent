@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.support;
+package com.lambda.cloud.mybatis.tenant;
 
 
 import org.apache.commons.lang.BooleanUtils;

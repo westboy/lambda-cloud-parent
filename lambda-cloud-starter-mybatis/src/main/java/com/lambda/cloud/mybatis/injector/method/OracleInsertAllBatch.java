@@ -1,24 +1,26 @@
-package com.lambda.cloud.mybatis.extend.method;
+package com.lambda.cloud.mybatis.injector.method;
 
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlSource;
 
 /**
- * MysqlInsertAllBatch
+ * OracleInsertAllBatch
+ *
  * @author jpjoo
  */
 @SuppressWarnings("all")
-public class MysqlInsertAllBatch extends AbstractMethod {
+public class OracleInsertAllBatch extends AbstractMethod {
     /**
      * @param methodName 方法名
      * @since 3.5.0
      */
-    public MysqlInsertAllBatch() {
-        super("mysqlInsertAllBatch");
+    public OracleInsertAllBatch() {
+        super("oracleInsertAllBatch");
     }
 
     /**
@@ -31,12 +33,11 @@ public class MysqlInsertAllBatch extends AbstractMethod {
      */
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
-        final String sql = "<script>insert into %s %s values %s</script>";
-        final String fieldSql = prepareFieldSql(tableInfo);
+        final String sql = "<script>insert all %s select 1 from dual</script>";
         final String valueSql = prepareValuesSqlForMysqlBatch(tableInfo);
-        final String sqlResult = String.format(sql, tableInfo.getTableName(), fieldSql, valueSql);
+        final String sqlResult = String.format(sql, valueSql);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sqlResult, modelClass);
-        return this.addInsertMappedStatement(mapperClass, modelClass, "mysqlInsertAllBatch", sqlSource, new NoKeyGenerator(), null, null);
+        return this.addInsertMappedStatement(mapperClass, modelClass, "oracleInsertAllBatch", sqlSource, new NoKeyGenerator(), null, null);
     }
 
     private String prepareFieldSql(TableInfo tableInfo) {
@@ -53,16 +54,19 @@ public class MysqlInsertAllBatch extends AbstractMethod {
     }
 
     private String prepareValuesSqlForMysqlBatch(TableInfo tableInfo) {
+        String tableName = tableInfo.getTableName();
+        String fieldSql = prepareFieldSql(tableInfo);
         final StringBuilder valueSql = new StringBuilder();
-        valueSql.append("<foreach collection=\"list\" item=\"item\" index=\"index\" open=\"(\" separator=\"),(\" close=\")\">");
+        valueSql.append("<foreach collection=\"list\" item=\"item\" index=\"index\">");
+        valueSql.append(" INTO ").append(tableName).append(fieldSql).append("VALUES(");
         String primaryKey = tableInfo.getKeyProperty();
         if (StringUtils.isNotBlank(primaryKey)) {
-            valueSql.append("#{item.").append(tableInfo.getKeyProperty()).append(RIGHT_BRACE).append(COMMA);
+            valueSql.append("#{item.").append(tableInfo.getKeyProperty()).append("},");
         }
-        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append(RIGHT_BRACE).append(COMMA));
+        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append("},"));
         valueSql.delete(valueSql.length() - 1, valueSql.length());
+        valueSql.append(StringPool.RIGHT_BRACKET);
         valueSql.append("</foreach>");
         return valueSql.toString();
     }
 }
-

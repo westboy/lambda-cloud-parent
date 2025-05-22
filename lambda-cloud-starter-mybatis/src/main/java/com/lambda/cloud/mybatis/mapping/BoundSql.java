@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.support;
+package com.lambda.cloud.mybatis.mapping;
 
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;

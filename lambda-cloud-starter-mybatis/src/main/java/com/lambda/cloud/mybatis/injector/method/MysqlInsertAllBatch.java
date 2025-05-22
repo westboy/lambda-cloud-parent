@@ -1,21 +1,24 @@
-package com.lambda.cloud.mybatis.extend.method;
+package com.lambda.cloud.mybatis.injector.method;
 
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
+import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlSource;
 
 /**
- * InsertAll
- *
- * @author Jin
+ * MysqlInsertAllBatch
+ * @author jpjoo
  */
 @SuppressWarnings("all")
-public class InsertAll extends AbstractMethod {
-
-    public InsertAll() {
-        super("insertAll");
+public class MysqlInsertAllBatch extends AbstractMethod {
+    /**
+     * @param methodName 方法名
+     * @since 3.5.0
+     */
+    public MysqlInsertAllBatch() {
+        super("mysqlInsertAllBatch");
     }
 
     /**
@@ -33,24 +36,30 @@ public class InsertAll extends AbstractMethod {
         final String valueSql = prepareValuesSqlForMysqlBatch(tableInfo);
         final String sqlResult = String.format(sql, tableInfo.getTableName(), fieldSql, valueSql);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sqlResult, modelClass);
-        return this.addInsertMappedStatement(mapperClass, modelClass, "insertAll", sqlSource, new NoKeyGenerator(), null, null);
+        return this.addInsertMappedStatement(mapperClass, modelClass, "mysqlInsertAllBatch", sqlSource, new NoKeyGenerator(), null, null);
     }
 
     private String prepareFieldSql(TableInfo tableInfo) {
         StringBuilder fieldSql = new StringBuilder();
-        fieldSql.append(tableInfo.getKeyColumn()).append(",");
-        tableInfo.getFieldList().forEach(x -> fieldSql.append(x.getColumn()).append(","));
+        String primaryKey = tableInfo.getKeyColumn();
+        if (StringUtils.isNotBlank(primaryKey)) {
+            fieldSql.append(tableInfo.getKeyColumn()).append(COMMA);
+        }
+        tableInfo.getFieldList().forEach(x -> fieldSql.append(x.getColumn()).append(COMMA));
         fieldSql.delete(fieldSql.length() - 1, fieldSql.length());
-        fieldSql.insert(0, "(");
-        fieldSql.append(")");
+        fieldSql.insert(0, LEFT_BRACKET);
+        fieldSql.append(RIGHT_BRACKET);
         return fieldSql.toString();
     }
 
     private String prepareValuesSqlForMysqlBatch(TableInfo tableInfo) {
         final StringBuilder valueSql = new StringBuilder();
         valueSql.append("<foreach collection=\"list\" item=\"item\" index=\"index\" open=\"(\" separator=\"),(\" close=\")\">");
-        valueSql.append("#{item.").append(tableInfo.getKeyProperty()).append("},");
-        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append("},"));
+        String primaryKey = tableInfo.getKeyProperty();
+        if (StringUtils.isNotBlank(primaryKey)) {
+            valueSql.append("#{item.").append(tableInfo.getKeyProperty()).append(RIGHT_BRACE).append(COMMA);
+        }
+        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append(RIGHT_BRACE).append(COMMA));
         valueSql.delete(valueSql.length() - 1, valueSql.length());
         valueSql.append("</foreach>");
         return valueSql.toString();

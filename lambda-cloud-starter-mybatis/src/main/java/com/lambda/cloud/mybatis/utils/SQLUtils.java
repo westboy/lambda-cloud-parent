@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 /**
  * @author Jin
  */
-@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "PMD"})
 public final class SQLUtils {
     public static final String COMMA = ",";
     public static final String LEFT_BRACKET = "(";

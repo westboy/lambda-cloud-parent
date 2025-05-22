@@ -1,6 +1,6 @@
 package com.lambda.cloud.mybatis.interceptor;
 
-import com.lambda.cloud.mybatis.support.TypeConverter;
+import com.lambda.cloud.mybatis.tenant.TypeConverter;
 import com.lambda.cloud.mybatis.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;

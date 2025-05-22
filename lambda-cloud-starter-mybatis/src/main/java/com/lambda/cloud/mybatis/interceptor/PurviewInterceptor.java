@@ -1,8 +1,8 @@
 package com.lambda.cloud.mybatis.interceptor;
 
+import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
@@ -27,7 +27,6 @@ import java.util.*;
 import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.*;
 import static com.lambda.cloud.mybatis.utils.MybatisUtils.getCurrentMethod;
 import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
-import static com.lambda.cloud.mybatis.utils.UUIDGenerator.getShortUuid;
 
 
 /**
@@ -158,7 +157,7 @@ public class PurviewInterceptor implements Interceptor {
         builder.resultSetType(ResultSetType.DEFAULT);
         builder.statementType(StatementType.PREPARED);
         List<ResultMap> resultMaps = new ArrayList<>();
-        resultMaps.add(new ResultMap.Builder(configuration, getShortUuid(), String.class, Collections.emptyList()).build());
+        resultMaps.add(new ResultMap.Builder(configuration, IdUtil.nanoId(8), String.class, Collections.emptyList()).build());
         builder.resultMaps(resultMaps);
         return builder.build();
     }

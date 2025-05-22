@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.extend;
+package com.lambda.cloud.mybatis.injector;
 
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.injector.DefaultSqlInjector;
@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.injector.methods.*;
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.lambda.cloud.mybatis.annotation.TableCodeField;
-import com.lambda.cloud.mybatis.extend.method.*;
+import com.lambda.cloud.mybatis.injector.method.*;
 import org.apache.ibatis.session.Configuration;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  *
  * @author jpjoo
  */
-public class ExtendLogicSqlInjector extends DefaultSqlInjector {
+public class LambdaExtendSqlInjector extends DefaultSqlInjector {
 
 
     /**

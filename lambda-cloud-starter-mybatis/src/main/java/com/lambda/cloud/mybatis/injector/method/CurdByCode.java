@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.extend.method;
+package com.lambda.cloud.mybatis.injector.method;
 
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 

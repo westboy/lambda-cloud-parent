@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.extend;
+package com.lambda.cloud.mybatis.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -14,7 +14,7 @@ import java.util.List;
  * @author jpjoo
  */
 @SuppressWarnings("UnusedReturnValue")
-public interface ExtendBaseMapper<T> extends BaseMapper<T> {
+public interface LambdaBaseMapper<T> extends BaseMapper<T> {
 
     /**
      * 批量插入的 条数 （如有需要再做成配置项）
@@ -24,8 +24,8 @@ public interface ExtendBaseMapper<T> extends BaseMapper<T> {
     /**
      * mysql或oracle 动态判断数据库类型 形式的全字段批量新增
      *
-     * @param entity
-     * @return
+     * @param entity list
+     * @return int
      */
     int insertAll(List<T> entity);
 
@@ -33,7 +33,7 @@ public interface ExtendBaseMapper<T> extends BaseMapper<T> {
      * mysql或oracle 动态判断数据库类型 形式的全字段批量新增  条数过多自动分批执行(事务需要自己添加，如果在这里夹容易出现事务嵌套)
      *
      * @param entity list   默认1000一次
-     * @return
+     * @return int
      */
     default int insertAllBatch(List<T> entity) {
         return insertAllBatch(entity, BATCH_SIZE);
@@ -44,7 +44,7 @@ public interface ExtendBaseMapper<T> extends BaseMapper<T> {
      *
      * @param entity List
      * @param max    批次大小
-     * @return
+     * @return int
      */
     default int insertAllBatch(List<T> entity, int max) {
         if (null == entity) {
@@ -58,8 +58,8 @@ public interface ExtendBaseMapper<T> extends BaseMapper<T> {
     /**
      * mysql 形式的全字段批量新增
      *
-     * @param entity
-     * @return
+     * @param entity list
+     * @return int
      */
     int mysqlInsertAllBatch(List<T> entity);
 
@@ -67,8 +67,8 @@ public interface ExtendBaseMapper<T> extends BaseMapper<T> {
     /**
      * oracle 形式的全字段批量新增
      *
-     * @param entity
-     * @return
+     * @param entity list
+     * @return int
      */
     int oracleInsertAllBatch(List<T> entity);
 
