@@ -3,10 +3,9 @@ package com.lambda.cloud.mybatis.injector.method;
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
+import javax.annotation.Nonnull;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlSource;
-
-import javax.annotation.Nonnull;
 
 /**
  * UpdateByCode
@@ -32,11 +31,14 @@ public class UpdateByCode extends AbstractMethod implements CurdByCode {
      */
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
-        final String sql = "<script>\nUPDATE %s %s WHERE %s %s\n</script>";
+        final String sql = "<script> %n UPDATE %s %s WHERE %s %s %n</script>";
         final String additional = optlockVersion(tableInfo) + tableInfo.getLogicDeleteSql(true, true);
-        String updateSql = String.format(sql, tableInfo.getTableName(),
+        String updateSql = String.format(
+                sql,
+                tableInfo.getTableName(),
                 sqlSet(tableInfo.isWithLogicDelete(), false, tableInfo, false, ENTITY, ENTITY_DOT),
-                codeSql(codeField), additional);
+                codeSql(codeField),
+                additional);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, updateSql, modelClass);
         return addUpdateMappedStatement(mapperClass, modelClass, this.methodName, sqlSource);
     }

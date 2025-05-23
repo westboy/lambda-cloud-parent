@@ -1,7 +1,13 @@
 package com.lambda.cloud.mybatis.utils;
 
-import com.lambda.cloud.mybatis.mapping.BoundSql;
-import com.lambda.cloud.mybatis.mapping.SqlSource;
+import static com.baomidou.mybatisplus.core.toolkit.StringPool.DOT;
+
+import com.lambda.cloud.mybatis.mapping.LambdaBoundSql;
+import com.lambda.cloud.mybatis.mapping.LambdaSqlSource;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -9,20 +15,12 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.Configuration;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
-import static com.baomidou.mybatisplus.core.toolkit.StringPool.DOT;
-
 /**
  * @author Jin
  */
 public final class MybatisUtils {
 
-    private MybatisUtils() {
-    }
+    private MybatisUtils() {}
 
     /**
      * 构造新的MappedStatement
@@ -45,7 +43,8 @@ public final class MybatisUtils {
      * @param sql
      * @return org.apache.ibatis.mapping.MappedStatement
      */
-    public static MappedStatement newMappedStatement(MappedStatement statement, org.apache.ibatis.mapping.BoundSql boundSql, String sql) {
+    public static MappedStatement newMappedStatement(
+            MappedStatement statement, org.apache.ibatis.mapping.BoundSql boundSql, String sql) {
         org.apache.ibatis.mapping.SqlSource sqlSource = newSqlSource(modifyBoundSql(boundSql, sql));
         return MybatisUtils.newMappedStatement(statement, sqlSource);
     }
@@ -57,9 +56,10 @@ public final class MybatisUtils {
      * @param sqlsource 新的内容
      * @return org.apache.ibatis.mapping.MappedStatement
      */
-    public static MappedStatement newMappedStatement(MappedStatement statement, org.apache.ibatis.mapping.SqlSource sqlsource) {
-        MappedStatement.Builder builder = new MappedStatement.Builder(statement.getConfiguration(), statement.getId()
-                , sqlsource, statement.getSqlCommandType());
+    public static MappedStatement newMappedStatement(
+            MappedStatement statement, org.apache.ibatis.mapping.SqlSource sqlsource) {
+        MappedStatement.Builder builder = new MappedStatement.Builder(
+                statement.getConfiguration(), statement.getId(), sqlsource, statement.getSqlCommandType());
         builder.resource(statement.getResource());
         builder.fetchSize(statement.getFetchSize());
         builder.statementType(statement.getStatementType());
@@ -89,7 +89,7 @@ public final class MybatisUtils {
      * @return org.apache.ibatis.mapping.SqlSource
      */
     public static org.apache.ibatis.mapping.SqlSource newSqlSource(org.apache.ibatis.mapping.BoundSql boundSql) {
-        return new SqlSource(boundSql);
+        return new LambdaSqlSource(boundSql);
     }
 
     /**
@@ -100,8 +100,9 @@ public final class MybatisUtils {
      * @param sql
      * @return org.apache.ibatis.mapping.BoundSql
      */
-    public static org.apache.ibatis.mapping.BoundSql newBoundSql(Configuration configuration, org.apache.ibatis.mapping.BoundSql source, String sql) {
-        return new BoundSql(configuration, source, sql);
+    public static org.apache.ibatis.mapping.BoundSql newBoundSql(
+            Configuration configuration, org.apache.ibatis.mapping.BoundSql source, String sql) {
+        return new LambdaBoundSql(configuration, source, sql);
     }
 
     /***
@@ -110,7 +111,8 @@ public final class MybatisUtils {
      * @param sql
      * @return org.apache.ibatis.mapping.BoundSql
      */
-    public static org.apache.ibatis.mapping.BoundSql modifyBoundSql(org.apache.ibatis.mapping.BoundSql source, String sql) {
+    public static org.apache.ibatis.mapping.BoundSql modifyBoundSql(
+            org.apache.ibatis.mapping.BoundSql source, String sql) {
         MetaObject object = SystemMetaObject.forObject(source);
         object.setValue("sql", sql);
         return source;
@@ -130,7 +132,10 @@ public final class MybatisUtils {
         try {
             final Class<?> cls = Resources.classForName(className);
             final Method[] methods = cls.getMethods();
-            return Arrays.stream(methods).filter(item -> item.getName().equals(methodName)).findFirst().orElse(null);
+            return Arrays.stream(methods)
+                    .filter(item -> item.getName().equals(methodName))
+                    .findFirst()
+                    .orElse(null);
         } catch (ClassNotFoundException ignore) {
             return null;
         }

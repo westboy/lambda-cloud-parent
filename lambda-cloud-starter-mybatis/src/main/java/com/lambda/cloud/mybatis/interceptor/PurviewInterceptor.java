@@ -1,5 +1,9 @@
 package com.lambda.cloud.mybatis.interceptor;
 
+import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.*;
+import static com.lambda.cloud.mybatis.utils.MybatisUtils.getCurrentMethod;
+import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
+
 import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -9,6 +13,10 @@ import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.purview.support.Parameters;
 import com.lambda.cloud.mybatis.purview.utils.PurviewUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.lang.reflect.Method;
+import java.util.*;
+import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.ibatis.builder.StaticSqlSource;
@@ -20,15 +28,6 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.util.ClassUtils;
 
-import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.*;
-
-import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.*;
-import static com.lambda.cloud.mybatis.utils.MybatisUtils.getCurrentMethod;
-import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
-
-
 /**
  * 数据权限拦截器
  *
@@ -36,21 +35,22 @@ import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
  */
 @Slf4j
 @Intercepts({
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class,
-                RowBounds.class,
-                ResultHandler.class})
+    @Signature(
+            type = Executor.class,
+            method = "query",
+            args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
 public class PurviewInterceptor implements Interceptor {
 
     private static final String PURVIEW_MS_ID = "purviewMappedStatementId";
     private static final int MAX = 1000;
 
+    @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
     private final Map<Integer, Integer> typeMapper;
 
     public PurviewInterceptor(Map<Integer, Integer> typeMapper) {
         this.typeMapper = typeMapper;
     }
-
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -72,19 +72,22 @@ public class PurviewInterceptor implements Interceptor {
         }
         // 处理type映射
         if (typeMapper != null && !typeMapper.isEmpty()) {
-            purview.setType(Arrays.stream(purview.getType()).map(type -> {
-                if (typeMapper.containsKey(type)) {
-                    return typeMapper.get(type);
-                }
-                return type;
-            }).toArray());
+            purview.setType(Arrays.stream(purview.getType())
+                    .map(type -> {
+                        if (typeMapper.containsKey(type)) {
+                            return typeMapper.get(type);
+                        }
+                        return type;
+                    })
+                    .toArray());
         }
 
         boolean replace = getReplace(sql);
         if (replace) {
             purview.setMode(Purview.Mode.SUB_QUERY);
             purview.setReplace(true);
-            log.debug("It is detected that the SQL contains data permission flags, and the subquery mode is forced to be used.");
+            log.debug(
+                    "It is detected that the SQL contains data permission flags, and the subquery mode is forced to be used.");
         }
         LoginUser operator = getOperator(parameter);
         if (operator == null) {
@@ -103,7 +106,7 @@ public class PurviewInterceptor implements Interceptor {
             Set<String> permissions = Collections.emptySet();
             if (purview.isPretreatment()) {
                 permissions = getUserPermissions(executor, statement, rowBounds, purview, operator);
-                //当用户无数据权限时，直接返回相应的结果
+                // 当用户无数据权限时，直接返回相应的结果
                 if (CollectionUtils.isEmpty(permissions)) {
                     return emptyResult(method);
                 }
@@ -134,34 +137,39 @@ public class PurviewInterceptor implements Interceptor {
      *
      * @return java.util.Set<java.lang.String>
      */
-    private Set<String> getUserPermissions(Executor executor, MappedStatement statement, RowBounds rowBounds,
-                                           DynamicPurview purview, LoginUser operator) throws java.sql.SQLException {
+    private Set<String> getUserPermissions(
+            Executor executor,
+            MappedStatement statement,
+            RowBounds rowBounds,
+            DynamicPurview purview,
+            LoginUser operator)
+            throws java.sql.SQLException {
         final Configuration configuration = statement.getConfiguration();
         MappedStatement pms = buildPurviewMappedStatement(configuration, purview, operator);
         List<String> result = executor.query(pms, null, rowBounds, null);
         Set<String> permissions = Sets.newHashSet(result);
         if (permissions.size() > MAX) {
-            log.warn("The user has too many permissions, an exception may occur during execution! size: {}",
+            log.warn(
+                    "The user has too many permissions, an exception may occur during execution! size: {}",
                     permissions.size());
         }
         return permissions;
     }
 
-    private MappedStatement buildPurviewMappedStatement(@Nonnull Configuration configuration,
-                                                        @Nonnull DynamicPurview purview,
-                                                        @Nonnull LoginUser operator) {
+    private MappedStatement buildPurviewMappedStatement(
+            @Nonnull Configuration configuration, @Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
         String sql = PurviewUtils.buildSQL01(purview, operator);
         SqlSource sqlSource = new StaticSqlSource(configuration, sql);
-        MappedStatement.Builder builder = new MappedStatement.Builder(configuration, PURVIEW_MS_ID, sqlSource,
-                SqlCommandType.SELECT);
+        MappedStatement.Builder builder =
+                new MappedStatement.Builder(configuration, PURVIEW_MS_ID, sqlSource, SqlCommandType.SELECT);
         builder.resultSetType(ResultSetType.DEFAULT);
         builder.statementType(StatementType.PREPARED);
         List<ResultMap> resultMaps = new ArrayList<>();
-        resultMaps.add(new ResultMap.Builder(configuration, IdUtil.nanoId(8), String.class, Collections.emptyList()).build());
+        resultMaps.add(
+                new ResultMap.Builder(configuration, IdUtil.nanoId(8), String.class, Collections.emptyList()).build());
         builder.resultMaps(resultMaps);
         return builder.build();
     }
-
 
     @Override
     public Object plugin(Object target) {

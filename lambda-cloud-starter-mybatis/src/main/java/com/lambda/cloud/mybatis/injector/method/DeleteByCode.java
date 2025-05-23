@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlSource;
 
-
 /**
  * DeleteByCode
  *
@@ -32,21 +31,21 @@ public class DeleteByCode extends AbstractMethod implements CurdByCode {
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
         String sql;
-        final String logicDeleteSql = "<script>\n UPDATE %s %s WHERE %s %s \n</script>";
-        final String deleteSql = "<script>\n DELETE FROM %s WHERE %s \n</script>";
+        final String logicDeleteSql = "<script>%n UPDATE %s %s WHERE %s %s %n</script>";
+        final String deleteSql = "<script>%n DELETE FROM %s WHERE %s %n</script>";
         if (tableInfo.isWithLogicDelete()) {
-            sql = String.format(logicDeleteSql, tableInfo.getTableName(), sqlLogicSet(tableInfo),
+            sql = String.format(
+                    logicDeleteSql,
+                    tableInfo.getTableName(),
+                    sqlLogicSet(tableInfo),
                     this.codeSql(codeField),
                     tableInfo.getLogicDeleteSql(true, true));
             SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, Object.class);
             return addUpdateMappedStatement(mapperClass, modelClass, this.methodName, sqlSource);
         } else {
-            sql = String.format(deleteSql, tableInfo.getTableName(),
-                    this.codeSql(codeField));
+            sql = String.format(deleteSql, tableInfo.getTableName(), this.codeSql(codeField));
             SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, Object.class);
             return this.addDeleteMappedStatement(mapperClass, this.methodName, sqlSource);
         }
     }
-
-
 }

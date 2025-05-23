@@ -1,7 +1,9 @@
 package com.lambda.cloud.mybatis.interceptor;
 
-import com.lambda.cloud.mybatis.tenant.TypeConverter;
 import com.lambda.cloud.mybatis.tenant.TenantContextHolder;
+import com.lambda.cloud.mybatis.tenant.TypeConverter;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.binding.MapperMethod;
@@ -14,10 +16,6 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.BeanUtils;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-
-
 /**
  * 数据权限拦截器
  *
@@ -26,9 +24,25 @@ import java.lang.reflect.Method;
 @SuppressWarnings("unchecked")
 @Slf4j
 @Intercepts({
-        @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
+    @Signature(
+            type = Executor.class,
+            method = "update",
+            args = {MappedStatement.class, Object.class}),
+    @Signature(
+            type = Executor.class,
+            method = "query",
+            args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+    @Signature(
+            type = Executor.class,
+            method = "query",
+            args = {
+                MappedStatement.class,
+                Object.class,
+                RowBounds.class,
+                ResultHandler.class,
+                CacheKey.class,
+                BoundSql.class
+            })
 })
 public class TenantExpressionInterceptor implements Interceptor {
 
@@ -81,8 +95,8 @@ public class TenantExpressionInterceptor implements Interceptor {
                     return (String) TypeConverter.convert(tenant, String.class);
                 }
             }
-        } catch (Exception ignored) {
-            //ignored
+        } catch (Exception exception) {
+            log.error("get tenant from bean error", exception);
         }
         return null;
     }

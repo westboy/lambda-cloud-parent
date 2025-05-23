@@ -1,14 +1,16 @@
 package com.lambda.autoconfig;
 
-
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import com.lambda.cloud.mybatis.injector.LambdaExtendSqlInjector;
 import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
+import com.lambda.cloud.mybatis.injector.LambdaExtendSqlInjector;
 import com.lambda.cloud.mybatis.interceptor.InsertBatchInterceptor;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Properties;
+import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
@@ -23,9 +25,6 @@ import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-import java.util.Properties;
-
 /**
  * MyBatisPlusConfig
  *
@@ -38,7 +37,6 @@ import java.util.Properties;
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
 public class MyBatisAutoConfiguration {
-
 
     public MyBatisAutoConfiguration() {
         log.trace("MyBatisAutoConfiguration initializing...");
@@ -97,7 +95,6 @@ public class MyBatisAutoConfiguration {
         return new LambdaExtendSqlInjector();
     }
 
-
     /**
      * jdbcTemplate
      *
@@ -138,6 +135,7 @@ public class MyBatisAutoConfiguration {
     @Configuration
     @ConditionalOnProperty(prefix = "mybatis-plus.encrypt", name = "enabled")
     public static class EncryptConfig {
+        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
         private MybatisPlusExtendProperties mybatisProperties;
 
         @Autowired
@@ -152,10 +150,7 @@ public class MyBatisAutoConfiguration {
 
         @Bean
         public ConfigurationCustomizer registerAesEncryptHandler(AesEncryptHandler aesEncryptHandler) {
-            return configuration ->
-                    configuration.
-                            getTypeHandlerRegistry().
-                            register(aesEncryptHandler);
+            return configuration -> configuration.getTypeHandlerRegistry().register(aesEncryptHandler);
         }
     }
 }

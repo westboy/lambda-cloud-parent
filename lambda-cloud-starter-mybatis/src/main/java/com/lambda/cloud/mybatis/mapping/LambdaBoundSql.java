@@ -1,17 +1,17 @@
 package com.lambda.cloud.mybatis.mapping;
 
+import java.util.Map;
+import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.Configuration;
 
-import java.util.Map;
-
 /**
  * @author Ji
  */
-public class BoundSql extends org.apache.ibatis.mapping.BoundSql {
+public class LambdaBoundSql extends BoundSql {
 
-    public BoundSql(Configuration configuration, org.apache.ibatis.mapping.BoundSql source, String sql) {
+    public LambdaBoundSql(Configuration configuration, org.apache.ibatis.mapping.BoundSql source, String sql) {
         super(configuration, sql, source.getParameterMappings(), source.getParameterObject());
         MetaObject object = SystemMetaObject.forObject(source);
         @SuppressWarnings("unchecked")

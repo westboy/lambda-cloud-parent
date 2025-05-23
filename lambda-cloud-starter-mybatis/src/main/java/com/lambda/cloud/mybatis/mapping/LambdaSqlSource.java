@@ -1,15 +1,18 @@
 package com.lambda.cloud.mybatis.mapping;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.SqlSource;
 
 /**
  * @author Jin
  */
-public class SqlSource implements org.apache.ibatis.mapping.SqlSource {
+public class LambdaSqlSource implements SqlSource {
 
+    @SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
     private final BoundSql boundSql;
 
-    public SqlSource(BoundSql boundSql) {
+    public LambdaSqlSource(BoundSql boundSql) {
         this.boundSql = boundSql;
     }
 
@@ -17,5 +20,4 @@ public class SqlSource implements org.apache.ibatis.mapping.SqlSource {
     public BoundSql getBoundSql(Object parameterObject) {
         return boundSql;
     }
-
 }
