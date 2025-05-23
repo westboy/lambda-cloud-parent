@@ -3,6 +3,7 @@ package com.lambda.cloud.websocket.event;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.websocket.WsSessionInfo;
 import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -12,6 +13,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "DefaultConnectEventServiceImpl")
 @Slf4j
 public class DefaultConnectEventServiceImpl implements WsConnectEventService {
 
@@ -29,7 +31,7 @@ public class DefaultConnectEventServiceImpl implements WsConnectEventService {
         if (user != null && framework != null) {
             String uid = user.getUsername();
             repository.add(uid, sid);
-            log.debug("Connected -> [sid : {}, uid : {}]", sid, uid);
+            log.debug("Websocket Connected -> [sid : {}, uid : {}]", sid, uid);
         }
     }
 
@@ -44,5 +46,4 @@ public class DefaultConnectEventServiceImpl implements WsConnectEventService {
             log.debug("Disconnect -> [sid : {}, uid : {}]", sid, uid);
         }
     }
-
 }

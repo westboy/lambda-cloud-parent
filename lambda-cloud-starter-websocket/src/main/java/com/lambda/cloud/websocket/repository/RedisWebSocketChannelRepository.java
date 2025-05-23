@@ -1,36 +1,38 @@
 package com.lambda.cloud.websocket.repository;
 
+import static com.lambda.cloud.websocket.Constants.COLON;
+import static com.lambda.cloud.websocket.Constants.SYSTEM;
+
 import com.google.common.collect.Lists;
 import com.lambda.cloud.web.TenantHolder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static com.lambda.cloud.websocket.Constants.SYSTEM;
-import static com.lambda.cloud.websocket.Constants.COLON;
-
-
 /**
  * RedisWebSocketChannelRepository
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "RedisWebSocketChannelRepository")
 @Slf4j
 public class RedisWebSocketChannelRepository implements WebSocketChannelRepository {
 
     private static final String KEY = "lambda:websocket:onlineuser:";
     private static final String ONLINE_KEY = "lambda:websocket:onlineusers";
-    private static final String SCRIPT1 = "if redis.call('SADD', KEYS[1], ARGV[1]) == 1 then return redis.call('SADD', KEYS[2], ARGV[2]) else return 0 end";
-    private static final String SCRIPT2 = "if redis.call('DEL', KEYS[1]) == 1 then return redis.call('SREM', KEYS[2]) else return 0 end";
-    private static final String SCRIPT3 = "if redis.call('SREM', KEYS[1], ARGV[1]) == 1 then return redis.call('SREM', KEYS[2], ARGV[2]) else return 0 end";
+    private static final String SCRIPT1 =
+            "if redis.call('SADD', KEYS[1], ARGV[1]) == 1 then return redis.call('SADD', KEYS[2], ARGV[2]) else return 0 end";
+    private static final String SCRIPT2 =
+            "if redis.call('DEL', KEYS[1]) == 1 then return redis.call('SREM', KEYS[2]) else return 0 end";
+    private static final String SCRIPT3 =
+            "if redis.call('SREM', KEYS[1], ARGV[1]) == 1 then return redis.call('SREM', KEYS[2], ARGV[2]) else return 0 end";
     private final StringRedisTemplate template;
-
 
     public RedisWebSocketChannelRepository(StringRedisTemplate template) {
         this.template = template;
@@ -42,7 +44,6 @@ public class RedisWebSocketChannelRepository implements WebSocketChannelReposito
         List<String> keys = Lists.newArrayList(getUserKey(uid), getOnlineKey());
         template.execute(script, keys, sid, uid);
     }
-
 
     @Override
     public void removeAll(String uid) {

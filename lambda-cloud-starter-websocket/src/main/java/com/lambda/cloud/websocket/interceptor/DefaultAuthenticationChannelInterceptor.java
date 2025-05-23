@@ -1,5 +1,8 @@
 package com.lambda.cloud.websocket.interceptor;
 
+import static com.lambda.cloud.mvc.WebHttpUtils.AUTHORIZATION;
+import static com.lambda.cloud.mvc.WebHttpUtils.BEARER;
+
 import cn.dev33.satoken.session.SaSession;
 import cn.hutool.core.lang.Opt;
 import com.google.common.collect.Maps;
@@ -7,6 +10,8 @@ import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.websocket.Constants;
 import com.lambda.security.exception.AuthenticationException;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -18,12 +23,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 
-import java.util.List;
-import java.util.Map;
-
-import static com.lambda.cloud.mvc.WebHttpUtils.AUTHORIZATION;
-import static com.lambda.cloud.mvc.WebHttpUtils.BEARER;
-
 /**
  * DefaultAuthenticationChannelInterceptor
  *
@@ -34,8 +33,7 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
 
     @Override
     public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
-        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message,
-                StompHeaderAccessor.class);
+        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         if (accessor == null) {
             return message;
         }
@@ -52,17 +50,13 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
                     sessions.putIfAbsent(Constants.X_WEBSOCKET_FRAMEWORK, framework);
                 }
             }
-            try {
-                String accessToken = getAccessToken(accessor);
-                if (StringUtils.isNotBlank(accessToken)) {
-                    Opt<LoginUser> loginUserOpt = Opt.ofNullable(getLoginUser(LoginType.ADMIN, accessToken))
-                            .or(() -> Opt.ofNullable(getLoginUser(LoginType.USER, accessToken)));
-                    accessor.setUser(loginUserOpt.orElseThrow(() -> new AuthenticationException("用户不能存在!")));
-                } else {
-                    throw new AuthenticationException("认证失败！");
-                }
-            } catch (Exception e) {
-                throw new AuthenticationException("认证失败");
+            String accessToken = getAccessToken(accessor);
+            if (StringUtils.isNotBlank(accessToken)) {
+                Opt<LoginUser> loginUserOpt = Opt.ofNullable(getLoginUser(LoginType.ADMIN, accessToken))
+                        .or(() -> Opt.ofNullable(getLoginUser(LoginType.USER, accessToken)));
+                accessor.setUser(loginUserOpt.orElseThrow(() -> new AuthenticationException("用户不能存在!")));
+            } else {
+                throw new AuthenticationException("认证失败！");
             }
         }
         return message;

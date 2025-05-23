@@ -1,35 +1,40 @@
 package com.lambda.cloud.websocket;
 
+import static com.lambda.cloud.websocket.Constants.IP_ADDRESS;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.security.Principal;
+import java.util.Map;
 import lombok.Getter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
-
-import java.security.Principal;
-import java.util.Map;
-
-import static com.lambda.cloud.websocket.Constants.IP_ADDRESS;
 
 /**
  * WsSessionInfo
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "WsSessionInfo")
 public class WsSessionInfo<T extends AbstractSubProtocolEvent> {
 
     private final Principal principal;
     private final T event;
+
     @Getter
     private final String topic;
+
     @Getter
     private final String sessionId;
+
     @Getter
     private StompHeaderAccessor connectAccessor;
+
     @Getter
     private Map<String, Object> sessionAttributes;
+
     @Getter
     private final StompHeaderAccessor messageAccessor;
-
 
     public WsSessionInfo(T event) {
         this.event = event;
@@ -46,7 +51,6 @@ public class WsSessionInfo<T extends AbstractSubProtocolEvent> {
             this.sessionAttributes = this.messageAccessor.getSessionAttributes();
         }
     }
-
 
     public Principal getUser() {
         return principal;

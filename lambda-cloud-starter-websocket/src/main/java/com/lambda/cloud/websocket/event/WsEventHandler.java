@@ -1,21 +1,21 @@
 package com.lambda.cloud.websocket.event;
 
 import com.lambda.cloud.websocket.WsSessionInfo;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.messaging.*;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
+import org.springframework.web.socket.messaging.*;
 
 /**
  * WsEventHandler
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "WsEventHandler")
 @Slf4j
 public class WsEventHandler {
 
@@ -76,7 +76,6 @@ public class WsEventHandler {
         this.connectEventServices.forEach(i -> i.disconnectEvent(info));
     }
 
-
     /**
      * 订阅事件
      *
@@ -102,5 +101,4 @@ public class WsEventHandler {
             this.subscribeListMap.get(info.getTopic()).forEach(i -> i.unsubscribeEvent(info));
         }
     }
-
 }

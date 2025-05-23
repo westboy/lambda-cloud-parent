@@ -11,6 +11,7 @@ import com.lambda.cloud.websocket.interceptor.IpHandshakeInterceptor;
 import com.lambda.cloud.websocket.repository.DefaultWebSocketChannelRepository;
 import com.lambda.cloud.websocket.repository.RedisWebSocketChannelRepository;
 import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableConfigurationProperties(WebsocketProperties.class)
 @ConditionalOnProperty(prefix = "lambda.websocket", name = "enabled", matchIfMissing = true)
 public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigurer {
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "WsSessionInfo")
     private WebsocketProperties websocketProperties;
 
     @Autowired

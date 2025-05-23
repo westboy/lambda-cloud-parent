@@ -4,15 +4,14 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Sets;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * DefaultWebSocketChannelRepository
@@ -42,10 +41,13 @@ public class DefaultWebSocketChannelRepository implements WebSocketChannelReposi
 
     @Override
     public void add(String uid, String sid) {
-        Set<String> sessions = localCache.get(uid, i -> new HashSet<>());
-        Objects.requireNonNull(sessions);
-        sessions.add(sid);
-        localCache.put(uid, sessions);
+        Set<String> sessions = localCache.get(uid, e -> new HashSet<>());
+        if (sessions != null) {
+            sessions.add(sid);
+            localCache.put(uid, sessions);
+        } else {
+            log.error("add session failed, uid: {}, sid: {}", uid, sid);
+        }
     }
 
     @Override

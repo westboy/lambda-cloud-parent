@@ -1,7 +1,6 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.websocket.ChannelStoreMode;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -11,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author jpjoo
  */
 @Data
-@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "springboot properties class")
 @ConfigurationProperties(prefix = "lambda.websocket")
 public class WebsocketProperties {
 
