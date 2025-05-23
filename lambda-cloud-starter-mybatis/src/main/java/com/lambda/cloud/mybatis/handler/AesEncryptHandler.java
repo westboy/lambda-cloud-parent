@@ -2,14 +2,13 @@ package com.lambda.cloud.mybatis.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.AES;
-import lombok.Setter;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import lombok.Setter;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 /**
  * @author jpjoo
@@ -24,7 +23,8 @@ public class AesEncryptHandler extends BaseTypeHandler<Object> {
     }
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType) throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType)
+            throws SQLException {
         ps.setString(i, AES.encrypt((String) parameter, key));
     }
 
@@ -43,10 +43,8 @@ public class AesEncryptHandler extends BaseTypeHandler<Object> {
     }
 
     @Override
-    public String getNullableResult(CallableStatement cs, int columnIndex)
-            throws SQLException {
+    public String getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
         String columnValue = cs.getString(columnIndex);
         return AES.decrypt(columnValue, key);
     }
-
 }

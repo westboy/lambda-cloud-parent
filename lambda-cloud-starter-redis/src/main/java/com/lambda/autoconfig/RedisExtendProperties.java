@@ -1,14 +1,12 @@
 package com.lambda.autoconfig;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Jin
  */
-@Setter
-@Getter
+@Data
 @ConfigurationProperties(prefix = "spring.data.redis")
 public class RedisExtendProperties {
     /**
@@ -33,5 +31,4 @@ public class RedisExtendProperties {
          */
         STANDALONE
     }
-
 }

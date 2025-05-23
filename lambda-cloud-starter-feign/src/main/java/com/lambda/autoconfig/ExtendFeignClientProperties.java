@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import org.springframework.cloud.openfeign.FeignClientProperties;
 @Setter
 @EqualsAndHashCode(callSuper = false)
 @ConfigurationProperties(prefix = "spring.cloud.openfeign.client")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
 public class ExtendFeignClientProperties extends FeignClientProperties {
 
     String basePackage = "com.lambda.cloud";
@@ -52,5 +54,4 @@ public class ExtendFeignClientProperties extends FeignClientProperties {
          */
         private String password;
     }
-
 }

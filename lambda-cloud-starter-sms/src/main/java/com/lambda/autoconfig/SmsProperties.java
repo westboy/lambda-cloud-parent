@@ -1,5 +1,7 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,8 +12,8 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
  *
  * @author Jin
  */
-@Getter
-@Setter
+@Data
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "springboot properties class")
 @ConfigurationProperties(prefix = "lambda.sms")
 public class SmsProperties {
 
@@ -65,7 +67,6 @@ public class SmsProperties {
         private int codeTemplateId;
     }
 
-
     @Getter
     @Setter
     public static class AliYun {
@@ -114,5 +115,4 @@ public class SmsProperties {
             SENDSMS
         }
     }
-
 }

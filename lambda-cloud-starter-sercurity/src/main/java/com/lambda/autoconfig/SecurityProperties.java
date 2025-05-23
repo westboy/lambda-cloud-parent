@@ -4,35 +4,31 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-
 /**
  * SecurityProperties
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP"},
+        justification = "springboot properties")
 @Data
 @ConfigurationProperties(prefix = "lambda.security")
 public class SecurityProperties {
 
-    private static final List<String> DEFAULT_IGNORE_PATH_LIST = Lists.newArrayList(
-            "/public/**",
-            "/v3/**",
-            "/anon/**",
-            "*.html",
-            "*.css",
-            "*.ico",
-            "*.js");
+    private static final List<String> DEFAULT_IGNORE_PATH_LIST =
+            Lists.newArrayList("/public/**", "/v3/**", "/anon/**", "*.html", "*.css", "*.ico", "*.js");
 
     /**
      * Sa-Token配置
@@ -40,6 +36,9 @@ public class SecurityProperties {
     @NestedConfigurationProperty
     ExtendSaTokenConfig saToken = new ExtendSaTokenConfig();
 
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP2"},
+            justification = "springboot properties")
     @Getter
     @Setter
     public static class ExtendSaTokenConfig extends SaTokenConfig {
@@ -171,7 +170,6 @@ public class SecurityProperties {
             private String password = "password";
         }
 
-
         @Getter
         @Setter
         public static class LockStrategy {
@@ -187,7 +185,6 @@ public class SecurityProperties {
              * 锁定时间单位
              */
             private TimeUnit timeUnit = TimeUnit.HOURS;
-
         }
 
         @Getter
@@ -239,7 +236,6 @@ public class SecurityProperties {
         private int captchaCodeCount = 4;
 
         private int captchaNumberLength = 1;
-
     }
 
     /**
@@ -260,7 +256,6 @@ public class SecurityProperties {
      */
     @NestedConfigurationProperty
     SmsLogin sms = new SmsLogin();
-
 
     @Setter
     @Getter

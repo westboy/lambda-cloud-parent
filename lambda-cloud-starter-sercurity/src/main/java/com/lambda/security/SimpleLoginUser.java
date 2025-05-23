@@ -2,13 +2,16 @@ package com.lambda.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.principal.LoginUser;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.Set;
-
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP"},
+        justification = "springboot properties")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,6 +32,7 @@ public class SimpleLoginUser implements LoginUser {
     private Set<String> roles = Set.of();
 
     private Set<String> permissions = Set.of();
+
     @JsonIgnore
     @Override
     public String getCredentials() {

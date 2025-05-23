@@ -1,9 +1,11 @@
 package com.lambda.cloud.core.exception.model;
 
+import java.io.Serializable;
+
 /**
  * @author Jin
  */
-public interface ErrorCode {
+public interface ErrorCode extends Serializable {
 
     /**
      * 获取错误码

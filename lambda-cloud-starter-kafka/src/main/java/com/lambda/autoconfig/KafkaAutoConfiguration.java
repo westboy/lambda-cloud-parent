@@ -1,10 +1,13 @@
 package com.lambda.autoconfig;
 
+import static com.lambda.cloud.kafka.Template.JSON_PRODUCER_FACTORY;
+import static com.lambda.cloud.kafka.Template.OBJECT_PRODUCER_FACTORY;
 
-import com.lambda.cloud.core.jackson.mapper.DefaultObjectMapper;
+import com.lambda.cloud.core.jackson.mapper.LambdaObjectMapper;
 import com.lambda.cloud.kafka.Template;
 import com.lambda.cloud.kafka.delayqueue.DelayKafkaTemplate;
 import com.lambda.cloud.kafka.producer.internals.DefaultPartitioner;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -31,11 +34,6 @@ import org.springframework.kafka.support.LoggingProducerListener;
 import org.springframework.kafka.support.converter.BatchMessagingMessageConverter;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-
-import java.util.Map;
-
-import static com.lambda.cloud.kafka.Template.JSON_PRODUCER_FACTORY;
-import static com.lambda.cloud.kafka.Template.OBJECT_PRODUCER_FACTORY;
 
 /**
  * @author jin
@@ -68,8 +66,8 @@ public class KafkaAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DefaultObjectMapper objectMapper() {
-        return new DefaultObjectMapper();
+    public LambdaObjectMapper objectMapper() {
+        return new LambdaObjectMapper();
     }
 
     @Bean
@@ -90,7 +88,6 @@ public class KafkaAutoConfiguration {
         return template;
     }
 
-
     @Bean(name = JSON_PRODUCER_FACTORY)
     public ProducerFactory<String, Object> jsonProducerFactory() {
         Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
@@ -110,7 +107,7 @@ public class KafkaAutoConfiguration {
     }
 
     @Bean(name = OBJECT_PRODUCER_FACTORY)
-    public ProducerFactory<String, Object> objectProducerFactory(DefaultObjectMapper objectMapper) {
+    public ProducerFactory<String, Object> objectProducerFactory(LambdaObjectMapper objectMapper) {
         Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
         producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class);
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -118,20 +115,18 @@ public class KafkaAutoConfiguration {
 
         StringSerializer keySerializer = new StringSerializer();
         JsonSerializer<Object> valueSerializer = new JsonSerializer<>(objectMapper);
-        return new DefaultKafkaProducerFactory<>(producerProperties,
-                keySerializer, valueSerializer);
+        return new DefaultKafkaProducerFactory<>(producerProperties, keySerializer, valueSerializer);
     }
 
     @Bean(name = Template.OBJECT)
-    public KafkaTemplate<?, ?> objectKafkaTemplate(DefaultObjectMapper objectMapper,
-                                                   @Qualifier(OBJECT_PRODUCER_FACTORY) ProducerFactory<String,
-                                                           Object> objectProducerFactory) {
+    public KafkaTemplate<?, ?> objectKafkaTemplate(
+            LambdaObjectMapper objectMapper,
+            @Qualifier(OBJECT_PRODUCER_FACTORY) ProducerFactory<String, Object> objectProducerFactory) {
         KafkaTemplate<String, Object> template = new KafkaTemplate<>(objectProducerFactory);
         template.setProducerListener(new LoggingProducerListener<>());
         template.setMessageConverter(new StringJsonMessageConverter(objectMapper));
         return template;
     }
-
 
     @Bean
     @Primary
@@ -174,7 +169,8 @@ public class KafkaAutoConfiguration {
     @Bean(name = "objectContainerFactory")
     public KafkaListenerContainerFactory<?> objectContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
-            ConsumerFactory<Object, Object> kafkaConsumerFactory, DefaultObjectMapper objectMapper) {
+            ConsumerFactory<Object, Object> kafkaConsumerFactory,
+            LambdaObjectMapper objectMapper) {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
@@ -189,20 +185,21 @@ public class KafkaAutoConfiguration {
     @Bean(name = "batchObjectContainerFactory")
     public KafkaListenerContainerFactory<?> batchObjectContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
-            ConsumerFactory<Object, Object> kafkaConsumerFactory, DefaultObjectMapper objectMapper) {
+            ConsumerFactory<Object, Object> kafkaConsumerFactory,
+            LambdaObjectMapper objectMapper) {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setConsumerFactory(kafkaConsumerFactory);
         factory.setBatchListener(true);
-        factory.setBatchMessageConverter(new BatchMessagingMessageConverter(new StringJsonMessageConverter(objectMapper)));
+        factory.setBatchMessageConverter(
+                new BatchMessagingMessageConverter(new StringJsonMessageConverter(objectMapper)));
         return factory;
     }
 
-
-
     @Bean(name = Template.DELAY)
-    public DelayKafkaTemplate delaykafkaTemplate(@Qualifier(Template.STRING) KafkaTemplate<String, String> kafkaTemplate) {
+    public DelayKafkaTemplate delaykafkaTemplate(
+            @Qualifier(Template.STRING) KafkaTemplate<String, String> kafkaTemplate) {
         return new DelayKafkaTemplate(kafkaTemplate);
     }
 }

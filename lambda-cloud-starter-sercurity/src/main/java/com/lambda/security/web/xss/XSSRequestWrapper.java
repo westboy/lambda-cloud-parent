@@ -1,15 +1,6 @@
 package com.lambda.security.web.xss;
 
-import com.lambda.cloud.web.DefaultServletInputStream;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Safelist;
-import org.owasp.esapi.ESAPI;
-import org.owasp.esapi.errors.IntrusionException;
-
+import com.lambda.cloud.web.LambdaServletInputStream;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
@@ -18,6 +9,14 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
+import org.owasp.esapi.ESAPI;
+import org.owasp.esapi.errors.IntrusionException;
 
 /**
  * XSSRequestWrapper
@@ -49,7 +48,6 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
         return encode(value);
     }
 
-
     @Override
     public Enumeration<String> getHeaders(String name) {
         List<String> result = new ArrayList<>();
@@ -64,7 +62,6 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
         return Collections.enumeration(result);
     }
 
-
     @Override
     public BufferedReader getReader() throws IOException {
         String body = IOUtils.toString(super.getReader());
@@ -74,7 +71,7 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public ServletInputStream getInputStream() throws IOException {
         String body = IOUtils.toString(super.getInputStream(), StandardCharsets.UTF_8);
-        return new DefaultServletInputStream(encode(body));
+        return new LambdaServletInputStream(encode(body));
     }
 
     public String encode(String value) {
@@ -85,10 +82,10 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
             value = ESAPI.encoder().canonicalize(value).replace("\0", StringUtils.EMPTY);
             return Jsoup.clean(value, Safelist.none());
         } catch (IntrusionException e) {
-            log.info("If you are sure to trust the request, add the following:\nspring:\n  security:\n    xss-protected:\n      trusted: {}", this.getRequestURI());
+            log.info(
+                    "If you are sure to trust the request, add the following:\nspring:\n  security:\n    xss-protected:\n      trusted: {}",
+                    this.getRequestURI());
             return StringUtils.EMPTY;
         }
     }
-
-
 }

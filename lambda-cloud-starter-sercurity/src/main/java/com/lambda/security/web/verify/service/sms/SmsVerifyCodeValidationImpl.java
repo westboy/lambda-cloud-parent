@@ -1,6 +1,5 @@
 package com.lambda.security.web.verify.service.sms;
 
-
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
@@ -11,16 +10,16 @@ import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.web.verify.service.VerifyCodeService;
 import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
 import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
-
-import java.io.IOException;
 
 /**
  * 图形验证码校验过滤器
@@ -32,14 +31,16 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
     private final AntPathMatcher matcher = new AntPathMatcher();
     private final SecurityProperties securityProperties;
     private final SmsVerifyCodeStore<String> smsVerifyCodeStore;
+
     @Setter
     private String loginModeParameter = "loginMode";
 
-    public SmsVerifyCodeValidationImpl(SecurityProperties securityProperties, SmsVerifyCodeStore<String> smsVerifyCodeStore) {
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "this is thread safe")
+    public SmsVerifyCodeValidationImpl(
+            SecurityProperties securityProperties, SmsVerifyCodeStore<String> smsVerifyCodeStore) {
         this.securityProperties = securityProperties;
         this.smsVerifyCodeStore = smsVerifyCodeStore;
     }
-
 
     @Override
     public boolean support(HttpServletRequest request) {
@@ -50,7 +51,9 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
     }
 
     @Override
-    public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws ServletException, IOException {
+    public void execute(
+            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain)
+            throws ServletException, IOException {
         LambdaHttpServletRequestWrapper httpServletRequestWrapper = getRequestWrapper(httpServletRequest);
         JSONObject requestParam = getRequestParam(httpServletRequestWrapper);
         if (MapUtils.isEmpty(requestParam)) {

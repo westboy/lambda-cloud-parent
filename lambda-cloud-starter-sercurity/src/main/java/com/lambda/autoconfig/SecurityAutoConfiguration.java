@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.mvc.WebHttpUtils;
+import com.lambda.cloud.redis.helper.RedisHelper;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.encoder.StandardPasswordEncoder;
@@ -40,7 +41,9 @@ import com.lambda.security.web.verify.service.sms.SmsVerifyCodeValidationImpl;
 import com.lambda.security.web.verify.service.sms.store.RedisSmsVerifyCodeStore;
 import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -58,9 +61,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.List;
-
 
 /**
  * Sa-Token 配置类
@@ -83,6 +83,9 @@ public class SecurityAutoConfiguration {
         return new XSSDefendFilter(xssProtected.trusted);
     }
 
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP2"},
+            justification = "springboot properties")
     @Configuration
     public static class SaTokenConfiguration {
 
@@ -116,9 +119,7 @@ public class SecurityAutoConfiguration {
                 @Override
                 public void addInterceptors(InterceptorRegistry interceptorRegistry) {
                     interceptorRegistry
-                            .addInterceptor(
-                                    new SaInterceptor(secureInterceptor)
-                                            .isAnnotation(enableMethodAnnotation))
+                            .addInterceptor(new SaInterceptor(secureInterceptor).isAnnotation(enableMethodAnnotation))
                             .addPathPatterns("/**")
                             .excludePathPatterns(allIgnoreList);
                 }
@@ -130,8 +131,9 @@ public class SecurityAutoConfiguration {
         public SaServletFilter getSaServletFilter() {
             return new SaServletFilter()
                     .addInclude("/**")
-                    .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
-                    .setAuth(_ -> {
+                    .addExclude(
+                            securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
+                    .setAuth(e -> {
                         HttpServletRequest currentRequest = WebHttpUtils.getCurrentRequest();
                         boolean hmacRequest = WebHttpUtils.isHmacRequest(currentRequest);
                         if (!hmacRequest) {
@@ -149,6 +151,9 @@ public class SecurityAutoConfiguration {
         }
     }
 
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP2"},
+            justification = "springboot properties")
     @Configuration
     @ConditionalOnExpression("${lambda.security.form.enabled:false} || ${lambda.security.sms.enabled:false}")
     public static class VerifyConfiguration {
@@ -160,8 +165,10 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public CaptchaStore redisCaptchaStore() {
-            return new RedisCaptchaStore();
+        public CaptchaStore redisCaptchaStore(RedisHelper redisHelper) {
+            RedisCaptchaStore redisCaptchaStore = new RedisCaptchaStore();
+            redisCaptchaStore.setRedisHelper(redisHelper);
+            return redisCaptchaStore;
         }
 
         @Bean
@@ -175,7 +182,8 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(List<VerifyCodeService> verifyCodeServices, ObjectMapper objectMapper) {
+        public FilterRegistrationBean<VerifyCodeFilter> verifyCodeFilter(
+                List<VerifyCodeService> verifyCodeServices, ObjectMapper objectMapper) {
             FilterRegistrationBean<VerifyCodeFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             VerifyCodeFilter verifyCodeFilter = new VerifyCodeFilter(verifyCodeServices);
             verifyCodeFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
@@ -186,6 +194,9 @@ public class SecurityAutoConfiguration {
         }
     }
 
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP2"},
+            justification = "springboot properties")
     @Configuration
     @ConditionalOnProperty(prefix = "lambda.security.sms", name = "enabled")
     public static class SmsConfiguration {
@@ -199,12 +210,12 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean<SmsAuthenticationProcessingFilter> smsAuthenticationProcessingFilter(
-                ObjectMapper objectMapper,
-                @Autowired(required = false) UserDetailService userDetailService
-        ) {
+                ObjectMapper objectMapper, @Autowired(required = false) UserDetailService userDetailService) {
             Assert.notNull(userDetailService, "userDetailService must not be null");
-            FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(securityProperties.getSms().getLoginPath());
+            FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean =
+                    new FilterRegistrationBean<>();
+            SmsAuthenticationProcessingFilter processingFilter = new SmsAuthenticationProcessingFilter(
+                    securityProperties.getSms().getLoginPath());
             processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             processingFilter.setUserDetailService(userDetailService);
@@ -220,13 +231,15 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public VerifyCodeService smsVerifyCodeGenerate(ObjectMapper objectMapper,
-                                                       SmsVerifyCodeStore<String> smsVerifyCodeStore,
-                                                       SmsMessageSender smsMessageSender,
-                                                       CaptchaStore redisCaptchaStore,
-                                                       @Autowired(required = false) UserDetailService userDetailService) {
+        public VerifyCodeService smsVerifyCodeGenerate(
+                ObjectMapper objectMapper,
+                SmsVerifyCodeStore<String> smsVerifyCodeStore,
+                SmsMessageSender smsMessageSender,
+                CaptchaStore redisCaptchaStore,
+                @Autowired(required = false) UserDetailService userDetailService) {
             Assert.notNull(userDetailService, "userDetailService must not be null");
-            SmsVerifyCodeGenerateImpl smsVerifyCodeGenerate = new SmsVerifyCodeGenerateImpl(securityProperties, objectMapper, smsVerifyCodeStore);
+            SmsVerifyCodeGenerateImpl smsVerifyCodeGenerate =
+                    new SmsVerifyCodeGenerateImpl(securityProperties, objectMapper, smsVerifyCodeStore);
             smsVerifyCodeGenerate.setUserDetailService(userDetailService);
             smsVerifyCodeGenerate.setSmsMessageSender(smsMessageSender);
             smsVerifyCodeGenerate.setCaptchaStore(redisCaptchaStore);
@@ -237,9 +250,11 @@ public class SecurityAutoConfiguration {
         public VerifyCodeService smsVerifyCodeValidation(SmsVerifyCodeStore<String> smsVerifyCodeStore) {
             return new SmsVerifyCodeValidationImpl(securityProperties, smsVerifyCodeStore);
         }
-
     }
 
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP2"},
+            justification = "springboot properties")
     @Configuration
     @ConditionalOnProperty(prefix = "lambda.security.hmac", name = "enabled")
     public static class HmacConfiguration {
@@ -259,11 +274,11 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
-                ObjectMapper objectMapper,
-                @Autowired(required = false) HmacClientService hmacClientService
-        ) {
-            FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            HmacAuthenticationProcessingFilter processingFilter = new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
+                ObjectMapper objectMapper, @Autowired(required = false) HmacClientService hmacClientService) {
+            FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean =
+                    new FilterRegistrationBean<>();
+            HmacAuthenticationProcessingFilter processingFilter =
+                    new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
             processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             filterRegistrationBean.setFilter(processingFilter);
@@ -271,9 +286,11 @@ public class SecurityAutoConfiguration {
             filterRegistrationBean.setOrder(30);
             return filterRegistrationBean;
         }
-
     }
 
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP2"},
+            justification = "springboot properties")
     @Configuration
     @ConditionalOnProperty(prefix = "lambda.security.form", name = "enabled")
     public static class FormConfiguration {
@@ -288,8 +305,13 @@ public class SecurityAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         public SecurityLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
-            SecurityProperties.Form.LockStrategy lockStrategy = securityProperties.getForm().getLockStrategy();
-            return new RedisLockingStrategy(lockStrategy.getFailureMaxTimes(), lockStrategy.getDuration(), lockStrategy.getTimeUnit(), stringRedisTemplate);
+            SecurityProperties.Form.LockStrategy lockStrategy =
+                    securityProperties.getForm().getLockStrategy();
+            return new RedisLockingStrategy(
+                    lockStrategy.getFailureMaxTimes(),
+                    lockStrategy.getDuration(),
+                    lockStrategy.getTimeUnit(),
+                    stringRedisTemplate);
         }
 
         @Bean
@@ -299,13 +321,15 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public FilterRegistrationBean<FormAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(SecurityLockingStrategy securityLockingStrategy,
-                                                                                                                ObjectMapper objectMapper,
-                                                                                                                PasswordEncoder passwordEncoder,
-                                                                                                                @Autowired(required = false) UserDetailService userDetailService
-        ) {
-            FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            FormAuthenticationProcessingFilter processingFilter = new FormAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
+        public FilterRegistrationBean<FormAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(
+                SecurityLockingStrategy securityLockingStrategy,
+                ObjectMapper objectMapper,
+                PasswordEncoder passwordEncoder,
+                @Autowired(required = false) UserDetailService userDetailService) {
+            FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean =
+                    new FilterRegistrationBean<>();
+            FormAuthenticationProcessingFilter processingFilter =
+                    new FormAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
             processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
             processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
@@ -329,15 +353,15 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(LogoutHandler formLogoutHandler, LogoutSuccessHandler formLogoutSuccessHandler) {
+        public FilterRegistrationBean<FormLogoutFilter> defaultLogoutFilter(
+                LogoutHandler formLogoutHandler, LogoutSuccessHandler formLogoutSuccessHandler) {
             FilterRegistrationBean<FormLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(securityProperties.getForm().getLoginProcessingUrl(), formLogoutSuccessHandler, formLogoutHandler);
+            FormLogoutFilter formLogoutFilter = new FormLogoutFilter(
+                    securityProperties.getForm().getLoginProcessingUrl(), formLogoutSuccessHandler, formLogoutHandler);
             filterRegistrationBean.setFilter(formLogoutFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(40);
             return filterRegistrationBean;
         }
-
     }
-
 }

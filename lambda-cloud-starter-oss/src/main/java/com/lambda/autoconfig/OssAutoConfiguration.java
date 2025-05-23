@@ -2,12 +2,12 @@ package com.lambda.autoconfig;
 
 import com.lambda.cloud.oss.client.OssClient;
 import com.lambda.cloud.oss.manager.OssClientManager;
+import com.lambda.cloud.redis.helper.RedisHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 
 /**
  * OssAutoConfiguration
@@ -27,10 +27,11 @@ public class OssAutoConfiguration {
     }
 
     @Bean
-    public OssClientManager getOssClientManager() {
+    public OssClientManager getOssClientManager(@Autowired(required = false) RedisHelper redisHelper) {
         OssClientManager ossClientManager = new OssClientManager();
         for (OssProperties.Config config : ossProperties.getConfigs()) {
             OssClient ossClient = new OssClient(config);
+            ossClient.setRedisHelper(redisHelper);
             ossClient.createBucket();
             ossClientManager.set(config.getName(), ossClient);
         }

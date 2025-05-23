@@ -1,4 +1,4 @@
-package com.lambda.cloud.sms.produce;
+package com.lambda.cloud.sms.sender;
 
 import cn.hutool.core.util.IdUtil;
 import com.aliyuncs.CommonRequest;
@@ -15,13 +15,13 @@ import com.lambda.autoconfig.SmsProperties;
 import com.lambda.cloud.sms.SmsISP;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.cloud.sms.model.SmsSendResult;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.lang.reflect.Type;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-
-import java.lang.reflect.Type;
-import java.util.Map;
 
 /**
  * 阿里短信业务
@@ -30,6 +30,7 @@ import java.util.Map;
  */
 @Slf4j
 @RequiredArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
 public class AliYunSmsMessageSender implements SmsMessageSender, InitializingBean {
 
     private static final String OK = "OK";
@@ -42,7 +43,6 @@ public class AliYunSmsMessageSender implements SmsMessageSender, InitializingBea
     private final SmsProperties properties;
 
     private IAcsClient client;
-
 
     @Override
     public SmsSendResult sendVerifyCode(String phone, String code, int expire) {
@@ -65,8 +65,10 @@ public class AliYunSmsMessageSender implements SmsMessageSender, InitializingBea
     @Override
     public void afterPropertiesSet() {
         log.info("初始化阿里云短信服务：{}", properties.getAliyun());
-        DefaultProfile profile = DefaultProfile.getProfile(properties.getAliyun().getRegionId(),
-                properties.getAliyun().getAccessKeyId(), properties.getAliyun().getAccessKeySecret());
+        DefaultProfile profile = DefaultProfile.getProfile(
+                properties.getAliyun().getRegionId(),
+                properties.getAliyun().getAccessKeyId(),
+                properties.getAliyun().getAccessKeySecret());
         client = new DefaultAcsClient(profile);
     }
 
@@ -104,6 +106,5 @@ public class AliYunSmsMessageSender implements SmsMessageSender, InitializingBea
         }
     }
 
-    private static class MapTypeToken extends TypeToken<Map<String, String>> {
-    }
+    private static class MapTypeToken extends TypeToken<Map<String, String>> {}
 }

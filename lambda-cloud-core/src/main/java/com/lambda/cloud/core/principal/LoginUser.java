@@ -12,37 +12,35 @@ public interface LoginUser extends Principal {
     /**
      * username
      *
-     * @return
+     * @return String
      */
     String getUsername();
 
     /**
      * password
      *
-     * @return
+     * @return String
      */
-
     String getCredentials();
 
     /**
      * orgId
      *
-     * @return
+     * @return String
      */
     String getOrgId();
 
     /**
      * AccountLocked
      *
-     * @return
+     * @return Boolean
      */
     Boolean getAccountLocked();
 
     /**
      * AccountExpired
      *
-     * @return
+     * @return Boolean
      */
     Boolean getAccountExpired();
-
 }

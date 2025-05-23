@@ -1,6 +1,7 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.websocket.ChannelStoreMode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,13 +11,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author jpjoo
  */
 @Data
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "springboot properties class")
 @ConfigurationProperties(prefix = "lambda.websocket")
 public class WebsocketProperties {
 
     /**
      * 用户会话存储模式
      */
-    ChannelStoreMode channelStoreMode = ChannelStoreMode.DEFAULT;
+    private ChannelStoreMode channelStoreMode = ChannelStoreMode.DEFAULT;
     /**
      * 是否开启WebSocket
      */
@@ -24,7 +26,7 @@ public class WebsocketProperties {
     /**
      * 固定前缀
      */
-    private  String appPrefix = "/app";
+    private String appPrefix = "/app";
     /**
      * *用户主题前缀
      */
@@ -32,7 +34,7 @@ public class WebsocketProperties {
     /**
      * *主题前缀
      */
-    private  String topicPrefix = "/topic/";
+    private String topicPrefix = "/topic/";
     /**
      * *websocket端点
      */

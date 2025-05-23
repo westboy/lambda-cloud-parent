@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,6 +13,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
  */
 @Getter
 @Setter
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "springboot properties class")
 @ConfigurationProperties(prefix = "lambda.logging")
 public class LoggingProperties {
 
@@ -27,6 +29,7 @@ public class LoggingProperties {
     @Setter
     @Getter
     public static class Operation {
+
         @NestedConfigurationProperty
         Kafka kafka = new Kafka();
 

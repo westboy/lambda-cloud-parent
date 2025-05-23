@@ -1,4 +1,4 @@
-package com.lambda.cloud.sms.produce;
+package com.lambda.cloud.sms.sender;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.IdUtil;
@@ -11,13 +11,13 @@ import com.lambda.autoconfig.SmsProperties;
 import com.lambda.cloud.sms.SmsISP;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.cloud.sms.model.SmsSendResult;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * 腾讯短信业务
@@ -25,6 +25,7 @@ import java.util.List;
  * @author Jin
  */
 @Slf4j
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
 @RequiredArgsConstructor
 public class TencentSmsMessageSender implements SmsMessageSender, InitializingBean {
 
@@ -61,7 +62,8 @@ public class TencentSmsMessageSender implements SmsMessageSender, InitializingBe
     @Override
     public void afterPropertiesSet() {
         log.info("初始化腾讯短信服务：{}", properties.getTencent());
-        smsSingleSender = new SmsSingleSender(properties.getTencent().getAppId(), properties.getTencent().getAppKey());
+        smsSingleSender = new SmsSingleSender(
+                properties.getTencent().getAppId(), properties.getTencent().getAppKey());
     }
 
     private SmsSendResult toSendTencentMessage(String phone, int templateId, String[] params) {
@@ -69,8 +71,14 @@ public class TencentSmsMessageSender implements SmsMessageSender, InitializingBe
         try {
             response = new SmsSendResult();
             response.setId(IdUtil.fastSimpleUUID());
-            SmsSingleSenderResult result = smsSingleSender.sendWithParam(properties.getTencent().getNationCode(), phone,
-                    templateId, params, properties.getTencent().getSmsSign(), "", "");
+            SmsSingleSenderResult result = smsSingleSender.sendWithParam(
+                    properties.getTencent().getNationCode(),
+                    phone,
+                    templateId,
+                    params,
+                    properties.getTencent().getSmsSign(),
+                    "",
+                    "");
             response.setBizId(result.sid);
             response.setMessage(result.errMsg);
             if (result.result == OK) {
@@ -84,6 +92,5 @@ public class TencentSmsMessageSender implements SmsMessageSender, InitializingBe
         }
     }
 
-    private static class ListTypeToken extends TypeToken<List<String>> {
-    }
+    private static class ListTypeToken extends TypeToken<List<String>> {}
 }

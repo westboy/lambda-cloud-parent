@@ -2,21 +2,20 @@ package com.lambda.security.web.verify;
 
 import com.lambda.security.handler.AuthenticationFailureHandler;
 import com.lambda.security.web.verify.service.VerifyCodeService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * @author Jin
@@ -27,6 +26,7 @@ public class VerifyCodeFilter extends GenericFilterBean implements InitializingB
 
     private AuthenticationFailureHandler failureHandler;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "VerifyCodeFilter is thread safe")
     public VerifyCodeFilter(List<VerifyCodeService> verifyCodeServices) {
         if (CollectionUtils.isEmpty(verifyCodeServices)) {
             this.verifyCodeServices = new ArrayList<>();
@@ -41,7 +41,8 @@ public class VerifyCodeFilter extends GenericFilterBean implements InitializingB
     }
 
     @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         try {
@@ -57,6 +58,4 @@ public class VerifyCodeFilter extends GenericFilterBean implements InitializingB
         }
         chain.doFilter(request, response);
     }
-
-
 }

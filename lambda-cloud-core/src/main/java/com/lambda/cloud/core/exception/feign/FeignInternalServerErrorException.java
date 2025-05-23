@@ -6,16 +6,14 @@ import com.lambda.cloud.core.exception.model.ErrorModel;
  *
  * @author Jin
  */
-@SuppressWarnings("serial")
 public class FeignInternalServerErrorException extends AbstractFeignException {
 
-	public FeignInternalServerErrorException(ErrorModel model) {
-		super(model);
-	}
+    public FeignInternalServerErrorException(ErrorModel model) {
+        super(model);
+    }
 
-	@Override
-	public int getStatus() {
-		return 500;
-	}
-
+    @Override
+    public int getStatus() {
+        return 500;
+    }
 }

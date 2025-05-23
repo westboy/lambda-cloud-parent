@@ -13,6 +13,7 @@ import com.lambda.cloud.websocket.repository.RedisWebSocketChannelRepository;
 import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,8 +29,6 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-
-import java.util.List;
 
 /**
  * WebSocketAutoConfiguration
@@ -51,7 +50,7 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     @Bean
     @ConditionalOnMissingBean
     public WebSocketChannelRepository webSocketChannelRepository() {
-        if (websocketProperties.channelStoreMode.equals(ChannelStoreMode.REDIS)) {
+        if (websocketProperties.getChannelStoreMode().equals(ChannelStoreMode.REDIS)) {
             StringRedisTemplate template = SpringUtil.getBean(StringRedisTemplate.class);
             return new RedisWebSocketChannelRepository(template);
         }
@@ -97,14 +96,14 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
         return factory -> factory.addDeploymentInfoCustomizers(deploymentInfo -> {
             WebSocketDeploymentInfo webSocketDeploymentInfo = new WebSocketDeploymentInfo();
             webSocketDeploymentInfo.setBuffers(new DefaultByteBufferPool(false, 512));
-            deploymentInfo.addServletContextAttribute("io.undertow.websockets.jsr.WebSocketDeploymentInfo", webSocketDeploymentInfo);
+            deploymentInfo.addServletContextAttribute(
+                    "io.undertow.websockets.jsr.WebSocketDeploymentInfo", webSocketDeploymentInfo);
         });
-
     }
 
     @Bean
-    public WsEventHandler wsEventHandler(List<WsConnectEventService> connectEventServices, List<WsSubscribeEvent> subscribeEvents) {
+    public WsEventHandler wsEventHandler(
+            List<WsConnectEventService> connectEventServices, List<WsSubscribeEvent> subscribeEvents) {
         return new WsEventHandler(connectEventServices, subscribeEvents);
     }
-
 }

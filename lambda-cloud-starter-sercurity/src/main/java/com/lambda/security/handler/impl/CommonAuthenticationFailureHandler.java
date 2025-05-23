@@ -4,20 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.handler.AuthenticationFailureHandler;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-
-import java.io.IOException;
-import java.io.PrintWriter;
 
 /**
  * DefaultAuthenticationFailureHandler
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP2"},
+        justification = "springboot properties")
 @SuppressWarnings("all")
 public class CommonAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
@@ -28,7 +31,8 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
     }
 
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception) throws IOException {
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception)
+            throws IOException {
         if (WebHttpUtils.isAjaxRequest(request)) {
             try (PrintWriter writer = response.getWriter()) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());

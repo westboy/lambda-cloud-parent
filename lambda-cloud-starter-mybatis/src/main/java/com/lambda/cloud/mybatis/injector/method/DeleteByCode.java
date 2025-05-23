@@ -32,8 +32,8 @@ public class DeleteByCode extends AbstractMethod implements CurdByCode {
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
         String sql;
-        final String logicDeleteSql = "<script>\nUPDATE %s %s WHERE %s %s \n</script>";
-        final String deleteSql = "<script>\nDELETE FROM %s WHERE %s \n</script>";
+        final String logicDeleteSql = "<script>\n UPDATE %s %s WHERE %s %s \n</script>";
+        final String deleteSql = "<script>\n DELETE FROM %s WHERE %s \n</script>";
         if (tableInfo.isWithLogicDelete()) {
             sql = String.format(logicDeleteSql, tableInfo.getTableName(), sqlLogicSet(tableInfo),
                     this.codeSql(codeField),

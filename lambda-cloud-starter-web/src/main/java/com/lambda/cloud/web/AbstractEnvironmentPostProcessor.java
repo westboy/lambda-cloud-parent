@@ -12,9 +12,10 @@ import org.springframework.lang.NonNull;
 /**
  * @author w
  */
-public abstract class AbstractEnvironmentPostProcessor implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+public abstract class AbstractEnvironmentPostProcessor
+        implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
-    protected static DeferredLog log = new DeferredLog();
+    protected static final DeferredLog log = new DeferredLog();
 
     /**
      * postProcessEnvironment
@@ -36,8 +37,7 @@ public abstract class AbstractEnvironmentPostProcessor implements EnvironmentPos
      */
     @Override
     public void onApplicationEvent(@NonNull ApplicationEnvironmentPreparedEvent event) {
-        if (event.getSource() instanceof SpringApplication) {
-            SpringApplication application = (SpringApplication) event.getSource();
+        if (event.getSource() instanceof SpringApplication application) {
             if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
                 log.replayTo(application.getMainApplicationClass());
             }

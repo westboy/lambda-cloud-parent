@@ -1,8 +1,9 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.core.jackson.mapper.DefaultObjectMapper;
-import com.lambda.cloud.redis.customize.CustomizableConnectionConfiguration;
+import com.lambda.cloud.core.jackson.mapper.LambdaObjectMapper;
+import com.lambda.cloud.redis.RedisConnectionConfiguration;
 import com.lambda.cloud.redis.customize.RedissonConfigurationCustomizer;
+import com.lambda.cloud.redis.helper.RedisHelper;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.ReadFrom;
 import io.lettuce.core.SocketOptions;
@@ -16,6 +17,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.redisson.Redisson;
@@ -41,16 +45,12 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Jin
  */
 @Slf4j
 @Configuration
-@Import({CustomizableConnectionConfiguration.class})
+@Import({RedisConnectionConfiguration.class})
 @EnableConfigurationProperties({RedissonProperties.class, RedisProperties.class, RedisExtendProperties.class})
 public class RedisAutoConfiguration {
 
@@ -76,8 +76,13 @@ public class RedisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DefaultObjectMapper objectMapper() {
-        return new DefaultObjectMapper();
+    public LambdaObjectMapper objectMapper() {
+        return new LambdaObjectMapper();
+    }
+
+    @Bean
+    public RedisHelper redisHelper(RedisTemplate<String, Object> redisTemplate) {
+        return new RedisHelper(redisTemplate);
     }
 
     @Bean
@@ -87,22 +92,18 @@ public class RedisAutoConfiguration {
             // Enabled keep alive
             log.info("Enable keepAlive, channel : {}", Transports.socketChannelClass());
             clientConfigurationBuilder.readFrom(ReadFrom.MASTER);
-            KeepAliveOptions keepAliveOptions =
-                    NativeTransports.isDomainSocketSupported() ?
-                            KeepAliveOptions.builder()
-                                    .enable(true)
-                                    .idle(Duration.ofSeconds(15))
-                                    .count(3)
-                                    .interval(Duration.ofSeconds(5))
-                                    .build()
-                            :
-                            KeepAliveOptions.builder().build();
-            SocketOptions socketOptions = SocketOptions.builder()
-                    .keepAlive(keepAliveOptions)
-                    .build();
-            ClientOptions clientOptions = ClientOptions.builder()
-                    .socketOptions(socketOptions)
-                    .build();
+            KeepAliveOptions keepAliveOptions = NativeTransports.isDomainSocketSupported()
+                    ? KeepAliveOptions.builder()
+                            .enable(true)
+                            .idle(Duration.ofSeconds(15))
+                            .count(3)
+                            .interval(Duration.ofSeconds(5))
+                            .build()
+                    : KeepAliveOptions.builder().build();
+            SocketOptions socketOptions =
+                    SocketOptions.builder().keepAlive(keepAliveOptions).build();
+            ClientOptions clientOptions =
+                    ClientOptions.builder().socketOptions(socketOptions).build();
             clientConfigurationBuilder.clientOptions(clientOptions);
         };
     }
@@ -146,8 +147,8 @@ public class RedisAutoConfiguration {
     }
 
     @Bean(STRING_REDIS_TEMPLATE)
-    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory,
-                                                   DefaultObjectMapper objectMapper) {
+    public StringRedisTemplate stringRedisTemplate(
+            RedisConnectionFactory redisConnectionFactory, LambdaObjectMapper objectMapper) {
         RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(redisConnectionFactory);
@@ -159,8 +160,8 @@ public class RedisAutoConfiguration {
     }
 
     @Bean(POJO_REDIS_TEMPLATE)
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory,
-                                                       DefaultObjectMapper objectMapper) {
+    public RedisTemplate<String, Object> redisTemplate(
+            RedisConnectionFactory redisConnectionFactory, LambdaObjectMapper objectMapper) {
         RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -179,11 +180,12 @@ public class RedisAutoConfiguration {
         @Lazy
         @Bean(destroyMethod = "shutdown")
         @ConditionalOnMissingBean({RedissonClient.class})
-        public RedissonClient redisson(RedisProperties properties,
-                                       RedissonProperties redissonProperties,
-                                       RedisExtendProperties redisExtendProperties,
-                                       List<RedissonConfigurationCustomizer> redissonConfigurationCustomizers,
-                                       DefaultObjectMapper objectMapper) {
+        public RedissonClient redisson(
+                RedisProperties properties,
+                RedissonProperties redissonProperties,
+                RedisExtendProperties redisExtendProperties,
+                List<RedissonConfigurationCustomizer> redissonConfigurationCustomizers,
+                LambdaObjectMapper objectMapper) {
             Config config = new Config();
             config.setCodec(new JsonJacksonCodec(objectMapper));
             int timeout = getTimeout(properties.getTimeout());
@@ -269,8 +271,5 @@ public class RedisAutoConfiguration {
             }
             return nodes.toArray(new String[0]);
         }
-
     }
-
-
 }

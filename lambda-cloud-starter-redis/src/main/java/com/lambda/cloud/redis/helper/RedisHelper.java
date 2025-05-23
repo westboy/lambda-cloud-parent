@@ -1,41 +1,27 @@
-package com.lambda.cloud.redis.utils;
+package com.lambda.cloud.redis.helper;
 
-import cn.hutool.extra.spring.SpringUtil;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Redis工具类
+ *
+ * @author Jin
  */
 @SuppressWarnings("all")
-public class RedisUtils {
-    private static RedisUtils me = null;
-
-    public static RedisUtils me() {
-        if (me == null) {
-            synchronized (RedisUtils.class) {
-                RedisTemplate objectRedisTemplate = SpringUtil.getBean("redisTemplate",RedisTemplate.class);
-                assert objectRedisTemplate != null;
-                me = new RedisUtils(objectRedisTemplate);
-            }
-        }
-        return me;
-    }
+public final class RedisHelper {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public RedisUtils(RedisTemplate<String, Object> redisTemplate) {
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "RedisHelper is thread safe")
+    public RedisHelper(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
@@ -863,8 +849,7 @@ public class RedisUtils {
      * @return 新集合的长度
      */
     public Long sIntersectAndStore(String key, String otherKey, String destKey) {
-        return redisTemplate.opsForSet().intersectAndStore(key, otherKey,
-                destKey);
+        return redisTemplate.opsForSet().intersectAndStore(key, otherKey, destKey);
     }
 
     /**
@@ -876,8 +861,7 @@ public class RedisUtils {
      * @return 新集合的长度
      */
     public Long sIntersectAndStore(String key, Collection<String> otherKeys, String destKey) {
-        return redisTemplate.opsForSet().intersectAndStore(key, otherKeys,
-                destKey);
+        return redisTemplate.opsForSet().intersectAndStore(key, otherKeys, destKey);
     }
 
     /**
@@ -957,8 +941,7 @@ public class RedisUtils {
      * @return 新集合的长度
      */
     public Long sDifference(String key, String otherKey, String destKey) {
-        return redisTemplate.opsForSet().differenceAndStore(key, otherKey,
-                destKey);
+        return redisTemplate.opsForSet().differenceAndStore(key, otherKey, destKey);
     }
 
     /**
@@ -970,8 +953,7 @@ public class RedisUtils {
      * @return 新集合的长度
      */
     public Long sDifference(String key, Collection<String> otherKeys, String destKey) {
-        return redisTemplate.opsForSet().differenceAndStore(key, otherKeys,
-                destKey);
+        return redisTemplate.opsForSet().differenceAndStore(key, otherKeys, destKey);
     }
 
     /**
@@ -1339,7 +1321,7 @@ public class RedisUtils {
     /**
      * 迭代有序集合
      *
-     * @param key 有序集合
+     * @param key     有序集合
      * @param options 迭代限制条件, 为 ScanOptions.NONE 则无限制
      * @return 下一个元素及分数元组的游标
      */

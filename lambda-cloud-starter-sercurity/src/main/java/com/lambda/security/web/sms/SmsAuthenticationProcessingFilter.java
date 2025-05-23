@@ -1,6 +1,5 @@
 package com.lambda.security.web.sms;
 
-
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
@@ -10,11 +9,10 @@ import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import java.io.IOException;
 import java.util.Map;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * SmsAuthenticationProcessingFilter
@@ -24,7 +22,6 @@ import java.util.Map;
 @SuppressWarnings("all")
 public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    private String codeParameter = "code";
     private String mobileParameter = "mobile";
     private String loginTypeParameter = "loginType";
     private String deviceParameter = "loginDevice";
@@ -40,7 +37,8 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
     }
 
     @Override
-    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException, IOException, ServletException {
         if (!RequestMethod.POST.name().equals(request.getMethod())) {
             throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
         }

@@ -2,10 +2,10 @@ package com.lambda.cloud.core.principal;
 
 import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.stp.StpLogic;
-import lombok.Getter;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.function.Supplier;
+import lombok.Getter;
 
 /**
  * LoginType
@@ -14,7 +14,6 @@ import java.util.function.Supplier;
  */
 @Getter
 public enum LoginType {
-
 
     /**
      * 管理员
@@ -29,9 +28,9 @@ public enum LoginType {
     final String code;
 
     final String desc;
-    @Getter
-    final StpLogic stpLogic;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Sa-Token")
+    final StpLogic stpLogic;
 
     LoginType(String code, String desc, StpLogic stpLogic) {
         this.code = code;
@@ -39,9 +38,9 @@ public enum LoginType {
         this.stpLogic = stpLogic;
     }
 
-    public static LoginType get(String id) {
+    public static LoginType get(String loginType) {
         return Arrays.stream(LoginType.values())
-                .filter(loginModeEnum -> loginModeEnum.code.equals(id))
+                .filter(loginModeEnum -> loginModeEnum.code.equals(loginType))
                 .findFirst()
                 .orElseThrow((Supplier<RuntimeException>) () -> new SaTokenException("不支持的登陆类型"));
     }
@@ -54,9 +53,7 @@ public enum LoginType {
                 .orElseThrow(() -> new SaTokenException("无权访问，请重试！"));
     }
 
-    public static StpLogic getStpLogic(String id) {
-        return get(id).getStpLogic();
+    public static StpLogic getStpLogic(String loginType) {
+        return get(loginType).getStpLogic();
     }
-
-
 }

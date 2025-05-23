@@ -1,27 +1,25 @@
 package com.lambda.security.web.verify.service.captcha;
 
-
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
-import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.LoginMode;
+import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.web.verify.service.VerifyCodeService;
 import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.util.AntPathMatcher;
-
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.util.AntPathMatcher;
 
 /**
  * 图形验证码校验过滤器
@@ -35,23 +33,27 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
 
     private final CaptchaStore captchaStore;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "VerifyCodeFilter is thread safe")
     public CaptchaVerifyCodeValidationImpl(SecurityProperties securityProperties, CaptchaStore captchaStore) {
         this.securityProperties = securityProperties;
         this.captchaStore = captchaStore;
     }
 
-
     @Override
     public boolean support(HttpServletRequest request) {
-        final SecurityProperties.Verify verify = securityProperties.getVerify();
-        boolean captchaEnabled =securityProperties.getForm().isEnableVerify();
+        boolean captchaEnabled = securityProperties.getForm().isEnableVerify();
         boolean isPostMethod = JakartaServletUtil.isPostMethod(request);
-        return captchaEnabled && isPostMethod && matcher.match(securityProperties.getForm().getLoginProcessingUrl(), request.getRequestURI());
+        return captchaEnabled
+                && isPostMethod
+                && matcher.match(securityProperties.getForm().getLoginProcessingUrl(), request.getRequestURI());
     }
 
     @Override
-    public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws ServletException, IOException {
-        LambdaHttpServletRequestWrapper httpServletRequestWrapper = new LambdaHttpServletRequestWrapper(httpServletRequest);
+    public void execute(
+            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain)
+            throws ServletException, IOException {
+        LambdaHttpServletRequestWrapper httpServletRequestWrapper =
+                new LambdaHttpServletRequestWrapper(httpServletRequest);
         Map<String, Object> formRequest = WebHttpUtils.getFormRequest(httpServletRequestWrapper);
         JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(httpServletRequestWrapper);
         ajaxRequest.putAll(formRequest);
@@ -64,7 +66,8 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
             throw new VerifyCodeValidationException("登录模式不能为空!");
         }
 
-        if (!LoginMode.PWD.getCode().equals(loginMode)||!LoginMode.MAIL.getCode().equals(loginMode)) {
+        if (!LoginMode.PWD.getCode().equals(loginMode)
+                || !LoginMode.MAIL.getCode().equals(loginMode)) {
             chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }

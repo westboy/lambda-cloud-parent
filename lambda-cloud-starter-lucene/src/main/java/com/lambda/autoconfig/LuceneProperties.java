@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.lucene.analysis.Analyzer;
@@ -11,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Setter
 @Getter
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "springboot properties class")
 @ConfigurationProperties(prefix = "lambda.lucene")
 public class LuceneProperties {
     private String directory;

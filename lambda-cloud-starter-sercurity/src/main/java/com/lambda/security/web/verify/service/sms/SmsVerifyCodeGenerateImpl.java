@@ -15,12 +15,13 @@ import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.verify.service.VerifyCodeService;
 import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
 import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
-import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
 import com.lambda.security.web.verify.service.sms.model.SmsVerifyCodeResponse;
 import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -28,13 +29,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.AntPathMatcher;
 
-import java.io.IOException;
-
 /**
  * 图形校验码生成过滤器
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION")
 @Slf4j
 public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     private final AntPathMatcher matcher = new AntPathMatcher();
@@ -42,23 +42,29 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     private final ObjectMapper objectMapper;
     private final SmsVerifyCodeStore<String> smsVerifyCodeStore;
     private final SecurityProperties.SmsLogin smsLogin;
+
     @Setter
     private String loginTypeParameter = "loginType";
+
     @Setter
     private CaptchaStore captchaStore;
+
     @Setter
     private UserDetailService userDetailService;
+
     @Setter
     private SmsMessageSender smsMessageSender;
 
-
-    public SmsVerifyCodeGenerateImpl(SecurityProperties securityProperties, ObjectMapper objectMapper, SmsVerifyCodeStore<String> smsVerifyCodeStore) {
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "this is thread safe")
+    public SmsVerifyCodeGenerateImpl(
+            SecurityProperties securityProperties,
+            ObjectMapper objectMapper,
+            SmsVerifyCodeStore<String> smsVerifyCodeStore) {
         this.securityProperties = securityProperties;
         this.objectMapper = objectMapper;
         this.smsVerifyCodeStore = smsVerifyCodeStore;
         this.smsLogin = securityProperties.getSms();
     }
-
 
     @Override
     public boolean support(HttpServletRequest request) {
@@ -69,7 +75,9 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     }
 
     @Override
-    public void execute(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain) throws IOException {
+    public void execute(
+            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain)
+            throws IOException {
         try {
             LambdaHttpServletRequestWrapper httpServletRequestWrapper = getRequestWrapper(httpServletRequest);
             JSONObject requestParam = getRequestParam(httpServletRequestWrapper);
@@ -82,7 +90,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
 
             if (mobile == null) {
-                throw new IllegalArgumentException("the mobile is not exist");
+                throw new VerifyCodeValidationException("the mobile is not exist");
             }
 
             String loginType = requestParam.getStr(loginTypeParameter);
@@ -90,15 +98,15 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
 
             if (loginUser == null) {
-                throw new IllegalArgumentException("the mobile is not exist");
+                throw new VerifyCodeValidationException("the mobile is not exist");
             }
 
             if (loginUser.getAccountExpired() == null || loginUser.getAccountExpired()) {
-                throw new IllegalArgumentException("the account is expired");
+                throw new VerifyCodeValidationException("the account is expired");
             }
 
             if (!smsVerifyCodeStore.verifyReSend(mobile)) {
-                throw new IllegalArgumentException("the sms code request repeatedly");
+                throw new VerifyCodeValidationException("the sms code request repeatedly");
             }
 
             if (smsLogin.isEnableVerify()) {
@@ -119,7 +127,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             String code = smsVerifyCodeStore.generate(mobile);
             SmsSendResult smsSendResult = smsMessageSender.sendVerifyCode(mobile, code, smsLogin.getValidMinutes());
             if (smsSendResult == null || !smsSendResult.isSuccess()) {
-                throw new IllegalArgumentException("the sms code send failed");
+                throw new VerifyCodeValidationException("the sms code send failed");
             }
             SmsVerifyCodeResponse smsVerifyCodeResponse = new SmsVerifyCodeResponse();
             smsVerifyCodeResponse.setId(smsSendResult.getId());

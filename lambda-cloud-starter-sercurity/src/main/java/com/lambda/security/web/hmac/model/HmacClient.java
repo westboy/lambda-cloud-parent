@@ -2,22 +2,25 @@ package com.lambda.security.web.hmac.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.principal.LoginUser;
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * HmacClient
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP"},
+        justification = "springboot properties")
 @Getter
 @Setter
 public class HmacClient implements LoginUser {
@@ -30,14 +33,14 @@ public class HmacClient implements LoginUser {
     private boolean enabled;
     private String tenantId;
 
-    public HmacClient() {
-    }
+    public HmacClient() {}
 
     public HmacClient(String appid, String secret) {
         this.appid = appid;
         this.secret = secret;
         this.enabled = true;
-        this.expired = Date.from(LocalDate.of(9999, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        this.expired = Date.from(
+                LocalDate.of(9999, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     @Override
@@ -61,12 +64,12 @@ public class HmacClient implements LoginUser {
     public Boolean getAccountLocked() {
         return false;
     }
+
     @JsonIgnore
     @Override
     public Boolean getAccountExpired() {
         return false;
     }
-
 
     @JsonIgnore
     public Set<String> getWhitelist() {

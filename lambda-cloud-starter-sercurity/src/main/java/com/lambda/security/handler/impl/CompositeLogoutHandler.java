@@ -2,8 +2,8 @@ package com.lambda.security.handler.impl;
 
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
-
 import com.lambda.security.handler.LogoutHandler;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
@@ -14,6 +14,9 @@ import java.util.List;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP2"},
+        justification = "springboot properties")
 public final class CompositeLogoutHandler implements LogoutHandler {
     private final List<LogoutHandler> logoutHandlers;
 

@@ -1,6 +1,5 @@
 package com.lambda.cloud.oss.client;
 
-
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
@@ -18,20 +17,21 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import com.lambda.autoconfig.OssProperties;
 import com.lambda.cloud.core.exception.IllegalStateException;
+import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.oss.enums.AccessPolicyType;
 import com.lambda.cloud.oss.enums.OssType;
 import com.lambda.cloud.oss.enums.PolicyType;
 import com.lambda.cloud.oss.exception.OssException;
 import com.lambda.cloud.oss.model.UploadObjectResult;
 import com.lambda.cloud.oss.model.UploadPartTag;
-import com.lambda.cloud.redis.utils.RedisUtils;
-
+import com.lambda.cloud.redis.helper.RedisHelper;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Date;
+import lombok.Setter;
 
 /**
  * OssClient
@@ -43,6 +43,9 @@ public class OssClient {
     private final OssProperties.Config config;
 
     private final AmazonS3 client;
+
+    @Setter
+    private RedisHelper redisHelper;
 
     public OssClient(OssProperties.Config config) {
         this.config = config;
@@ -108,37 +111,41 @@ public class OssClient {
             PutObjectRequest putObjectRequest = new PutObjectRequest(config.getBucket(), dest, inputStream, metadata);
             putObjectRequest.setCannedAcl(getAccessPolicy().getAcl());
             client.putObject(putObjectRequest);
-            return UploadObjectResult.builder().url(config.getEndpoint() + "/" + dest).key(dest).build();
+            return UploadObjectResult.builder()
+                    .url(config.getEndpoint() + "/" + dest)
+                    .key(dest)
+                    .build();
         } catch (Exception e) {
             throw new OssException("文件上传异常！", e);
         }
-
     }
 
-    public void uploadPart(File file,String dest, int partNumber, int partTotalNumber) {
+    public void uploadPart(File file, String dest, int partNumber, int partTotalNumber) {
         uploadPart(file, "application/octet-stream", dest, partNumber, partTotalNumber);
     }
 
-    public void uploadPart(File file,String contentType, String dest, int partNumber, int partTotalNumber) {
+    public void uploadPart(File file, String contentType, String dest, int partNumber, int partTotalNumber) {
         try {
+            Assert.notNull(redisHelper, "RedisHelper 未注入！");
             String KEY = "s3-upload:part-" + dest + "-" + partTotalNumber;
-            if ((partNumber == 1) && RedisUtils.me().hasKey(KEY)) {
-                RedisUtils.me().delete(KEY);
+            if ((partNumber == 1) && redisHelper.hasKey(KEY)) {
+                redisHelper.delete(KEY);
             }
 
-            String uploadId = (String) RedisUtils.me().hGet(KEY, "uploadId");
+            String uploadId = (String) redisHelper.hGet(KEY, "uploadId");
 
             if (uploadId == null) {
-                InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(config.getBucket(), dest);
+                InitiateMultipartUploadRequest initRequest =
+                        new InitiateMultipartUploadRequest(config.getBucket(), dest);
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentType(contentType);
                 initRequest.withObjectMetadata(metadata);
                 InitiateMultipartUploadResult initResponse = client.initiateMultipartUpload(initRequest);
                 uploadId = initResponse.getUploadId();
-                RedisUtils.me().hPut(KEY, "uploadId", uploadId);
+                redisHelper.hPut(KEY, "uploadId", uploadId);
             }
 
-            String partETags = (String) RedisUtils.me().hGet(KEY, "partETags");
+            String partETags = (String) redisHelper.hGet(KEY, "partETags");
 
             UploadPartTag uploadPartTag;
 
@@ -161,12 +168,12 @@ public class OssClient {
             uploadPartTag.addPartETag(uploadResult.getPartETag());
 
             if (partNumber == partTotalNumber) {
-                CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(config.getBucket(), dest,
-                        uploadId, uploadPartTag.getPartETags());
+                CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(
+                        config.getBucket(), dest, uploadId, uploadPartTag.getPartETags());
                 client.completeMultipartUpload(compRequest);
-                RedisUtils.me().delete(KEY);
+                redisHelper.delete(KEY);
             } else {
-                RedisUtils.me().hPut(KEY, "partETags", JSONUtil.toJsonStr(uploadPartTag));
+                redisHelper.hPut(KEY, "partETags", JSONUtil.toJsonStr(uploadPartTag));
             }
 
         } catch (Exception e) {
@@ -182,7 +189,10 @@ public class OssClient {
         } catch (Exception e) {
             throw new OssException("上传文件失败！", e);
         }
-        return UploadObjectResult.builder().url(config.getEndpoint() + "/" + dest).key(dest).build();
+        return UploadObjectResult.builder()
+                .url(config.getEndpoint() + "/" + dest)
+                .key(dest)
+                .build();
     }
 
     public void delete(String dest) {
@@ -212,7 +222,6 @@ public class OssClient {
         }
     }
 
-
     /**
      * 获取私有URL链接
      *
@@ -220,10 +229,10 @@ public class OssClient {
      * @param second    授权时间
      */
     public String getPrivateUrl(String objectKey, Integer second) {
-        GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                new GeneratePresignedUrlRequest(config.getBucket(), objectKey)
-                        .withMethod(HttpMethod.GET)
-                        .withExpiration(new Date(System.currentTimeMillis() + 1000L * second));
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
+                        config.getBucket(), objectKey)
+                .withMethod(HttpMethod.GET)
+                .withExpiration(new Date(System.currentTimeMillis() + 1000L * second));
         URL url = client.generatePresignedUrl(generatePresignedUrlRequest);
         return url.toString();
     }
@@ -236,7 +245,6 @@ public class OssClient {
     public AccessPolicyType getAccessPolicy() {
         return AccessPolicyType.getByType(config.getAccessPolicy());
     }
-
 
     private static String getPolicy(String bucketName, PolicyType policyType) {
         StringBuilder builder = new StringBuilder();
@@ -252,17 +260,20 @@ public class OssClient {
         builder.append(bucketName);
         builder.append("\"\n},\n");
         if (policyType == PolicyType.READ) {
-            builder.append("{\n\"Action\": [\n\"s3:ListBucket\"\n],\n\"Effect\": \"Deny\",\n\"Principal\": \"*\",\n\"Resource\": \"arn:aws:s3:::");
+            builder.append(
+                    "{\n\"Action\": [\n\"s3:ListBucket\"\n],\n\"Effect\": \"Deny\",\n\"Principal\": \"*\",\n\"Resource\": \"arn:aws:s3:::");
             builder.append(bucketName);
             builder.append("\"\n},\n");
         }
         builder.append("{\n\"Action\": ");
         switch (policyType) {
             case WRITE:
-                builder.append("[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
+                builder.append(
+                        "[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
                 break;
             case READ_WRITE:
-                builder.append("[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:GetObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
+                builder.append(
+                        "[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:GetObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
                 break;
             default:
                 builder.append("\"s3:GetObject\",\n");
@@ -273,5 +284,4 @@ public class OssClient {
         builder.append("/*\"\n}\n],\n\"Version\": \"2012-10-17\"\n}\n");
         return builder.toString();
     }
-
 }

@@ -1,9 +1,9 @@
 package com.lambda.cloud.swagger.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 /**
  * @author w
@@ -24,6 +24,7 @@ public class Page<T> {
     @Schema(description = "总页数")
     private Integer pages;
 
+    @SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
     @Schema(description = "数据列表")
     private List<T> data;
 }

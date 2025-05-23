@@ -1,7 +1,14 @@
 package com.lambda.cloud.redis.delay;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lambda.cloud.core.exception.NotSupportedException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBlockingQueue;
 import org.redisson.api.RDelayedQueue;
@@ -11,13 +18,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author westboy
@@ -34,6 +34,7 @@ public class RedisDelayedQueueManager<T> implements CommandLineRunner, Initializ
     private RBlockingQueue<T> blockingFairQueue;
     private ScheduledExecutorService scheduler;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
     public RedisDelayedQueueManager(RedisDelayConfig config, RedisDelayedListener<T> listener) {
         this.config = config;
         this.listener = listener;
@@ -58,8 +59,10 @@ public class RedisDelayedQueueManager<T> implements CommandLineRunner, Initializ
 
     @Override
     public void run(String... args) {
-        scheduler = new ScheduledThreadPoolExecutor(1,
-                new ThreadFactoryBuilder().setNameFormat("lambda cloud delayed queue Job-%d")
+        scheduler = new ScheduledThreadPoolExecutor(
+                1,
+                new ThreadFactoryBuilder()
+                        .setNameFormat("lambda cloud delayed queue Job-%d")
                         .setDaemon(true)
                         .build());
         RedisDelayedWorker<T> worker = new RedisDelayedWorker<>(config, listener);

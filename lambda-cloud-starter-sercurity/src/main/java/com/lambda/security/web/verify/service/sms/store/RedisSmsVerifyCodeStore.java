@@ -1,17 +1,20 @@
 package com.lambda.security.web.verify.service.sms.store;
 
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lambda.autoconfig.SecurityProperties;
-import com.lambda.cloud.core.utils.StringUtils;
 import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.text.MessageFormat;
+import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 
-import java.text.MessageFormat;
-import java.util.concurrent.TimeUnit;
-
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP2"},
+        justification = "springboot properties")
 public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
     private final Gson gson = new Gson();
     private static final String PREFIX_KEY = "Authorization:login:smsVerify";
@@ -36,7 +39,9 @@ public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
     @Override
     public String generate(String key) {
         String code = Integer.toString(RandomUtil.randomInt(1000, 9999));
-        stringRedisTemplate.opsForValue().set(getCommonKey(key), gson.toJson(new SmsVerifyCode<>(code)), getPeriod(), TimeUnit.MINUTES);
+        stringRedisTemplate
+                .opsForValue()
+                .set(getCommonKey(key), gson.toJson(new SmsVerifyCode<>(code)), getPeriod(), TimeUnit.MINUTES);
         return code;
     }
 
@@ -53,7 +58,7 @@ public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
     @Override
     public SmsVerifyCode<String> get(String key) {
         String cache = stringRedisTemplate.opsForValue().get(getCommonKey(key));
-        if (StringUtils.isEmpty(cache)) {
+        if (StrUtil.isEmpty(cache)) {
             return null;
         }
         return gson.fromJson(cache, new SmsVerifyCodeTypeToken().getType());
@@ -63,6 +68,5 @@ public class RedisSmsVerifyCodeStore implements SmsVerifyCodeStore<String> {
         return MessageFormat.format("{0}:{1}", PREFIX_KEY, key);
     }
 
-    private static class SmsVerifyCodeTypeToken extends TypeToken<SmsVerifyCode<String>> {
-    }
+    private static class SmsVerifyCodeTypeToken extends TypeToken<SmsVerifyCode<String>> {}
 }

@@ -1,13 +1,12 @@
 package com.lambda.cloud.web;
 
 import cn.hutool.core.io.IoUtil;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Jin
@@ -16,7 +15,6 @@ import java.io.BufferedReader;
  */
 @Slf4j
 public class LambdaHttpServletRequestWrapper extends HttpServletRequestWrapper {
-
 
     private final String body;
 
@@ -28,12 +26,11 @@ public class LambdaHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public ServletInputStream getInputStream() {
-        return new DefaultServletInputStream(body);
+        return new LambdaServletInputStream(body);
     }
 
     @Override
     public BufferedReader getReader() {
         return IoUtil.getUtf8Reader(this.getInputStream());
     }
-
 }

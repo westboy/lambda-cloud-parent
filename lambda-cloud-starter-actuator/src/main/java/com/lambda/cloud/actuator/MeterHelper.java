@@ -1,18 +1,21 @@
 package com.lambda.cloud.actuator;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.micrometer.core.instrument.*;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.ArrayUtils;
-
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
+import javax.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.ArrayUtils;
 
 /**
  * @author jin
  */
 @Slf4j
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "MeterRegistry is thread-safe and designed for shared access")
 public class MeterHelper {
 
     private final MeterRegistry registry;
@@ -22,7 +25,7 @@ public class MeterHelper {
     }
 
     public Counter counter(@Nonnull String name, @Nonnull String description) {
-        return counter(name, description, new String[]{});
+        return counter(name, description, new String[] {});
     }
 
     public Counter counter(@Nonnull String name, @Nonnull String description, String... tags) {
@@ -45,7 +48,12 @@ public class MeterHelper {
         return gauge(name, description, null, object, function);
     }
 
-    public <T> Gauge gauge(@Nonnull String name, @Nonnull String description, Map<String, String> tags, T object, ToDoubleFunction<T> function) {
+    public <T> Gauge gauge(
+            @Nonnull String name,
+            @Nonnull String description,
+            Map<String, String> tags,
+            T object,
+            ToDoubleFunction<T> function) {
         Gauge.Builder<T> builder = Gauge.builder(name, object, function).description(description);
         if (tags != null && !tags.isEmpty()) {
             tags.forEach(builder::tag);
@@ -57,8 +65,10 @@ public class MeterHelper {
         return gauge(name, description, null, number);
     }
 
-    public <T extends Number> Gauge gauge(@Nonnull String name, @Nonnull String description, Map<String, String> tags, T number) {
-        Gauge.Builder<Supplier<Number>> builder = Gauge.builder(name, () -> number).description(description);
+    public <T extends Number> Gauge gauge(
+            @Nonnull String name, @Nonnull String description, Map<String, String> tags, T number) {
+        Gauge.Builder<Supplier<Number>> builder =
+                Gauge.builder(name, () -> number).description(description);
         if (tags != null && !tags.isEmpty()) {
             tags.forEach(builder::tag);
         }
@@ -84,5 +94,4 @@ public class MeterHelper {
         }
         return builder.register(registry);
     }
-
 }

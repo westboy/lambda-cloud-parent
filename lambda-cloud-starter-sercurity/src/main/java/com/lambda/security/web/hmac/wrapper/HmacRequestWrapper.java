@@ -1,15 +1,13 @@
 package com.lambda.security.web.hmac.wrapper;
 
-
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
-import lombok.Getter;
-import org.springframework.util.StreamUtils;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import lombok.Getter;
+import org.springframework.util.StreamUtils;
 
 /**
  * HmacRequestWrapper
@@ -31,8 +29,8 @@ public final class HmacRequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public ServletInputStream getInputStream() {
-        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                body.getBytes((StandardCharsets.UTF_8)));
+        final ByteArrayInputStream byteArrayInputStream =
+                new ByteArrayInputStream(body.getBytes((StandardCharsets.UTF_8)));
         return new ServletInputStream() {
             @Override
             public int read() {
@@ -58,7 +56,6 @@ public final class HmacRequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public BufferedReader getReader() {
-        return new BufferedReader(new InputStreamReader(this.getInputStream()));
+        return new BufferedReader(new InputStreamReader(this.getInputStream(), StandardCharsets.UTF_8));
     }
-
 }

@@ -1,17 +1,20 @@
 package com.lambda.security.web.form.locking;
 
-import lombok.Setter;
-import org.springframework.data.redis.core.StringRedisTemplate;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import lombok.Setter;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
  * RedisLockingStrategy
  *
  * @author jpjoo
  */
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP2"},
+        justification = "springboot properties")
 @Setter
 public class RedisLockingStrategy extends AbstractLockingStrategy {
 
@@ -19,7 +22,8 @@ public class RedisLockingStrategy extends AbstractLockingStrategy {
 
     private static final String COMMON = "LAMBDA-CLOUD:USER:LOGINFAILURE:";
 
-    public RedisLockingStrategy(int maxFailureTimes, int duration, TimeUnit timeUnit, StringRedisTemplate stringRedisTemplate) {
+    public RedisLockingStrategy(
+            int maxFailureTimes, int duration, TimeUnit timeUnit, StringRedisTemplate stringRedisTemplate) {
         super(maxFailureTimes, duration, timeUnit);
         this.stringRedisTemplate = stringRedisTemplate;
     }
@@ -56,7 +60,7 @@ public class RedisLockingStrategy extends AbstractLockingStrategy {
         if (0 == this.getMaxFailureTimes()) {
             return false;
         }
-        return this.getFailureTimes(username) >= getMaxFailureTimes();
+        return this.getFailureTimes(username) >= this.getMaxFailureTimes();
     }
 
     @Override
@@ -70,30 +74,33 @@ public class RedisLockingStrategy extends AbstractLockingStrategy {
     }
 
     private int getFailureTimes(String username) {
-        int failCount;
-        try {
-            failCount = Integer.parseInt(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(getCommonKey(username))));
-        } catch (NullPointerException e) {
-            failCount = 0;
+        String failCount = stringRedisTemplate.opsForValue().get(getCommonKey(username));
+        if (Objects.isNull(failCount)) {
+            return 0;
+        } else {
+            return Integer.parseInt(failCount);
         }
-        return failCount;
     }
 
     private Long getLockedTime(String username) {
-        Long lockedTimes;
-        try {
-            lockedTimes = Objects.requireNonNull(stringRedisTemplate.opsForValue().getOperations().getExpire(getCommonKey(username), TimeUnit.MILLISECONDS));
-        } catch (NullPointerException e) {
-            lockedTimes = null;
+        Long expire = stringRedisTemplate
+                .opsForValue()
+                .getOperations()
+                .getExpire(getCommonKey(username), TimeUnit.MILLISECONDS);
+        if (expire == null) {
+            return 0L;
         }
-        return lockedTimes;
+        return expire;
     }
 
     private Long saveFailureTimes(String username, int times) {
         if (this.checkFailureTimes(username)) {
-            return System.currentTimeMillis() - (this.getTimeUnit().toMillis(super.getDuration()) - this.getLockedTime(username));
+            long diff = this.getTimeUnit().toMillis(super.getDuration()) - this.getLockedTime(username);
+            return System.currentTimeMillis() - diff;
         } else {
-            stringRedisTemplate.opsForValue().set(getCommonKey(username), String.valueOf(times), super.getDuration(), super.getTimeUnit());
+            stringRedisTemplate
+                    .opsForValue()
+                    .set(getCommonKey(username), String.valueOf(times), super.getDuration(), super.getTimeUnit());
             return System.currentTimeMillis();
         }
     }

@@ -1,20 +1,16 @@
 package com.lambda.cloud.core.jackson.text;
 
-
 import cn.hutool.core.date.DateTime;
 import com.lambda.cloud.core.exception.NotSupportedException;
-import lombok.EqualsAndHashCode;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.ArrayUtils;
-
-import javax.annotation.Nonnull;
-import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-
+import javax.annotation.Nonnull;
+import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.ArrayUtils;
 
 /**
  * @author jin
@@ -67,20 +63,18 @@ public class ExtendDateFormat extends SimpleDateFormat {
      */
     public static final String YEAR_MONTH_PATTERN = "yyyy-MM";
 
-    private static final String[] EXCLUDES = new String[]{"0001-01-01T00:00:00Z"};
+    private static final String[] EXCLUDES = new String[] {"0001-01-01T00:00:00Z"};
 
     public static final String ISO8601_REGEX = DATE_REGEX + "T" + TIME_REGEX + "\\.\\d{3}Z";
 
     public static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
-
     public ExtendDateFormat() {
         super(DATE_TIME_PATTERN);
     }
 
-
     @Override
-    public Date parse(@Nonnull String source) throws ParseException {
+    public Date parse(@Nonnull String source) {
         ParsePosition pos = new ParsePosition(0);
         return parse(source, pos);
     }
@@ -111,6 +105,4 @@ public class ExtendDateFormat extends SimpleDateFormat {
         }
         return format.parse(source, pos);
     }
-
-
 }

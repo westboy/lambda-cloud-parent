@@ -1,10 +1,10 @@
 package com.lambda.autoconfig;
 
-
 import com.lambda.cloud.datasource.utils.DataSourceUtils;
 import com.lambda.cloud.liquibase.LiquibaseFinishedPublisher;
 import com.lambda.cloud.liquibase.LiquibasePostExecutor;
-import com.lambda.cloud.liquibase.LiquibaseProperties;
+import java.util.List;
+import javax.sql.DataSource;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -15,9 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
-
-import javax.sql.DataSource;
-import java.util.List;
 
 /**
  * LiquibaseAutoConfiguration
@@ -52,11 +49,9 @@ public class LiquibaseAutoConfiguration {
 
     @Bean
     @DependsOn("defaultLiquibase")
-    public LiquibaseFinishedPublisher liquibaseFinishedPublisher(SpringLiquibase jfLiquibase,
-                                                                 List<LiquibasePostExecutor> executors) {
+    public LiquibaseFinishedPublisher liquibaseFinishedPublisher(
+            SpringLiquibase jfLiquibase, List<LiquibasePostExecutor> executors) {
         DataSource dataSource = jfLiquibase.getDataSource();
         return new LiquibaseFinishedPublisher(dataSource, executors);
     }
-
-
 }

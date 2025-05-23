@@ -3,8 +3,8 @@ package com.lambda.autoconfig;
 import com.lambda.cloud.sms.SmsISP;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.cloud.sms.model.SmsSendResult;
-import com.lambda.cloud.sms.produce.AliYunSmsMessageSender;
-import com.lambda.cloud.sms.produce.TencentSmsMessageSender;
+import com.lambda.cloud.sms.sender.AliYunSmsMessageSender;
+import com.lambda.cloud.sms.sender.TencentSmsMessageSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -81,6 +81,4 @@ public class SmsAutoConfiguration {
             };
         }
     }
-
-
 }

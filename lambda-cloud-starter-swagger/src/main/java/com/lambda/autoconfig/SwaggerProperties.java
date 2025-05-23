@@ -13,7 +13,7 @@ public class SwaggerProperties {
     String title;
 
     Boolean enabled;
-    String  docUri = "/swagger-ui.html";
+    String docUri = "/swagger-ui.html";
 
     String version = "1.0.0";
 }

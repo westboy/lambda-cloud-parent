@@ -7,13 +7,17 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lambda.cloud.core.jackson.JacksonModuleConfigurer;
-import com.lambda.cloud.core.jackson.mapper.DefaultObjectMapper;
+import com.lambda.cloud.core.jackson.mapper.LambdaObjectMapper;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
 import com.lambda.cloud.core.propertis.CorsProperties;
 import com.lambda.cloud.mvc.StringToDateConverter;
 import com.lambda.cloud.mvc.execption.GlobalControllerAdvice;
 import com.lambda.cloud.mvc.filter.OrderedTimeHandlerFilter;
 import com.lambda.cloud.mvc.filter.XframeOptionsFilter;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -45,11 +49,6 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 /**
  * WebMvcAutoConfiguration
  *
@@ -65,7 +64,8 @@ public class WebMvcAutoConfiguration {
 
     @Bean
     @SuppressWarnings("all")
-    public WebMvcConfigurer webMvcConfigurer(CorsProperties corsProperties, LocalValidatorFactoryBean defaultValidator) {
+    public WebMvcConfigurer webMvcConfigurer(
+            CorsProperties corsProperties, LocalValidatorFactoryBean defaultValidator) {
         return new WebMvcConfigurer() {
             @Override
             public void addFormatters(FormatterRegistry registry) {
@@ -87,7 +87,8 @@ public class WebMvcAutoConfiguration {
                     } else {
                         registration.allowedOriginPatterns(CorsProperties.ALL);
                     }
-                    registration.allowCredentials(true)
+                    registration
+                            .allowCredentials(true)
                             .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
                             .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
                             .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
@@ -108,24 +109,23 @@ public class WebMvcAutoConfiguration {
     @ConditionalOnMissingBean(name = "jacksonObjectMapper")
     public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder) {
         return builder.createXmlMapper(false)
-                .serializationInclusion(Include.NON_NULL).build();
+                .serializationInclusion(Include.NON_NULL)
+                .build();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public DefaultObjectMapper objectMapper() {
-        return new DefaultObjectMapper();
+    public LambdaObjectMapper objectMapper() {
+        return new LambdaObjectMapper();
     }
 
     @Bean
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(Jackson2ObjectMapperBuilder builder,
-                                                                                   List<Module> modules) {
+    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(
+            Jackson2ObjectMapperBuilder builder, List<Module> modules) {
         ObjectMapper mapper = builder.dateFormat(new ExtendDateFormat())
                 .featuresToDisable(SerializationFeature.INDENT_OUTPUT)
                 .serializationInclusion(Include.NON_NULL)
-                .featuresToEnable(
-                        Feature.ALLOW_UNQUOTED_FIELD_NAMES,
-                        MapperFeature.PROPAGATE_TRANSIENT_MARKER)
+                .featuresToEnable(Feature.ALLOW_UNQUOTED_FIELD_NAMES, MapperFeature.PROPAGATE_TRANSIENT_MARKER)
                 .modules(modules)
                 .build();
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(mapper);
@@ -140,8 +140,7 @@ public class WebMvcAutoConfiguration {
     public HttpMessageConverters httpMessageConverters(
             MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter,
             StringHttpMessageConverter stringHttpMessageConverter) {
-        return new HttpMessageConverters(mappingJackson2HttpMessageConverter,
-                stringHttpMessageConverter);
+        return new HttpMessageConverters(mappingJackson2HttpMessageConverter, stringHttpMessageConverter);
     }
 
     @Bean
@@ -151,7 +150,6 @@ public class WebMvcAutoConfiguration {
         return localeResolver;
     }
 
-
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(SpringTemplateEngine.class)
     public static class ThymeleafAutoConfiguration {
@@ -159,8 +157,7 @@ public class WebMvcAutoConfiguration {
         @Primary
         @Bean
         public SpringResourceTemplateResolver defaultTemplateResolver(
-                ApplicationContext applicationContext,
-                ThymeleafProperties properties) {
+                ApplicationContext applicationContext, ThymeleafProperties properties) {
             SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
             resolver.setApplicationContext(applicationContext);
             resolver.setPrefix(properties.getPrefix());
@@ -175,12 +172,10 @@ public class WebMvcAutoConfiguration {
                 resolver.setOrder(order);
             }
 
-            Method setCheckExistence = ReflectionUtils
-                    .findMethod(resolver.getClass(), "setCheckExistence",
-                            boolean.class);
+            Method setCheckExistence =
+                    ReflectionUtils.findMethod(resolver.getClass(), "setCheckExistence", boolean.class);
             if (setCheckExistence != null) {
-                ReflectionUtils
-                        .invokeMethod(setCheckExistence, resolver, properties.isCheckTemplate());
+                ReflectionUtils.invokeMethod(setCheckExistence, resolver, properties.isCheckTemplate());
             }
             return resolver;
         }
