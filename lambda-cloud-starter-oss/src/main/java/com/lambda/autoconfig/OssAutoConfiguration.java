@@ -3,6 +3,7 @@ package com.lambda.autoconfig;
 import com.lambda.cloud.oss.client.OssClient;
 import com.lambda.cloud.oss.manager.OssClientManager;
 import com.lambda.cloud.redis.helper.RedisHelper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(OssProperties.class)
 public class OssAutoConfiguration {
 
+    @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
     private OssProperties ossProperties;
 
     @Autowired

@@ -16,7 +16,6 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import com.lambda.autoconfig.OssProperties;
-import com.lambda.cloud.core.exception.IllegalStateException;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.oss.enums.AccessPolicyType;
 import com.lambda.cloud.oss.enums.OssType;
@@ -25,6 +24,7 @@ import com.lambda.cloud.oss.exception.OssException;
 import com.lambda.cloud.oss.model.UploadObjectResult;
 import com.lambda.cloud.oss.model.UploadPartTag;
 import com.lambda.cloud.redis.helper.RedisHelper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -32,12 +32,15 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Date;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * OssClient
  *
  * @author westboy
  */
+@Slf4j
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
 public class OssClient {
 
     private final OssProperties.Config config;
@@ -49,35 +52,32 @@ public class OssClient {
 
     public OssClient(OssProperties.Config config) {
         this.config = config;
-        try {
-            AwsClientBuilder.EndpointConfiguration endpointConfig =
-                    new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion());
+        this.client = buildAmazonS3();
+    }
 
-            AWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
-            AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
-            ClientConfiguration clientConfig = new ClientConfiguration();
-            if (config.getIsHttps()) {
-                if (!StrUtil.startWith(config.getEndpoint(), "https")) {
-                    throw new IllegalStateException("Endpoint 配置不正确，https 已开启！");
-                }
-                clientConfig.setProtocol(Protocol.HTTPS);
-            } else {
-                clientConfig.setProtocol(Protocol.HTTP);
+    private AmazonS3 buildAmazonS3() {
+        AwsClientBuilder.EndpointConfiguration endpointConfig =
+                new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion());
+        AWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
+        AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
+        ClientConfiguration clientConfig = new ClientConfiguration();
+        if (config.getIsHttps()) {
+            if (!StrUtil.startWith(config.getEndpoint(), "https")) {
+                log.error("Endpoint 配置不正确，https 已开启！");
             }
-            AmazonS3ClientBuilder build = AmazonS3Client.builder()
-                    .withEndpointConfiguration(endpointConfig)
-                    .withClientConfiguration(clientConfig)
-                    .withCredentials(credentialsProvider)
-                    .disableChunkedEncoding();
-            if (OssType.MINIO.name().equalsIgnoreCase(config.getType())) {
-                build.enablePathStyleAccess();
-            }
-            this.client = build.build();
-
-            createBucket();
-        } catch (Exception e) {
-            throw new OssException("OSS 初始化异常！", e);
+            clientConfig.setProtocol(Protocol.HTTPS);
+        } else {
+            clientConfig.setProtocol(Protocol.HTTP);
         }
+        AmazonS3ClientBuilder build = AmazonS3Client.builder()
+                .withEndpointConfiguration(endpointConfig)
+                .withClientConfiguration(clientConfig)
+                .withCredentials(credentialsProvider)
+                .disableChunkedEncoding();
+        if (OssType.MINIO.name().equalsIgnoreCase(config.getType())) {
+            build.enablePathStyleAccess();
+        }
+        return build.build();
     }
 
     public void createBucket() {
@@ -131,9 +131,7 @@ public class OssClient {
             if ((partNumber == 1) && redisHelper.hasKey(KEY)) {
                 redisHelper.delete(KEY);
             }
-
             String uploadId = (String) redisHelper.hGet(KEY, "uploadId");
-
             if (uploadId == null) {
                 InitiateMultipartUploadRequest initRequest =
                         new InitiateMultipartUploadRequest(config.getBucket(), dest);
