@@ -1,16 +1,16 @@
 package com.lambda.cloud.kafka.delayqueue;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
-
-import java.util.Objects;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 
 /**
  * @author jin
@@ -39,6 +39,7 @@ public class DelayConsumerRecord {
     private final Long topicExpireTime;
     private final long millis;
 
+    @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW")
     public DelayConsumerRecord(ConsumerRecord<String, String> consumerRecord) {
         this.millis = System.currentTimeMillis();
         this.consumerRecord = consumerRecord;
@@ -59,7 +60,6 @@ public class DelayConsumerRecord {
     public int getDelayTime() {
         return (int) ((messageExpireTime - millis) / 1000L);
     }
-
 
     public long getTopicExpireTime() {
         return (long) ObjectUtils.defaultIfNull(topicExpireTime, 0L);
@@ -89,7 +89,7 @@ public class DelayConsumerRecord {
         headers.remove(EXPIRE_TIME_IN_TOPIC);
         int delay = (int) ((messageExpireTime - millis) / 1000L);
         Integer partition = null;
-        //如果延时消息已经过期
+        // 如果延时消息已经过期
         if (delay <= 0) {
             topic = new String(headers.lastHeader(ORIGIN_TOPIC).value(), UTF_8);
             headers.remove(MESSAGE_EXPIRE_TIME);
@@ -100,7 +100,7 @@ public class DelayConsumerRecord {
             partition = delayLevel.getPartition();
             int level = delayLevel.getLevel();
             long t = millis + level * 1000L;
-            headers.add(EXPIRE_TIME_IN_TOPIC, String.valueOf(t).getBytes());
+            headers.add(EXPIRE_TIME_IN_TOPIC, String.valueOf(t).getBytes(StandardCharsets.UTF_8));
             log.trace("Payload {} has been reallocated, delay:{}s, send: {}-{}", payload, delay, topic, partition);
         }
         return new ProducerRecord<>(topic, partition, key, payload, headers);

@@ -23,12 +23,7 @@ public abstract class AbstractIndexObject implements Comparable<AbstractIndexObj
     private float score;
 
     @Override
-    public int compareTo(AbstractIndexObject o) {
-        if (this.score < o.getScore()) {
-            return 1;
-        } else if (this.score > o.getScore()) {
-            return -1;
-        }
-        return 0;
+    public int compareTo(AbstractIndexObject other) {
+        return Float.compare(this.score, other.score);
     }
 }

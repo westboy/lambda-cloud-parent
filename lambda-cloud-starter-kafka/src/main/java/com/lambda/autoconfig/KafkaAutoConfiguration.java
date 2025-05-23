@@ -6,7 +6,8 @@ import static com.lambda.cloud.kafka.Template.OBJECT_PRODUCER_FACTORY;
 import com.lambda.cloud.core.jackson.mapper.LambdaObjectMapper;
 import com.lambda.cloud.kafka.Template;
 import com.lambda.cloud.kafka.delayqueue.DelayKafkaTemplate;
-import com.lambda.cloud.kafka.producer.internals.DefaultPartitioner;
+import com.lambda.cloud.kafka.producer.internals.Partitioner;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -54,11 +55,13 @@ public class KafkaAutoConfiguration {
 
     public RecordFilterStrategy<Object, Object> recordFilterStrategy;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
     @Autowired
     public void setProperties(KafkaProperties properties) {
         this.properties = properties;
     }
 
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE")
     @Autowired(required = false)
     public void setRecordFilterStrategy(RecordFilterStrategy<Object, Object> recordFilterStrategy) {
         this.recordFilterStrategy = recordFilterStrategy;
@@ -74,7 +77,7 @@ public class KafkaAutoConfiguration {
     @Primary
     public ProducerFactory<?, ?> kafkaProducerFactory() {
         Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
-        producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class);
+        producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, Partitioner.class);
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
@@ -91,7 +94,7 @@ public class KafkaAutoConfiguration {
     @Bean(name = JSON_PRODUCER_FACTORY)
     public ProducerFactory<String, Object> jsonProducerFactory() {
         Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
-        producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class);
+        producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, Partitioner.class);
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
@@ -109,7 +112,7 @@ public class KafkaAutoConfiguration {
     @Bean(name = OBJECT_PRODUCER_FACTORY)
     public ProducerFactory<String, Object> objectProducerFactory(LambdaObjectMapper objectMapper) {
         Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
-        producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class);
+        producerProperties.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, Partitioner.class);
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 

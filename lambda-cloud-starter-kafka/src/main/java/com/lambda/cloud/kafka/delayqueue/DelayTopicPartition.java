@@ -1,6 +1,11 @@
 package com.lambda.cloud.kafka.delayqueue;
 
 import com.google.common.collect.Maps;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -9,16 +14,12 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.TopicPartition;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * @author jin
  */
 @Slf4j
 @Getter
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
 public class DelayTopicPartition {
 
     private final DelayQueue<DelayEntry> queue;
@@ -34,7 +35,6 @@ public class DelayTopicPartition {
         this.counter = new AtomicInteger(0);
         this.offsets = Maps.newHashMap();
     }
-
 
     public void seek(TopicPartition topicPartition, long offset) {
         if (!offsets.containsKey(topicPartition)) {
@@ -53,7 +53,6 @@ public class DelayTopicPartition {
             offsets.clear();
         }
     }
-
 
     public static class DelayOffsetCommitCallback implements OffsetCommitCallback {
         @Override

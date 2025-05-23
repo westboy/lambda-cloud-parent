@@ -1,6 +1,13 @@
 package com.lambda.cloud.gateway.swagger;
 
+import static org.apache.commons.lang.StringUtils.EMPTY;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Hidden;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.config.GatewayProperties;
@@ -9,13 +16,6 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.apache.commons.lang.StringUtils.EMPTY;
 
 /**
  * SwaggerResourceController
@@ -30,6 +30,7 @@ public class SwaggerResourceController {
     private static final String API_ORDER = "api-order";
     private final GatewayProperties gatewayProperties;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
     public SwaggerResourceController(GatewayProperties gatewayProperties) {
         this.gatewayProperties = gatewayProperties;
     }
@@ -37,12 +38,10 @@ public class SwaggerResourceController {
     @Value("${springdoc.api-docs.path:/v3/api-docs}/swagger-config")
     private String configUrl;
 
-
     @Hidden
     @GetMapping(
             value = {"${springdoc.api-docs.path:/v3/api-docs}/swagger-config"},
-            produces = {"application/json"}
-    )
+            produces = {"application/json"})
     public ConfigResource getSwaggerUiConfig(ServerHttpRequest request) {
         ConfigResource config = new ConfigResource();
         config.setConfigUrl(configUrl);
@@ -51,11 +50,11 @@ public class SwaggerResourceController {
         List<ConfigResource.Group> groups = gatewayProperties.getRoutes().stream()
                 .filter(this::isDocumentSupported)
                 .sorted(Comparator.comparing(this::getOrder))
-                .map(this::buildSwaggerResource).collect(Collectors.toList());
+                .map(this::buildSwaggerResource)
+                .collect(Collectors.toList());
         config.setGroups(groups);
         return config;
     }
-
 
     /**
      * 是否包含有API文档

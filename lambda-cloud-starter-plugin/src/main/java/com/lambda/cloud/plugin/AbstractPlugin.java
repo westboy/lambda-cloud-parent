@@ -7,18 +7,13 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * @author Jin
  */
-public abstract class AbstractPlugin<T> implements IPlugin<T>, Comparable<AbstractPlugin>, InitializingBean {
+public abstract class AbstractPlugin<T> implements IPlugin<T>, Comparable<AbstractPlugin<T>>, InitializingBean {
 
-    protected String title = "";
-    protected String author = "";
-    protected String description = "";
-    protected String version = "";
     protected int weight = 0;
 
     /**
      * installPlugin
      *
-     * @throws Exception
      */
     public abstract void installPlugin() throws Exception;
 
@@ -26,6 +21,4 @@ public abstract class AbstractPlugin<T> implements IPlugin<T>, Comparable<Abstra
     public int compareTo(AbstractPlugin o) {
         return o.weight - this.weight;
     }
-
-
 }

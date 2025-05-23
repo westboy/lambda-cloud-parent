@@ -1,6 +1,7 @@
 package com.lambda.cloud.kafka.delayqueue;
 
 import com.lambda.autoconfig.KafkaDelayQueueConfigurer;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.boot.CommandLineRunner;
 
 /**
@@ -11,12 +12,11 @@ public class DelayKafkaInitializer implements CommandLineRunner {
     private final DelayMonitorService delayMonitorService;
     private final DelayTimeoutService delayTimeoutService;
 
-    public DelayKafkaInitializer(DelayMonitorService delayMonitorService,
-                                 DelayTimeoutService delayTimeoutService) {
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
+    public DelayKafkaInitializer(DelayMonitorService delayMonitorService, DelayTimeoutService delayTimeoutService) {
         this.delayMonitorService = delayMonitorService;
         this.delayTimeoutService = delayTimeoutService;
     }
-
 
     @Override
     public void run(String... args) {
@@ -26,5 +26,4 @@ public class DelayKafkaInitializer implements CommandLineRunner {
             delayMonitorService.execute(delayTopicPartition);
         }
     }
-
 }

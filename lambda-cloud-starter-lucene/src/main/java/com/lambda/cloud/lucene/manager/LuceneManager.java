@@ -1,12 +1,16 @@
-
 package com.lambda.cloud.lucene.manager;
-
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lambda.cloud.lucene.model.AbstractIndexObject;
 import com.lambda.cloud.lucene.utils.IndexObjectUtil;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -21,12 +25,6 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.store.FSDirectory;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * LuceneManager
  *
@@ -38,6 +36,8 @@ import java.util.List;
 public class LuceneManager {
 
     private Path directoryPath = null;
+
+    @SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
     private Analyzer analyzer = null;
 
     /**
@@ -58,7 +58,6 @@ public class LuceneManager {
         } finally {
             indexWriter.close();
         }
-
     }
 
     /**
@@ -69,7 +68,9 @@ public class LuceneManager {
     public void update(AbstractIndexObject abstractIndexObject) throws IOException {
         IndexWriter indexWriter = getIndexWriter();
         try {
-            Long result = indexWriter.updateDocument(new Term("id", abstractIndexObject.id()), IndexObjectUtil.indexObjectToDocument(abstractIndexObject));
+            Long result = indexWriter.updateDocument(
+                    new Term("id", abstractIndexObject.id()),
+                    IndexObjectUtil.indexObjectToDocument(abstractIndexObject));
             log.info("====[ 更新索引: {} ]====", result);
             indexWriter.commit();
         } catch (Exception e) {
@@ -78,7 +79,6 @@ public class LuceneManager {
         } finally {
             indexWriter.close();
         }
-
     }
 
     /**
@@ -108,7 +108,7 @@ public class LuceneManager {
         try {
             Long result = indexWriter.deleteAll();
             log.info("====[ 清空索引: {} ]====", result);
-            //清空回收站
+            // 清空回收站
             indexWriter.forceMergeDeletes();
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -117,7 +117,6 @@ public class LuceneManager {
             indexWriter.close();
         }
     }
-
 
     /**
      * 检索分页
@@ -129,23 +128,25 @@ public class LuceneManager {
      * @return page
      * @throws IOException
      */
-    public <T extends AbstractIndexObject> IPage<T> page(String keyword, Integer current, Integer size, Class<T> clazz, String... fields) throws IOException {
+    public <T extends AbstractIndexObject> IPage<T> page(
+            String keyword, Integer current, Integer size, Class<T> clazz, String... fields) throws IOException {
         IndexReader indexReader = getIndexReader();
         IPage<T> page = new Page<>(current, size);
         try {
             List<T> searchResultList = new ArrayList<>();
             IndexSearcher indexSearcher = new IndexSearcher(indexReader);
             Query query = getQuery(keyword, getAnalyzer(), fields);
-            //根据页码和分页大小获取上一次的最后一个ScoreDoc
+            // 根据页码和分页大小获取上一次的最后一个ScoreDoc
             ScoreDoc lastScoreDoc = getLastScoreDoc(current, size, query, indexSearcher);
             TopDocs topDocs = indexSearcher.searchAfter(lastScoreDoc, query, size);
             page.setTotal(topDocs.totalHits);
-            //遍历转换
+            // 遍历转换
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document document = indexSearcher.doc(scoreDoc.doc);
-                searchResultList.add(IndexObjectUtil.documentToIndexObject(getAnalyzer(), getHighlighter(query), document, scoreDoc.score, clazz));
+                searchResultList.add(IndexObjectUtil.documentToIndexObject(
+                        getAnalyzer(), getHighlighter(query), document, scoreDoc.score, clazz));
             }
-            //根据相似分数排序
+            // 根据相似分数排序
             Collections.sort(searchResultList);
             page.setRecords(searchResultList);
             return page;
@@ -156,7 +157,6 @@ public class LuceneManager {
         }
         return page;
     }
-
 
     /**
      * getIndexWriter
@@ -190,7 +190,8 @@ public class LuceneManager {
      * @return
      * @throws IOException
      */
-    ScoreDoc getLastScoreDoc(Integer pageNumber, Integer pageSize, Query query, IndexSearcher searcher) throws IOException {
+    ScoreDoc getLastScoreDoc(Integer pageNumber, Integer pageSize, Query query, IndexSearcher searcher)
+            throws IOException {
         if (ObjectUtil.equal(pageNumber, 1)) {
             return null;
         }
@@ -229,5 +230,4 @@ public class LuceneManager {
         highlighter.setTextFragmenter(fragmenter);
         return highlighter;
     }
-
 }

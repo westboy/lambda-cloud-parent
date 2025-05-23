@@ -1,11 +1,11 @@
 package com.lambda.cloud.gateway.swagger;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * ConfigResource
@@ -21,6 +21,7 @@ public class ConfigResource {
 
     private String validatorUrl;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP")
     @JsonProperty("urls")
     private List<Group> groups = new ArrayList<>();
 
