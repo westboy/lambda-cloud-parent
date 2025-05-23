@@ -1,12 +1,11 @@
-package com.lambda.cloud.kafka.delayqueue;
+package com.lambda.cloud.kafka.core;
 
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import lombok.Data;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
-
-import javax.annotation.Nonnull;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author jin
@@ -17,13 +16,15 @@ public class DelayEntry implements Delayed {
      * 到期时间，单位毫秒
      */
     private long activeTime;
+
     private ConsumerRecord<String, String> consumerRecord;
     private TopicPartition topicPartition;
     private long offset;
 
-    public DelayEntry(long activeTime, ConsumerRecord<String, String> consumerRecord, TopicPartition partition, long offset) {
+    public DelayEntry(
+            long activeTime, ConsumerRecord<String, String> consumerRecord, TopicPartition partition, long offset) {
         super();
-        //将传入的时长转换为超时的时刻
+        // 将传入的时长转换为超时的时刻
         this.activeTime = activeTime;
         this.consumerRecord = consumerRecord;
         this.topicPartition = partition;
@@ -48,7 +49,6 @@ public class DelayEntry implements Delayed {
      * @param unit
      * @return long
      */
-
     @Override
     public long getDelay(@Nonnull TimeUnit unit) {
         return this.activeTime - System.currentTimeMillis();

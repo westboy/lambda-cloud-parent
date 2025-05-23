@@ -1,4 +1,4 @@
-package com.lambda.cloud.kafka.delayqueue;
+package com.lambda.cloud.kafka.core;
 
 import com.google.common.collect.Maps;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

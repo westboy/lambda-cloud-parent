@@ -1,8 +1,9 @@
-package com.lambda.cloud.kafka.delayqueue;
+package com.lambda.cloud.kafka;
 
-import static com.lambda.cloud.kafka.delayqueue.DelayConsumerRecord.*;
+import static com.lambda.cloud.kafka.core.DelayConsumerRecord.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.lambda.cloud.kafka.core.DelayLevel;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -52,7 +53,7 @@ public class DelayKafkaTemplate {
         return send(producerRecord);
     }
 
-    protected CompletableFuture<SendResult<String, String>> send(ProducerRecord<String, String> producerRecord) {
+    public CompletableFuture<SendResult<String, String>> send(ProducerRecord<String, String> producerRecord) {
         return kafkaTemplate.send(producerRecord);
     }
 }

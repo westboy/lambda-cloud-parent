@@ -1,15 +1,18 @@
-package com.lambda.cloud.kafka.delayqueue;
+package com.lambda.cloud.kafka.service;
 
 import com.lambda.autoconfig.KafkaDelayQueueConfigurer;
+import com.lambda.cloud.kafka.DelayKafkaTemplate;
+import com.lambda.cloud.kafka.core.DelayConsumerRecord;
+import com.lambda.cloud.kafka.core.DelayEntry;
+import com.lambda.cloud.kafka.core.DelayTopicPartition;
+import java.util.Objects;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-
-import java.util.Objects;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * DelayTimeoutService
@@ -26,7 +29,7 @@ public class DelayTimeoutService {
         this.delayKafkaTemplate = delayKafkaTemplate;
     }
 
-    @SuppressWarnings("infiniteLoopStatement")
+    @SuppressWarnings("InfiniteLoopStatement")
     @Async(KafkaDelayQueueConfigurer.KAFKA_MAXFIXED_TASK_EXECUTOR)
     public void execute(DelayTopicPartition delayTopicPartition) {
         AtomicInteger counter = delayTopicPartition.getCounter();
@@ -50,6 +53,4 @@ public class DelayTimeoutService {
             }
         } while (true);
     }
-
-
 }

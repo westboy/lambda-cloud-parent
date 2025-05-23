@@ -1,4 +1,4 @@
-package com.lambda.cloud.kafka.delayqueue;
+package com.lambda.cloud.kafka.core;
 
 import lombok.Data;
 
@@ -21,10 +21,9 @@ public class DelayLevel {
             this.level = delay;
         } else {
             int i = Math.min((int) Math.log10(delay), 5);
-            //分区从0开始
+            // 分区从0开始
             this.partition = 9 + i;
             this.level = (int) Math.pow(10D, i);
         }
     }
-
 }

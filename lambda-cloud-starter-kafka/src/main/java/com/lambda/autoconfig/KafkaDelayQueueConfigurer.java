@@ -1,9 +1,9 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.kafka.delayqueue.DelayConsumerRecord;
-import com.lambda.cloud.kafka.delayqueue.DelayKafkaInitializer;
-import com.lambda.cloud.kafka.delayqueue.DelayMonitorService;
-import com.lambda.cloud.kafka.delayqueue.DelayTimeoutService;
+import com.lambda.cloud.kafka.DelayKafkaInitializer;
+import com.lambda.cloud.kafka.core.DelayConsumerRecord;
+import com.lambda.cloud.kafka.service.DelayMonitorService;
+import com.lambda.cloud.kafka.service.DelayTimeoutService;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.kafka.clients.admin.NewTopic;

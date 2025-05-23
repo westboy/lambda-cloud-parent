@@ -1,4 +1,4 @@
-package com.lambda.cloud.kafka.delayqueue;
+package com.lambda.cloud.kafka.core;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -79,7 +79,7 @@ public class DelayConsumerRecord {
         return delayTime < 1 || topicExpireTime <= millis;
     }
 
-    ProducerRecord<String, String> producerRecord() {
+    public ProducerRecord<String, String> producerRecord() {
         String topic = consumerRecord.topic();
         String key = consumerRecord.key();
         String payload = consumerRecord.value();

@@ -1,6 +1,15 @@
-package com.lambda.cloud.kafka.delayqueue;
+package com.lambda.cloud.kafka.service;
 
 import com.lambda.autoconfig.KafkaDelayQueueConfigurer;
+import com.lambda.cloud.kafka.DelayKafkaTemplate;
+import com.lambda.cloud.kafka.core.DelayConsumerRecord;
+import com.lambda.cloud.kafka.core.DelayEntry;
+import com.lambda.cloud.kafka.core.DelayTopicPartition;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
@@ -8,15 +17,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.lambda.cloud.kafka.delayqueue.DelayConsumerRecord.DELAY_TOPIC;
-
 
 /**
  * DelayMonitorService
@@ -41,7 +41,8 @@ public class DelayMonitorService {
     public void execute(DelayTopicPartition delayTopicPartition) {
         Properties properties = getConsumerProperties();
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties)) {
-            consumer.assign(Collections.singleton(new TopicPartition(DELAY_TOPIC, delayTopicPartition.getPartition())));
+            consumer.assign(Collections.singleton(
+                    new TopicPartition(DelayConsumerRecord.DELAY_TOPIC, delayTopicPartition.getPartition())));
             do {
                 delayTopicPartition.commit(consumer);
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1L));
@@ -55,7 +56,6 @@ public class DelayMonitorService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-
     }
 
     private void execute0(ConsumerRecord<String, String> record0, DelayTopicPartition delayTopicPartition) {
@@ -75,12 +75,15 @@ public class DelayMonitorService {
             DelayEntry delayed = new DelayEntry(active, record0, topicPartition, offset);
             if (queue.offer(delayed)) {
                 counter.getAndIncrement();
-                log.trace("Message are fetched from the topic! [{}-{}], remaining: {}s, active: {}",
-                        topic, partition, remaining, active);
+                log.trace(
+                        "Message are fetched from the topic! [{}-{}], remaining: {}s, active: {}",
+                        topic,
+                        partition,
+                        remaining,
+                        active);
             }
         }
     }
-
 
     public Properties getConsumerProperties() {
         Properties properties = new Properties();
@@ -93,5 +96,4 @@ public class DelayMonitorService {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "lambda-cloud-delay-consumer");
         return properties;
     }
-
 }
