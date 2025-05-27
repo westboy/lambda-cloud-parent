@@ -5,6 +5,7 @@ import com.lambda.cloud.redis.model.ConnectionInfo;
 import com.lambda.cloud.redis.support.RedisConnectionConfigResolver;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulConnection;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -144,11 +145,12 @@ public class RedisConnectionConfiguration {
     private static class PoolBuilderFactory {
 
         LettuceClientConfigurationBuilder createBuilder(Pool properties) {
-            return LettucePoolingClientConfiguration.builder().poolConfig(getPoolConfig(properties));
+            GenericObjectPoolConfig<StatefulConnection<?, ?>> poolConfig = getPoolConfig(properties);
+            return LettucePoolingClientConfiguration.builder().poolConfig(poolConfig);
         }
 
-        private GenericObjectPoolConfig<?> getPoolConfig(Pool properties) {
-            GenericObjectPoolConfig<?> config = new GenericObjectPoolConfig<>();
+        private GenericObjectPoolConfig<StatefulConnection<?, ?>> getPoolConfig(Pool properties) {
+            GenericObjectPoolConfig<StatefulConnection<?, ?>> config = new GenericObjectPoolConfig<>();
             config.setMaxTotal(properties.getMaxActive());
             config.setMaxIdle(properties.getMaxIdle());
             config.setMinIdle(properties.getMinIdle());
