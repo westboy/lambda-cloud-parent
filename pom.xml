@@ -15,6 +15,9 @@
         <maven.compiler.target>22</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>22</java.version>
+        <spring-boot.version>3.2.12</spring-boot.version>
+        <spring-cloud.version>2023.0.5</spring-cloud.version>
+        <spring-cloud-alibaba.version>2023.0.3.2</spring-cloud-alibaba.version>
         <gson.version>2.11.0</gson.version>
         <slf4j.version>2.0.16</slf4j.version>
         <mysql.version>8.2.0</mysql.version>
@@ -33,7 +36,6 @@
         <springdoc.version>2.6.0</springdoc.version>
         <liquibase.version>4.29.1</liquibase.version>
         <jackson-bom.version>2.17.2</jackson-bom.version>
-        <spring-boot.version>3.5.0</spring-boot.version>
         <mapstruct.version>1.6.0.RC1</mapstruct.version>
         <mybatis-plus.version>3.5.12</mybatis-plus.version>
         <google-collections.version>1.0</google-collections.version>
@@ -125,14 +127,14 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2023.0.3</version>
+                <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-                <version>2023.0.1.2</version>
+                <version>${spring-cloud-alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -140,14 +142,6 @@
                 <groupId>com.playtika.testcontainers</groupId>
                 <artifactId>testcontainers-spring-boot-bom</artifactId>
                 <version>2.3.2</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <!-- djl -->
-            <dependency>
-                <groupId>ai.djl</groupId>
-                <artifactId>bom</artifactId>
-                <version>${djl.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

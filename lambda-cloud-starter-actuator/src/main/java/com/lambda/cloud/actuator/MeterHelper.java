@@ -67,7 +67,8 @@ public class MeterHelper {
 
     public <T extends Number> Gauge gauge(
             @Nonnull String name, @Nonnull String description, Map<String, String> tags, T number) {
-        Gauge.Builder<Supplier<T>> builder = Gauge.builder(name, () -> number).description(description);
+        Gauge.Builder<Supplier<Number>> builder =
+                Gauge.builder(name, () -> number).description(description);
         if (tags != null && !tags.isEmpty()) {
             tags.forEach(builder::tag);
         }
