@@ -1,15 +1,13 @@
 package com.lambda.cloud.logger.advices;
 
 import com.lambda.cloud.core.exception.NotSupportedException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 
 /**
  * AbstractAdvice
@@ -28,7 +26,6 @@ abstract class AbstractAdvice<T extends Annotation> {
      */
     @SuppressWarnings("squid:S112")
     protected abstract Object execute(final ProceedingJoinPoint pjp) throws Throwable;
-
 
     Method getMethodToExecute(final JoinPoint jp) throws NoSuchMethodException {
         final Signature sig = jp.getSignature();
@@ -52,10 +49,9 @@ abstract class AbstractAdvice<T extends Annotation> {
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    protected Object populate(final T annotation,
-                              final Class<? extends Annotation> expectedAnnotationClass, String name)
-            throws NoSuchMethodException, IllegalAccessException,
-            InvocationTargetException {
+    protected Object populate(
+            final T annotation, final Class<? extends Annotation> expectedAnnotationClass, String name)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         final Method namespaceMethod = expectedAnnotationClass.getDeclaredMethod(name, (Class<?>[]) null);
         return namespaceMethod.invoke(annotation, (Object[]) null);
     }

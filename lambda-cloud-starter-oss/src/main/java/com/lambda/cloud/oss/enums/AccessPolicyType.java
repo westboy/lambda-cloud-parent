@@ -26,7 +26,7 @@ public enum AccessPolicyType {
     /**
      * custom
      */
-    CUSTOM("custom",CannedAccessControlList.PublicRead, PolicyType.READ);
+    CUSTOM("custom", CannedAccessControlList.PublicRead, PolicyType.READ);
 
     /**
      * 桶 权限类型
@@ -51,5 +51,4 @@ public enum AccessPolicyType {
         }
         throw new RuntimeException("'type' not found By " + type);
     }
-
 }

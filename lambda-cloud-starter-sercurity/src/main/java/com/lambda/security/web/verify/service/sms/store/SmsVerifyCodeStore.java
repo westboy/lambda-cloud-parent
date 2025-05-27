@@ -1,9 +1,7 @@
 package com.lambda.security.web.verify.service.sms.store;
 
-
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.lambda.security.web.verify.service.sms.model.SmsVerifyCode;
-
 import java.time.LocalDateTime;
 
 /**
@@ -70,6 +68,4 @@ public interface SmsVerifyCodeStore<T> {
     default long getInterval() {
         return 60;
     }
-
-
 }

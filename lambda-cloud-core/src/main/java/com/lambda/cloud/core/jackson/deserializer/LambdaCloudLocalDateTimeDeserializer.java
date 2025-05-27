@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonTokenId;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-
 import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +40,9 @@ public class LambdaCloudLocalDateTimeDeserializer extends LocalDateTimeDeseriali
             } else {
                 try {
                     if (string.length() > 10 && string.charAt(10) == 'T') {
-                        return string.endsWith("Z") ? LocalDateTime.ofInstant(Instant.parse(string), ZoneOffset.UTC) : LocalDateTime.parse(string, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        return string.endsWith("Z")
+                                ? LocalDateTime.ofInstant(Instant.parse(string), ZoneOffset.UTC)
+                                : LocalDateTime.parse(string, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                     } else {
                         return LocalDateTime.parse(string, formatter);
                     }

@@ -1,10 +1,9 @@
 package com.lambda.security.web.form.locking;
 
 import com.lambda.security.web.SecurityLockingStrategy;
+import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * AbstractLockingStrategy
@@ -39,7 +38,7 @@ public abstract class AbstractLockingStrategy implements SecurityLockingStrategy
 
     @Override
     public UserLoginLimitTracker loginFailure(String username) {
-        //0不限制登陆失败次数
+        // 0不限制登陆失败次数
         if (0 == this.getMaxFailureTimes()) {
             return null;
         }
@@ -48,7 +47,7 @@ public abstract class AbstractLockingStrategy implements SecurityLockingStrategy
 
     @Override
     public boolean checkFailureTimes(String username) {
-        //0不限制登陆失败次数
+        // 0不限制登陆失败次数
         if (0 == this.getMaxFailureTimes()) {
             return false;
         }

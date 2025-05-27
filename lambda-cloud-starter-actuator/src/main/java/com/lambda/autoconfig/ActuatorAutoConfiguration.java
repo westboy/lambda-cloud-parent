@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class ActuatorAutoConfiguration {
 
-
     @Bean
     protected MeterRegistryCustomizer<MeterRegistry> customize(
             @Value("${spring.application.name}") String applicationName) {
@@ -41,9 +40,9 @@ public class ActuatorAutoConfiguration {
     public MeterHelper meterHelper(MeterRegistry meterRegistry) {
         return new MeterHelper(meterRegistry);
     }
+
     @Bean
     public PathResourceResolver pathResourceResolver() {
         return new PathResourceResolver();
     }
-
 }

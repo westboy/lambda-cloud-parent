@@ -19,5 +19,4 @@ public class StandardDataSourceCondition implements Condition {
         String datasource2 = context.getEnvironment().getProperty("spring.datasource.dynamic.primary");
         return StringUtils.isNotBlank(datasource1) && StringUtils.isBlank(datasource2);
     }
-
 }

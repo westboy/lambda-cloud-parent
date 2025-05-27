@@ -24,7 +24,6 @@ public final class RequestTimeHolder {
         CONTEXT_HOLDER.set(start);
     }
 
-
     public static void clear() {
         CONTEXT_HOLDER.remove();
     }

@@ -26,7 +26,8 @@ public class Exists extends AbstractMethod {
 
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
-        String sql = String.format("<script>SELECT COUNT(1) FROM DUAL WHERE EXISTS (SELECT 1 FROM %s %s %s)</script>",
+        String sql = String.format(
+                "<script>SELECT COUNT(1) FROM DUAL WHERE EXISTS (SELECT 1 FROM %s %s %s)</script>",
                 tableInfo.getTableName(), sqlWhereEntityWrapper(true, tableInfo), sqlComment());
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, modelClass);
         return this.addSelectMappedStatementForOther(mapperClass, methodName, sqlSource, boolean.class);

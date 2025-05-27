@@ -1,12 +1,11 @@
 package com.lambda.security.handler;
 
 import com.lambda.cloud.core.principal.LoginUser;
-
-import java.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 认证成功处理器
@@ -25,7 +24,9 @@ public interface AuthenticationSuccessHandler {
      * @throws IOException
      * @throws ServletException
      */
-    default void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser) throws IOException, ServletException {
+    default void onAuthenticationSuccess(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser)
+            throws IOException, ServletException {
         this.onAuthenticationSuccess(request, response, loginUser);
         chain.doFilter(request, response);
     }
@@ -39,5 +40,6 @@ public interface AuthenticationSuccessHandler {
      * @throws IOException
      * @throws ServletException
      */
-    void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException;
+    void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser)
+            throws IOException, ServletException;
 }

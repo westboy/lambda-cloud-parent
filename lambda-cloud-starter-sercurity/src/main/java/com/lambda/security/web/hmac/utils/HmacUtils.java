@@ -1,18 +1,17 @@
 package com.lambda.security.web.hmac.utils;
 
+import static com.lambda.cloud.mvc.WebHttpUtils.AUTHORIZATION;
+
 import com.lambda.cloud.core.utils.HmacGenerator;
 import com.lambda.security.web.hmac.model.HmacAuthorization;
 import com.lambda.security.web.hmac.wrapper.HmacRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.lambda.cloud.mvc.WebHttpUtils.AUTHORIZATION;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * HmacFactory
@@ -22,8 +21,7 @@ import static com.lambda.cloud.mvc.WebHttpUtils.AUTHORIZATION;
 @Slf4j
 public final class HmacUtils {
 
-    private HmacUtils() {
-    }
+    private HmacUtils() {}
 
     private static final String PATTERN = "^(\\w+) (\\S+):(\\S+):(\\S+)$";
 
@@ -45,7 +43,6 @@ public final class HmacUtils {
         final Pattern pattern = Pattern.compile(PATTERN);
         return pattern.matcher(header);
     }
-
 
     public static String getHmacSaltValue(final HmacRequestWrapper request, String appid, String timestamp) {
         Map<String, String[]> queries = request.getParameterMap();

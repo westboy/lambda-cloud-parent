@@ -631,7 +631,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <ratchetFrom>origin/main</ratchetFrom>
                     <formats>
                         <format>
                             <includes>

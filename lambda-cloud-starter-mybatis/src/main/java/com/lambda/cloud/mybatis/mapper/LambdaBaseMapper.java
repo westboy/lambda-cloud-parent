@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.google.common.collect.Lists;
 import io.lettuce.core.dynamic.annotation.Param;
-
 import java.util.List;
 
 /**
@@ -63,7 +62,6 @@ public interface LambdaBaseMapper<T> extends BaseMapper<T> {
      */
     int mysqlInsertAllBatch(List<T> entity);
 
-
     /**
      * oracle 形式的全字段批量新增
      *
@@ -71,7 +69,6 @@ public interface LambdaBaseMapper<T> extends BaseMapper<T> {
      * @return int
      */
     int oracleInsertAllBatch(List<T> entity);
-
 
     /**
      * 根据code 查询单条记录 如有多条则只取第一条

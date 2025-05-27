@@ -9,9 +9,7 @@ public final class LogContext {
     private static final String DETAIL = "detail";
     private static final String DESCRIPTION = "description";
 
-    private LogContext() {
-    }
-
+    private LogContext() {}
 
     public static void setDetail(String detail) {
         MDC.put(DETAIL, detail);

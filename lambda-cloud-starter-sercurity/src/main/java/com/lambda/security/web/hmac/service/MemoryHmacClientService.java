@@ -6,7 +6,6 @@ import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.service.HmacClientService;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.hmac.model.HmacClient;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

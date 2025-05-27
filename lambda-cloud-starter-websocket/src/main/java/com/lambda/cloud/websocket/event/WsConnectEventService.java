@@ -1,6 +1,5 @@
 package com.lambda.cloud.websocket.event;
 
-
 import com.lambda.cloud.websocket.WsSessionInfo;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;

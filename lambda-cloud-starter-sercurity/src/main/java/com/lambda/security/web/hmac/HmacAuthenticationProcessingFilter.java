@@ -1,26 +1,25 @@
 package com.lambda.security.web.hmac;
 
+import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.cloud.core.principal.LoginType;
+import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.exception.UsernameNotFoundException;
-import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.service.HmacClientService;
-import com.lambda.security.web.hmac.utils.HmacUtils;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import com.lambda.security.web.hmac.model.HmacAuthorization;
 import com.lambda.security.web.hmac.model.HmacClient;
+import com.lambda.security.web.hmac.utils.HmacUtils;
 import com.lambda.security.web.hmac.wrapper.HmacRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-
 import java.io.IOException;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * HmacAuthenticationProcessingFilter
@@ -63,7 +62,8 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
     }
 
     @Override
-    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
         try {
             if (request instanceof HmacRequestWrapper requestWrapper) {
                 HmacAuthorization authorization = HmacUtils.getHmacAuthorization(requestWrapper);
@@ -101,9 +101,7 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
         } catch (Exception failed) {
             throw new AuthenticationException("Hmac 认证失败！", failed);
         }
-
     }
-
 
     @Override
     protected HttpServletRequest wrapRequest(HttpServletRequest request) throws IOException {

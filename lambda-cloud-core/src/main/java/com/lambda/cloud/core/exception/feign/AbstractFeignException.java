@@ -1,6 +1,5 @@
 package com.lambda.cloud.core.exception.feign;
 
-
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import lombok.Getter;
 
@@ -38,5 +37,4 @@ public abstract class AbstractFeignException extends RuntimeException {
     public String getMessage() {
         return message;
     }
-
 }

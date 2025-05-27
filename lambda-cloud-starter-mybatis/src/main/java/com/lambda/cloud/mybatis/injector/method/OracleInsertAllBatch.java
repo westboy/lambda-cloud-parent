@@ -37,7 +37,8 @@ public class OracleInsertAllBatch extends AbstractMethod {
         final String valueSql = prepareValuesSqlForMysqlBatch(tableInfo);
         final String sqlResult = String.format(sql, valueSql);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sqlResult, modelClass);
-        return this.addInsertMappedStatement(mapperClass, modelClass, "oracleInsertAllBatch", sqlSource, new NoKeyGenerator(), null, null);
+        return this.addInsertMappedStatement(
+                mapperClass, modelClass, "oracleInsertAllBatch", sqlSource, new NoKeyGenerator(), null, null);
     }
 
     private String prepareFieldSql(TableInfo tableInfo) {
@@ -63,7 +64,9 @@ public class OracleInsertAllBatch extends AbstractMethod {
         if (StringUtils.isNotBlank(primaryKey)) {
             valueSql.append("#{item.").append(tableInfo.getKeyProperty()).append("},");
         }
-        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append("},"));
+        tableInfo
+                .getFieldList()
+                .forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append("},"));
         valueSql.delete(valueSql.length() - 1, valueSql.length());
         valueSql.append(StringPool.RIGHT_BRACKET);
         valueSql.append("</foreach>");

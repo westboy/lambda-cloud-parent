@@ -1,15 +1,14 @@
 package com.lambda.security.encoder;
 
+import static org.springframework.security.crypto.util.EncodingUtils.concatenate;
+import static org.springframework.security.crypto.util.EncodingUtils.subArray;
+
+import java.security.MessageDigest;
 import org.springframework.security.crypto.codec.Hex;
 import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.security.crypto.keygen.BytesKeyGenerator;
 import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.security.MessageDigest;
-
-import static org.springframework.security.crypto.util.EncodingUtils.concatenate;
-import static org.springframework.security.crypto.util.EncodingUtils.subArray;
 
 /**
  * This {@link PasswordEncoder} is provided for legacy purposes only and is not considered
@@ -68,8 +67,7 @@ public final class Sha256PasswordEncoder implements PasswordEncoder {
     }
 
     private byte[] digest(CharSequence rawPassword, byte[] salt) {
-        byte[] digest = digester.digest(concatenate(salt, secret,
-                Utf8.encode(rawPassword)));
+        byte[] digest = digester.digest(concatenate(salt, secret, Utf8.encode(rawPassword)));
         return concatenate(salt, digest);
     }
 
@@ -78,5 +76,4 @@ public final class Sha256PasswordEncoder implements PasswordEncoder {
     }
 
     private static final int DEFAULT_ITERATIONS = 1024;
-
 }

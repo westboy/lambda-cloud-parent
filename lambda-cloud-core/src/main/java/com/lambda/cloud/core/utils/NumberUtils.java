@@ -19,5 +19,4 @@ public class NumberUtils {
     public static String decimalToMoneyString(BigDecimal number) {
         return FINANCE.format(number);
     }
-
 }

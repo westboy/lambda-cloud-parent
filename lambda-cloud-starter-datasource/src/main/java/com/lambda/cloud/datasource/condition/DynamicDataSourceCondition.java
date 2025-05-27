@@ -1,11 +1,10 @@
 package com.lambda.cloud.datasource.condition;
 
+import javax.annotation.Nonnull;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.StringUtils;
-
-import javax.annotation.Nonnull;
 
 /**
  * DynamicDataSourceCondition
@@ -19,5 +18,4 @@ public class DynamicDataSourceCondition implements Condition {
         String datasource = context.getEnvironment().getProperty("spring.datasource.dynamic.primary");
         return StringUtils.hasText(datasource);
     }
-
 }

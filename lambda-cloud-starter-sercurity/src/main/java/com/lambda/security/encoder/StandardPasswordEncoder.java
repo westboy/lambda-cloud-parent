@@ -1,9 +1,8 @@
 package com.lambda.security.encoder;
 
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * Md5PasswordEncoder
@@ -41,6 +40,7 @@ public class StandardPasswordEncoder implements PasswordEncoder {
     public static void main(String[] args) {
         StandardPasswordEncoder standardPasswordEncoder = new StandardPasswordEncoder();
         System.out.println(standardPasswordEncoder.encode("123456"));
-        System.out.println(standardPasswordEncoder.matches("123456","dd8b4d24b2aff492b1c893894af1f54fe610435d8152678697e055307029e509ebd6ff9dfb1e1e71"));
+        System.out.println(standardPasswordEncoder.matches(
+                "123456", "dd8b4d24b2aff492b1c893894af1f54fe610435d8152678697e055307029e509ebd6ff9dfb1e1e71"));
     }
 }

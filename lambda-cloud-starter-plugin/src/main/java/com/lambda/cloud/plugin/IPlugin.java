@@ -17,5 +17,4 @@ public interface IPlugin<T> {
      * @throws PluginException
      */
     Object invoke(T obj) throws PluginException;
-
 }

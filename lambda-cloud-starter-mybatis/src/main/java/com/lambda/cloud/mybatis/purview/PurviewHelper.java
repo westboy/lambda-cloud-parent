@@ -1,11 +1,10 @@
 package com.lambda.cloud.mybatis.purview;
 
+import static cn.hutool.core.text.CharSequenceUtil.EMPTY;
 
 import cn.hutool.core.lang.Assert;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
-
-import static cn.hutool.core.text.CharSequenceUtil.EMPTY;
 
 /**
  * 动态数据权限管理器
@@ -18,15 +17,11 @@ public final class PurviewHelper implements AutoCloseable {
 
     private static final PurviewHelper HELPER = new PurviewHelper();
 
-
-    private PurviewHelper() {
-    }
-
+    private PurviewHelper() {}
 
     public static PurviewHelper getInstance() {
         return HELPER;
     }
-
 
     public DynamicPurview getPurview() {
         return CONTEXT.get();
@@ -63,11 +58,8 @@ public final class PurviewHelper implements AutoCloseable {
         CONTEXT.set(dynamicPurview);
     }
 
-
     @Override
     public void close() {
         CONTEXT.remove();
     }
-
-
 }

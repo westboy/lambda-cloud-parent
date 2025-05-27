@@ -1,6 +1,5 @@
 package com.lambda.cloud.sms;
 
-
 import com.lambda.cloud.sms.model.SmsSendResult;
 
 /**

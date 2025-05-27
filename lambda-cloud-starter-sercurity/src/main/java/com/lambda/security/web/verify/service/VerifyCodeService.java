@@ -7,7 +7,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -35,7 +34,8 @@ public interface VerifyCodeService {
      * @throws IOException      IOException
      * @throws ServletException ServletException
      */
-    void execute(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException;
+    void execute(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException;
 
     /**
      * 获取包装后的request

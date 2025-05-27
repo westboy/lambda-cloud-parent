@@ -21,7 +21,10 @@ import org.apache.ibatis.session.Configuration;
  */
 @Slf4j
 @Intercepts({
-        @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
+    @Signature(
+            type = Executor.class,
+            method = "update",
+            args = {MappedStatement.class, Object.class})
 })
 public class InsertBatchInterceptor implements Interceptor {
 

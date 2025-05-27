@@ -1,9 +1,8 @@
 package com.lambda.cloud.mvc;
 
 import com.google.common.collect.Maps;
-import org.springframework.web.context.request.async.DeferredResult;
-
 import java.util.Map;
+import org.springframework.web.context.request.async.DeferredResult;
 
 /**
  * @author Jin
@@ -39,5 +38,4 @@ public class DeferredResultManager<T> {
     public int size() {
         return deferredResults.size();
     }
-
 }

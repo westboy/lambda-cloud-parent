@@ -36,7 +36,8 @@ public class MysqlInsertAllBatch extends AbstractMethod {
         final String valueSql = prepareValuesSqlForMysqlBatch(tableInfo);
         final String sqlResult = String.format(sql, tableInfo.getTableName(), fieldSql, valueSql);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sqlResult, modelClass);
-        return this.addInsertMappedStatement(mapperClass, modelClass, "mysqlInsertAllBatch", sqlSource, new NoKeyGenerator(), null, null);
+        return this.addInsertMappedStatement(
+                mapperClass, modelClass, "mysqlInsertAllBatch", sqlSource, new NoKeyGenerator(), null, null);
     }
 
     private String prepareFieldSql(TableInfo tableInfo) {
@@ -54,15 +55,21 @@ public class MysqlInsertAllBatch extends AbstractMethod {
 
     private String prepareValuesSqlForMysqlBatch(TableInfo tableInfo) {
         final StringBuilder valueSql = new StringBuilder();
-        valueSql.append("<foreach collection=\"list\" item=\"item\" index=\"index\" open=\"(\" separator=\"),(\" close=\")\">");
+        valueSql.append(
+                "<foreach collection=\"list\" item=\"item\" index=\"index\" open=\"(\" separator=\"),(\" close=\")\">");
         String primaryKey = tableInfo.getKeyProperty();
         if (StringUtils.isNotBlank(primaryKey)) {
-            valueSql.append("#{item.").append(tableInfo.getKeyProperty()).append(RIGHT_BRACE).append(COMMA);
+            valueSql.append("#{item.")
+                    .append(tableInfo.getKeyProperty())
+                    .append(RIGHT_BRACE)
+                    .append(COMMA);
         }
-        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append(RIGHT_BRACE).append(COMMA));
+        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.")
+                .append(x.getProperty())
+                .append(RIGHT_BRACE)
+                .append(COMMA));
         valueSql.delete(valueSql.length() - 1, valueSql.length());
         valueSql.append("</foreach>");
         return valueSql.toString();
     }
 }
-

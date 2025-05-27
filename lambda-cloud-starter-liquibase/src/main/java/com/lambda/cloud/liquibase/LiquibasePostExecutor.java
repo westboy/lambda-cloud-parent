@@ -2,16 +2,14 @@ package com.lambda.cloud.liquibase;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import javax.sql.DataSource;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.SneakyThrows;
-
-import javax.sql.DataSource;
 
 /**
  * @author w
  */
 public class LiquibasePostExecutor {
-
 
     private final String changelog;
 

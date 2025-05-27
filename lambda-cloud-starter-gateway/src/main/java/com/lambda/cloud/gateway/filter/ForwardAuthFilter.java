@@ -22,8 +22,7 @@ public class ForwardAuthFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
         String token = SaSameUtil.getToken();
-        ServerHttpRequest newRequest = exchange
-                .getRequest()
+        ServerHttpRequest newRequest = exchange.getRequest()
                 .mutate()
                 // 为请求追加 Same-Token 参数
                 .header(SaSameUtil.SAME_TOKEN, token)

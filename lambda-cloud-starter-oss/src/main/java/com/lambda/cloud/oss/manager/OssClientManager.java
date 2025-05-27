@@ -1,7 +1,6 @@
 package com.lambda.cloud.oss.manager;
 
 import com.lambda.cloud.oss.client.OssClient;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,5 +20,4 @@ public class OssClientManager {
     public OssClient get(String clientName) {
         return CLIENT_CACHE.get(clientName);
     }
-
 }

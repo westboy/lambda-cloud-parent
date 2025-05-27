@@ -33,7 +33,8 @@ public class InsertAll extends AbstractMethod {
         final String valueSql = prepareValuesSqlForMysqlBatch(tableInfo);
         final String sqlResult = String.format(sql, tableInfo.getTableName(), fieldSql, valueSql);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sqlResult, modelClass);
-        return this.addInsertMappedStatement(mapperClass, modelClass, "insertAll", sqlSource, new NoKeyGenerator(), null, null);
+        return this.addInsertMappedStatement(
+                mapperClass, modelClass, "insertAll", sqlSource, new NoKeyGenerator(), null, null);
     }
 
     private String prepareFieldSql(TableInfo tableInfo) {
@@ -48,12 +49,14 @@ public class InsertAll extends AbstractMethod {
 
     private String prepareValuesSqlForMysqlBatch(TableInfo tableInfo) {
         final StringBuilder valueSql = new StringBuilder();
-        valueSql.append("<foreach collection=\"list\" item=\"item\" index=\"index\" open=\"(\" separator=\"),(\" close=\")\">");
+        valueSql.append(
+                "<foreach collection=\"list\" item=\"item\" index=\"index\" open=\"(\" separator=\"),(\" close=\")\">");
         valueSql.append("#{item.").append(tableInfo.getKeyProperty()).append("},");
-        tableInfo.getFieldList().forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append("},"));
+        tableInfo
+                .getFieldList()
+                .forEach(x -> valueSql.append("#{item.").append(x.getProperty()).append("},"));
         valueSql.delete(valueSql.length() - 1, valueSql.length());
         valueSql.append("</foreach>");
         return valueSql.toString();
     }
 }
-

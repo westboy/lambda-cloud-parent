@@ -3,12 +3,11 @@ package com.lambda.cloud.datasource.utils;
 import com.lambda.cloud.datasource.property.DataSourceProperty;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import lombok.experimental.UtilityClass;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import javax.sql.DataSource;
+import lombok.experimental.UtilityClass;
 
 /**
  * @author w
@@ -48,7 +47,7 @@ public class DataSourceUtils {
         configuration.setConnectionTimeout(3000);
         configuration.setReadOnly(property.isReadOnly());
         try (HikariDataSource dataSource = new HikariDataSource(configuration);
-             Connection connection = dataSource.getConnection()) {
+                Connection connection = dataSource.getConnection()) {
             boolean verified = connection.isValid(1000);
             if (verified) {
                 DatabaseMetaData meta = connection.getMetaData();
@@ -74,5 +73,4 @@ public class DataSourceUtils {
             return false;
         }
     }
-
 }

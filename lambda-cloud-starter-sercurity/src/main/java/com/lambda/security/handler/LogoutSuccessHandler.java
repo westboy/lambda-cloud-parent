@@ -1,7 +1,6 @@
 package com.lambda.security.handler;
 
 import com.lambda.cloud.core.principal.LoginUser;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,5 +22,6 @@ public interface LogoutSuccessHandler {
      * @throws IOException IOException
      * @throws ServletException ServletException
      */
-    void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException;
+    void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser)
+            throws IOException, ServletException;
 }

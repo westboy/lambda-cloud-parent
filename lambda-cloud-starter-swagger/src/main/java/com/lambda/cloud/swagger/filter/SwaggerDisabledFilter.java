@@ -19,7 +19,8 @@ public class SwaggerDisabledFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest arg0, ServletResponse arg1, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest arg0, ServletResponse arg1, FilterChain chain)
+            throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) arg0;
         HttpServletResponse response = (HttpServletResponse) arg1;
         String uri = request.getRequestURI();

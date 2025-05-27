@@ -1,4 +1,3 @@
-
 package com.lambda.cloud.lucene.utils;
 
 import cn.hutool.core.util.ObjectUtil;
@@ -6,6 +5,11 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.lucene.annotation.LuceneField;
 import com.lambda.cloud.lucene.model.AbstractIndexObject;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -13,12 +17,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.search.highlight.Highlighter;
-
-import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * DocumentUtil
@@ -39,22 +37,23 @@ public class IndexObjectUtil {
         Arrays.stream(fields).forEach(field -> {
             LuceneField luceneField = getAnnotation(field);
             if (ObjectUtil.isNotNull(luceneField)) {
-                //获取注解上的字段名
+                // 获取注解上的字段名
                 String docFieldName = getLuceneFieldName(field);
-                //获取Object字段值
+                // 获取Object字段值
                 Object value = ReflectUtil.getFieldValue(indexObject, field.getName());
-                //字段类型目前只能是TextField 和 StoredField
+                // 字段类型目前只能是TextField 和 StoredField
                 if (ObjectUtil.equal(luceneField.field(), TextField.class) || luceneField.isExtendField()) {
                     if (ObjectUtil.isNotNull(value)) {
-                        //是否为扩展字段
+                        // 是否为扩展字段
                         if (luceneField.isExtendField()) {
-                            //扩展字段类型必须是map
+                            // 扩展字段类型必须是map
                             if (ObjectUtil.equal(field.getType(), Map.class)) {
-                                //no inspection checked
+                                // no inspection checked
                                 Map<String, Object> extendFieldMap = (Map<String, Object>) value;
                                 if (ObjectUtil.isNotNull(extendFieldMap)) {
                                     extendFieldMap.forEach((extFieldName, extFieldValue) -> {
-                                        TextField textField = new TextField(extFieldName, (String) extFieldValue, luceneField.store());
+                                        TextField textField = new TextField(
+                                                extFieldName, (String) extFieldValue, luceneField.store());
                                         doc.add(textField);
                                     });
                                 }
@@ -89,13 +88,11 @@ public class IndexObjectUtil {
                             }
                         }
                     }
-
                 }
             }
         });
         return doc;
     }
-
 
     /**
      * @param analyzer Analyzer
@@ -106,38 +103,43 @@ public class IndexObjectUtil {
      * @param <T> T
      * @return T
      */
-    public static <T extends AbstractIndexObject> T documentToIndexObject(Analyzer analyzer, Highlighter highlighter, Document doc, float score, Class<T> clazz) {
+    public static <T extends AbstractIndexObject> T documentToIndexObject(
+            Analyzer analyzer, Highlighter highlighter, Document doc, float score, Class<T> clazz) {
         T obj = ReflectUtil.newInstance(clazz);
         Field[] fields = ReflectUtil.getFields(clazz);
         obj.setScore(score);
         Arrays.stream(fields).forEach(field -> {
             LuceneField luceneField = getAnnotation(field);
             if (ObjectUtil.isNotNull(luceneField)) {
-                //获取注解上的字段名
+                // 获取注解上的字段名
                 String docFieldName = getLuceneFieldName(field);
                 if (ObjectUtil.equal(luceneField.field(), TextField.class) && luceneField.isQueryField()) {
-                    //是否查询字段 用于关键字加亮
+                    // 是否查询字段 用于关键字加亮
                     if (luceneField.isExtendField()) {
-                        //扩展字段属性必须是Map类型
+                        // 扩展字段属性必须是Map类型
                         if (ObjectUtil.equal(field.getType(), Map.class)) {
-                            //获取字段名用于下面判断排除
-                            List<String> objectFileNames = Arrays.stream(fields).map(IndexObjectUtil::getLuceneFieldName).collect(Collectors.toList());
-                            //扩展字段map
+                            // 获取字段名用于下面判断排除
+                            List<String> objectFileNames = Arrays.stream(fields)
+                                    .map(IndexObjectUtil::getLuceneFieldName)
+                                    .collect(Collectors.toList());
+                            // 扩展字段map
                             Map<String, Object> extendFieldMap = new HashMap<>(16);
-                            //遍历取出扩展字段的值
+                            // 遍历取出扩展字段的值
                             doc.getFields().parallelStream().forEach(indexField -> {
-                                //排除
-                                if (objectFileNames.parallelStream().noneMatch(s -> ObjectUtil.equal(indexField.name(), s))) {
-                                    //自定义关键字加亮
+                                // 排除
+                                if (objectFileNames.parallelStream()
+                                        .noneMatch(s -> ObjectUtil.equal(indexField.name(), s))) {
+                                    // 自定义关键字加亮
                                     extendFieldMap.put(indexField.name(), indexField.stringValue());
                                 }
                             });
-                            //设置扩展字段的值
+                            // 设置扩展字段的值
                             ReflectUtil.setFieldValue(obj, field.getName(), extendFieldMap);
                         }
                     } else {
-                        //设置并加亮
-                        ReflectUtil.setFieldValue(obj, field.getName(), highlighter(analyzer, highlighter, doc, docFieldName));
+                        // 设置并加亮
+                        ReflectUtil.setFieldValue(
+                                obj, field.getName(), highlighter(analyzer, highlighter, doc, docFieldName));
                     }
                 } else {
                     ReflectUtil.setFieldValue(obj, field.getName(), doc.get(docFieldName));
@@ -192,7 +194,7 @@ public class IndexObjectUtil {
      */
     private static LuceneField getAnnotation(Field field) {
         LuceneField luceneField = field.getAnnotation(LuceneField.class);
-        //字段上没有从方法上获取
+        // 字段上没有从方法上获取
         if (ObjectUtil.isNull(luceneField)) {
             String getMethodName = "get" + StrUtil.upperFirst(field.getName());
             Method method = ReflectUtil.getPublicMethod(field.getDeclaringClass(), getMethodName);
@@ -219,5 +221,4 @@ public class IndexObjectUtil {
         }
         return fieldValue;
     }
-
 }

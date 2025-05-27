@@ -14,8 +14,7 @@ public class TenantHolder {
 
     private static final ThreadLocal<String> TENANT_ID = new ThreadLocal<>();
 
-    private TenantHolder() {
-    }
+    private TenantHolder() {}
 
     /**
      * 设置租户ID
@@ -41,5 +40,4 @@ public class TenantHolder {
     public static void clear() {
         TENANT_ID.remove();
     }
-
 }

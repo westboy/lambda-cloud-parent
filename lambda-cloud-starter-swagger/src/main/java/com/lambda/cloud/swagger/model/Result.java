@@ -14,7 +14,7 @@ public class Result {
 
     @Schema(description = "结果状态")
     private boolean status;
+
     @Schema(description = "提示信息")
     private String message;
-
 }

@@ -1,24 +1,23 @@
 package com.lambda.cloud.mybatis.purview.utils;
 
+import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
+import static com.lambda.cloud.mybatis.utils.SQLUtils.toIn;
+
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Alias;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.binding.MapperMethod.ParamMap;
-
-import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
-import static com.lambda.cloud.mybatis.utils.SQLUtils.toIn;
 
 /**
  * 获取用户下的权限标识集合
@@ -29,7 +28,8 @@ import static com.lambda.cloud.mybatis.utils.SQLUtils.toIn;
 public final class PurviewUtils {
     private static final String JF_PERMISSIONS = "'jf-permissions(\\|(\\d+)(,\\d+)*+)?(\\|([><])?=?-?\\d*)?'";
     private static final Pattern PATTERN = Pattern.compile(JF_PERMISSIONS);
-    private static final Pattern CLEAR_PATTERN = Pattern.compile("\\s*\\S*\\s*(?i)(IN)\\s*\\(\\s*" + JF_PERMISSIONS + "\\s*\\)");
+    private static final Pattern CLEAR_PATTERN =
+            Pattern.compile("\\s*\\S*\\s*(?i)(IN)\\s*\\(\\s*" + JF_PERMISSIONS + "\\s*\\)");
     /**
      * 匹配replace模式下，level的设置，可以匹配数字和带运算符的数字
      */
@@ -38,8 +38,7 @@ public final class PurviewUtils {
     private static final Integer ONE = 1;
     private static final Integer TWO = 2;
 
-    private PurviewUtils() {
-    }
+    private PurviewUtils() {}
 
     /**
      * 判断当前用户是否是数据的拥有者
@@ -114,7 +113,6 @@ public final class PurviewUtils {
         return PATTERN.matcher(source).replaceAll(sql);
     }
 
-
     /**
      * 获取数据权限注解信息
      *
@@ -164,17 +162,22 @@ public final class PurviewUtils {
         String[] strs = purveiewStr.split("'")[1].split("\\|");
         DynamicPurview purview = new DynamicPurview();
         purview.setReplace(true);
-        purview.setType(new int[]{0});
+        purview.setType(new int[] {0});
         // 解析type
         if (strs.length > ONE && StringUtils.isNotBlank(strs[ONE])) {
-            purview.setType(Arrays.stream(strs[1].split(",")).mapToInt(Integer::parseInt).toArray());
+            purview.setType(Arrays.stream(strs[1].split(","))
+                    .mapToInt(Integer::parseInt)
+                    .toArray());
         }
         // 解析level
         if (strs.length > TWO && StringUtils.isNotBlank(strs[TWO])) {
             Matcher levelMatcher = LEVEL_PATTERN.matcher(strs[TWO]);
             if (levelMatcher.matches()) {
                 // 获取运算符，如果没有运算符，则默认为 "="
-                String operator = (levelMatcher.group(1) != null && !levelMatcher.group(1).isEmpty()) ? levelMatcher.group(1) : "=";
+                String operator =
+                        (levelMatcher.group(1) != null && !levelMatcher.group(1).isEmpty())
+                                ? levelMatcher.group(1)
+                                : "=";
                 purview.setLevelExp(Purview.Expression.parseExpression(operator));
                 // 获取数字
                 String number = levelMatcher.group(2);
@@ -192,13 +195,13 @@ public final class PurviewUtils {
     @SuppressWarnings("unchecked")
     public static LoginUser getOperator(Object parameter) {
         if (parameter instanceof ParamMap) {
-            Optional<Object> optional = ((ParamMap<Object>) parameter).values().stream()
-                    .filter(LoginUser.class::isInstance).findFirst();
+            Optional<Object> optional = ((ParamMap<Object>) parameter)
+                    .values().stream().filter(LoginUser.class::isInstance).findFirst();
             if (optional.isPresent()) {
                 return (LoginUser) optional.get();
             }
         }
-        //todo 从shiro 取用户
+        // todo 从shiro 取用户
         return null;
     }
 
@@ -238,7 +241,6 @@ public final class PurviewUtils {
         return matcher.replaceAll(" 1 = 1 ");
     }
 
-
     @Nonnull
     @SuppressWarnings({"AlibabaLowerCamelCaseVariableNaming", "PMD"})
     public static String buildSQL01(@Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
@@ -248,11 +250,14 @@ public final class PurviewUtils {
         sql.append(SPACE).append("WHERE TID").append(toIn(ids));
         sql.append(SPACE).append("AND type2").append(toIn(types));
         if (purview.getLevel() > -1) {
-            sql.append(SPACE).append("AND rank2 ").append(purview.getLevelExp().getComparison()).append(StringPool.SPACE).append(getLevel(purview));
+            sql.append(SPACE)
+                    .append("AND rank2 ")
+                    .append(purview.getLevelExp().getComparison())
+                    .append(StringPool.SPACE)
+                    .append(getLevel(purview));
         }
         return sql.toString();
     }
-
 
     /**
      * @param purview
@@ -272,12 +277,17 @@ public final class PurviewUtils {
         if (Purview.Scheme.ORGAN.equals(scheme)) {
             String orgId = "";
             builder = new StringBuilder();
-            builder.append("SELECT id FROM ORGANIZATION ORGA WHERE ORGA.id = '").append(orgId).append(SINGLE_QUOTE);
+            builder.append("SELECT id FROM ORGANIZATION ORGA WHERE ORGA.id = '")
+                    .append(orgId)
+                    .append(SINGLE_QUOTE);
             builder.append(" OR ORGA.parentkeys LIKE '%").append(orgId).append("%'");
             return builder.toString();
         } else if (Purview.Scheme.CASCADE.equals(scheme)) {
             if (level > -1) {
-                builder.append(" AND PURV.rank2 ").append(purview.getLevelExp().getComparison()).append(StringPool.SPACE).append(level);
+                builder.append(" AND PURV.rank2 ")
+                        .append(purview.getLevelExp().getComparison())
+                        .append(StringPool.SPACE)
+                        .append(level);
             }
             int checked = purview.getChecked();
             if (checked > 0) {
@@ -286,14 +296,15 @@ public final class PurviewUtils {
             if (StringUtils.isNotBlank(condition)) {
                 builder.append(" AND PURV.").append(condition);
             }
-            return builder.insert(0, "SELECT DISTINCT id FROM PURVIEWS PURV WHERE ").toString();
+            return builder.insert(0, "SELECT DISTINCT id FROM PURVIEWS PURV WHERE ")
+                    .toString();
         } else {
             if (StringUtils.isNotBlank(condition)) {
                 condition = "AND VDV." + condition;
             }
             String type = purview.getType()[0] > 0 ? String.valueOf(purview.getType()[0]) : "";
-            return "SELECT VDV.sid FROM PURVIEWS PURV,V_DATAVIEW" + type + " VDV WHERE VDV.ID LIKE" +
-                    " CONCAT(PURV.ID, '%') " + condition + " AND " + builder;
+            return "SELECT VDV.sid FROM PURVIEWS PURV,V_DATAVIEW" + type + " VDV WHERE VDV.ID LIKE"
+                    + " CONCAT(PURV.ID, '%') " + condition + " AND " + builder;
         }
     }
 }

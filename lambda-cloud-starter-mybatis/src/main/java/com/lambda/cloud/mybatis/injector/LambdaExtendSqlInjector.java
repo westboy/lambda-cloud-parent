@@ -7,12 +7,11 @@ import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.lambda.cloud.mybatis.annotation.TableCodeField;
 import com.lambda.cloud.mybatis.injector.method.*;
-import org.apache.ibatis.session.Configuration;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.ibatis.session.Configuration;
 
 /**
  * 添加自定义方法
@@ -20,7 +19,6 @@ import java.util.stream.Stream;
  * @author jpjoo
  */
 public class LambdaExtendSqlInjector extends DefaultSqlInjector {
-
 
     /**
      * 如果只需增加方法，保留MP自带方法
@@ -59,10 +57,8 @@ public class LambdaExtendSqlInjector extends DefaultSqlInjector {
         return builder.build().collect(Collectors.toList());
     }
 
-
     private Optional<TableFieldInfo> getCodeField(TableInfo tableInfo) {
-        return tableInfo.getFieldList()
-                .stream()
+        return tableInfo.getFieldList().stream()
                 .filter(e -> null != e.getField().getAnnotation(TableCodeField.class))
                 .findFirst();
     }

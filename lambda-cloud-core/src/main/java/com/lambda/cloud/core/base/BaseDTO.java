@@ -1,6 +1,5 @@
 package com.lambda.cloud.core.base;
 
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 /**
@@ -28,5 +27,4 @@ public abstract class BaseDTO<D, E> {
     protected Page<E> getPage(long current, long size) {
         return new Page<>(current, size);
     }
-
 }

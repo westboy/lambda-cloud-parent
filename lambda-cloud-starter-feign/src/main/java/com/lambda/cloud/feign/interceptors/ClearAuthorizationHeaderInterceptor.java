@@ -1,11 +1,10 @@
 package com.lambda.cloud.feign.interceptors;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.core.PriorityOrdered;
-
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
 
 /**
  * @author westboy

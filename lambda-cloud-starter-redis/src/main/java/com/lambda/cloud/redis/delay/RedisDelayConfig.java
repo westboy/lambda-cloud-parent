@@ -1,8 +1,7 @@
 package com.lambda.cloud.redis.delay;
 
-import lombok.Data;
-
 import java.util.concurrent.TimeUnit;
+import lombok.Data;
 
 /**
  * @author westboy

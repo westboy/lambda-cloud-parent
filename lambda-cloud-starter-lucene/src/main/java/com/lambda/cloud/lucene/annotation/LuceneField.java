@@ -1,9 +1,8 @@
 package com.lambda.cloud.lucene.annotation;
 
+import java.lang.annotation.*;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
-
-import java.lang.annotation.*;
 
 /**
  * LuceneField
@@ -22,9 +21,9 @@ public @interface LuceneField {
 
     Field.Store store() default Field.Store.YES;
 
-    //是否需要检索的字段
+    // 是否需要检索的字段
     boolean isQueryField() default false;
 
-    //是否扩展字段
+    // 是否扩展字段
     boolean isExtendField() default false;
 }

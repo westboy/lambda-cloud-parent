@@ -15,6 +15,7 @@ public class UserLogoutEvent extends ApplicationEvent {
 
     private final long cast;
     private final String details;
+
     @Setter
     private String ipaddress;
 
@@ -27,5 +28,4 @@ public class UserLogoutEvent extends ApplicationEvent {
         this.cast = cast;
         this.details = details;
     }
-
 }

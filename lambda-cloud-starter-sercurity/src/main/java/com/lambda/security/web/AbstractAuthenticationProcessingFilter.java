@@ -11,15 +11,14 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.log.LogMessage;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * AbstractAuthenticationProcessingFilter
@@ -32,6 +31,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     protected static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
     private AuthenticationSuccessHandler successHandler;
     private AuthenticationFailureHandler failureHandler;
+
     @Setter
     private String filterProcessesUrl;
 
@@ -39,11 +39,13 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         this.filterProcessesUrl = defaultFilterProcessesUrl;
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         this.doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
     }
 
-    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         if (this.nonRequiresAuthentication(request)) {
             chain.doFilter(request, response);
         } else {
@@ -56,7 +58,8 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
                     this.unsuccessfulAuthentication(request, response, (AuthenticationException) exception);
                 } else {
                     log.error("authentication exception", exception);
-                    this.unsuccessfulAuthentication(request, response, new AuthenticationException(exception.getMessage()));
+                    this.unsuccessfulAuthentication(
+                            request, response, new AuthenticationException(exception.getMessage()));
                 }
             }
         }
@@ -91,9 +94,12 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
      * @throws IOException
      * @throws ServletException
      */
-    public abstract LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException;
+    public abstract LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException, IOException, ServletException;
 
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser) throws IOException, ServletException {
+    protected void successfulAuthentication(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser)
+            throws IOException, ServletException {
         if (this.logger.isDebugEnabled()) {
             this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", loginUser));
         }
@@ -103,13 +109,14 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         }
     }
 
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException failed)
+            throws IOException, ServletException {
         this.logger.trace("Failed to process authentication request", failed);
         this.logger.trace("Cleared SecurityContextHolder");
         this.logger.trace("Handling authentication failure");
         this.failureHandler.onAuthenticationFailure(request, response, failed);
     }
-
 
     public void setAuthenticationSuccessHandler(AuthenticationSuccessHandler successHandler) {
         Assert.notNull(successHandler, "successHandler cannot be null");

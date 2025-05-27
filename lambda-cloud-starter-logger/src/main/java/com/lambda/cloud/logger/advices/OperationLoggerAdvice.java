@@ -1,5 +1,8 @@
 package com.lambda.cloud.logger.advices;
 
+import static com.lambda.cloud.core.exception.model.ErrorModel.GSON;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.OperatorUtils;
@@ -10,6 +13,10 @@ import com.lambda.cloud.logger.model.OperationDetail;
 import com.lambda.cloud.logger.service.OperationService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.Map;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -22,14 +29,6 @@ import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.Map;
-
-import static com.lambda.cloud.core.exception.model.ErrorModel.GSON;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 /**
  * OperationLoggerAdvice
@@ -46,12 +45,10 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         this.operationService = operationService;
     }
 
-
     @Around("@annotation(com.lambda.cloud.logger.annotation.OperationLog)")
     protected Object obtain(final ProceedingJoinPoint pjp) throws Throwable {
         return execute(pjp);
     }
-
 
     @Override
     protected Object execute(ProceedingJoinPoint pjp) throws Throwable {
@@ -107,7 +104,8 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         }
     }
 
-    private OperationDetail getOperationDetail(String operationId, HttpServletRequest httpRequest, Annotation[][] parameterAnnotations, Object[] args) {
+    private OperationDetail getOperationDetail(
+            String operationId, HttpServletRequest httpRequest, Annotation[][] parameterAnnotations, Object[] args) {
         OperationDetail detail = new OperationDetail();
         detail.setOperationId(operationId);
         detail.setUri(httpRequest.getRequestURI());
@@ -122,9 +120,7 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         return detail;
     }
 
-
-    private Object getDeclaredRequestBody(Annotation[][] parameterAnnotations,
-                                          Object[] args) {
+    private Object getDeclaredRequestBody(Annotation[][] parameterAnnotations, Object[] args) {
         int i = 0;
         for (Annotation[] annotations : parameterAnnotations) {
             for (Annotation annotation : annotations) {
@@ -136,7 +132,6 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         }
         return null;
     }
-
 
     private HttpMethod getDeclaredOperation(final String method) {
         try {
@@ -151,19 +146,17 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
     }
 
     private HttpServletRequest getHttpRequest() {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
-                .getRequestAttributes();
+        ServletRequestAttributes requestAttributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (requestAttributes == null) {
             return null;
         }
         return requestAttributes.getRequest();
     }
 
-
     private String getDeclaredMethodName(final Method method) {
         return String.format("%s.%s", method.getDeclaringClass().getName(), method.getName());
     }
-
 
     private String getOrDefault(String target, String defaultValue) {
         return StringUtils.isNotBlank(target) ? target : defaultValue;

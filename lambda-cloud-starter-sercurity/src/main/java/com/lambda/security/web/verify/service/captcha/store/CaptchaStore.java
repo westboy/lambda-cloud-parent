@@ -27,5 +27,4 @@ public interface CaptchaStore {
      * @return
      */
     boolean validate(String token, String inputCode);
-
 }

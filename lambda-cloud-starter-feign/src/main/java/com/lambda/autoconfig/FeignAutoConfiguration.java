@@ -1,5 +1,7 @@
 package com.lambda.autoconfig;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import com.lambda.cloud.feign.codec.CustomErrorDecoder;
 import com.lambda.cloud.feign.interceptors.AuthorizationRequestHeaderInterceptor;
 import com.lambda.cloud.feign.webflux.AttributeHolder;
@@ -23,8 +25,6 @@ import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * @author westboy
@@ -70,16 +70,15 @@ public class FeignAutoConfiguration {
     }
 
     @Bean
-    public Decoder springDecoder(ObjectFactory<HttpMessageConverters> messageConverters,
-                                 ObjectProvider<HttpMessageConverterCustomizer> customizers) {
+    public Decoder springDecoder(
+            ObjectFactory<HttpMessageConverters> messageConverters,
+            ObjectProvider<HttpMessageConverterCustomizer> customizers) {
         return new SpringDecoder(messageConverters, customizers);
     }
-
 
     @Bean
     public RequestInterceptor defaultHeaderInterceptor() {
         log.trace("default request header interceptor is initializing...");
         return new AuthorizationRequestHeaderInterceptor();
     }
-
 }

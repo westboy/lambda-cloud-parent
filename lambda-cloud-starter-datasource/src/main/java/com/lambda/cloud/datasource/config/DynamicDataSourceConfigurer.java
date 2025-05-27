@@ -16,8 +16,7 @@ import org.springframework.context.annotation.Import;
 @Import(DynamicDataSourceAutoConfiguration.class)
 public class DynamicDataSourceConfigurer {
 
-    public DynamicDataSourceConfigurer(){
+    public DynamicDataSourceConfigurer() {
         log.trace("DynamicDataSourceConfigurer initializing...");
     }
-
 }

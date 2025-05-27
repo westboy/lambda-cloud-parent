@@ -1,8 +1,15 @@
 package com.lambda.cloud.mybatis.purview.strategy;
 
+import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getLevel;
+import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getPurviewIds;
+
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -13,15 +20,6 @@ import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getLevel;
-import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getPurviewIds;
-
-
 /**
  * 内联查询
  *
@@ -30,8 +28,7 @@ import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getPurviewIds;
 public class PurviewModeInnerStrategy extends AbstractStrategy {
 
     @Override
-    public void update(PlainSelect body, DynamicPurview purview,
-                       LoginUser user, Set<String> permissions) {
+    public void update(PlainSelect body, DynamicPurview purview, LoginUser user, Set<String> permissions) {
         Purview.Scheme scheme = purview.getScheme();
         if (Purview.Scheme.NOT_CASCADE.equals(scheme)) {
             throw new RuntimeException();
@@ -47,7 +44,6 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
     public String replace(String source, DynamicPurview purview, LoginUser operator, Set<String> permissions) {
         throw new RuntimeException();
     }
-
 
     /**
      * 组织模式的内联查询表达式
@@ -73,7 +69,7 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         }
         joins.add(join);
         body.setJoins(joins);
-        //~~=====================WHERE==================~~//
+        // ~~=====================WHERE==================~~//
         EqualsTo expression1 = new EqualsTo();
         expression1.setLeftExpression(new Column("ORGA.id"));
         expression1.setRightExpression(new StringValue(orgId));
@@ -90,8 +86,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
      * @param operator
      * @param permissions
      */
-    private void innerExpressionForCascade(PlainSelect body,
-                                           DynamicPurview purview, LoginUser operator, Set<String> permissions) {
+    private void innerExpressionForCascade(
+            PlainSelect body, DynamicPurview purview, LoginUser operator, Set<String> permissions) {
         if (purview.isPretreatment()) {
             InExpression expression = new InExpression();
             expression.setLeftExpression(new Column(purview.getKey()));
@@ -129,7 +125,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         table.setAlias(new Alias("PURV0", false));
         body1.setFromItem(table);
 
-        List<Expression> tids = getPurviewIds(operator).stream().map(StringValue::new).collect(Collectors.toList());
+        List<Expression> tids =
+                getPurviewIds(operator).stream().map(StringValue::new).collect(Collectors.toList());
         InExpression expression1 = new InExpression();
         expression1.setLeftExpression(new Column("PURV0.TID"));
         expression1.setRightExpression(new ExpressionList<>(tids));

@@ -1,14 +1,12 @@
 package com.lambda.cloud.mybatis.tenant;
 
-
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.util.ClassUtils;
-
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Jin
@@ -16,8 +14,7 @@ import java.util.Objects;
 public class TypeConverter {
     private static final String ERROR = "Cannot cast %s [%s] to %s.";
 
-    private TypeConverter() {
-    }
+    private TypeConverter() {}
 
     public static Object convert(@Nonnull final Object value, @Nonnull final Class<?> expect) {
         Objects.requireNonNull(value);
@@ -112,5 +109,4 @@ public class TypeConverter {
 
         throw new ClassCastException(message);
     }
-
 }

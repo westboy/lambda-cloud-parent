@@ -1,10 +1,9 @@
 package com.lambda.cloud.liquibase.comparator;
 
 import cn.hutool.core.io.FileUtil;
+import java.util.Comparator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.ArrayUtils;
-
-import java.util.Comparator;
 
 /**
  * @author wb
@@ -14,9 +13,8 @@ public class DefaultLiquibaseComparator implements Comparator<String> {
     /**
      * 需要强制要求优先级顺序的配置
      */
-    private static final String[] FORCED_SORT = {
-            "lambda-datasource-changelog.xml"
-    };
+    private static final String[] FORCED_SORT = {"lambda-datasource-changelog.xml"};
+
     public static final String ADDITIONAL = "lambda-additional-changelog.xml";
 
     @Override

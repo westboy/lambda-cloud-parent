@@ -4,7 +4,6 @@ import cn.hutool.core.io.FileUtil;
 import com.macasaet.fernet.Key;
 import com.macasaet.fernet.Token;
 import com.macasaet.fernet.Validator;
-
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -55,5 +54,4 @@ public class FernetUtils {
         final Token token = Token.fromBytes(Base64.getUrlDecoder().decode(encryptedBytes));
         return token.validateAndDecrypt(new Key(keyBody), BYTE_VALIDATOR);
     }
-
 }

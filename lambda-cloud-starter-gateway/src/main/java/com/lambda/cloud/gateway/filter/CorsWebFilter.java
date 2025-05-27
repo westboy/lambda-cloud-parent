@@ -1,7 +1,6 @@
 package com.lambda.cloud.gateway.filter;
 
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.web.cors.CorsConfiguration;
@@ -48,12 +47,14 @@ public class CorsWebFilter implements WebFilter {
         }
 
         if (CorsUtils.isCorsRequest(request) && !exchange.getResponse().isCommitted()) {
-            return chain.filter(exchange).then(Mono.just(exchange)).map(serverWebExchange -> {
-                this.processor.process(corsConfiguration, serverWebExchange);
-                return serverWebExchange;
-            }).then();
+            return chain.filter(exchange)
+                    .then(Mono.just(exchange))
+                    .map(serverWebExchange -> {
+                        this.processor.process(corsConfiguration, serverWebExchange);
+                        return serverWebExchange;
+                    })
+                    .then();
         }
         return chain.filter(exchange);
     }
-
 }

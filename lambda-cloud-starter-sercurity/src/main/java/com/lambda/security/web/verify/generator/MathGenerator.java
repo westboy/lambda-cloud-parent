@@ -5,7 +5,6 @@ import cn.hutool.core.math.Calculator;
 import cn.hutool.core.util.CharUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-
 import java.io.Serial;
 
 public class MathGenerator implements CodeGenerator {
@@ -45,10 +44,10 @@ public class MathGenerator implements CodeGenerator {
         String number1 = Integer.toString(v1);
         String number2 = Integer.toString(v2);
 
-        if(v1>v2){
+        if (v1 > v2) {
             number1 = StrUtil.padAfter(number1, this.numberLength, CharUtil.SPACE);
             number2 = StrUtil.padAfter(number2, this.numberLength, CharUtil.SPACE);
-        }else {
+        } else {
             number1 = StrUtil.padAfter(number2, this.numberLength, CharUtil.SPACE);
             number2 = StrUtil.padAfter(number1, this.numberLength, CharUtil.SPACE);
         }
@@ -57,7 +56,8 @@ public class MathGenerator implements CodeGenerator {
                 .append(number1)
                 .append(RandomUtil.randomChar(OPERATORS))
                 .append(number2)
-                .append('=').toString();
+                .append('=')
+                .toString();
     }
 
     @Override

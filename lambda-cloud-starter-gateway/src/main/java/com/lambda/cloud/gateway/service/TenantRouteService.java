@@ -1,9 +1,8 @@
 package com.lambda.cloud.gateway.service;
 
+import java.net.URI;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.lang.NonNull;
-
-import java.net.URI;
 
 /**
  * TenantRouteService

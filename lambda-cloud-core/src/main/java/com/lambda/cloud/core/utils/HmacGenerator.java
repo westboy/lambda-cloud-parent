@@ -1,5 +1,13 @@
 package com.lambda.cloud.core.utils;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Map;
+import javax.annotation.Nullable;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -9,16 +17,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
-import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Map;
-
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
-
 /**
  * @author Jin
  */
@@ -27,9 +25,7 @@ public final class HmacGenerator {
     private static final String REGEX = "\\s+|\\\\";
     public static final String HMAC = "HmacSHA ";
 
-    private HmacGenerator() {
-    }
-
+    private HmacGenerator() {}
 
     /***
      * 构造基础数据
@@ -41,7 +37,8 @@ public final class HmacGenerator {
      * @return java.lang.String
      */
     @SneakyThrows
-    public static String baseString(String appid, long timestamp, Map<String, String[]> queries, @Nullable String body) {
+    public static String baseString(
+            String appid, long timestamp, Map<String, String[]> queries, @Nullable String body) {
         StringBuilder baseString = new StringBuilder();
         if (MapUtils.isNotEmpty(queries)) {
             queries.keySet().stream().sorted().forEach(key -> {
@@ -65,7 +62,6 @@ public final class HmacGenerator {
         return decodedString;
     }
 
-
     /***
      * 构造认证信息
      * @param appid appid
@@ -74,7 +70,8 @@ public final class HmacGenerator {
      * @param baseString 原始数据
      * @return java.lang.String
      */
-    public static String authorization(String appid, String secret, long timestamp, String baseString) throws UnsupportedEncodingException {
+    public static String authorization(String appid, String secret, long timestamp, String baseString)
+            throws UnsupportedEncodingException {
         StringBuilder builder = new StringBuilder();
         builder.append(HMAC);
         builder.append(appid);
@@ -83,7 +80,8 @@ public final class HmacGenerator {
         builder.append(":");
         final byte[] key = secret.getBytes(StandardCharsets.UTF_8);
         final byte[] digest = baseString.getBytes(StandardCharsets.UTF_8);
-        byte[] bytes = HmacUtils.getInitializedMac(HmacAlgorithms.HMAC_SHA_1, key).doFinal(digest);
+        byte[] bytes =
+                HmacUtils.getInitializedMac(HmacAlgorithms.HMAC_SHA_1, key).doFinal(digest);
         builder.append(Base64.encodeBase64String(bytes));
         return builder.toString();
     }

@@ -3,12 +3,11 @@ package com.lambda.cloud.core.jackson.serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.springframework.boot.jackson.JsonComponent;
-import org.springframework.data.domain.Page;
-
 import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
+import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.data.domain.Page;
 
 /**
  * PageSerializer

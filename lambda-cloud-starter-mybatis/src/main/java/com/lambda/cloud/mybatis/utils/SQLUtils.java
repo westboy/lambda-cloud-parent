@@ -1,14 +1,13 @@
 package com.lambda.cloud.mybatis.utils;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.statement.select.Select;
-
-import javax.annotation.Nonnull;
 import java.io.StringReader;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.select.Select;
 
 /**
  * @author Jin
@@ -22,11 +21,9 @@ public final class SQLUtils {
     public static final String EQUAL = "=";
     public static final String SPACE = " ";
 
-
     private static final CCJSqlParserManager PARSER = new CCJSqlParserManager();
 
-    private SQLUtils() {
-    }
+    private SQLUtils() {}
 
     /**
      * 将数字数组转为IN模式
@@ -77,7 +74,7 @@ public final class SQLUtils {
      * @return net.sf.jsqlparser.statement.select.Select
      */
     public static Select parse(String sql) throws JSQLParserException {
-        //将Oracle方言中?||按标准模式添加空格
+        // 将Oracle方言中?||按标准模式添加空格
         sql = Pattern.compile("\\?\\|").matcher(sql).replaceAll("? |");
         return parse(new StringReader(sql));
     }

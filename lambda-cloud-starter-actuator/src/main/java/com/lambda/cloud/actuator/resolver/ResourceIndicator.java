@@ -13,7 +13,7 @@ public class ResourceIndicator {
 
     @Schema(description = "版本号")
     private String version;
+
     @Schema(description = "修改时间")
     private String modified;
-
 }

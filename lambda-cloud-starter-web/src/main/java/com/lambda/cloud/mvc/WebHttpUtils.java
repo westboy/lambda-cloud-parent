@@ -1,19 +1,13 @@
 package com.lambda.cloud.mvc;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.util.Assert;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.util.WebUtils;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -23,8 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.util.Assert;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.WebUtils;
 
 /**
  * @author Jin
@@ -44,8 +43,7 @@ public final class WebHttpUtils {
     public static final String HMAC = "HmacSHA ";
     public static final String REDIRECT_URL = "__redirectUrl";
 
-    private WebHttpUtils() {
-    }
+    private WebHttpUtils() {}
 
     public static String getRedirectParameter(HttpServletRequest request, String tokens)
             throws UnsupportedEncodingException {
@@ -53,8 +51,7 @@ public final class WebHttpUtils {
         if (redirectUrl != null && StringUtils.isNotBlank(redirectUrl.toString())) {
             String redirect = redirectUrl.toString();
             String symbol = redirect.contains("?") ? "&" : "?";
-            return redirect + symbol
-                    + "auth=" + URLEncoder.encode(tokens, UTF_8);
+            return redirect + symbol + "auth=" + URLEncoder.encode(tokens, UTF_8);
         }
         return null;
     }
@@ -78,13 +75,16 @@ public final class WebHttpUtils {
         response.addCookie(cookie);
     }
 
-    public static void sendRedirect(HttpServletRequest request, HttpServletResponse response, String url) throws IOException {
+    public static void sendRedirect(HttpServletRequest request, HttpServletResponse response, String url)
+            throws IOException {
         String redirectUrl = calculateRedirectUrl(request.getContextPath(), url, false);
         redirectUrl = response.encodeRedirectURL(redirectUrl);
         response.sendRedirect(redirectUrl);
     }
 
-    public static void sendRedirect(HttpServletRequest request, HttpServletResponse response, String url, boolean contextRelative) throws IOException {
+    public static void sendRedirect(
+            HttpServletRequest request, HttpServletResponse response, String url, boolean contextRelative)
+            throws IOException {
         String redirectUrl = calculateRedirectUrl(request.getContextPath(), url, contextRelative);
         redirectUrl = response.encodeRedirectURL(redirectUrl);
         response.sendRedirect(redirectUrl);
@@ -106,12 +106,10 @@ public final class WebHttpUtils {
         }
     }
 
-
     public static HttpServletRequest getCurrentRequest() {
         final RequestAttributes requestAttributes = Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
         return ((ServletRequestAttributes) requestAttributes).getRequest();
     }
-
 
     public static Object getRequestAttributes(String key) {
         return getCurrentRequest().getAttribute(key);
@@ -130,7 +128,6 @@ public final class WebHttpUtils {
         List<String> parameterNames = Collections.list(request.getParameterNames());
         return parameterNames.stream().collect(Collectors.toMap(k -> k, request::getParameter));
     }
-
 
     public static boolean isAjaxRequest(HttpServletRequest request) {
         String isAjax = request.getHeader(XML_HTTP_REQUEST);
@@ -164,10 +161,12 @@ public final class WebHttpUtils {
     }
 
     public static String buildFullRequestUrl(HttpServletRequest r) {
-        return buildFullRequestUrl(r.getScheme(), r.getServerName(), r.getServerPort(), r.getRequestURI(), r.getQueryString());
+        return buildFullRequestUrl(
+                r.getScheme(), r.getServerName(), r.getServerPort(), r.getRequestURI(), r.getQueryString());
     }
 
-    public static String buildFullRequestUrl(String scheme, String serverName, int serverPort, String requestURI, String queryString) {
+    public static String buildFullRequestUrl(
+            String scheme, String serverName, int serverPort, String requestURI, String queryString) {
         scheme = scheme.toLowerCase();
         StringBuilder url = new StringBuilder();
         url.append(scheme).append("://").append(serverName);
@@ -188,10 +187,12 @@ public final class WebHttpUtils {
     }
 
     public static String buildRequestUrl(HttpServletRequest r) {
-        return buildRequestUrl(r.getServletPath(), r.getRequestURI(), r.getContextPath(), r.getPathInfo(), r.getQueryString());
+        return buildRequestUrl(
+                r.getServletPath(), r.getRequestURI(), r.getContextPath(), r.getPathInfo(), r.getQueryString());
     }
 
-    private static String buildRequestUrl(String servletPath, String requestURI, String contextPath, String pathInfo, String queryString) {
+    private static String buildRequestUrl(
+            String servletPath, String requestURI, String contextPath, String pathInfo, String queryString) {
         StringBuilder url = new StringBuilder();
         if (servletPath != null) {
             url.append(servletPath);

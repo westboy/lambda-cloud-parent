@@ -1,9 +1,8 @@
 package com.lambda.security.web.form.locking;
 
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 /**
  * 用户登陆限制记录器
@@ -13,6 +12,7 @@ import java.time.LocalDateTime;
 public class UserLoginLimitTracker {
     private final Integer maxFailCount;
     private int failCount;
+
     @Getter
     private Long lockedTime;
 
@@ -52,5 +52,4 @@ public class UserLoginLimitTracker {
     public Integer getLeftTimes() {
         return maxFailCount - failCount;
     }
-
 }

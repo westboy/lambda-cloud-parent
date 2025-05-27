@@ -6,10 +6,9 @@ import com.lambda.cloud.mybatis.purview.strategy.PurviewModeQueryStrategy;
 import com.lambda.cloud.mybatis.purview.strategy.PurviewModeStatisticsStrategy;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.purview.support.Parameters;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
-import java.util.Set;
 
 /**
  * @author Jin
@@ -26,7 +25,8 @@ public interface PurviewModeStrategy {
      * @return net.sf.jsqlparser.expression.Expression
      * @throws JSQLParserException
      */
-    void update(PlainSelect body, DynamicPurview purview, LoginUser operator, Set<String> permissions) throws JSQLParserException;
+    void update(PlainSelect body, DynamicPurview purview, LoginUser operator, Set<String> permissions)
+            throws JSQLParserException;
 
     /**
      * 替换数据权限语句
@@ -38,8 +38,8 @@ public interface PurviewModeStrategy {
      * @return java.lang.String
      * @throws JSQLParserException
      */
-    String replace(String source, DynamicPurview purview, LoginUser operator, Set<String> permissions) throws JSQLParserException;
-
+    String replace(String source, DynamicPurview purview, LoginUser operator, Set<String> permissions)
+            throws JSQLParserException;
 
     /**
      * 增强SQL语句

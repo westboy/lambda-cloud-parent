@@ -5,6 +5,7 @@ import com.baomidou.dynamic.datasource.provider.DynamicDataSourceProvider;
 import com.baomidou.dynamic.datasource.strategy.LoadBalanceDynamicDataSourceStrategy;
 import com.lambda.cloud.datasource.condition.StandardDataSourceCondition;
 import com.zaxxer.hikari.HikariDataSource;
+import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -12,7 +13,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.*;
 import org.springframework.util.StringUtils;
-import java.util.Collections;
 
 /**
  * @author w
@@ -29,12 +29,14 @@ public class StandardDataSourceConfigurer {
         log.trace("SingleDataSourceConfigurer initializing...");
     }
 
-
     @RefreshScope
     @Bean(destroyMethod = "close")
     @ConfigurationProperties(prefix = "spring.datasource.hikari")
     public HikariDataSource hikariDataSource(DataSourceProperties properties) {
-        HikariDataSource dataSource = properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        HikariDataSource dataSource = properties
+                .initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
         if (StringUtils.hasText(properties.getName())) {
             dataSource.setPoolName(properties.getName());
         }
@@ -44,7 +46,8 @@ public class StandardDataSourceConfigurer {
     @Bean
     @Primary
     public DynamicRoutingDataSource dynamicRoutingDataSource(DynamicDataSourceProvider dynamicDataSourceProvider) {
-        DynamicRoutingDataSource dataSource = new DynamicRoutingDataSource(Collections.singletonList(dynamicDataSourceProvider));
+        DynamicRoutingDataSource dataSource =
+                new DynamicRoutingDataSource(Collections.singletonList(dynamicDataSourceProvider));
         dataSource.setPrimary(PRIMARY_DATASOURCE);
         dataSource.setStrategy(LoadBalanceDynamicDataSourceStrategy.class);
         dataSource.setStrict(false);
@@ -57,5 +60,4 @@ public class StandardDataSourceConfigurer {
     public DynamicDataSourceProvider dynamicDataSourceProvider(HikariDataSource hikariDataSource) {
         return () -> Collections.singletonMap(PRIMARY_DATASOURCE, hikariDataSource);
     }
-
 }

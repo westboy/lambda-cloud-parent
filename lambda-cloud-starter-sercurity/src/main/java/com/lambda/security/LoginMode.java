@@ -1,9 +1,8 @@
 package com.lambda.security;
 
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.function.Supplier;
+import lombok.Getter;
 
 /**
  * LoginMode
@@ -28,7 +27,6 @@ public enum LoginMode {
      */
     MAIL("3", "邮箱验证码登陆");
 
-
     /**
      * 登陆方式唯一标识
      */
@@ -39,14 +37,15 @@ public enum LoginMode {
      */
     final String desc;
 
-
     LoginMode(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
     public static LoginMode get(String id) {
-        return Arrays.stream(LoginMode.values()).filter(loginModeEnum -> loginModeEnum.code.equals(id))
-                .findFirst().orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
+        return Arrays.stream(LoginMode.values())
+                .filter(loginModeEnum -> loginModeEnum.code.equals(id))
+                .findFirst()
+                .orElseThrow((Supplier<RuntimeException>) () -> new IllegalArgumentException("不支持的登陆方式"));
     }
 }

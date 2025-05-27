@@ -6,7 +6,6 @@ import com.lambda.cloud.core.exception.feign.*;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
@@ -52,5 +51,4 @@ public class CustomErrorDecoder implements ErrorDecoder {
         }
         return exception;
     }
-
 }

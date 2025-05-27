@@ -23,6 +23,4 @@ public class SmsVerifyCode<T> {
         this.code = code;
         this.createTimeMillis = System.currentTimeMillis();
     }
-
-
 }

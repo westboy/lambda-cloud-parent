@@ -3,7 +3,6 @@ package com.lambda.cloud.core.base;
 import cn.hutool.core.lang.tree.TreeNode;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,5 +53,4 @@ public interface BaseWrapper<E, V> {
         pageVo.setRecords(records);
         return pageVo;
     }
-
 }

@@ -1,24 +1,23 @@
 package com.lambda.cloud.feign.hmac;
 
-import com.google.common.collect.Maps;
-import com.lambda.cloud.core.utils.HmacGenerator;
-import feign.RequestInterceptor;
-import feign.RequestTemplate;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.springframework.http.HttpMethod;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Map;
-
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
+
+import com.google.common.collect.Maps;
+import com.lambda.cloud.core.utils.HmacGenerator;
+import feign.RequestInterceptor;
+import feign.RequestTemplate;
+import java.util.Collection;
+import java.util.Map;
+import javax.annotation.Nullable;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.springframework.http.HttpMethod;
 
 /**
  * HmacClientRequestInterceptor
@@ -35,7 +34,6 @@ public class HmacClientRequestInterceptor implements RequestInterceptor {
         this.appid = appid;
         this.secret = secret;
     }
-
 
     @SneakyThrows
     @Override
@@ -59,7 +57,6 @@ public class HmacClientRequestInterceptor implements RequestInterceptor {
         return null;
     }
 
-
     private static Map<String, String[]> getQueries(Map<String, Collection<String>> queries) {
         Map<String, String[]> converted = Maps.newLinkedHashMap();
         for (Map.Entry<String, Collection<String>> entry : queries.entrySet()) {
@@ -67,7 +64,7 @@ public class HmacClientRequestInterceptor implements RequestInterceptor {
             if (CollectionUtils.isNotEmpty(values)) {
                 converted.put(entry.getKey(), values.toArray(new String[0]));
             } else {
-                converted.put(entry.getKey(), new String[]{EMPTY});
+                converted.put(entry.getKey(), new String[] {EMPTY});
             }
         }
         return converted;

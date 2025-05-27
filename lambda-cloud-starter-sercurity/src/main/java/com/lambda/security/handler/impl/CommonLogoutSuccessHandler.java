@@ -6,12 +6,11 @@ import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
 import com.lambda.security.events.UserLogoutEvent;
 import com.lambda.security.handler.LogoutSuccessHandler;
-import org.springframework.http.HttpStatus;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.http.HttpStatus;
 
 /**
  * 默认登录成功处理器
@@ -21,7 +20,8 @@ import java.io.IOException;
 @SuppressWarnings("all")
 public class CommonLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser)
+            throws IOException, ServletException {
         if (WebHttpUtils.isAjaxRequest(request)) {
             response.setStatus(HttpStatus.OK.value());
             response.getWriter().flush();

@@ -2,7 +2,6 @@ package com.lambda.cloud.plugin.manager;
 
 import cn.hutool.core.collection.CollUtil;
 import com.lambda.cloud.plugin.IPlugin;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,9 +26,7 @@ public class PluginsManager {
         pluginList.add(plugin);
     }
 
-
     public <T> List<IPlugin<?>> getPlugins(Class<T> clazz) {
         return pluginsMap.get(clazz);
     }
-
 }

@@ -1,5 +1,8 @@
 package com.lambda.cloud.gateway.filter;
 
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
+
+import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -7,10 +10,6 @@ import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-
-import java.net.URI;
-
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * WebSocketExpandFilter
@@ -44,7 +43,6 @@ public class WebSocketExpandFilter implements GlobalFilter, Ordered {
     public int getOrder() {
         return Ordered.LOWEST_PRECEDENCE - 2;
     }
-
 
     private boolean check(URI uri, String scheme) {
         boolean c1 = WS.equalsIgnoreCase(scheme) || WSS.equalsIgnoreCase(scheme);

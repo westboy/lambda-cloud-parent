@@ -31,5 +31,4 @@ public enum PolicyType {
      * 类型
      */
     private final String type;
-
 }

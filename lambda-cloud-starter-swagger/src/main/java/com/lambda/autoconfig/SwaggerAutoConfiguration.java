@@ -1,6 +1,5 @@
 package com.lambda.autoconfig;
 
-
 import com.lambda.cloud.swagger.converter.PageConverter;
 import com.lambda.cloud.swagger.filter.SwaggerDisabledFilter;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,5 +51,4 @@ public class SwaggerAutoConfiguration {
     public SwaggerDisabledFilter swaggerDisabledFilter(SwaggerProperties properties) {
         return new SwaggerDisabledFilter(properties.getDocUri());
     }
-
 }

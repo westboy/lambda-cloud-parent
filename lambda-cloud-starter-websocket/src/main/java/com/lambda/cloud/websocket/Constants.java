@@ -7,8 +7,7 @@ package com.lambda.cloud.websocket;
  */
 public final class Constants {
 
-    private Constants() {
-    }
+    private Constants() {}
 
     public static final String SYSTEM = "system";
     public static final String SIMPLE_USER = "simpleUser";

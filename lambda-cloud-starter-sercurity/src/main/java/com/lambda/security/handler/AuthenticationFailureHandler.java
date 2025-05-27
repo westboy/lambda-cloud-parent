@@ -1,9 +1,9 @@
 package com.lambda.security.handler;
 
-import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * AuthenticationFailureHandler
@@ -20,5 +20,6 @@ public interface AuthenticationFailureHandler {
      * @throws IOException IOException
      * @throws ServletException ServletException
      */
-    void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception) throws IOException, ServletException;
+    void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, Exception exception)
+            throws IOException, ServletException;
 }

@@ -1,14 +1,6 @@
 package com.lambda.cloud.actuator.resolver;
 
 import com.lambda.cloud.core.Constants;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.info.Info;
-import org.springframework.boot.actuate.info.InfoContributor;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
-
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -19,6 +11,12 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.actuate.info.Info;
+import org.springframework.boot.actuate.info.InfoContributor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.ResourceUtils;
 
 /**
  * @author jin
@@ -34,11 +32,11 @@ public class PathResourceResolver extends PathMatchingResourcePatternResolver im
             Resource[] resources = getResources(LOCATION_PATTERN);
             Map<String, Object> back = new HashMap<>(16);
             Map<String, Object> packages = new HashMap<>(16);
-            for (Resource resource : resources){
+            for (Resource resource : resources) {
                 URL url = resource.getURL();
-                if (ResourceUtils.isJarURL(url)){
+                if (ResourceUtils.isJarURL(url)) {
                     URLConnection connection = url.openConnection();
-                    if (connection instanceof JarURLConnection){
+                    if (connection instanceof JarURLConnection) {
                         JarURLConnection jarCon = (JarURLConnection) connection;
                         ResourceUtils.useCachesIfNecessary(jarCon);
                         JarFile jarFile = jarCon.getJarFile();
@@ -57,7 +55,7 @@ public class PathResourceResolver extends PathMatchingResourcePatternResolver im
             }
             back.put("packages", packages);
             outcomes.put("back", back);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("PathResourceResolver initialization has exception. msg: {}", e.getMessage());
         }
         return outcomes;

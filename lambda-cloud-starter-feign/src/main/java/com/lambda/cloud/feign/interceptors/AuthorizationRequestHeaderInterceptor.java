@@ -4,6 +4,8 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.PriorityOrdered;
@@ -14,11 +16,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.WebUtils;
-
-import java.util.Collection;
-import java.util.Map;
-
-
 
 /**
  * @author westboy
@@ -49,7 +46,6 @@ public class AuthorizationRequestHeaderInterceptor implements RequestInterceptor
             }
         }
     }
-
 
     private String getAuthorization() {
         HttpServletRequest request = getHttpServletRequest();

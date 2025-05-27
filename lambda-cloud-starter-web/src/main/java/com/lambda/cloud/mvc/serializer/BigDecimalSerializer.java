@@ -3,7 +3,6 @@ package com.lambda.cloud.mvc.serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 
@@ -26,7 +25,8 @@ public class BigDecimalSerializer extends StdSerializer<BigDecimal> {
     }
 
     @Override
-    public void serialize(BigDecimal bigDecimal, JsonGenerator generator, SerializerProvider provider) throws IOException {
+    public void serialize(BigDecimal bigDecimal, JsonGenerator generator, SerializerProvider provider)
+            throws IOException {
         generator.writeString(bigDecimal.toPlainString());
     }
 }

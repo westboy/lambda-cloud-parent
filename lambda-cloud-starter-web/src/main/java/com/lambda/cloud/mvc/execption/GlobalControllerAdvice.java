@@ -1,6 +1,9 @@
 package com.lambda.cloud.mvc.execption;
 
 import cn.dev33.satoken.exception.SaTokenException;
+import com.lambda.cloud.core.exception.IllegalAccessException;
+import com.lambda.cloud.core.exception.IllegalArgumentException;
+import com.lambda.cloud.core.exception.IllegalStateException;
 import com.lambda.cloud.core.exception.NotSupportedException;
 import com.lambda.cloud.core.exception.feign.AbstractFeignException;
 import com.lambda.cloud.core.exception.feign.FeignArgumentNotValidException;
@@ -8,6 +11,8 @@ import com.lambda.cloud.core.exception.model.ArgumentError;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,9 +22,6 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
-import com.lambda.cloud.core.exception.IllegalArgumentException;
-import com.lambda.cloud.core.exception.IllegalStateException;
-import com.lambda.cloud.core.exception.IllegalAccessException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -28,9 +30,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Jin
@@ -136,9 +135,11 @@ public class GlobalControllerAdvice {
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler({HttpRequestMethodNotSupportedException.class,
-            IllegalStateException.class,
-            NotSupportedException.class})
+    @ExceptionHandler({
+        HttpRequestMethodNotSupportedException.class,
+        IllegalStateException.class,
+        NotSupportedException.class
+    })
     public ErrorModel handler500(HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
         ErrorModel model = handler500(request);
         model.setMessage(exception.getMessage());
@@ -147,8 +148,7 @@ public class GlobalControllerAdvice {
 
     @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
     @ExceptionHandler(BusinessException.class)
-    private ErrorModel handler501(BusinessException exception,
-                                  HttpServletRequest request) {
+    private ErrorModel handler501(BusinessException exception, HttpServletRequest request) {
         ErrorModel model = new ErrorModel();
         model.setPath(request.getRequestURI());
         model.setTimestamp(System.currentTimeMillis());
@@ -173,7 +173,6 @@ public class GlobalControllerAdvice {
         return model;
     }
 
-
     private List<ArgumentError> obtainArgumentErrors(@NonNull BindingResult bindingResult) {
         List<ArgumentError> errors = new ArrayList<>();
         List<ObjectError> objectErrors = bindingResult.getAllErrors();
@@ -187,5 +186,4 @@ public class GlobalControllerAdvice {
         }
         return errors;
     }
-
 }

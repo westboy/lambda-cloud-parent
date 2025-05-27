@@ -1,19 +1,18 @@
 package com.lambda.cloud.core.utils;
 
+import com.lambda.cloud.core.exception.IllegalArgumentException;
+import com.lambda.cloud.core.exception.IllegalStateException;
+import java.util.Collection;
+import java.util.Map;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import com.lambda.cloud.core.exception.IllegalArgumentException;
-import com.lambda.cloud.core.exception.IllegalStateException;
-
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * @author Jin
  */
 public class Assert {
-    private Assert(){}
+    private Assert() {}
 
     /**
      * Assert a boolean expression, throwing an {@code IllegalStateException} if
@@ -59,7 +58,6 @@ public class Assert {
             throw new IllegalArgumentException(message);
         }
     }
-
 
     /**
      * Assert a boolean expression, throwing an {@code IllegalArgumentException}
@@ -184,7 +182,8 @@ public class Assert {
      *             if the text contains the substring
      */
     public static void doesNotContain(String textToSearch, String substring, String message) {
-        if (StringUtils.hasLength(textToSearch) && StringUtils.hasLength(substring)
+        if (StringUtils.hasLength(textToSearch)
+                && StringUtils.hasLength(substring)
                 && textToSearch.contains(substring)) {
             throw new IllegalArgumentException(message);
         }
@@ -257,7 +256,6 @@ public class Assert {
             throw new IllegalArgumentException(message);
         }
     }
-
 
     /**
      * Assert that a Map contains entries; that is, it must not be {@code null}

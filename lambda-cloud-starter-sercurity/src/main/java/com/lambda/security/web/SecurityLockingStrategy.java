@@ -1,7 +1,6 @@
 package com.lambda.security.web;
 
 import com.lambda.security.web.form.locking.UserLoginLimitTracker;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,5 +67,4 @@ public interface SecurityLockingStrategy {
      * @return
      */
     TimeUnit getTimeUnit();
-
 }

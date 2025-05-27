@@ -3,6 +3,8 @@ package com.lambda.cloud.gateway.filter.factory;
 import com.google.common.collect.Lists;
 import com.lambda.cloud.gateway.service.TenantRouteService;
 import com.lambda.cloud.gateway.utils.WebFluxUtils;
+import java.net.URI;
+import java.util.List;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -11,16 +13,14 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.validation.annotation.Validated;
 
-import java.net.URI;
-import java.util.List;
-
 /**
  * TenantRouteRewriterGatewayFilterFactory
  *
  * @author jpjoo
  */
 @Slf4j
-public final class TenantRouteRewriterGatewayFilterFactory extends AbstractGatewayFilterFactory<TenantRouteRewriterGatewayFilterFactory.Config> {
+public final class TenantRouteRewriterGatewayFilterFactory
+        extends AbstractGatewayFilterFactory<TenantRouteRewriterGatewayFilterFactory.Config> {
 
     private final TenantRouteService service;
 
@@ -63,7 +63,6 @@ public final class TenantRouteRewriterGatewayFilterFactory extends AbstractGatew
         }
         return tenantid;
     }
-
 
     @Getter
     @Validated

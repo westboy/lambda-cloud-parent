@@ -1,14 +1,13 @@
 package com.lambda.cloud.redis.delay;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RBlockingQueue;
-
-import javax.annotation.Nonnull;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBlockingQueue;
 
 /**
  * @author westboy
@@ -44,13 +43,16 @@ public class RedisDelayedWorker<T> implements Runnable {
 
     private ExecutorService getWorks(@Nonnull RedisDelayConfig config) {
         int size = config.getWorks();
-        return new ThreadPoolExecutor(size, size,
-                0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(Short.MAX_VALUE),
+        return new ThreadPoolExecutor(
+                size,
+                size,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(Short.MAX_VALUE),
                 new ThreadFactoryBuilder()
                         .setNameFormat("JingFangCloud DelayedQueueWork-%d")
                         .setDaemon(true)
-                        .build(), new ThreadPoolExecutor.CallerRunsPolicy());
+                        .build(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
-
-
 }

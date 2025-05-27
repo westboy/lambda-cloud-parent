@@ -1,23 +1,21 @@
-
 package com.lambda.security.web.form;
 
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.security.handler.impl.CompositeLogoutHandler;
+import com.lambda.cloud.core.utils.OperatorUtils;
 import com.lambda.security.handler.LogoutHandler;
 import com.lambda.security.handler.LogoutSuccessHandler;
-import com.lambda.cloud.core.utils.OperatorUtils;
+import com.lambda.security.handler.impl.CompositeLogoutHandler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.core.log.LogMessage;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
-
-import java.io.IOException;
 
 /**
  * DefaultLogoutFilter
@@ -37,20 +35,23 @@ public class FormLogoutFilter extends GenericFilterBean {
         this.filterProcessesUrl = "/logout";
     }
 
-    public FormLogoutFilter(String filterProcessesUrl, LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
+    public FormLogoutFilter(
+            String filterProcessesUrl, LogoutSuccessHandler logoutSuccessHandler, LogoutHandler... handlers) {
         Assert.notNull(logoutSuccessHandler, "logoutSuccessHandler cannot be null");
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.filterProcessesUrl = filterProcessesUrl;
         this.handler = new CompositeLogoutHandler(handlers);
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         this.doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
     }
 
-    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         if (this.requiresLogout(request)) {
-            LoginUser loginUser  = OperatorUtils.getOperator();
+            LoginUser loginUser = OperatorUtils.getOperator();
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug(LogMessage.format("Logging out [%s]", loginUser));
             }

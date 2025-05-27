@@ -17,10 +17,13 @@ public class XFrameOptionsFilter implements GlobalFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return chain.filter(exchange).then(Mono.just(exchange)).map(serverWebExchange -> {
-            HttpHeaders headers = serverWebExchange.getResponse().getHeaders();
-            headers.addIfAbsent("X-Frame-Options", "SAMEORIGIN");
-            return serverWebExchange;
-        }).then();
+        return chain.filter(exchange)
+                .then(Mono.just(exchange))
+                .map(serverWebExchange -> {
+                    HttpHeaders headers = serverWebExchange.getResponse().getHeaders();
+                    headers.addIfAbsent("X-Frame-Options", "SAMEORIGIN");
+                    return serverWebExchange;
+                })
+                .then();
     }
 }

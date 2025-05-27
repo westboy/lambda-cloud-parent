@@ -6,16 +6,15 @@ import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.purview.support.Parameters;
 import com.lambda.cloud.mybatis.purview.utils.PurviewUtils;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
+import java.io.StringReader;
+import java.util.Set;
+import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-
-import javax.annotation.Nonnull;
-import java.io.StringReader;
-import java.util.Set;
 
 /**
  * @author Jin

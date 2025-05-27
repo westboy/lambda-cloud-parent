@@ -1,6 +1,5 @@
 package com.lambda.autoconfig;
 
-
 import com.lambda.cloud.datasource.config.DynamicDataSourceConfigurer;
 import com.lambda.cloud.datasource.config.StandardDataSourceConfigurer;
 import com.lambda.cloud.datasource.dynamic.DynamicDataSourceService;
@@ -10,7 +9,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
 
 /**
  * @author a
@@ -24,7 +22,6 @@ public class DataSourceAutoConfiguration {
     public DataSourceAutoConfiguration() {
         log.trace("DataSourceAutoConfiguration initializing...");
     }
-
 
     @Bean
     public DynamicDataSourceService dynamicDataSource() {

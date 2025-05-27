@@ -11,8 +11,7 @@ import lombok.Setter;
 @Getter
 public class HmacAuthorization {
 
-	private String appid;
-	private String timestamp;
-	private String digest;
-
+    private String appid;
+    private String timestamp;
+    private String digest;
 }

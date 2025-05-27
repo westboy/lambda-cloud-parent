@@ -1,11 +1,10 @@
 package com.lambda.cloud.mybatis.purview.annotation;
 
-import net.sf.jsqlparser.expression.operators.relational.*;
-import org.apache.commons.lang.StringUtils;
+import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
 
 import java.lang.annotation.*;
-
-import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
+import net.sf.jsqlparser.expression.operators.relational.*;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * 数据权限注解
@@ -75,7 +74,6 @@ public @interface Purview {
          * 统计模式
          */
         STATISTICS
-
     }
 
     enum Scheme {
