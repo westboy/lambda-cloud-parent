@@ -3,6 +3,8 @@ package com.lambda.security.inteceptor;
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.principal.LoginType;
+import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.OperatorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.web.method.HandlerMethod;
@@ -38,7 +40,7 @@ public class SecureInterceptor implements SaParamFunction<Object> {
         stpLogic.checkLogin();
 
         if (secureExtendInterceptor != null) {
-            secureExtendInterceptor.handle(handler, stpLogic);
+            secureExtendInterceptor.handle(handler, stpLogic,OperatorUtils.getOperator());
         }
     }
 }
