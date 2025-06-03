@@ -45,7 +45,7 @@ public class SecurityProperties {
         /**
          * 设置是否打开注解鉴权：配置为 true 时注解鉴权才会生效，配置为 false 时，即使写了注解也不会进行鉴权
          */
-        private Boolean enableMethodAnnotation = true;
+        private Boolean enableMethodAuthentication = true;
 
         /**
          * 忽略拦截的配置
