@@ -43,10 +43,10 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -61,6 +61,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 /**
  * Sa-Token 配置类
@@ -90,12 +92,6 @@ public class SecurityAutoConfiguration {
     public static class SaTokenConfiguration {
 
         private SecurityProperties securityProperties;
-        private SecureExtendInterceptor secureExtendInterceptor;
-
-        @Autowired(required = false)
-        public void setSaTokenCustomHandler(SecureExtendInterceptor secureExtendInterceptor) {
-            this.secureExtendInterceptor = secureExtendInterceptor;
-        }
 
         @Autowired
         public void setSecurityProperties(SecurityProperties securityProperties) {
@@ -110,18 +106,23 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public WebMvcConfigurer saTokenWebMvcConfigurer() {
-            var secureInterceptor = new SecureInterceptor(secureExtendInterceptor);
-            var enableMethodAnnotation = securityProperties.getSaToken().getEnableMethodAnnotation();
-            var allIgnoreList = securityProperties.getSaToken().getAllIgnoreList();
+        @ConditionalOnBean(SecureExtendInterceptor.class)
+        public SaInterceptor saInterceptor(SecureExtendInterceptor secureExtendInterceptor) {
+            return new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
+                    .isAnnotation(securityProperties.getSaToken().getEnableMethodAnnotation());
+        }
+
+        @Bean
+        @ConditionalOnBean(SaInterceptor.class)
+        public WebMvcConfigurer saTokenWebMvcConfigurer(SaInterceptor saInterceptor) {
             return new WebMvcConfigurer() {
                 @SuppressWarnings("all")
                 @Override
                 public void addInterceptors(InterceptorRegistry interceptorRegistry) {
                     interceptorRegistry
-                            .addInterceptor(new SaInterceptor(secureInterceptor).isAnnotation(enableMethodAnnotation))
+                            .addInterceptor(saInterceptor)
                             .addPathPatterns("/**")
-                            .excludePathPatterns(allIgnoreList);
+                            .excludePathPatterns(securityProperties.getSaToken().getAllIgnoreList());
                 }
             };
         }
