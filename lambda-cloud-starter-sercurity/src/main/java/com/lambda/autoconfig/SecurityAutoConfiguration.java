@@ -21,7 +21,6 @@ import com.lambda.security.handler.impl.CommonAuthenticationFailureHandler;
 import com.lambda.security.handler.impl.CommonAuthenticationSuccessHandler;
 import com.lambda.security.handler.impl.CommonLogoutHandler;
 import com.lambda.security.handler.impl.CommonLogoutSuccessHandler;
-import com.lambda.security.inteceptor.SecureExtendInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
 import com.lambda.security.provider.ThirdPartLoginProvider;
 import com.lambda.security.provider.impl.WxMaLoginProvider;
@@ -114,10 +113,10 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        @ConditionalOnBean(SecureExtendInterceptor.class)
-        public SaInterceptor saInterceptor(SecureExtendInterceptor secureExtendInterceptor) {
-            return new SaInterceptor(new SecureInterceptor(secureExtendInterceptor))
-                    .isAnnotation(securityProperties.getSaToken().getEnableMethodAnnotation());
+        @ConditionalOnBean(SecureInterceptor.class)
+        public SaInterceptor saInterceptor(SecureInterceptor secureInterceptor) {
+            return new SaInterceptor(new SaTokenInterceptor(secureInterceptor))
+                    .isAnnotation(securityProperties.getSaToken().getEnableMethodAuthentication());
         }
 
         @Bean
