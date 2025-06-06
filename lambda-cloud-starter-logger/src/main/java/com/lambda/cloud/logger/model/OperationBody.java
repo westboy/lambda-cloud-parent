@@ -24,9 +24,6 @@ public class OperationBody {
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "描述")
     String description;
 
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "操作人员")
-    String operator;
-
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "操作类型")
     String httpMethod;
 
@@ -40,9 +37,13 @@ public class OperationBody {
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "详情")
     String detail;
 
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "操作人员")
+    String operator;
+
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "操作人员ID")
     String operatorId;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "租户ID")
     String tenantId;
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "IP地址")
