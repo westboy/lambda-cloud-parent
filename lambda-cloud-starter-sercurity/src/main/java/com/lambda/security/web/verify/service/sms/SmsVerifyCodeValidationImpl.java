@@ -67,7 +67,9 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
             throw new VerifyCodeValidationException("loginMode is not blank!");
         }
 
-        if (!LoginMode.SMS.getCode().equals(loginMode)) {
+        LoginMode mode = LoginMode.get(loginMode);
+
+        if (!LoginMode.SMS.equals(loginMode)) {
             chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }

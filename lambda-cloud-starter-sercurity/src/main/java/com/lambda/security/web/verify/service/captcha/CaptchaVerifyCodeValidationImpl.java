@@ -66,23 +66,29 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
             throw new VerifyCodeValidationException("登录模式不能为空!");
         }
 
-        if (!LoginMode.PWD.getCode().equals(loginMode)
-                || !LoginMode.MAIL.getCode().equals(loginMode)) {
+        LoginMode mode = LoginMode.get(loginMode);
+
+        if (!LoginMode.PWD.equals(mode)) {
             chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }
+
         String verifyCode = obtainVerifyCode(ajaxRequest);
         String verifyToken = obtainVerifyToken(ajaxRequest);
+
         if (StringUtils.isBlank(verifyCode)) {
             throw new VerifyCodeValidationException("验证码不能为空!");
         }
+
         if (StringUtils.isBlank(verifyToken)) {
             throw new VerifyCodeValidationException("__TOKEN不能为空!");
         }
+
         boolean verified = captchaStore.validate(verifyToken, verifyCode);
         if (!verified) {
             throw new VerifyCodeValidationException("验证码不正确!");
         }
+
         chain.doFilter(httpServletRequestWrapper, httpServletResponse);
     }
 
