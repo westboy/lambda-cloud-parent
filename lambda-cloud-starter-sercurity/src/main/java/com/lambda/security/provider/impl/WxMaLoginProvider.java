@@ -10,6 +10,7 @@ import me.chanjar.weixin.common.error.WxErrorException;
 /**
  * WxMaLoginProvider
  *
+ * @author Jin
  */
 public class WxMaLoginProvider extends AbstractThirdPartLoginProvider {
 

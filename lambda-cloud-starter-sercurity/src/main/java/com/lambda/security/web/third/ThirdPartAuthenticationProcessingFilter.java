@@ -13,6 +13,11 @@ import org.apache.commons.collections4.MapUtils;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ThirdPartAuthenticationProcessingFilter
+ *
+ * @author Jin
+ */
 @SuppressWarnings("all")
 public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
