@@ -7,7 +7,6 @@ import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
-import com.lambda.security.web.SecurityLockingStrategy;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
@@ -32,7 +31,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
     private String passwordParameter = "password";
     private String loginTypeParameter = "loginType";
     private String deviceParameter = "loginDevice";
-    private SecurityLockingStrategy securityLockingStrategy;
+    private FormLockingStrategy formLockingStrategy;
     private UserDetailService userDetailService;
     private PasswordEncoder passwordEncoder;
 
@@ -92,8 +91,8 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         if (StringUtils.isBlank(password)) {
             throw new AuthenticationException("密码不能为空！");
         }
-        if (securityLockingStrategy.checkFailureTimes(username)) {
-            throw new AuthenticationException("账号" + username + "已经被锁定:" + securityLockingStrategy.getDuration() + securityLockingStrategy.getTimeUnit().name());
+        if (formLockingStrategy.checkFailureTimes(username)) {
+            throw new AuthenticationException("账号" + username + "已经被锁定:" + formLockingStrategy.getDuration() + formLockingStrategy.getTimeUnit().name());
         }
 
         if (StrUtil.isEmpty(loginType)) {
@@ -115,10 +114,10 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         String credentials = loginUser.getCredentials();
         boolean matches = passwordEncoder.matches(password, credentials);
         if (!matches) {
-            securityLockingStrategy.loginFailure(username);
+            formLockingStrategy.loginFailure(username);
             throw new AuthenticationException("密码错误！");
         }
-        securityLockingStrategy.loginSuccess(username);
+        formLockingStrategy.loginSuccess(username);
         return loginUser;
     }
 

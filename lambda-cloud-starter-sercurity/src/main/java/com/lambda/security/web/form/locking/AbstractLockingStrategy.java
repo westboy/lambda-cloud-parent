@@ -1,6 +1,6 @@
 package com.lambda.security.web.form.locking;
 
-import com.lambda.security.web.SecurityLockingStrategy;
+import com.lambda.security.web.form.FormLockingStrategy;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * @author jpjoo
  */
 @Setter
-public abstract class AbstractLockingStrategy implements SecurityLockingStrategy {
+public abstract class AbstractLockingStrategy implements FormLockingStrategy {
 
     @Getter
     private int maxFailureTimes;

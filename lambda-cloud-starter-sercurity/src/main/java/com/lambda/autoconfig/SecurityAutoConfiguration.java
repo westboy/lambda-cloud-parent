@@ -1,5 +1,8 @@
 package com.lambda.autoconfig;
 
+import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
+import cn.binarywang.wx.miniapp.config.impl.WxMaRedissonConfigImpl;
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
@@ -22,8 +25,8 @@ import com.lambda.security.inteceptor.SecureExtendInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
 import com.lambda.security.service.HmacClientService;
 import com.lambda.security.service.UserDetailService;
-import com.lambda.security.web.SecurityLockingStrategy;
 import com.lambda.security.web.form.FormAuthenticationProcessingFilter;
+import com.lambda.security.web.form.FormLockingStrategy;
 import com.lambda.security.web.form.FormLogoutFilter;
 import com.lambda.security.web.form.locking.RedisLockingStrategy;
 import com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter;
@@ -43,8 +46,8 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -61,6 +64,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 /**
  * Sa-Token 配置类
@@ -304,7 +309,7 @@ public class SecurityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public SecurityLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
+        public FormLockingStrategy securityLockingStrategy(StringRedisTemplate stringRedisTemplate) {
             SecurityProperties.Form.LockStrategy lockStrategy =
                     securityProperties.getForm().getLockStrategy();
             return new RedisLockingStrategy(
@@ -322,7 +327,7 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean<FormAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(
-                SecurityLockingStrategy securityLockingStrategy,
+                FormLockingStrategy formLockingStrategy,
                 ObjectMapper objectMapper,
                 PasswordEncoder passwordEncoder,
                 @Autowired(required = false) UserDetailService userDetailService) {
@@ -330,7 +335,7 @@ public class SecurityAutoConfiguration {
                     new FilterRegistrationBean<>();
             FormAuthenticationProcessingFilter processingFilter =
                     new FormAuthenticationProcessingFilter(securityProperties.getForm().loginProcessingUrl);
-            processingFilter.setSecurityLockingStrategy(securityLockingStrategy);
+            processingFilter.setFormLockingStrategy(formLockingStrategy);
             processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             processingFilter.setUserDetailService(userDetailService);
@@ -362,6 +367,47 @@ public class SecurityAutoConfiguration {
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(40);
             return filterRegistrationBean;
+        }
+    }
+
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP2"},
+            justification = "springboot properties")
+    @Configuration
+    @ConditionalOnProperty(prefix = "lambda.security.thirdPartLogin", name = "enabled")
+    public static class ThirdPartyConfiguration {
+
+        private SecurityProperties securityProperties;
+
+        @Autowired
+        public void setSecurityProperties(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
+
+        @SuppressFBWarnings(
+                value = {"EI_EXPOSE_REP2"},
+                justification = "springboot properties")
+        @Configuration
+        @ConditionalOnProperty(prefix = "lambda.security.thirdPartLogin.wxMa", name = "enabled")
+        public static class WxMaConfiguration {
+
+            private SecurityProperties securityProperties;
+
+            @Autowired
+            public void setSecurityProperties(SecurityProperties securityProperties) {
+                this.securityProperties = securityProperties;
+            }
+
+            @Bean
+            public WxMaService wxMaService(RedissonClient redissonClient) {
+                SecurityProperties.ThirdPartLogin thirdPartLogin = securityProperties.getThirdPartLogin();
+                WxMaServiceImpl wxMaService = new WxMaServiceImpl();
+                WxMaRedissonConfigImpl wxMaRedissonConfig = new WxMaRedissonConfigImpl(redissonClient);
+                wxMaRedissonConfig.setAppid(thirdPartLogin.getWxMa().getAppId());
+                wxMaRedissonConfig.setSecret(thirdPartLogin.getWxMa().getSecret());
+                wxMaService.setWxMaConfig(wxMaRedissonConfig);
+                return wxMaService;
+            }
         }
     }
 }

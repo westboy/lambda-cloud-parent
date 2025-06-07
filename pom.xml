@@ -40,6 +40,7 @@
         <dynamic-datasource.version>4.3.1</dynamic-datasource.version>
         <lucene.version>7.3.0</lucene.version>
         <satoken.version>1.38.0</satoken.version>
+        <wxjava.version>4.7.0</wxjava.version>
         <minio.version>8.5.11</minio.version>
         <p6spy.version>3.9.1</p6spy.version>
         <nacos.version>2.3.2</nacos.version>
