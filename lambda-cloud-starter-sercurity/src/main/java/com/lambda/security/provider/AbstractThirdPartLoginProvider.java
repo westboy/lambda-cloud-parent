@@ -4,6 +4,11 @@ import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.security.service.ThirdPartService;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * AbstractThirdPartLoginProvider
+ *
+ * @author Jin
+ */
 @RequiredArgsConstructor
 public abstract class AbstractThirdPartLoginProvider implements ThirdPartLoginProvider {
 
