@@ -21,6 +21,7 @@ import com.lambda.security.handler.impl.CommonAuthenticationFailureHandler;
 import com.lambda.security.handler.impl.CommonAuthenticationSuccessHandler;
 import com.lambda.security.handler.impl.CommonLogoutHandler;
 import com.lambda.security.handler.impl.CommonLogoutSuccessHandler;
+import com.lambda.security.inteceptor.SaTokenInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
 import com.lambda.security.provider.ThirdPartLoginProvider;
 import com.lambda.security.provider.impl.WxMaLoginProvider;
