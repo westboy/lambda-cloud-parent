@@ -1,4 +1,4 @@
-package com.lambda.security.web;
+package com.lambda.security.web.form;
 
 import com.lambda.security.web.form.locking.UserLoginLimitTracker;
 import java.util.concurrent.TimeUnit;
@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jpjoo
  */
-public interface SecurityLockingStrategy {
+public interface FormLockingStrategy {
     /***
      * 登陆失败缓存处理
      *

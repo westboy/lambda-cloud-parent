@@ -5,15 +5,16 @@ import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * SecurityProperties
@@ -296,5 +297,53 @@ public class SecurityProperties {
          * 请用验证码 不开启验证码登录
          */
         boolean enableVerify = false;
+    }
+
+    /**
+     * 第三方登录
+     */
+    @NestedConfigurationProperty
+    ThirdPartLogin thirdPartLogin = new ThirdPartLogin();
+
+    @Setter
+    @Getter
+    public static class ThirdPartLogin {
+
+
+        String loginPath = "/thirdPart-login";
+
+        String thirdId = "";
+
+        String code = "code";
+
+        WxMa wxMa = new WxMa();
+
+        @Setter
+        @Getter
+        public static class WxMa {
+
+            boolean enabled = false;
+
+            String appId;
+
+            String secret;
+
+        }
+
+        @Setter
+        @Getter
+        public static class WxMp {
+
+            boolean enabled = false;
+
+        }
+
+        @Setter
+        @Getter
+        public static class DingTalk {
+
+            boolean enabled = false;
+
+        }
     }
 }

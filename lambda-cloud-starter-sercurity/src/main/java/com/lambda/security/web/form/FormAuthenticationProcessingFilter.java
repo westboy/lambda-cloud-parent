@@ -1,16 +1,12 @@
 package com.lambda.security.web.form;
 
 import cn.hutool.core.util.StrUtil;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
+import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
-import com.lambda.security.web.SecurityLockingStrategy;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
@@ -18,6 +14,10 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  * DefaultAuthenticationProcessingFilter
@@ -31,7 +31,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
     private String passwordParameter = "password";
     private String loginTypeParameter = "loginType";
     private String deviceParameter = "loginDevice";
-    private SecurityLockingStrategy securityLockingStrategy;
+    private FormLockingStrategy formLockingStrategy;
     private UserDetailService userDetailService;
     private PasswordEncoder passwordEncoder;
 
@@ -45,8 +45,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
     }
 
     @Override
-    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException {
+    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         if (!RequestMethod.POST.name().equals(request.getMethod())) {
             throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
         }
@@ -92,9 +91,8 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         if (StringUtils.isBlank(password)) {
             throw new AuthenticationException("密码不能为空！");
         }
-        if (securityLockingStrategy.checkFailureTimes(username)) {
-            throw new AuthenticationException("账号" + username + "已经被锁定:" + securityLockingStrategy.getDuration()
-                    + securityLockingStrategy.getTimeUnit().name());
+        if (formLockingStrategy.checkFailureTimes(username)) {
+            throw new AuthenticationException("账号" + username + "已经被锁定:" + formLockingStrategy.getDuration() + formLockingStrategy.getTimeUnit().name());
         }
 
         if (StrUtil.isEmpty(loginType)) {
@@ -108,6 +106,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         }
         request.setAttribute(deviceParameter, device);
 
+
         LoginUser loginUser = userDetailService.loginByUsername(username, loginType);
         if (loginUser == null) {
             throw new AuthenticationException("用户不存在！");
@@ -115,10 +114,10 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         String credentials = loginUser.getCredentials();
         boolean matches = passwordEncoder.matches(password, credentials);
         if (!matches) {
-            securityLockingStrategy.loginFailure(username);
+            formLockingStrategy.loginFailure(username);
             throw new AuthenticationException("密码错误！");
         }
-        securityLockingStrategy.loginSuccess(username);
+        formLockingStrategy.loginSuccess(username);
         return loginUser;
     }
 
@@ -140,4 +139,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
     protected String obtainUsername(HttpServletRequest request) {
         return request.getParameter(this.usernameParameter);
     }
+
+
+
 }

@@ -99,6 +99,25 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- weixin -->
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-miniapp</artifactId>
+            <version>${wxjava.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-mp</artifactId>
+            <version>${wxjava.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-cp</artifactId>
+            <version>${wxjava.version}</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
 </project>
