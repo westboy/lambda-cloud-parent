@@ -54,6 +54,9 @@ public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticat
 
         ThirdPartLoginProvider loginProvider = getThirdPartLoginProvider(thirdPartLogin.getThirdId());
 
+        if (loginProvider == null) {
+            throw new AuthenticationException(thirdPartLogin.getThirdId() + " is empty");
+        }
 
         LoginUser loginUser = loginProvider.authenticate(code, loginType);
 
