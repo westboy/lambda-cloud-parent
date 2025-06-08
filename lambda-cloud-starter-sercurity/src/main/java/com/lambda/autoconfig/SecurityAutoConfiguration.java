@@ -23,7 +23,10 @@ import com.lambda.security.handler.impl.CommonLogoutHandler;
 import com.lambda.security.handler.impl.CommonLogoutSuccessHandler;
 import com.lambda.security.inteceptor.SecureExtendInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
+import com.lambda.security.provider.ThirdPartLoginProvider;
+import com.lambda.security.provider.impl.WxMaLoginProvider;
 import com.lambda.security.service.HmacClientService;
+import com.lambda.security.service.ThirdPartyLoginService;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.form.FormAuthenticationProcessingFilter;
 import com.lambda.security.web.form.FormLockingStrategy;
@@ -33,6 +36,7 @@ import com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter;
 import com.lambda.security.web.hmac.handler.HmacAuthenticationSuccessHandler;
 import com.lambda.security.web.hmac.service.MemoryHmacClientService;
 import com.lambda.security.web.sms.SmsAuthenticationProcessingFilter;
+import com.lambda.security.web.third.ThirdPartAuthenticationProcessingFilter;
 import com.lambda.security.web.verify.VerifyCodeFilter;
 import com.lambda.security.web.verify.service.VerifyCodeService;
 import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
@@ -50,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -384,6 +389,7 @@ public class SecurityAutoConfiguration {
             this.securityProperties = securityProperties;
         }
 
+
         @SuppressFBWarnings(
                 value = {"EI_EXPOSE_REP2"},
                 justification = "springboot properties")
@@ -408,6 +414,28 @@ public class SecurityAutoConfiguration {
                 wxMaService.setWxMaConfig(wxMaRedissonConfig);
                 return wxMaService;
             }
+
+            @Bean
+            @ConditionalOnBean(ThirdPartLoginProvider.class)
+            public WxMaLoginProvider wxMaLoginProvider(ThirdPartyLoginService thirdPartyLoginService, WxMaService wxMaService) {
+                return new WxMaLoginProvider(thirdPartyLoginService, wxMaService);
+            }
         }
+
+        @Bean
+        public FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> ThirdPartAuthenticationFilter(@Autowired(required = false) List<ThirdPartLoginProvider> thirdPartLoginProviders, ObjectMapper objectMapper) {
+            if (thirdPartLoginProviders == null || thirdPartLoginProviders.isEmpty()) {
+                throw new IllegalStateException("thirdPartLoginProviders must not be empty");
+            }
+            FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+            ThirdPartAuthenticationProcessingFilter thirdPartAuthenticationProcessingFilter = new ThirdPartAuthenticationProcessingFilter(securityProperties.getThirdPartLogin(), thirdPartLoginProviders);
+            thirdPartAuthenticationProcessingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
+            thirdPartAuthenticationProcessingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            filterRegistrationBean.setFilter(thirdPartAuthenticationProcessingFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(30);
+            return filterRegistrationBean;
+        }
+
     }
 }

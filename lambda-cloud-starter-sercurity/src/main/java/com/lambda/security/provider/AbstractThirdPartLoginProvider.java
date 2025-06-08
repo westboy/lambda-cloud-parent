@@ -1,7 +1,7 @@
 package com.lambda.security.provider;
 
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.security.service.ThirdPartService;
+import com.lambda.security.service.ThirdPartyLoginService;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -12,12 +12,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public abstract class AbstractThirdPartLoginProvider implements ThirdPartLoginProvider {
 
-    private final ThirdPartService thirdPartService;
+    private final ThirdPartyLoginService thirdPartyLoginService;
 
     @Override
     public LoginUser authenticate(String token, String loginType) {
-        return thirdPartService.loadByOpenId(token, loginType);
+        String thirdUserId = getThirdUserId(token);
+        return thirdPartyLoginService.loadByOpenId(thirdUserId, loginType);
     }
 
-    public abstract String getOpenId(String code);
+    public abstract String getThirdUserId(String code);
+
+    public String buildAuthorizationUrl(String state, String scope, String redirectUri) {
+        throw new UnsupportedOperationException("Not support buildAuthorizationUrl");
+    }
 }

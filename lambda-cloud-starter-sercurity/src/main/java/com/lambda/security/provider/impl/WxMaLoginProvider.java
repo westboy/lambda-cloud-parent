@@ -4,7 +4,7 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.provider.AbstractThirdPartLoginProvider;
-import com.lambda.security.service.ThirdPartService;
+import com.lambda.security.service.ThirdPartyLoginService;
 import me.chanjar.weixin.common.error.WxErrorException;
 
 /**
@@ -16,13 +16,13 @@ public class WxMaLoginProvider extends AbstractThirdPartLoginProvider {
 
     private final WxMaService wxMaService;
 
-    public WxMaLoginProvider(ThirdPartService thirdPartService, WxMaService wxMaService) {
+    public WxMaLoginProvider(ThirdPartyLoginService thirdPartService, WxMaService wxMaService) {
         super(thirdPartService);
         this.wxMaService = wxMaService;
     }
 
     @Override
-    public String getOpenId(String code) {
+    public String getThirdUserId(String code) {
         try {
             WxMaJscode2SessionResult wxMaJscode2SessionResult = wxMaService.jsCode2SessionInfo(code);
             return wxMaJscode2SessionResult.getOpenid();
