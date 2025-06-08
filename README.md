@@ -1,43 +1,47 @@
-## 关于 lambda-cloud
+# 项目简介：**lambda-cloud 微服务开发框架**
 
-基于 Spring Cloud 的微服务架构开发框架，集成了各种常用的中间件，提供了一套完整的微服务解决方案。它包含了多个子模块，每个子模块提供不同的功能。
-用于支持快速创建微服务脚手架，组件内提供了一些基础的配置。在中小型项目下业务开发人员只需要专注于业务开发，不用考虑框架层的各种配置。
+**lambda-cloud** 是一个基于 **Spring Cloud** 构建的企业级微服务开发框架，旨在简化中小型企业在微服务架构下的开发成本与运维复杂度。该框架对多种主流中间件进行了统一封装与自动化配置，具备开箱即用、高度模块化、易于扩展等特性，是快速搭建企业级分布式系统的理想选择。
 
-## 项目层级及项目介绍
+框架采用模块化设计，核心功能按业务特性拆分为多个可插拔的子模块，覆盖服务注册与发现、配置管理、API 网关、权限认证、消息中间件、ORM 框架、任务调度、日志跟踪、安全防护等多个方面。开发人员可以根据业务需求按需引入子模块，从而大幅降低技术选型与框架搭建的成本。
+
+### 核心优势：
+
+- ✅ **标准化架构**：遵循 Spring Cloud 生态标准，具备良好的系统兼容性与社区支持。
+- ✅ **模块化设计**：支持灵活组合各类中间件能力，适配不同项目需求。
+- ✅ **自动化配置**：封装各类基础设施配置，简化开发流程，提高上线效率。
+- ✅ **快速开发支持**：提供通用开发脚手架，业务团队可专注于核心业务逻辑实现。
+- ✅ **完整的微服务能力覆盖**：支持服务治理、分布式事务、安全认证、链路追踪等能力。
+
+### 项目结构概览：
 
 ```
 lambda-cloud-parent
-     ├── lambda-cloud-core
-     ├── lambda-cloud-starter-actuator 
-     ├── lambda-cloud-starter-datasource 
-     ├── lambda-cloud-starter-dependencies 
-     ├── lambda-cloud-starter-dubbo 
-     ├── lambda-cloud-starter-feign 
-     ├── lambda-cloud-starter-gateway 
-     ├── lambda-cloud-starter-kafka 扩充kafka 增加延迟队列功能
-     ├── lambda-cloud-starter-liquibase 
-     ├── lambda-cloud-starter-logger 
-     ├── lambda-cloud-starter-lucene 
-     ├── lambda-cloud-starter-mybatis 
-     ├── lambda-cloud-starter-oss 
-     ├── lambda-cloud-starter-plugin 
-     ├── lambda-cloud-starter-redis 
-     ├── lambda-cloud-starter-security 
-     ├── lambda-cloud-starter-swagger 
-     ├── lambda-cloud-starter-test
-     ├── lambda-cloud-starter-web 
-     └── lambda-cloud-starter-websocket
+    ├── lambda-cloud-core # 核心功能与通用工具包
+    ├── lambda-cloud-starter-actuator # 健康检查与监控集成
+    ├── lambda-cloud-starter-datasource # 多数据源与数据库连接池管理
+    ├── lambda-cloud-starter-dependencies # 项目统一依赖版本管理
+    ├── lambda-cloud-starter-dubbo # Dubbo RPC 集成支持
+    ├── lambda-cloud-starter-feign # 声明式 HTTP 客户端支持
+    ├── lambda-cloud-starter-gateway # 基于 Spring Cloud Gateway 的网关模块
+    ├── lambda-cloud-starter-kafka # Kafka 消息队列集成
+    ├── lambda-cloud-starter-liquibase # 数据库变更管理工具集成
+    ├── lambda-cloud-starter-logger # 日志统一采集与追踪
+    ├── lambda-cloud-starter-lucene # Lucene 全文检索支持
+    ├── lambda-cloud-starter-mybatis # MyBatis ORM 框架集成
+    ├── lambda-cloud-starter-oss # 对象存储（如 MinIO、OSS）支持
+    ├── lambda-cloud-starter-plugin # 插件式开发支持
+    ├── lambda-cloud-starter-redis # Redis 缓存与分布式锁支持
+    ├── lambda-cloud-starter-security # 基于 Sa-Token 的安全认证模块（非 Spring Security）
+    ├── lambda-cloud-starter-sms # 短信网关支持
+    ├── lambda-cloud-starter-swagger # API 文档生成（Swagger/OpenAPI）
+    ├── lambda-cloud-starter-test # 测试工具与集成测试支持
+    ├── lambda-cloud-starter-web # 通用 Web 开发组件封装
+    └── lambda-cloud-starter-websocket # WebSocket 通信支持
 ```
 
-## 系统版本号
+### 应用场景：
 
-### 版本号命名
-
-版本号格式为：主版本号.次版本号.修订号，版本号递增规则如下：
-
-* 主版本号：系统版本号是从1开始的，主版本号表示一个全新的框架版本，例如:重大的重构重大的功能改动、重大的不兼容性的变化;
-* 次版本号：发布较大的新功能，或者较大的重构或者模块变化，或者出现不兼容性改动，会增加子版本号;子版本的发布会伴随着完整的changelog，算是一个较大的版本发布;
-* 修订号：往往是bug修复，或者增加较小的功能改进，在保证完整向后兼容的前提下，会增加修正版本号;
-
-当主版本号增加时，子版本号及修正版本号置0;当子版本号增加时，修正版本号置
-0;开发阶段，基于版本命名规则，在预上线的版本号上追加“-SNAPSHOT"，做为快照版本。
+- 快速构建企业级微服务项目
+- 多模块协作的分布式系统开发
+- 微服务架构的技术落地与标准化支撑
+- 面向中小型团队的低门槛高效率开发平台
