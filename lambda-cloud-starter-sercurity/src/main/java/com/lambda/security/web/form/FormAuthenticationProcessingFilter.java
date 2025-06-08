@@ -1,12 +1,15 @@
 package com.lambda.security.web.form;
 
 import cn.hutool.core.util.StrUtil;
+import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
@@ -14,10 +17,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
 
 /**
  * DefaultAuthenticationProcessingFilter
@@ -45,7 +44,8 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
     }
 
     @Override
-    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public LoginUser attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
         if (!RequestMethod.POST.name().equals(request.getMethod())) {
             throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
         }
@@ -92,7 +92,8 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
             throw new AuthenticationException("密码不能为空！");
         }
         if (formLockingStrategy.checkFailureTimes(username)) {
-            throw new AuthenticationException("账号" + username + "已经被锁定:" + formLockingStrategy.getDuration() + formLockingStrategy.getTimeUnit().name());
+            throw new AuthenticationException("账号" + username + "已经被锁定:" + formLockingStrategy.getDuration()
+                    + formLockingStrategy.getTimeUnit().name());
         }
 
         if (StrUtil.isEmpty(loginType)) {
@@ -105,7 +106,6 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
             device = "default";
         }
         request.setAttribute(deviceParameter, device);
-
 
         LoginUser loginUser = userDetailService.loginByUsername(username, loginType);
         if (loginUser == null) {
@@ -139,7 +139,4 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
     protected String obtainUsername(HttpServletRequest request) {
         return request.getParameter(this.usernameParameter);
     }
-
-
-
 }

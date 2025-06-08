@@ -5,6 +5,7 @@ import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.provider.AbstractThirdPartLoginProvider;
 import com.lambda.security.service.ThirdPartyLoginService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import me.chanjar.weixin.common.error.WxErrorException;
 
 /**
@@ -12,6 +13,7 @@ import me.chanjar.weixin.common.error.WxErrorException;
  *
  * @author Jin
  */
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
 public class WxMaLoginProvider extends AbstractThirdPartLoginProvider {
 
     private final WxMaService wxMaService;

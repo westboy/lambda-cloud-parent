@@ -69,7 +69,7 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
 
         LoginMode mode = LoginMode.get(loginMode);
 
-        if (!LoginMode.SMS.equals(loginMode)) {
+        if (!LoginMode.SMS.equals(mode)) {
             chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }

@@ -50,6 +50,7 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +70,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.List;
 
 /**
  * Sa-Token 配置类
@@ -388,10 +387,6 @@ public class SecurityAutoConfiguration {
             this.securityProperties = securityProperties;
         }
 
-
-        @SuppressFBWarnings(
-                value = {"EI_EXPOSE_REP2"},
-                justification = "springboot properties")
         @Configuration
         @ConditionalOnProperty(prefix = "lambda.security.thirdPartLogin.wxMa", name = "enabled")
         public static class WxMaConfiguration {
@@ -416,25 +411,32 @@ public class SecurityAutoConfiguration {
 
             @Bean
             @ConditionalOnBean(ThirdPartLoginProvider.class)
-            public WxMaLoginProvider wxMaLoginProvider(ThirdPartyLoginService thirdPartyLoginService, WxMaService wxMaService) {
+            public WxMaLoginProvider wxMaLoginProvider(
+                    ThirdPartyLoginService thirdPartyLoginService, WxMaService wxMaService) {
                 return new WxMaLoginProvider(thirdPartyLoginService, wxMaService);
             }
         }
 
         @Bean
-        public FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> ThirdPartAuthenticationFilter(@Autowired(required = false) List<ThirdPartLoginProvider> thirdPartLoginProviders, ObjectMapper objectMapper) {
+        public FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> thirdPartAuthenticationFilter(
+                @Autowired(required = false) List<ThirdPartLoginProvider> thirdPartLoginProviders,
+                ObjectMapper objectMapper) {
             if (thirdPartLoginProviders == null || thirdPartLoginProviders.isEmpty()) {
                 throw new IllegalStateException("thirdPartLoginProviders must not be empty");
             }
-            FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-            ThirdPartAuthenticationProcessingFilter thirdPartAuthenticationProcessingFilter = new ThirdPartAuthenticationProcessingFilter(securityProperties.getThirdPartLogin(), thirdPartLoginProviders);
-            thirdPartAuthenticationProcessingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
-            thirdPartAuthenticationProcessingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> filterRegistrationBean =
+                    new FilterRegistrationBean<>();
+            ThirdPartAuthenticationProcessingFilter thirdPartAuthenticationProcessingFilter =
+                    new ThirdPartAuthenticationProcessingFilter(
+                            securityProperties.getThirdPartLogin(), thirdPartLoginProviders);
+            thirdPartAuthenticationProcessingFilter.setAuthenticationSuccessHandler(
+                    new CommonAuthenticationSuccessHandler(objectMapper));
+            thirdPartAuthenticationProcessingFilter.setAuthenticationFailureHandler(
+                    new CommonAuthenticationFailureHandler(objectMapper));
             filterRegistrationBean.setFilter(thirdPartAuthenticationProcessingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
             return filterRegistrationBean;
         }
-
     }
 }

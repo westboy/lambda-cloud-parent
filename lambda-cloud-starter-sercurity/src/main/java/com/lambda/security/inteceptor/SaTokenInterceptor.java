@@ -39,7 +39,7 @@ public class SaTokenInterceptor implements SaParamFunction<Object> {
         stpLogic.checkLogin();
 
         if (secureInterceptor != null) {
-            secureInterceptor.handle(handler, stpLogic,OperatorUtils.getOperator());
+            secureInterceptor.handle(handler, stpLogic, OperatorUtils.getOperator());
         }
     }
 }
