@@ -309,12 +309,16 @@ public class SecurityProperties {
     @Getter
     public static class ThirdPartLogin {
 
+        boolean enabled = false;
 
         String loginPath = "/thirdPart-login";
 
-        String thirdId = "";
+        String thirdName = "thirdType";
 
-        String code = "code";
+        String thirdAuthCode = "thirdAuthParam";
+
+        String buildAuthorizationUrl = "buildAuthorizationUrl";
+
 
         WxMa wxMa = new WxMa();
 
@@ -338,12 +342,5 @@ public class SecurityProperties {
 
         }
 
-        @Setter
-        @Getter
-        public static class DingTalk {
-
-            boolean enabled = false;
-
-        }
     }
 }
