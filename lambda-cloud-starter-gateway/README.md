@@ -1,42 +1,70 @@
-### lambda-cloud-starter-gateway 项目介绍及使用说明
+# lambda-cloud-starter-gateway 模块说明
 
-#### 简介
-`lambda-cloud-starter-gateway` 是一个基于Spring Cloud Gateway的网关服务模块，主要用于在微服务架构中作为API网关，提供统一的请求入口。它包含了网关的自动配置、安全过滤、跨域支持、WebSocket支持等功能，以简化开发者在项目中对网关服务的管理。
+## 模块概述
+基于Spring Cloud Gateway的增强网关模块，提供企业级API网关能力。
 
-#### 主要功能
-1. **网关自动配置**：模块中包含了Spring Cloud Gateway的自动配置功能，可以自动读取配置文件中的网关信息并进行配置。
-2. **安全过滤**：支持通过Sa-Token进行安全过滤，实现权限控制和身份验证。
-3. **跨域支持**：支持跨域请求配置，方便前端应用进行跨域调用。
-4. **WebSocket支持**：支持WebSocket连接，可以用于实时通信场景。
+## 核心功能
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `spring-cloud-starter-gateway`：提供Spring Cloud Gateway的基本功能。
-- `spring-cloud-starter-loadbalancer`：集成loadbalancer实现客户端负载均衡。
+### 1. 请求处理增强
+- **GlobalCacheRequestFilter**: 解决请求body不能重复读取问题，支持JSON请求缓存
+- **WebSocketExpandFilter**: WebSocket协议转换(ws->http, wss->https)
+- **XFrameOptionsFilter**: 添加X-Frame-Options响应头防止点击劫持
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-gateway`，你需要在项目的pom文件中添加以下依赖：
-```xml
-<dependency>
-    <groupId>${project.groupId}</groupId>
-    <artifactId>lambda-cloud-starter-gateway</artifactId>
-    <version>${project.parent.version}</version>
-</dependency>
+### 2. 路由增强
+- **TenantRouteRewriterGatewayFilterFactory**: 基于租户ID的路由重写
+  - 支持header/query参数获取tenantId
+  - 依赖TenantRouteService验证租户路由
+- **TenantRouteService**: 租户路由服务接口
+  - `getUri()`: 根据租户ID获取新URI
+  - `verify()`: 验证租户ID有效性
+
+### 3. 安全防护
+- **BlackListUrlFilterFactory**: URL黑名单过滤
+  - 支持通配符模式匹配
+  - 匹配失败返回401状态码
+- **GatewayFirewallProperties**: 防火墙配置
+  - 开关控制(enabled)
+  - 白名单配置(whites)
+
+### 4. Swagger支持
+- **SwaggerResourceController**: 聚合各服务Swagger文档
+  - 支持自定义API名称(api-name)
+  - 支持自定义文档路径(api-docs)
+  - 支持API分组排序(api-order)
+
+## 配置说明
+
+### 防火墙配置
+```yaml
+lambda:
+  web:
+    firewall:
+      enabled: true
+      whites:
+        - /api/public/**
+        - /health
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+### 租户路由配置
+需实现TenantRouteService接口并注册为Spring Bean。
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置网关信息：
+## 使用示例
+
+### 黑名单过滤器配置
 ```yaml
 spring:
   cloud:
     gateway:
       routes:
-        - id: your-service
-          uri: lb://your-service
-          predicates:
-            - Path=/your-service/**
+        - id: demo-service
+          uri: lb://demo-service
+          filters:
+            - name: BlackListUrl
+              args:
+                patterns: /api/forbidden/**,/admin/secret
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-gateway`提供的网关服务功能，简化网关服务的配置和管理。
+## 注意事项
+1. TenantRouteService需要业务方自行实现
+2. 防火墙默认禁用，需手动开启
+3. Swagger聚合依赖各服务的Swagger配置

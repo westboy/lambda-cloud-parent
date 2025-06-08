@@ -1,37 +1,98 @@
-### lambda-cloud-starter-websocket 项目介绍及使用说明
+# Lambda Cloud WebSocket Starter
 
-#### 简介
-`lambda-cloud-starter-websocket` 是一个基于WebSocket的实时通信模块，主要用于在微服务架构中实现实时通信功能。它包含了WebSocket的自动配置、消息发送、消息接收等功能，以简化开发者在项目中对WebSocket的管理。
+WebSocket模块，提供基于STOMP协议的WebSocket支持。
 
-#### 主要功能
-1. **WebSocket自动配置**：模块中包含了Spring Boot的自动配置功能，可以自动读取配置文件中的WebSocket信息并进行配置。
-2. **消息发送**：支持发送消息到指定的WebSocket客户端或所有客户端。
-3. **消息接收**：提供消息接收功能，可以接收来自WebSocket客户端的消息。
+## 核心功能
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `spring-boot-starter-websocket`：提供WebSocket的基本功能。
-- `spring-boot-starter-messaging`：提供消息发送和接收功能。
+### 1. 自动配置
+- 自动配置WebSocket消息代理
+- 支持STOMP协议
+- 支持SockJS
+- 可配置的消息前缀和端点
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-websocket`，你需要在项目的pom文件中添加以下依赖：
+### 2. 认证拦截
+- 基于SaToken的认证拦截器
+- 支持从Header获取accessToken
+- 支持多种登录类型(ADMIN/USER)
+
+### 3. 通道存储
+- 提供内存和Redis两种存储模式
+- 支持用户会话管理
+- 支持在线用户统计
+- 支持批量检测用户在线状态
+
+### 4. 事件处理
+- 处理连接生命周期事件（连接、断开）
+- 处理订阅/取消订阅事件
+- 支持自定义事件处理器
+
+## 配置项
+
+```yaml
+lambda:
+  websocket:
+    enabled: true # 是否启用
+    store-mode: memory # 存储模式(memory/redis)
+    endpoint: /ws # WebSocket端点路径
+    application-destination-prefix: /app # 应用目标前缀
+    user-destination-prefix: /user # 用户目标前缀
+    topic-prefix: /topic # 主题前缀
+```
+
+## 使用说明
+
+### 1. 添加依赖
 ```xml
 <dependency>
-    <groupId>${project.groupId}</groupId>
+    <groupId>com.lambda</groupId>
     <artifactId>lambda-cloud-starter-websocket</artifactId>
-    <version>${project.parent.version}</version>
+    <version>${latest.version}</version>
 </dependency>
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+### 2. 自定义事件处理器
+```java
+@Component
+public class CustomConnectEventService implements WsConnectEventService {
+    @Override
+    public void connectEvent(WsSessionInfo<SessionConnectEvent> info) {
+        // 处理连接事件
+    }
+}
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置WebSocket信息：
-```yaml
-spring:
-  websocket:
-    handshake:
-      supportedProtocols: [websocket, sctp]
+@Component
+public class CustomSubscribeEvent implements WsSubscribeEvent {
+    @Override
+    public String[] topics() {
+        return new String[]{"/topic/demo"};
+    }
+
+    @Override
+    public void subscribeEvent(WsSessionInfo<SessionSubscribeEvent> info) {
+        // 处理订阅事件
+    }
+}
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-websocket`提供的实时通信功能，简化WebSocket的配置和使用。
+### 3. 发送消息示例
+```java
+@RestController
+public class WebSocketController {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @GetMapping("/send")
+    public void sendMessage() {
+        // 发送给特定用户
+        messagingTemplate.convertAndSendToUser("userId", "/queue/messages", "Hello");
+        
+        // 广播消息
+        messagingTemplate.convertAndSend("/topic/broadcast", "Broadcast message");
+    }
+}
+```
+
+## 注意事项
+1. 默认使用内存存储模式，生产环境建议使用Redis模式
+2. 认证拦截器需要配合SaToken使用
+3. 订阅事件处理器需要实现WsSubscribeEvent接口并注册为Spring Bean

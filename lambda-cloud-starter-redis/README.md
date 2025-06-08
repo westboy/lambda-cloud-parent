@@ -1,44 +1,108 @@
-### lambda-cloud-starter-redis 项目介绍及使用说明
+# Lambda Cloud Redis Starter
 
-#### 简介
-`lambda-cloud-starter-redis` 是一个基于Redis的缓存管理模块，主要用于在微服务架构中实现缓存的管理和使用。它包含了Redis的自动配置、缓存操作、缓存序列化等功能，以简化开发者在项目中对缓存的管理。
+基于Spring Boot的Redis增强模块，提供Redis操作工具、延迟队列和键过期监听功能。
 
-#### 主要功能
-1. **Redis自动配置**：模块中包含了Spring Boot的自动配置功能，可以自动读取配置文件中的Redis信息并进行配置。
-2. **缓存操作**：支持对缓存进行基本的CRUD操作，如设置缓存、获取缓存、删除缓存等。
-3. **缓存序列化**：支持自定义缓存序列化方式，可以将对象转换为字节流进行缓存。
+## 功能特性
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `spring-boot-starter-data-redis`：提供Redis的基本功能。
-- `jedis`：提供Redis的Java客户端。
+- 增强的Redis操作工具类
+- 基于Redisson的延迟队列
+- 键过期事件监听
+- 支持单机/哨兵/集群模式
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-redis`，你需要在项目的pom文件中添加以下依赖：
+## 快速开始
+
+### 1. 添加依赖
+
 ```xml
 <dependency>
-    <groupId>${project.groupId}</groupId>
+    <groupId>com.lambda</groupId>
     <artifactId>lambda-cloud-starter-redis</artifactId>
-    <version>${project.parent.version}</version>
+    <version>${latest.version}</version>
 </dependency>
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+### 2. 基础配置
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置Redis信息：
 ```yaml
 spring:
   redis:
-    host: localhost
+    host: 127.0.0.1
     port: 6379
-    password: your_password
-    jedis:
+    password: 
+    database: 0
+    # 模式: STANDALONE(默认)/SENTINEL/CLUSTER
+    mode: STANDALONE 
+    lettuce:
       pool:
-        max-active: 10
-        max-idle: 5
-        min-idle: 1
-        max-wait: -1ms
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-redis`提供的缓存管理功能，简化缓存的配置和使用。
+### 3. Redis操作工具
+
+```java
+@Autowired
+private RedisHelper redisHelper;
+
+// 设置值
+redisHelper.set("key", "value");
+
+// 获取值
+String value = redisHelper.get("key");
+
+// 设置过期时间
+redisHelper.set("key", "value", 60, TimeUnit.SECONDS);
+```
+
+### 4. 延迟队列使用
+
+```yaml
+lambda:
+  redis:
+    delay:
+      enabled: true
+      queues:
+        - name: order-delay-queue
+          delay: 30
+          timeUnit: SECONDS
+          works: 5
+```
+
+```java
+@Autowired
+private RedisDelayedQueueManager delayedQueueManager;
+
+// 添加延迟任务
+delayedQueueManager.add("order-delay-queue", taskId, 30, TimeUnit.SECONDS);
+
+// 实现RedisDelayedListener处理任务
+@Component
+public class OrderDelayListener implements RedisDelayedListener {
+    @Override
+    public void onMessage(String taskId) {
+        // 处理延迟任务
+    }
+}
+```
+
+### 5. 键过期监听
+
+```java
+@Component
+public class MyKeyExpiredListener implements RedisKeyExpiredListener {
+    @Override
+    public void onMessage(RedisKeyExpiredEvent<String> event) {
+        String expiredKey = new String(event.getSource());
+        // 处理键过期事件
+    }
+}
+```
+
+## 注意事项
+
+1. 键过期监听在集群环境下需要特殊处理
+2. 延迟队列需要Redisson依赖
+3. 默认使用Lettuce作为Redis客户端
+4. 配置前缀为"spring.redis"
+5. 延迟队列配置前缀为"lambda.redis.delay"

@@ -1,39 +1,59 @@
-### lambda-cloud-starter-kafka 项目介绍及使用说明
+# lambda-cloud-starter-kafka Kafka扩展模块
 
-#### 简介
-`lambda-cloud-starter-kafka` 是一个基于Apache Kafka的消息队列模块，主要用于在微服务架构中实现异步通信和消息传递。它包含了Kafka的自动配置、消息序列化、消息发送等功能，以简化开发者在项目中对Kafka的使用。
+## 功能概述
+本模块扩展Spring Kafka功能，提供以下增强特性：
+1. 延迟消息处理机制
+2. 消息监控和管理功能
+3. 自定义消息模板
 
-#### 主要功能
-1. **Kafka自动配置**：模块中包含了Spring Boot的自动配置功能，可以自动读取配置文件中的Kafka信息并进行配置。
-2. **消息序列化**：支持自定义消息序列化方式，可以将消息对象转换为字节流进行传输。
-3. **消息发送**：提供消息发送功能，可以将消息发送到指定的Kafka主题。
+## 核心组件
+### 延迟消息处理
+- DelayKafkaInitializer: 初始化延迟队列
+- DelayKafkaTemplate: 发送延迟消息
+- DelayMonitorService: 监控延迟消息
+- DelayTimeoutService: 处理超时消息
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `spring-boot-starter-kafka`：提供Kafka的基本功能。
-- `fastjson`：用于消息的序列化和反序列化。
+### 核心模型
+- DelayConsumerRecord: 延迟消息记录
+- DelayEntry: 延迟条目
+- DelayLevel: 延迟级别枚举
+- DelayTopicPartition: 主题分区信息
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-kafka`，你需要在项目的pom文件中添加以下依赖：
-```xml
-<dependency>
-    <groupId>${project.groupId}</groupId>
-    <artifactId>lambda-cloud-starter-kafka</artifactId>
-    <version>${project.parent.version}</version>
-</dependency>
+## 配置方式
+本模块通过自动配置扩展Spring Kafka，无需额外配置即可启用基础功能。
+
+如需自定义配置，可通过以下属性调整：
+
+```properties
+# 启用/禁用延迟功能
+spring.kafka.delay.enabled=true
+
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+## 使用示例
+1. 发送延迟消息：
+```java
+@Autowired
+private DelayKafkaTemplate<String, String> delayKafkaTemplate;
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置Kafka信息：
-```yaml
-spring:
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: com.alibaba.fastjson.serializer.JSONSerializer
+public void sendDelayedMessage(String topic, String message) {
+    delayKafkaTemplate.send(topic, message, DelayLevel.MINUTE_1);
+}
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-kafka`提供的Kafka功能，简化消息队列的配置和使用。
+2. 处理超时消息：
+```java
+@Service
+public class MyTimeoutHandler implements DelayTimeoutHandler {
+    @Override
+    public void handleTimeout(DelayConsumerRecord<?,?> record) {
+        // 自定义处理逻辑
+    }
+}
+```
+
+## 注意事项
+1. 需要正确配置Spring Kafka基础属性
+2. 确保Kafka集群可用
+3. 延迟级别设置应考虑业务需求
+4. 分区数量影响并发处理能力

@@ -1,38 +1,67 @@
-### lambda-cloud-starter-web 项目介绍及使用说明
+# Lambda Cloud Web Starter
 
-#### 简介
-`lambda-cloud-starter-web` 是一个基于Spring Boot的Web应用模块，主要用于在微服务架构中实现Web相关的功能。它包含了Web自动配置、Web相关工具、模板引擎等功能，以简化开发者在项目中对Web应用的管理。
+Web基础模块，提供Spring Web MVC相关的基础配置和组件。
 
-#### 主要功能
-1. **Web自动配置**：模块中包含了Spring Boot的自动配置功能，可以自动读取配置文件中的Web信息并进行配置。
-2. **Web相关工具**：支持集成各种Web相关工具，如Spring MVC、Thymeleaf等。
-3. **模板引擎**：提供模板引擎功能，可以用于动态生成HTML页面。
+## 核心功能
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `spring-boot-starter-web`：提供Spring Boot的Web基本功能。
-- `spring-boot-starter-thymeleaf`：集成Thymeleaf模板引擎。
+### 1. Web MVC自动配置
+- CORS跨域配置
+- Jackson序列化配置
+- 日期格式化（支持多种日期格式转换）
+- 国际化支持
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-web`，你需要在项目的pom文件中添加以下依赖：
+### 2. 全局异常处理
+- 400错误处理（参数校验、文件上传等）
+- 401/403/500等HTTP状态码处理
+- Feign异常处理
+- 参数校验错误格式化
+
+### 3. 安全过滤器
+- X-Frame-Options响应头设置（防止点击劫持攻击）
+- 请求耗时统计
+
+### 4. 租户上下文
+- 基于ThreadLocal的租户ID管理
+- 支持多租户数据源切换
+- 提供租户ID设置、获取和清除方法
+
+### 5. 类型转换
+- 字符串到Date类型的自动转换
+- 支持多种日期格式解析
+
+## 使用说明
+
+### 1. 添加依赖
 ```xml
 <dependency>
-    <groupId>${project.groupId}</groupId>
+    <groupId>com.lambda</groupId>
     <artifactId>lambda-cloud-starter-web</artifactId>
-    <version>${project.parent.version}</version>
+    <version>${latest.version}</version>
 </dependency>
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+### 2. 自动生效功能
+以下功能在引入依赖后自动生效：
+- Web MVC基础配置
+- 全局异常处理
+- 安全过滤器
+- 日期类型转换
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置Web信息：
-```yaml
-spring:
-  mvc:
-    view:
-      prefix: /WEB-INF/views/
-      suffix: .html
+### 3. 租户上下文使用示例
+```java
+// 设置当前线程租户ID
+TenantHolder.setTenantId("tenant1");
+
+try {
+    // 业务逻辑...
+    String tenantId = TenantHolder.getTenantId();
+} finally {
+    // 清除租户ID
+    TenantHolder.clear();
+}
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-web`提供的Web应用功能，简化Web应用的配置和使用。
+## 注意事项
+1. 日期格式转换支持标准ISO格式和常见中文格式
+2. X-Frame-Options默认设置为SAMEORIGIN
+3. 租户上下文基于ThreadLocal实现，需注意及时清理

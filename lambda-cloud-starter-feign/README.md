@@ -1,42 +1,86 @@
-### lambda-cloud-starter-feign 项目介绍及使用说明
+# lambda-cloud-starter-feign Feign客户端模块
 
-#### 简介
-`lambda-cloud-starter-feign` 是一个基于Feign的客户端模块，主要用于在微服务架构中进行服务间的调用。Feign是一个声明式的Web服务客户端，它使得编写Web服务客户端变得更加简单。通过`lambda-cloud-starter-feign`，开发者可以轻松地在项目中集成Feign客户端，实现服务间的通信。
+## 功能概述
+本模块提供Feign客户端的Spring Boot Starter支持，主要功能包括：
+1. Feign客户端自动配置
+2. 自定义错误解码器(CustomErrorDecoder)
+3. 请求拦截器(AuthorizationRequestHeaderInterceptor, HmacClientRequestInterceptor, ClearAuthorizationHeaderInterceptor)
+4. WebFlux属性支持(AttributeHolder)
+5. 重试机制配置
+6. 日志级别配置(FULL)
 
-#### 主要功能
-1. **声明式REST客户端**：使用Feign可以像使用Spring MVC注解一样来定义REST客户端。
-2. **集成Hystrix**：支持与Hystrix集成，提供熔断和降级功能，增强系统的容错性。
-3. **集成Ribbon**：支持客户端负载均衡。
+## 核心依赖
+- org.springframework.cloud:spring-cloud-starter-openfeign
+- org.springframework.cloud:spring-cloud-starter-loadbalancer
+- io.github.openfeign:feign-okhttp
+- com.lambda.cloud:lambda-cloud-core
+- com.lambda.cloud:lambda-cloud-starter-logger
+- com.github.ben-manes.caffeine:caffeine
+- org.springframework.retry:spring-retry
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `spring-cloud-starter-openfeign`：提供Feign的基本功能。
-- `spring-cloud-starter-netflix-hystrix`：集成Hystrix提供熔断功能。
-- `spring-cloud-starter-netflix-ribbon`：集成Ribbon实现客户端负载均衡。
+## 配置说明
+基础配置示例：
+```properties
+# Feign客户端扫描路径
+spring.cloud.openfeign.client.basePackage=com.lambda.cloud
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-feign`，你需要在项目的pom文件中添加以下依赖：
-```xml
-<dependency>
-    <groupId>${project.groupId}</groupId>
-    <artifactId>lambda-cloud-starter-feign</artifactId>
-    <version>${project.parent.version}</version>
-</dependency>
+# 重试配置
+spring.cloud.openfeign.client.retry.enabled=true
+spring.cloud.openfeign.client.retry.maxAttempts=3
+
+# 日志级别
+logging.level.com.lambda.cloud.feign=DEBUG
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+## 拦截器说明
+### AuthorizationRequestHeaderInterceptor
+1. 功能：
+   - 自动添加Content-Type: application/json头
+   - 处理授权令牌(Authorization头)
+   - 支持从请求头或Cookie获取令牌
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置Feign客户端信息：
-```yaml
-feign:
-  hystrix:
-    enabled: true
-  client:
-    config:
-      defaults:
-        connectTimeoutMillis: 5000
-        readTimeoutMillis: 5000
+2. 令牌获取逻辑：
+   - 优先从请求头Authorization获取
+   - 其次从Cookie(x-authorized-token)获取
+   - 如果请求已包含x-security-policy头，则不添加Authorization头
+
+3. 优先级：最高(Integer.MIN_VALUE)
+
+### HmacClientRequestInterceptor
+1. 功能：
+   - 生成HMAC签名认证
+   - 自动添加Authorization头
+
+2. 签名参数：
+   - 需要提供appid和secret
+   - 包含时间戳(timestamp)
+   - 包含查询参数(queries)
+   - 包含请求体(body，仅POST/PUT请求)
+
+3. 使用方式：
+```java
+@Bean
+public HmacClientRequestInterceptor hmacInterceptor(
+    @Value("${hmac.appid}") String appid,
+    @Value("${hmac.secret}") String secret) {
+    return new HmacClientRequestInterceptor(appid, secret);
+}
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-feign`提供的Feign客户端功能，简化服务间的调用和通信。
+### ClearAuthorizationHeaderInterceptor
+1. 功能：
+   - 清除请求中的Authorization头
+   - 防止敏感信息泄露
+
+## WebFlux支持
+### AttributeHolder
+1. 功能：
+   - 在WebFlux环境中传递请求属性
+   - 支持Reactive上下文
+
+## 注意事项
+1. 默认使用OkHttp作为HTTP客户端
+2. 内置了请求拦截器和错误处理
+3. 版本号继承自父项目${project.parent.version}
+4. 需要配合负载均衡器使用
+5. HMAC拦截器需要手动配置appid和secret

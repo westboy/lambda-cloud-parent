@@ -1,38 +1,82 @@
-### lambda-cloud-starter-oss 项目介绍及使用说明
+# Lambda Cloud OSS Starter
 
-#### 简介
-`lambda-cloud-starter-oss` 是一个对象存储服务（OSS）模块，主要用于在微服务架构中实现文件的存储和访问。它包含了OSS的自动配置、文件上传、文件下载等功能，以简化开发者在项目中对对象存储的管理。
+基于Spring Boot的OSS统一接入模块，支持多种对象存储服务。
 
-#### 主要功能
-1. **OSS自动配置**：模块中包含了Spring Boot的自动配置功能，可以自动读取配置文件中的OSS信息并进行配置。
-2. **文件上传**：支持将文件上传到OSS，可以将本地文件或输入流上传到指定的存储桶。
-3. **文件下载**：提供文件下载功能，可以从OSS下载文件到本地或输出流。
+## 功能特性
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `aliyun-java-sdk-oss`：提供阿里云OSS的基本功能。
-- `minio`：提供MinIO的OSS功能，支持本地模式和集群模式。
+- 统一API接入多种OSS服务
+- 支持多客户端配置
+- 文件上传、下载、删除
+- 分片上传大文件
+- 生成预签名URL
+- 设置存储桶权限策略
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-oss`，你需要在项目的pom文件中添加以下依赖：
+## 快速开始
+
+### 1. 添加依赖
+
 ```xml
 <dependency>
-    <groupId>${project.groupId}</groupId>
+    <groupId>com.lambda</groupId>
     <artifactId>lambda-cloud-starter-oss</artifactId>
-    <version>${project.parent.version}</version>
+    <version>${latest.version}</version>
 </dependency>
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+### 2. 配置说明
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置OSS信息：
 ```yaml
-oss:
-  endpoint: http://localhost:9000
-  access-key: your_access_key
-  secret-key: your_secret_key
-  bucket-name: your_bucket_name
+lambda:
+  oss:
+    enabled: true # 是否启用自动配置(默认true)
+    clients:
+      - name: default # 客户端名称
+        type: MINIO # 服务类型: MINIO|ALIYUN|QCLOUD|QINIU|OTHER
+        endpoint: http://your-oss-endpoint
+        accessKey: your-access-key
+        secretKey: your-secret-key
+        region: your-region # 可选
+        bucket: your-bucket-name # 存储桶名称
+        isHttps: false # 是否使用HTTPS
+        policyType: READ_WRITE # MinIO专用: READ|WRITE|READ_WRITE
+        accessPolicy: PRIVATE # MinIO专用: PRIVATE|PUBLIC|CUSTOM
+      - name: backup # 可配置多个客户端
+        type: ALIYUN
+        endpoint: http://backup-endpoint
+        accessKey: backup-key
+        secretKey: backup-secret
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-oss`提供的对象存储功能，简化文件存储和访问的配置和使用。
+### 3. 使用示例
+
+```java
+@Autowired
+private OssClientManager ossClientManager;
+
+// 上传文件
+public void uploadFile() {
+    InputStream inputStream = new FileInputStream("test.txt");
+    String objectKey = "test-folder/test.txt";
+    ossClientManager.get("default").upload(objectKey, inputStream);
+}
+
+
+// 使用特定客户端
+public void useSpecificClient() {
+    OssClient backupClient = ossClientManager.get("default ");
+    backupClient.upload("backup/test.txt", inputStream);
+}
+```
+
+## 注意事项
+
+1. 配置前缀为"lambda.oss"
+2. 必须配置bucket名称
+3. 使用HTTPS时需要设置isHttps=true
+4. MinIO专用配置(policyType/accessPolicy)仅对MINIO类型有效
+5. 分片上传建议用于大文件(>100MB)
+6. 预签名URL需设置合理的过期时间
+7. 多客户端配置时需区分name属性
+8. 支持的OSS类型: MINIO, ALIYUN, QCLOUD, QINIU, OTHER
+9. 支持的访问策略: PRIVATE, PUBLIC, CUSTOM
+10. 支持的策略类型: READ, WRITE, READ_WRITE

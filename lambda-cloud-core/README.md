@@ -1,48 +1,103 @@
-# lambda-cloud-core
+# Lambda Cloud Core
 
-## 简介
- core 模块提供了核心依赖，包括日志、lombok、mybatis、hutool等。一般情况下，项目只需要依赖这一个核心包即可进入正常的开发编码，提高开发效率。
- 
-## 项目依赖
-  没有当前脚手架依赖
+项目核心模块，提供基础模型、工具类和异常处理等通用功能。
 
-## 使用方式
-  项目的pom文件中添加以下依赖：
+## 核心功能
+
+### 1. 基础模型
+- **BaseDO**: 数据对象基类，包含基础字段(id, createTime等)
+- **BaseDTO**: 数据传输对象基类
+- **BaseVO**: 视图对象基类
+- **BasePageDTO**: 分页查询参数基类
+- **BaseWrapper**: 通用包装器基类
+- **BaseEnum**: 枚举基类接口
+
+### 2. 工具类
+- **Assert**: 参数校验工具
+```java
+Assert.notNull(object, "对象不能为空");
 ```
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>lambda-cloud-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+- **HmacGenerator**: HMAC签名生成器
+```java
+String signature = HmacGenerator.hmacSha256("data", "secret");
+```
+- **OperatorUtils**: 获取当前操作员信息
+```java
+String operator = OperatorUtils.getCurrentOperator();
+```
+- **Converter**: 类型转换接口
+
+### 3. 异常处理
+- **基础异常**:
+  - IllegalAccessException
+  - IllegalArgumentException
+  - IllegalStateException
+  - NotSupportedException
+
+- **Feign异常**:
+  - AbstractFeignException
+  - FeignAccessDeniedException
+  - FeignArgumentNotValidException
+  - FeignInternalServerErrorException
+  - FeignServiceNotAvailableException
+  - FeignUnauthorizedException
+
+- **异常模型**:
+  - ErrorCode: 错误码枚举
+  - ErrorModel: 错误响应模型
+  - ArgumentError: 参数错误详情
+
+### 4. Jackson定制
+- **LambdaObjectMapper**: 定制ObjectMapper
+- **序列化/反序列化**:
+  - LambdaCloudLocalDateTimeSerializer
+  - LambdaCloudLocalDateTimeDeserializer
+  - PageSerializer
+- **ExtendDateFormat**: 扩展日期格式处理
+
+### 5. 其他核心
+- **Constants**: 全局常量定义
+- **CorsProperties**: CORS跨域配置属性
+```yaml
+lambda:
+  core:
+    cors:
+      allowed-origins: "*"
+      allowed-methods: "*"
+```
+- **LoginUser**: 登录用户信息模型
+- **LoginType**: 登录类型枚举
+
+## 使用示例
+
+### 基础模型继承
+```java
+public class UserDO extends BaseDO {
+    private String username;
+    private String password;
+}
 ```
 
-## 功能点
-  1.Assert 断言功能:用户不需要再格外的硬编码进行判断必填项，返回错误，只需要按照对应格式返回即可。
-    以判断字符串“str”是否为空为例:
+### 异常处理
+```java
+throw new FeignServiceNotAvailableException("服务不可用");
 ```
-    硬编码：
-    if(null == str || "".equals(str)){
-        return message;
-    }
-    使用断言：
-    Assert.isBlank(str,"必填项不可为空")
+
+### Jackson配置
+```java
+@Bean
+public LambdaObjectMapper lambdaObjectMapper() {
+    return new LambdaObjectMapper();
+}
 ```
-  2.提供基础表的基础字段封装类baseDo，提供所有的字段自动插入修改的的值填充。
-  ```
-      @TableField(fill = FieldFill.INSERT)
-    private String createUser;
 
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
+## 依赖
+- Spring Boot Starter
+- Jackson Databind
+- Lombok
+- Spring Cloud OpenFeign
 
-    @TableField(fill = FieldFill.UPDATE)
-    private String updateUser;
-
-    @TableField(fill = FieldFill.UPDATE)
-    private LocalDateTime updateTime;
-
-    @JsonIgnore
-    @TableLogic(value = "0",delval = "1")
-    private Boolean delFlag;
-  ```
-  3.提供日志、注册中心等组件基础配置。如果没有配置nacos的地址会使用默认地址localhost，默认配置账号密码为：nacos
+## 注意事项
+1. 基础模型类需配合Lombok使用
+2. Feign异常需在Feign拦截器中处理
+3. Jackson定制需通过LambdaObjectMapper生效

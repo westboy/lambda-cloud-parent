@@ -1,38 +1,107 @@
-### lambda-cloud-starter-mybatis 项目介绍及使用说明
+# lambda-cloud-starter-mybatis
 
-#### 简介
-`lambda-cloud-starter-mybatis` 是一个基于MyBatis的持久层管理模块，主要用于在微服务架构中实现数据库访问。它包含了MyBatis的自动配置、数据源配置、SQL映射文件管理等功能，以简化开发者在项目中对持久层的管理。
+MyBatis-Plus扩展模块，提供企业级开发常用功能增强
 
-#### 主要功能
-1. **MyBatis自动配置**：模块中包含了Spring Boot的自动配置功能，可以自动读取配置文件中的MyBatis信息并进行配置。
-2. **数据源配置**：支持配置多个数据源，适用于需要连接多个数据库的场景。
-3. **SQL映射文件管理**：支持SQL映射文件的管理，可以将SQL语句与Java代码分离，提高可维护性。
+## 功能特性
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `mybatis-spring-boot-starter`：提供MyBatis的基本功能。
-- `dynamic-datasource-spring-boot3-starter`：提供动态数据源切换的功能。
-- `mybatis-plus`：提供增强的MyBatis功能，如代码生成等。
+### 1. 自动配置
+- 自动配置JdbcTypeForNull处理
+- 自动注册GlobalMetaObjectHandler
+- 自动识别数据库类型
+- 自动配置分页插件
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-mybatis`，你需要在项目的pom文件中添加以下依赖：
-```xml
-<dependency>
-    <groupId>${project.groupId}</groupId>
-    <artifactId>lambda-cloud-starter-mybatis</artifactId>
-    <version>${project.parent.version}</version>
-</dependency>
-```
+### 2. 自定义SQL注入器
+扩展MyBatis-Plus的SQL注入器，提供以下方法：
+- 批量插入：insertAll、insertAllBatch
+- 编码字段操作：selectByCode、updateByCode、deleteByCode
+- 存在性检查：exists
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+### 3. 自动填充
+通过GlobalMetaObjectHandler实现：
+- 插入时自动填充：createUser、createTime、delFlag
+- 更新时自动填充：updateUser、updateTime
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置MyBatis信息：
+### 4. 数据权限
+通过@Purview注解实现数据权限控制：
+- 支持多种权限模式
+- 支持预处理权限检查
+- 支持权限类型映射
+- 支持owner用户跳过权限检查
+
+### 5. 多租户支持
+通过TenantExpressionInterceptor实现租户数据隔离：
+- 支持从参数Map或Bean中获取租户ID
+- 支持自定义租户字段名
+
+### 6. 字段加密
+通过AesEncryptHandler实现字段级AES加密
+
+## 配置说明
+
+### 1. 基础配置
 ```yaml
-mybatis:
-  configuration:
-    map-underscore-to-camel-case: true
-  mapper-locations: classpath:mapper/*.xml
+lambda:
+  mybatis:
+    mapper-package: com.example.mapper # Mapper扫描路径
+    encrypt:
+      enabled: true # 启用加密
+      secret: your-secret-key # 加密密钥
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-mybatis`提供的持久层管理功能，简化数据库访问的配置和使用。
+### 2. 数据权限配置
+```java
+@Mapper
+public interface UserMapper extends LambdaBaseMapper<User> {
+    @Purview(type = {1,2}, mode = Purview.Mode.SUB_QUERY)
+    List<User> selectList();
+}
+```
+
+### 3. 多租户配置
+```java
+@Configuration
+public class MyBatisConfig {
+    @Bean
+    public TenantExpressionInterceptor tenantInterceptor() {
+        return new TenantExpressionInterceptor("tenantId");
+    }
+}
+```
+
+## 使用示例
+
+### 1. 基本CRUD
+```java
+@Autowired
+private UserMapper userMapper;
+
+// 根据编码查询
+User user = userMapper.selectByCode("user001");
+
+// 批量插入
+List<User> users = ...;
+userMapper.insertAllBatch(users);
+```
+
+### 2. 数据权限使用
+```java
+// 在Service层设置当前用户
+PurviewUtils.setOperator(loginUser);
+
+// 在Mapper接口添加@Purview注解
+@Purview(type = {1,2}, mode = Purview.Mode.SUB_QUERY)
+List<User> selectList();
+```
+
+### 3. 字段加密
+```java
+public class User {
+    @TableField(typeHandler = AesEncryptHandler.class)
+    private String mobile;
+}
+```
+
+## 注意事项
+1. 使用数据权限功能时需要确保设置了当前用户
+2. 批量插入方法需要根据数据库类型选择合适的方法
+3. 加密功能启用后需要确保密钥安全

@@ -1,38 +1,69 @@
-### lambda-cloud-starter-swagger 项目介绍及使用说明
+# Lambda Cloud Swagger Starter
 
-#### 简介
-`lambda-cloud-starter-swagger` 是一个基于Swagger的API文档管理模块，主要用于在微服务架构中自动生成和展示API文档。它包含了Swagger的自动配置、API文档生成、API文档展示等功能，以简化开发者在项目中对API文档的管理。
+基于Spring Boot的API文档模块，集成SpringDoc OpenAPI。
 
-#### 主要功能
-1. **Swagger自动配置**：模块中包含了Spring Boot的自动配置功能，可以自动读取配置文件中的Swagger信息并进行配置。
-2. **API文档生成**：支持自动生成API文档，可以根据Spring MVC的注解自动生成API文档。
-3. **API文档展示**：提供API文档展示功能，可以通过Swagger UI展示生成的API文档。
+## 功能特性
 
-#### 项目依赖
-该项目依赖于多个库来实现其功能，包括：
-- `springfox-boot-starter`：提供Swagger的基本功能。
-- `springfox-swagger-ui`：提供Swagger UI展示功能。
+- 自动生成OpenAPI文档
+- 默认分组配置
+- 分页参数自动转换
+- 支持禁用Swagger文档
 
-#### 使用方式
-要在你的项目中使用 `lambda-cloud-starter-swagger`，你需要在项目的pom文件中添加以下依赖：
+## 配置项
+
+```yaml
+lambda:
+  api-docs:
+    title: API文档 # 文档标题
+    enabled: true # 是否启用Swagger文档
+    docUri: /swagger-ui.html # 文档访问路径
+    version: 1.0.0 # API版本号
+```
+
+## 使用示例
+
+### 1. 添加依赖
+
 ```xml
 <dependency>
-    <groupId>${project.groupId}</groupId>
+    <groupId>com.lambda</groupId>
     <artifactId>lambda-cloud-starter-swagger</artifactId>
-    <version>${project.parent.version}</version>
+    <version>${latest.version}</version>
 </dependency>
 ```
 
-其中`${project.groupId}`和`${project.parent.version}`应替换为实际的项目信息。
+### 2. 基本配置
 
-#### 配置示例
-在项目的配置文件（如application.yaml）中，可以配置Swagger信息：
 ```yaml
-springfox:
-  documentation:
-    openapi:
-      v3:
-        enabled: true
+lambda:
+  api-docs:
+    title: 用户服务API
+    enabled: true
 ```
 
-通过上述配置和依赖添加，你可以在项目中使用`lambda-cloud-starter-swagger`提供的API文档管理功能，简化API文档的配置和使用。
+### 3. 接口文档注解
+
+```java
+@Operation(summary = "获取用户信息")
+@GetMapping("/users/{id}")
+public Result<User> getUser(@PathVariable Long id) {
+    // 业务逻辑
+}
+```
+
+### 4. 分页参数
+
+```java
+@Operation(summary = "分页查询用户")
+@GetMapping("/users")
+public Result<Page<User>> listUsers(Page page) {
+    // 业务逻辑
+}
+```
+
+## 注意事项
+
+1. 默认启用Swagger文档
+2. 生产环境建议禁用Swagger文档
+3. 分页参数会自动转换为Page对象
+4. 文档访问路径默认为/swagger-ui.html

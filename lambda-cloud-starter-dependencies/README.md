@@ -1,20 +1,55 @@
-# lambda-cloud-dependencies
+# lambda-cloud-starter-dependencies 依赖管理模块
 
-## 简介
-  dependencies 模块提供了所有的脚手架组件依赖集合，当时用到大多数组建的时候，用户避免一个一个的组件引入。
- 
-## 项目依赖
-  没有当前脚手架依赖
+## 功能概述
+本模块是Lambda Cloud项目的依赖管理父模块，主要功能：
+1. 统一管理所有starter模块的版本
+2. 提供dependencyManagement供子模块继承
+3. 配置项目发布到Maven私服
 
-## 使用方式
-  项目的pom文件中添加以下依赖：
+## 核心功能
+
+### 1. 依赖管理
+统一管理的starter模块包括：
+- lambda-cloud-starter-dubbo
+- lambda-cloud-starter-gateway  
+- lambda-cloud-starter-feign
+- lambda-cloud-starter-actuator
+- lambda-cloud-starter-datasource
+- lambda-cloud-starter-liquibase
+- lambda-cloud-starter-logger
+- lambda-cloud-starter-lucene
+- lambda-cloud-starter-oss
+- lambda-cloud-starter-mybatis
+- lambda-cloud-starter-plugin
+- lambda-cloud-starter-redis
+- lambda-cloud-starter-sercurity
+- lambda-cloud-starter-swagger
+- lambda-cloud-starter-web
+- lambda-cloud-starter-websocket
+- lambda-cloud-starter-sms
+
+### 2. 发布配置
+配置了发布到私有Maven仓库：
+```xml
+<distributionManagement>
+    <repository>
+        <id>maven-releases</id>
+        <url>http://192.168.130.243:8081/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+        <id>maven-snapshots</id>
+        <url>http://192.168.130.243:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+</distributionManagement>
 ```
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>lambda-cloud-starter-dependencies</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
+### 3. Lombok配置
+配置了Lombok生成的注解标记：
+```
+lombok.addLombokGeneratedAnnotation=true
 ```
 
-## 功能点
-  无
+## 使用说明
+1. 子模块继承本模块即可统一版本
+2. 发布时使用mvn deploy命令
+3. 版本号继承自父项目${project.parent.version}
