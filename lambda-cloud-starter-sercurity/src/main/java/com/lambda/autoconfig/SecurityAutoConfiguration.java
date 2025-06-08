@@ -427,16 +427,23 @@ public class SecurityAutoConfiguration {
             FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> filterRegistrationBean =
                     new FilterRegistrationBean<>();
             ThirdPartAuthenticationProcessingFilter thirdPartAuthenticationProcessingFilter =
+                    getThirdPartAuthenticationProcessingFilter(thirdPartLoginProviders, objectMapper);
+            filterRegistrationBean.setFilter(thirdPartAuthenticationProcessingFilter);
+            filterRegistrationBean.addUrlPatterns("/*");
+            filterRegistrationBean.setOrder(30);
+            return filterRegistrationBean;
+        }
+
+        private ThirdPartAuthenticationProcessingFilter getThirdPartAuthenticationProcessingFilter(
+                List<ThirdPartLoginProvider> thirdPartLoginProviders, ObjectMapper objectMapper) {
+            ThirdPartAuthenticationProcessingFilter thirdPartAuthenticationProcessingFilter =
                     new ThirdPartAuthenticationProcessingFilter(
                             securityProperties.getThirdPartLogin(), thirdPartLoginProviders);
             thirdPartAuthenticationProcessingFilter.setAuthenticationSuccessHandler(
                     new CommonAuthenticationSuccessHandler(objectMapper));
             thirdPartAuthenticationProcessingFilter.setAuthenticationFailureHandler(
                     new CommonAuthenticationFailureHandler(objectMapper));
-            filterRegistrationBean.setFilter(thirdPartAuthenticationProcessingFilter);
-            filterRegistrationBean.addUrlPatterns("/*");
-            filterRegistrationBean.setOrder(30);
-            return filterRegistrationBean;
+            return thirdPartAuthenticationProcessingFilter;
         }
     }
 }

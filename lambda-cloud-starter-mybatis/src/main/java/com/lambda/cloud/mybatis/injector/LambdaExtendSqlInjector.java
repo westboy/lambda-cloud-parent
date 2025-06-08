@@ -47,13 +47,10 @@ public class LambdaExtendSqlInjector extends DefaultSqlInjector {
                     .add(new SelectById())
                     .add(new SelectByIds());
         }
-        Optional<TableFieldInfo> codeField0 = getCodeField(tableInfo);
-        if (codeField0.isPresent()) {
-            TableFieldInfo codeField = codeField0.get();
-            builder.add(new SelectByCode(codeField))
-                    .add(new UpdateByCode(codeField))
-                    .add(new DeleteByCode(codeField));
-        }
+        Optional<TableFieldInfo> optional = getCodeField(tableInfo);
+        optional.ifPresent(codeField -> builder.add(new SelectByCode(codeField))
+                .add(new UpdateByCode(codeField))
+                .add(new DeleteByCode(codeField)));
         return builder.build().collect(Collectors.toList());
     }
 

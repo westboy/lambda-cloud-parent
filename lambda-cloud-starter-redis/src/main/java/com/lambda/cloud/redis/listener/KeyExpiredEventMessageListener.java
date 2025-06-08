@@ -1,5 +1,6 @@
 package com.lambda.cloud.redis.listener;
 
+import lombok.Setter;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.core.RedisKeyExpiredEvent;
 import org.springframework.data.redis.listener.KeyExpirationEventMessageListener;
@@ -25,11 +26,8 @@ public class KeyExpiredEventMessageListener extends KeyExpirationEventMessageLis
         super(listenerContainer);
     }
 
+    @Setter
     private RedisKeyExpiredListener publisher;
-
-    public void setPublisher(RedisKeyExpiredListener publisher) {
-        this.publisher = publisher;
-    }
 
     /**
      * publish message

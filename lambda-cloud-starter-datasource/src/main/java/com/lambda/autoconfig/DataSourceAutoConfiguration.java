@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
 import com.lambda.cloud.datasource.config.DynamicDataSourceConfigurer;
 import com.lambda.cloud.datasource.config.StandardDataSourceConfigurer;
 import com.lambda.cloud.datasource.dynamic.DynamicDataSourceService;
@@ -24,7 +25,7 @@ public class DataSourceAutoConfiguration {
     }
 
     @Bean
-    public DynamicDataSourceService dynamicDataSource() {
-        return new DynamicDataSourceServiceImpl();
+    public DynamicDataSourceService dynamicDataSource(DynamicRoutingDataSource dynamicRoutingDataSource) {
+        return new DynamicDataSourceServiceImpl(dynamicRoutingDataSource);
     }
 }

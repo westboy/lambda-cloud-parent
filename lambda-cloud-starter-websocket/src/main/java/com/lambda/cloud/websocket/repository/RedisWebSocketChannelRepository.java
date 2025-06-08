@@ -24,8 +24,8 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 @Slf4j
 public class RedisWebSocketChannelRepository implements WebSocketChannelRepository {
 
-    private static final String KEY = "lambda:websocket:onlineuser:";
-    private static final String ONLINE_KEY = "lambda:websocket:onlineusers";
+    private static final String KEY = "lambda:websocket:online_user:";
+    private static final String ONLINE_KEY = "lambda:websocket:online_users";
     private static final String SCRIPT1 =
             "if redis.call('SADD', KEYS[1], ARGV[1]) == 1 then return redis.call('SADD', KEYS[2], ARGV[2]) else return 0 end";
     private static final String SCRIPT2 =

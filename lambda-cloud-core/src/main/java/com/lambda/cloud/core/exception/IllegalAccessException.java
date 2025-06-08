@@ -1,5 +1,7 @@
 package com.lambda.cloud.core.exception;
 
+import java.io.Serial;
+
 /**
  * An IllegalAccessException is thrown when an application tries
  * to reflectively create an instance (other than an array),
@@ -32,6 +34,7 @@ package com.lambda.cloud.core.exception;
  * @since   JDK1.0
  */
 public class IllegalAccessException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 6616958222490762034L;
 
     /**

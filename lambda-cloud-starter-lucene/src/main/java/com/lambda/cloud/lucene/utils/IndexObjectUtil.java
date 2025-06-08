@@ -9,7 +9,6 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -121,7 +120,7 @@ public class IndexObjectUtil {
                             // 获取字段名用于下面判断排除
                             List<String> objectFileNames = Arrays.stream(fields)
                                     .map(IndexObjectUtil::getLuceneFieldName)
-                                    .collect(Collectors.toList());
+                                    .toList();
                             // 扩展字段map
                             Map<String, Object> extendFieldMap = new HashMap<>(16);
                             // 遍历取出扩展字段的值

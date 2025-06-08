@@ -176,20 +176,14 @@ public @interface Purview {
             if (StringUtils.isBlank(operator)) {
                 return EQ;
             }
-            switch (operator) {
-                case "=":
-                    return EQ;
-                case ">":
-                    return GT;
-                case ">=":
-                    return GE;
-                case "<":
-                    return LT;
-                case "<=":
-                    return LE;
-                default:
-                    return null;
-            }
+            return switch (operator) {
+                case "=" -> EQ;
+                case ">" -> GT;
+                case ">=" -> GE;
+                case "<" -> LT;
+                case "<=" -> LE;
+                default -> null;
+            };
         }
     }
 }

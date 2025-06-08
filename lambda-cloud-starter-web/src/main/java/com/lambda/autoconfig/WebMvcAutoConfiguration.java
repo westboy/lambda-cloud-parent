@@ -198,6 +198,7 @@ public class WebMvcAutoConfiguration {
     }
 
     @Bean
+    @SuppressWarnings("all")
     public FilterRegistrationBean<XframeOptionsFilter> xframeOptionsFilter() {
         FilterRegistrationBean<XframeOptionsFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new XframeOptionsFilter());

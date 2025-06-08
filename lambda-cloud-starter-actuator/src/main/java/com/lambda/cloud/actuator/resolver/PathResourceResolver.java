@@ -36,8 +36,7 @@ public class PathResourceResolver extends PathMatchingResourcePatternResolver im
                 URL url = resource.getURL();
                 if (ResourceUtils.isJarURL(url)) {
                     URLConnection connection = url.openConnection();
-                    if (connection instanceof JarURLConnection) {
-                        JarURLConnection jarCon = (JarURLConnection) connection;
+                    if (connection instanceof JarURLConnection jarCon) {
                         ResourceUtils.useCachesIfNecessary(jarCon);
                         JarFile jarFile = jarCon.getJarFile();
                         Manifest manifest = jarFile.getManifest();
@@ -46,7 +45,6 @@ public class PathResourceResolver extends PathMatchingResourcePatternResolver im
                         ResourceIndicator indicator = new ResourceIndicator();
                         indicator.setVersion(attributes.getValue("Implementation-Version"));
                         SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DATE_PATTERN);
-                        @SuppressWarnings("squid:S1874")
                         String dateString = dateFormat.format(new Date(resource.lastModified()));
                         indicator.setModified(dateString);
                         packages.put(title, indicator);

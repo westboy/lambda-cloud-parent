@@ -15,6 +15,6 @@ public class WelcomeLogoApplicationListener implements ApplicationListener<Appli
 
     @Override
     public void onApplicationEvent(@Nonnull ApplicationEnvironmentPreparedEvent event) {
-        // donothing
+        // nothing
     }
 }

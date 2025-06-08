@@ -102,7 +102,6 @@ public class TenantExpressionInterceptor implements Interceptor {
     }
 
     private String getTenantFromUser() {
-
         return null;
     }
 

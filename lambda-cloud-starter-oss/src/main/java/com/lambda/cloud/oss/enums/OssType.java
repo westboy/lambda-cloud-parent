@@ -5,5 +5,5 @@ public enum OssType {
     ALIYUN,
     QCLOND,
     QINIU,
-    OTHER;
+    OTHER
 }

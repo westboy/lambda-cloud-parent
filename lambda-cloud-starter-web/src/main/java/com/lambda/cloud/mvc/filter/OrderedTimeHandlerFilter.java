@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.filter.OrderedFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,7 +23,8 @@ public class OrderedTimeHandlerFilter extends OncePerRequestFilter implements Or
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(
+            @Nullable HttpServletRequest request, @Nullable HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         RequestTimeHolder.setTime(System.currentTimeMillis());
         try {

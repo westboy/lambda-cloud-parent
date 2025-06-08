@@ -126,11 +126,9 @@ public class GatewayAutoConfiguration {
         return new SaReactorFilter()
                 .addInclude("/**")
                 .addExclude("/favicon.ico", "/actuator/**")
-                .setAuth(e1 -> {
-                    SaRouter.match("/**")
-                            .notMatch(gatewayFirewallProperties.getWhites())
-                            .check(e2 -> LoginType.getActiveStpLogic().checkLogin());
-                })
+                .setAuth(e1 -> SaRouter.match("/**")
+                        .notMatch(gatewayFirewallProperties.getWhites())
+                        .check(e2 -> LoginType.getActiveStpLogic().checkLogin()))
                 .setError(e -> {
                     ErrorModel errorModel = new ErrorModel();
                     errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());

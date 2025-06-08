@@ -1,5 +1,7 @@
 package com.lambda.cloud.core.exception;
 
+import java.io.Serial;
+
 /**
  * Signals that a method has been invoked at an illegal or inappropriate time.
  * In other words, the Java environment or Java application is not in an
@@ -68,5 +70,6 @@ public class IllegalStateException extends RuntimeException {
         super(cause);
     }
 
-    static final long serialVersionUID = -1848914673093119416L;
+    @Serial
+    private static final long serialVersionUID = -1848914673093119416L;
 }

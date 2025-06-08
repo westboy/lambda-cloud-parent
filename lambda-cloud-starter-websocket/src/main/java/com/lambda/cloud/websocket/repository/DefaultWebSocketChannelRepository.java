@@ -81,7 +81,7 @@ public class DefaultWebSocketChannelRepository implements WebSocketChannelReposi
 
     @Override
     public long size() {
-        return localCache.asMap().keySet().size();
+        return localCache.asMap().size();
     }
 
     @Override

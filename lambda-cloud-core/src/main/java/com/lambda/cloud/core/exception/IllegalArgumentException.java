@@ -1,5 +1,7 @@
 package com.lambda.cloud.core.exception;
 
+import java.io.Serial;
+
 /**
  * Thrown to indicate that a method has been passed an illegal or inappropriate
  * argument.
@@ -8,6 +10,7 @@ package com.lambda.cloud.core.exception;
  * @since JDK1.0
  */
 public class IllegalArgumentException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 7548918212922637497L;
 
     /**

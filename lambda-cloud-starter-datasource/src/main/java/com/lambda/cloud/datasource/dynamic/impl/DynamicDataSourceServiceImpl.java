@@ -8,9 +8,9 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.sql.DataSource;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * DynamicDataSourceServiceImpl
@@ -18,15 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author w
  */
 @Slf4j
+@RequiredArgsConstructor
 public class DynamicDataSourceServiceImpl implements DynamicDataSourceService {
 
     @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
-    private DynamicRoutingDataSource dynamicRoutingDataSource;
-
-    @Autowired
-    public void setDynamicRoutingDataSource(DynamicRoutingDataSource dynamicRoutingDataSource) {
-        this.dynamicRoutingDataSource = dynamicRoutingDataSource;
-    }
+    private final DynamicRoutingDataSource dynamicRoutingDataSource;
 
     @Override
     public boolean addDataSource(DataSourceProperty property) {

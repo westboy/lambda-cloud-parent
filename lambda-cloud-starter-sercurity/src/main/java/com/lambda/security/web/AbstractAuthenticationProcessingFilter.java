@@ -73,7 +73,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         return false;
     }
 
-    protected boolean nonRequiresAuthentication(HttpServletRequest request) throws IOException {
+    protected boolean nonRequiresAuthentication(HttpServletRequest request) {
         if (ANT_PATH_MATCHER.match(this.filterProcessesUrl, request.getRequestURI())) {
             return false;
         } else {

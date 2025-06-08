@@ -20,7 +20,7 @@ public class RedisLockingStrategy extends AbstractLockingStrategy {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    private static final String COMMON = "LAMBDA-CLOUD:USER:LOGINFAILURE:";
+    private static final String COMMON = "LAMBDA-CLOUD:USER:LOGIN_FAILURE:";
 
     public RedisLockingStrategy(
             int maxFailureTimes, int duration, TimeUnit timeUnit, StringRedisTemplate stringRedisTemplate) {
