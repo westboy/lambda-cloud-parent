@@ -410,7 +410,7 @@ public class SecurityAutoConfiguration {
             }
 
             @Bean
-            @ConditionalOnBean(ThirdPartLoginProvider.class)
+            @ConditionalOnBean(ThirdPartyLoginService.class)
             public WxMaLoginProvider wxMaLoginProvider(
                     ThirdPartyLoginService thirdPartyLoginService, WxMaService wxMaService) {
                 return new WxMaLoginProvider(thirdPartyLoginService, wxMaService);
