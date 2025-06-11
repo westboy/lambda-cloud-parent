@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -99,5 +98,4 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
         String value = extractor.apply(request);
         return value != null ? value : "";
     }
-
 }
