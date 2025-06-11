@@ -47,6 +47,7 @@ lambda:
     # 短信验证码登录配置
     sms:
       enabled: false # 是否启用短信登录
+      mock: false # 是否模拟发送短信
       loginPath: "/sms-login" # 短信登录URL
       verifyPath: "/sms-code" # 验证码获取URL
       code: "code" # 验证码参数名
@@ -125,3 +126,4 @@ public class DemoController {
 3. XSS防护会过滤请求参数中的潜在危险内容
 4. 表单登录的锁定策略基于Redis实现
 5. 默认忽略路径包括：/public/**, /v3/**, /anon/**, *.html, *.css, *.ico, *.js
+6. 短信验证码mock模式开启时，sms模块需要停用生产环境，会将短信返回给前端，用于测试

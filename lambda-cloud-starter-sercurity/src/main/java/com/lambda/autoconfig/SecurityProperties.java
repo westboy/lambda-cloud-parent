@@ -296,6 +296,11 @@ public class SecurityProperties {
          * 请用验证码 不开启验证码登录
          */
         boolean enableVerify = false;
+
+        /**
+         * 测试模式，不发送短信
+         */
+        boolean mock = false;
     }
 
     /**

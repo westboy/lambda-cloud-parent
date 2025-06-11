@@ -17,4 +17,5 @@ public class SmsVerifyCodeResponse implements Serializable {
     private String id;
     private Integer resendSeconds;
     private Integer validMinutes;
+    private String message;
 }

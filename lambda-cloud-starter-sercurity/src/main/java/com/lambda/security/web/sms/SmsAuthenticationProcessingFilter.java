@@ -71,6 +71,18 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
             }
         }
 
+        if (StrUtil.isNotBlank(mobile)) {
+            request.setAttribute(mobileParameter, mobile);
+        }
+
+        if (StrUtil.isNotBlank(loginType)) {
+            request.setAttribute(loginTypeParameter, loginType);
+        }
+
+        if (StrUtil.isNotBlank(device)) {
+            request.setAttribute(deviceParameter, device);
+        }
+
         LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
 
         if (loginUser == null) {

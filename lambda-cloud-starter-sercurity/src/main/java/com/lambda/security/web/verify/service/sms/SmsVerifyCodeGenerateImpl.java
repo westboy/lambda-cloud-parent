@@ -133,6 +133,9 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             smsVerifyCodeResponse.setId(smsSendResult.getId());
             smsVerifyCodeResponse.setResendSeconds(smsLogin.getResendSeconds());
             smsVerifyCodeResponse.setValidMinutes(smsLogin.getValidMinutes());
+            if (smsLogin.isMock()) {
+                smsVerifyCodeResponse.setMessage(smsSendResult.getMessage());
+            }
             objectMapper.writeValue(httpServletResponse.getWriter(), smsVerifyCodeResponse);
         } catch (Exception ex) {
             httpServletResponse.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
