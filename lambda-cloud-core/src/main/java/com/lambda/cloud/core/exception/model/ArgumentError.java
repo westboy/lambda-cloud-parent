@@ -13,13 +13,13 @@ import lombok.Setter;
 @Setter
 public class ArgumentError implements Serializable {
 
-    private String field;
+	private String field;
 
-    private String details;
+	private String details;
 
-    @JsonCreator
-    public ArgumentError(@JsonProperty("field") String field, @JsonProperty("details") String details) {
-        this.field = field;
-        this.details = details;
-    }
+	@JsonCreator
+	public ArgumentError(@JsonProperty("field") String field, @JsonProperty("details") String details) {
+		this.field = field;
+		this.details = details;
+	}
 }

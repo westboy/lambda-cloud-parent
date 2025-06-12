@@ -9,38 +9,38 @@ import java.security.Principal;
  */
 public interface LoginUser extends Principal {
 
-    /**
-     * username
-     *
-     * @return String
-     */
-    String getUsername();
+	/**
+	 * username
+	 *
+	 * @return String
+	 */
+	String getUsername();
 
-    /**
-     * password
-     *
-     * @return String
-     */
-    String getCredentials();
+	/**
+	 * password
+	 *
+	 * @return String
+	 */
+	String getCredentials();
 
-    /**
-     * orgId
-     *
-     * @return String
-     */
-    String getOrgId();
+	/**
+	 * orgId
+	 *
+	 * @return String
+	 */
+	String getOrgId();
 
-    /**
-     * AccountLocked
-     *
-     * @return Boolean
-     */
-    Boolean getAccountLocked();
+	/**
+	 * AccountLocked
+	 *
+	 * @return Boolean
+	 */
+	Boolean getAccountLocked();
 
-    /**
-     * AccountExpired
-     *
-     * @return Boolean
-     */
-    Boolean getAccountExpired();
+	/**
+	 * AccountExpired
+	 *
+	 * @return Boolean
+	 */
+	Boolean getAccountExpired();
 }

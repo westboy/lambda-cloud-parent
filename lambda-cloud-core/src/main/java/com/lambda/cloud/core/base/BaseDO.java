@@ -19,23 +19,23 @@ import lombok.Setter;
 @Setter
 public abstract class BaseDO implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = -2694074995776393995L;
+	@Serial
+	private static final long serialVersionUID = -2694074995776393995L;
 
-    @TableField(fill = FieldFill.INSERT)
-    private String createUser;
+	@TableField(fill = FieldFill.INSERT)
+	private String createUser;
 
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
+	@TableField(fill = FieldFill.INSERT)
+	private LocalDateTime createTime;
 
-    @TableField(fill = FieldFill.UPDATE)
-    private String updateUser;
+	@TableField(fill = FieldFill.UPDATE)
+	private String updateUser;
 
-    @TableField(fill = FieldFill.UPDATE)
-    private LocalDateTime updateTime;
+	@TableField(fill = FieldFill.UPDATE)
+	private LocalDateTime updateTime;
 
-    @JsonIgnore
-    @TableLogic(value = "0", delval = "1")
-    @TableField(fill = FieldFill.INSERT)
-    private Boolean delFlag;
+	@JsonIgnore
+	@TableLogic(value = "0", delval = "1")
+	@TableField(fill = FieldFill.INSERT)
+	private Boolean delFlag;
 }

@@ -5,11 +5,11 @@ package com.lambda.cloud.core.exception;
  */
 public class NotSupportedException extends RuntimeException {
 
-    public NotSupportedException() {
-        super("Not currently supported!!!");
-    }
+	public NotSupportedException() {
+		super("Not currently supported!!!");
+	}
 
-    public NotSupportedException(String msg) {
-        super(msg);
-    }
+	public NotSupportedException(String msg) {
+		super(msg);
+	}
 }

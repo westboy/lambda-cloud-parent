@@ -6,10 +6,10 @@ package com.lambda.cloud.core.base;
  * @author Jin
  */
 public interface BaseEnum<I> {
-    /**
-     * getCode
-     *
-     * @return I
-     */
-    I getCode();
+	/**
+	 * getCode
+	 *
+	 * @return I
+	 */
+	I getCode();
 }

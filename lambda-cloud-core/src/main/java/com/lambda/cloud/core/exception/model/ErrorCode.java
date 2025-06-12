@@ -7,17 +7,17 @@ import java.io.Serializable;
  */
 public interface ErrorCode extends Serializable {
 
-    /**
-     * 获取错误码
-     *
-     * @return java.lang.String
-     */
-    String getCode();
+	/**
+	 * 获取错误码
+	 *
+	 * @return java.lang.String
+	 */
+	String getCode();
 
-    /**
-     * 获取错误信息
-     *
-     * @return java.lang.String
-     */
-    String getMessage();
+	/**
+	 * 获取错误信息
+	 *
+	 * @return java.lang.String
+	 */
+	String getMessage();
 }

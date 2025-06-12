@@ -8,12 +8,12 @@ import com.lambda.cloud.core.exception.model.ErrorModel;
  */
 public class FeignUnauthorizedException extends AbstractFeignException {
 
-    public FeignUnauthorizedException(ErrorModel model) {
-        super(model);
-    }
+	public FeignUnauthorizedException(ErrorModel model) {
+		super(model);
+	}
 
-    @Override
-    public int getStatus() {
-        return 401;
-    }
+	@Override
+	public int getStatus() {
+		return 401;
+	}
 }

@@ -8,12 +8,12 @@ import com.lambda.cloud.core.exception.model.ErrorModel;
  */
 public class FeignAccessDeniedException extends AbstractFeignException {
 
-    public FeignAccessDeniedException(ErrorModel model) {
-        super(model);
-    }
+	public FeignAccessDeniedException(ErrorModel model) {
+		super(model);
+	}
 
-    @Override
-    public int getStatus() {
-        return 403;
-    }
+	@Override
+	public int getStatus() {
+		return 403;
+	}
 }
