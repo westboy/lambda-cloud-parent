@@ -9,11 +9,11 @@ import java.io.IOException;
  */
 public class XframeOptionsFilter implements Filter {
 
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
-        response.setHeader("X-Frame-Options", "sameorigin");
-        filterChain.doFilter(servletRequest, servletResponse);
-    }
+	@Override
+	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+			throws IOException, ServletException {
+		HttpServletResponse response = (HttpServletResponse) servletResponse;
+		response.setHeader("X-Frame-Options", "sameorigin");
+		filterChain.doFilter(servletRequest, servletResponse);
+	}
 }

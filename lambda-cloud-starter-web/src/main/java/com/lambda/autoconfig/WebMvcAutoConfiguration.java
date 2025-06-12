@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lambda.cloud.core.jackson.JacksonModuleConfigurer;
-import com.lambda.cloud.core.jackson.mapper.LambdaObjectMapper;
+import com.lambda.cloud.core.jackson.LambdaObjectMapper;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
 import com.lambda.cloud.core.propertis.CorsProperties;
 import com.lambda.cloud.mvc.StringToDateConverter;
@@ -58,151 +58,152 @@ import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 @Import(JacksonModuleConfigurer.class)
 @AutoConfiguration
 public class WebMvcAutoConfiguration {
-    public WebMvcAutoConfiguration() {
-        log.trace("initializing...");
-    }
+	public WebMvcAutoConfiguration() {
+		log.trace("initializing...");
+	}
 
-    @Bean
-    @SuppressWarnings("all")
-    public WebMvcConfigurer webMvcConfigurer(
-            CorsProperties corsProperties, LocalValidatorFactoryBean defaultValidator) {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addFormatters(FormatterRegistry registry) {
-                registry.addConverter(new StringToDateConverter());
-            }
+	@Bean
+	@SuppressWarnings("all")
+	public WebMvcConfigurer webMvcConfigurer(
+			CorsProperties corsProperties, LocalValidatorFactoryBean defaultValidator) {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addFormatters(FormatterRegistry registry) {
+				registry.addConverter(new StringToDateConverter());
+			}
 
-            @Override
-            public Validator getValidator() {
-                return defaultValidator;
-            }
+			@Override
+			public Validator getValidator() {
+				return defaultValidator;
+			}
 
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                if (corsProperties.isEnabled()) {
-                    CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
-                    List<String> allowedOrigins = corsProperties.getAllowedOrigins();
-                    if (CollectionUtils.isNotEmpty(allowedOrigins)) {
-                        registration.allowedOriginPatterns(allowedOrigins.toArray(new String[0]));
-                    } else {
-                        registration.allowedOriginPatterns(CorsProperties.ALL);
-                    }
-                    registration
-                            .allowCredentials(true)
-                            .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
-                            .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
-                            .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
-                            .maxAge(corsProperties.getMaxAge());
-                }
-            }
-        };
-    }
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				if (corsProperties.isEnabled()) {
+					CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
+					List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+					if (CollectionUtils.isNotEmpty(allowedOrigins)) {
+						registration.allowedOriginPatterns(allowedOrigins.toArray(new String[0]));
+					} else {
+						registration.allowedOriginPatterns(CorsProperties.ALL);
+					}
+					registration
+							.allowCredentials(true)
+							.allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
+							.exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
+							.allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
+							.maxAge(corsProperties.getMaxAge());
+				}
+			}
+		};
+	}
 
-    @Bean
-    @ConfigurationProperties(prefix = "lambda.web.cors")
-    public CorsProperties corsProperties() {
-        return new CorsProperties();
-    }
+	@Bean
+	@ConfigurationProperties(prefix = "lambda.web.cors")
+	public CorsProperties corsProperties() {
+		return new CorsProperties();
+	}
 
-    @Primary
-    @Bean("jacksonObjectMapper")
-    @ConditionalOnMissingBean(name = "jacksonObjectMapper")
-    public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder) {
-        return builder.createXmlMapper(false)
-                .serializationInclusion(Include.NON_NULL)
-                .build();
-    }
+	@Primary
+	@Bean("jacksonObjectMapper")
+	@ConditionalOnMissingBean(name = "jacksonObjectMapper")
+	public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder) {
+		return builder.createXmlMapper(false)
+				.serializationInclusion(Include.NON_NULL)
+				.build();
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    public LambdaObjectMapper objectMapper() {
-        return new LambdaObjectMapper();
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	public LambdaObjectMapper objectMapper() {
+		return new LambdaObjectMapper();
+	}
 
-    @Bean
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(
-            Jackson2ObjectMapperBuilder builder, List<Module> modules) {
-        ObjectMapper mapper = builder.dateFormat(new ExtendDateFormat())
-                .featuresToDisable(SerializationFeature.INDENT_OUTPUT)
-                .serializationInclusion(Include.NON_NULL)
-                .featuresToEnable(Feature.ALLOW_UNQUOTED_FIELD_NAMES, MapperFeature.PROPAGATE_TRANSIENT_MARKER)
-                .modules(modules)
-                .build();
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(mapper);
-        List<MediaType> supportedMediaTypes = new ArrayList<>();
-        supportedMediaTypes.add(MediaType.APPLICATION_JSON);
-        supportedMediaTypes.add(MediaType.APPLICATION_FORM_URLENCODED);
-        converter.setSupportedMediaTypes(supportedMediaTypes);
-        return converter;
-    }
+	@Bean
+	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(
+			Jackson2ObjectMapperBuilder builder, List<Module> modules) {
+		ObjectMapper mapper = builder
+				.dateFormat(new ExtendDateFormat())
+				.featuresToDisable(SerializationFeature.INDENT_OUTPUT)
+				.serializationInclusion(Include.NON_NULL)
+				.featuresToEnable(Feature.ALLOW_UNQUOTED_FIELD_NAMES, MapperFeature.PROPAGATE_TRANSIENT_MARKER)
+				.modules(modules)
+				.build();
+		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(mapper);
+		List<MediaType> supportedMediaTypes = new ArrayList<>();
+		supportedMediaTypes.add(MediaType.APPLICATION_JSON);
+		supportedMediaTypes.add(MediaType.APPLICATION_FORM_URLENCODED);
+		converter.setSupportedMediaTypes(supportedMediaTypes);
+		return converter;
+	}
 
-    @Bean
-    public HttpMessageConverters httpMessageConverters(
-            MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter,
-            StringHttpMessageConverter stringHttpMessageConverter) {
-        return new HttpMessageConverters(mappingJackson2HttpMessageConverter, stringHttpMessageConverter);
-    }
+	@Bean
+	public HttpMessageConverters httpMessageConverters(
+			MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter,
+			StringHttpMessageConverter stringHttpMessageConverter) {
+		return new HttpMessageConverters(mappingJackson2HttpMessageConverter, stringHttpMessageConverter);
+	}
 
-    @Bean
-    public LocaleResolver localeResolver() {
-        AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
-        localeResolver.setDefaultLocale(Locale.SIMPLIFIED_CHINESE);
-        return localeResolver;
-    }
+	@Bean
+	public LocaleResolver localeResolver() {
+		AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
+		localeResolver.setDefaultLocale(Locale.SIMPLIFIED_CHINESE);
+		return localeResolver;
+	}
 
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(SpringTemplateEngine.class)
-    public static class ThymeleafAutoConfiguration {
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(SpringTemplateEngine.class)
+	public static class ThymeleafAutoConfiguration {
 
-        @Primary
-        @Bean
-        public SpringResourceTemplateResolver defaultTemplateResolver(
-                ApplicationContext applicationContext, ThymeleafProperties properties) {
-            SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
-            resolver.setApplicationContext(applicationContext);
-            resolver.setPrefix(properties.getPrefix());
-            resolver.setSuffix(properties.getSuffix());
-            resolver.setTemplateMode("HTML");
-            if (properties.getEncoding() != null) {
-                resolver.setCharacterEncoding(properties.getEncoding().name());
-            }
-            resolver.setCacheable(properties.isCache());
-            Integer order = properties.getTemplateResolverOrder();
-            if (order != null) {
-                resolver.setOrder(order);
-            }
+		@Primary
+		@Bean
+		public SpringResourceTemplateResolver defaultTemplateResolver(
+				ApplicationContext applicationContext, ThymeleafProperties properties) {
+			SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
+			resolver.setApplicationContext(applicationContext);
+			resolver.setPrefix(properties.getPrefix());
+			resolver.setSuffix(properties.getSuffix());
+			resolver.setTemplateMode("HTML");
+			if (properties.getEncoding() != null) {
+				resolver.setCharacterEncoding(properties.getEncoding().name());
+			}
+			resolver.setCacheable(properties.isCache());
+			Integer order = properties.getTemplateResolverOrder();
+			if (order != null) {
+				resolver.setOrder(order);
+			}
 
-            Method setCheckExistence =
-                    ReflectionUtils.findMethod(resolver.getClass(), "setCheckExistence", boolean.class);
-            if (setCheckExistence != null) {
-                ReflectionUtils.invokeMethod(setCheckExistence, resolver, properties.isCheckTemplate());
-            }
-            return resolver;
-        }
-    }
+			Method setCheckExistence =
+					ReflectionUtils.findMethod(resolver.getClass(), "setCheckExistence", boolean.class);
+			if (setCheckExistence != null) {
+				ReflectionUtils.invokeMethod(setCheckExistence, resolver, properties.isCheckTemplate());
+			}
+			return resolver;
+		}
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 
-    @Bean
-    public OrderedTimeHandlerFilter timeHandlerFilter() {
-        return new OrderedTimeHandlerFilter();
-    }
+	@Bean
+	public OrderedTimeHandlerFilter timeHandlerFilter() {
+		return new OrderedTimeHandlerFilter();
+	}
 
-    @Bean
-    public GlobalControllerAdvice globalControllerAdvice() {
-        return new GlobalControllerAdvice();
-    }
+	@Bean
+	public GlobalControllerAdvice globalControllerAdvice() {
+		return new GlobalControllerAdvice();
+	}
 
-    @Bean
-    @SuppressWarnings("all")
-    public FilterRegistrationBean<XframeOptionsFilter> xframeOptionsFilter() {
-        FilterRegistrationBean<XframeOptionsFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new XframeOptionsFilter());
-        registrationBean.addUrlPatterns("*.html");
-        return registrationBean;
-    }
+	@Bean
+	@SuppressWarnings("all")
+	public FilterRegistrationBean<XframeOptionsFilter> xframeOptionsFilter() {
+		FilterRegistrationBean<XframeOptionsFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new XframeOptionsFilter());
+		registrationBean.addUrlPatterns("*.html");
+		return registrationBean;
+	}
 }

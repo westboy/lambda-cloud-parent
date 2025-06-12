@@ -12,12 +12,12 @@ import org.springframework.core.convert.converter.Converter;
  */
 public class StringToDateConverter implements Converter<String, Date> {
 
-    @Override
-    @SneakyThrows
-    public Date convert(@Nonnull String source) {
-        if (StringUtils.isBlank(source)) {
-            return null;
-        }
-        return new ExtendDateFormat().parse(source);
-    }
+	@Override
+	@SneakyThrows
+	public Date convert(@Nonnull String source) {
+		if (StringUtils.isBlank(source)) {
+			return null;
+		}
+		return new ExtendDateFormat().parse(source);
+	}
 }

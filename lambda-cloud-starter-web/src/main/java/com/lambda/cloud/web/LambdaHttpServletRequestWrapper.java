@@ -16,21 +16,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LambdaHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
-    private final String body;
+	private final String body;
 
-    @SneakyThrows
-    public LambdaHttpServletRequestWrapper(HttpServletRequest request) {
-        super(request);
-        this.body = IoUtil.readUtf8(request.getInputStream());
-    }
+	@SneakyThrows
+	public LambdaHttpServletRequestWrapper(HttpServletRequest request) {
+		super(request);
+		this.body = IoUtil.readUtf8(request.getInputStream());
+	}
 
-    @Override
-    public ServletInputStream getInputStream() {
-        return new LambdaServletInputStream(body);
-    }
+	@Override
+	public ServletInputStream getInputStream() {
+		return new LambdaServletInputStream(body);
+	}
 
-    @Override
-    public BufferedReader getReader() {
-        return IoUtil.getUtf8Reader(this.getInputStream());
-    }
+	@Override
+	public BufferedReader getReader() {
+		return IoUtil.getUtf8Reader(this.getInputStream());
+	}
 }
