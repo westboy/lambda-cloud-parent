@@ -12,15 +12,15 @@ import lombok.Getter;
 @Getter
 public class FeignArgumentNotValidException extends AbstractFeignException {
 
-	final List<ArgumentError> errors;
+    final List<ArgumentError> errors;
 
-	public FeignArgumentNotValidException(ErrorModel model) {
-		super(model);
-		this.errors = ImmutableList.copyOf(model.getErrors());
-	}
+    public FeignArgumentNotValidException(ErrorModel model) {
+        super(model);
+        this.errors = ImmutableList.copyOf(model.getErrors());
+    }
 
-	@Override
-	public int getStatus() {
-		return 400;
-	}
+    @Override
+    public int getStatus() {
+        return 400;
+    }
 }

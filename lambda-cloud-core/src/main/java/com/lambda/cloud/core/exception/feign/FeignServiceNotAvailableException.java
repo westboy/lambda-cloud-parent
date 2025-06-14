@@ -8,12 +8,12 @@ import com.lambda.cloud.core.exception.model.ErrorModel;
  */
 public class FeignServiceNotAvailableException extends AbstractFeignException {
 
-	public FeignServiceNotAvailableException(ErrorModel model) {
-		super(model);
-	}
+    public FeignServiceNotAvailableException(ErrorModel model) {
+        super(model);
+    }
 
-	@Override
-	public int getStatus() {
-		return 503;
-	}
+    @Override
+    public int getStatus() {
+        return 503;
+    }
 }

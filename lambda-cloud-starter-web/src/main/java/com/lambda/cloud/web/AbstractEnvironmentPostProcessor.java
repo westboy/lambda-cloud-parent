@@ -13,41 +13,41 @@ import org.springframework.lang.NonNull;
  * @author w
  */
 public abstract class AbstractEnvironmentPostProcessor
-		implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+        implements EnvironmentPostProcessor, ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
-	protected static final DeferredLog log = new DeferredLog();
+    protected static final DeferredLog log = new DeferredLog();
 
-	/**
-	 * postProcessEnvironment
-	 *
-	 * @param environment
-	 * @param application
-	 */
-	@Override
-	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-		if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
-			process(environment, application);
-		}
-	}
+    /**
+     * postProcessEnvironment
+     *
+     * @param environment
+     * @param application
+     */
+    @Override
+    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
+            process(environment, application);
+        }
+    }
 
-	/**
-	 * onApplicationEvent
-	 *
-	 * @param event
-	 */
-	@Override
-	public void onApplicationEvent(@NonNull ApplicationEnvironmentPreparedEvent event) {
-		if (event.getSource() instanceof SpringApplication application) {
-			if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
-				log.replayTo(application.getMainApplicationClass());
-			}
-		}
-	}
+    /**
+     * onApplicationEvent
+     *
+     * @param event
+     */
+    @Override
+    public void onApplicationEvent(@NonNull ApplicationEnvironmentPreparedEvent event) {
+        if (event.getSource() instanceof SpringApplication application) {
+            if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
+                log.replayTo(application.getMainApplicationClass());
+            }
+        }
+    }
 
-	/**
-	 * process
-	 * @param environment
-	 * @param application
-	 */
-	protected abstract void process(ConfigurableEnvironment environment, SpringApplication application);
+    /**
+     * process
+     * @param environment
+     * @param application
+     */
+    protected abstract void process(ConfigurableEnvironment environment, SpringApplication application);
 }

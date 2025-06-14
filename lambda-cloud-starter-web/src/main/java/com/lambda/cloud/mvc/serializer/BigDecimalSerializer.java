@@ -16,17 +16,17 @@ import java.math.BigDecimal;
  */
 public class BigDecimalSerializer extends StdSerializer<BigDecimal> {
 
-	public BigDecimalSerializer() {
-		this(null);
-	}
+    public BigDecimalSerializer() {
+        this(null);
+    }
 
-	public BigDecimalSerializer(Class<BigDecimal> c) {
-		super(c);
-	}
+    public BigDecimalSerializer(Class<BigDecimal> c) {
+        super(c);
+    }
 
-	@Override
-	public void serialize(BigDecimal bigDecimal, JsonGenerator generator, SerializerProvider provider)
-			throws IOException {
-		generator.writeString(bigDecimal.toPlainString());
-	}
+    @Override
+    public void serialize(BigDecimal bigDecimal, JsonGenerator generator, SerializerProvider provider)
+            throws IOException {
+        generator.writeString(bigDecimal.toPlainString());
+    }
 }

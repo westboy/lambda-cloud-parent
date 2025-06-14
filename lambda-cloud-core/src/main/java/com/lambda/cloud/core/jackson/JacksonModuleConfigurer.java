@@ -15,19 +15,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class JacksonModuleConfigurer {
 
-	@Bean
-	public JavaTimeModule javaTimeModule() {
-		JavaTimeModule javaTimeModule = new JavaTimeModule();
-		javaTimeModule.addSerializer(LocalDateTime.class, new LambdaLocalDateTimeSerializer());
-		javaTimeModule.addDeserializer(LocalDateTime.class, new LambdaLocalDateTimeDeserializer());
-		return javaTimeModule;
-	}
+    @Bean
+    public JavaTimeModule javaTimeModule() {
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(LocalDateTime.class, new LambdaLocalDateTimeSerializer());
+        javaTimeModule.addDeserializer(LocalDateTime.class, new LambdaLocalDateTimeDeserializer());
+        return javaTimeModule;
+    }
 
-	@Bean
-	public SimpleModule simpleModule() {
-		SimpleModule simpleModule = new SimpleModule();
-		simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
-		simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
-		return simpleModule;
-	}
+    @Bean
+    public SimpleModule simpleModule() {
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
+        simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
+        return simpleModule;
+    }
 }

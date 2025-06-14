@@ -10,17 +10,17 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class BasePageDTO<T> {
-	@NotNull(message = "pageNum不能为空")
-	private Integer pageNum = 1;
+    @NotNull(message = "pageNum不能为空")
+    private Integer pageNum = 1;
 
-	@NotNull(message = "pageSize不能为空")
-	private Integer pageSize = Integer.MAX_VALUE;
+    @NotNull(message = "pageSize不能为空")
+    private Integer pageSize = Integer.MAX_VALUE;
 
-	public Page<T> getPage() {
-		return new Page<>(pageNum, pageSize);
-	}
+    public Page<T> getPage() {
+        return new Page<>(pageNum, pageSize);
+    }
 
-	protected LambdaQueryWrapper<T> getLambdaQueryWrapper() {
-		return Wrappers.lambdaQuery();
-	}
+    protected LambdaQueryWrapper<T> getLambdaQueryWrapper() {
+        return Wrappers.lambdaQuery();
+    }
 }

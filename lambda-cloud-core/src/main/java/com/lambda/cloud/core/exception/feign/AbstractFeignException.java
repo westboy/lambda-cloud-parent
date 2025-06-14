@@ -8,33 +8,33 @@ import lombok.Getter;
  */
 public abstract class AbstractFeignException extends RuntimeException {
 
-	@Getter
-	private final long timestamp;
+    @Getter
+    private final long timestamp;
 
-	@Getter
-	private final String error;
+    @Getter
+    private final String error;
 
-	private final String message;
+    private final String message;
 
-	@Getter
-	private final String path;
+    @Getter
+    private final String path;
 
-	protected AbstractFeignException(ErrorModel model) {
-		super(model.getMessage());
-		this.path = model.getPath();
-		this.error = model.getError();
-		this.message = model.getMessage();
-		this.timestamp = model.getTimestamp();
-	}
+    protected AbstractFeignException(ErrorModel model) {
+        super(model.getMessage());
+        this.path = model.getPath();
+        this.error = model.getError();
+        this.message = model.getMessage();
+        this.timestamp = model.getTimestamp();
+    }
 
-	/**
-	 * 获取状态码
-	 * @return int
-	 */
-	public abstract int getStatus();
+    /**
+     * 获取状态码
+     * @return int
+     */
+    public abstract int getStatus();
 
-	@Override
-	public String getMessage() {
-		return message;
-	}
+    @Override
+    public String getMessage() {
+        return message;
+    }
 }

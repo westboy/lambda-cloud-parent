@@ -1,6 +1,6 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.core.jackson.mapper.LambdaObjectMapper;
+import com.lambda.cloud.core.jackson.LambdaObjectMapper;
 import com.lambda.cloud.kafka.DelayKafkaTemplate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;

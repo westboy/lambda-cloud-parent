@@ -12,32 +12,32 @@ package com.lambda.cloud.web;
  */
 public class TenantHolder {
 
-	private static final ThreadLocal<String> TENANT_ID = new ThreadLocal<>();
+    private static final ThreadLocal<String> TENANT_ID = new ThreadLocal<>();
 
-	private TenantHolder() {}
+    private TenantHolder() {}
 
-	/**
-	 * 设置租户ID
-	 *
-	 * @param tenantId the tenant id
-	 */
-	public static void setTenantId(String tenantId) {
-		TENANT_ID.set(tenantId);
-	}
+    /**
+     * 设置租户ID
+     *
+     * @param tenantId the tenant id
+     */
+    public static void setTenantId(String tenantId) {
+        TENANT_ID.set(tenantId);
+    }
 
-	/**
-	 * 获取租户ID
-	 *
-	 * @return the tenant id
-	 */
-	public static String getTenantId() {
-		return TENANT_ID.get();
-	}
+    /**
+     * 获取租户ID
+     *
+     * @return the tenant id
+     */
+    public static String getTenantId() {
+        return TENANT_ID.get();
+    }
 
-	/**
-	 * 清除租户ID
-	 */
-	public static void clear() {
-		TENANT_ID.remove();
-	}
+    /**
+     * 清除租户ID
+     */
+    public static void clear() {
+        TENANT_ID.remove();
+    }
 }

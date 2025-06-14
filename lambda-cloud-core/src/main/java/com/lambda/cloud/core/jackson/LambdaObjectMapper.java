@@ -18,21 +18,21 @@ import java.time.LocalDateTime;
  */
 public class LambdaObjectMapper extends ObjectMapper {
 
-	public LambdaObjectMapper() {
-		super();
-		this.setDateFormat(new ExtendDateFormat());
-		this.disable(INDENT_OUTPUT);
-		this.setSerializationInclusion(NON_NULL);
-		this.setSerializationInclusion(NON_EMPTY);
-		this.activateDefaultTyping(getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
-		JavaTimeModule javaTimeModule = new JavaTimeModule();
-		javaTimeModule.addSerializer(LocalDateTime.class, new LambdaLocalDateTimeSerializer());
-		javaTimeModule.addDeserializer(LocalDateTime.class, new LambdaLocalDateTimeDeserializer());
-		this.registerModule(javaTimeModule);
-	}
+    public LambdaObjectMapper() {
+        super();
+        this.setDateFormat(new ExtendDateFormat());
+        this.disable(INDENT_OUTPUT);
+        this.setSerializationInclusion(NON_NULL);
+        this.setSerializationInclusion(NON_EMPTY);
+        this.activateDefaultTyping(getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(LocalDateTime.class, new LambdaLocalDateTimeSerializer());
+        javaTimeModule.addDeserializer(LocalDateTime.class, new LambdaLocalDateTimeDeserializer());
+        this.registerModule(javaTimeModule);
+    }
 
-	@Override
-	public ObjectMapper copy() {
-		return new LambdaObjectMapper();
-	}
+    @Override
+    public ObjectMapper copy() {
+        return new LambdaObjectMapper();
+    }
 }

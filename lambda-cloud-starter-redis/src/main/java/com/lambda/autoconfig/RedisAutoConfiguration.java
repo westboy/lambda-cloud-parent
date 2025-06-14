@@ -1,6 +1,6 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.core.jackson.mapper.LambdaObjectMapper;
+import com.lambda.cloud.core.jackson.LambdaObjectMapper;
 import com.lambda.cloud.redis.RedisConnectionConfiguration;
 import com.lambda.cloud.redis.customize.RedissonConfigurationCustomizer;
 import com.lambda.cloud.redis.helper.RedisHelper;
