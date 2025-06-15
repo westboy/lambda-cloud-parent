@@ -46,6 +46,7 @@
         <nacos.version>2.3.2</nacos.version>
         <knife4j.version>4.5.0</knife4j.version>
         <dubbo.version>3.3.0</dubbo.version>
+        <rocketmq.version>2.3.3</rocketmq.version>
         <!-- undertow 版本 -->
         <version.xnio>3.8.14.Final</version.xnio>
         <!-- 插件版本 -->
@@ -89,10 +90,16 @@
         <module>lambda-cloud-starter-test</module>
         <module>lambda-cloud-starter-dubbo</module>
         <module>lambda-cloud-starter-sms</module>
+        <module>lambda-cloud-starter-rocketmq</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-v5-client-spring-boot-starter</artifactId>
+                <version>${rocketmq.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
