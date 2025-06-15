@@ -69,6 +69,15 @@ public class OssClient {
         } else {
             clientConfig.setProtocol(Protocol.HTTP);
         }
+
+        clientConfig.setConnectionTimeout(config.getHttpClientConfig().getConnectionTimeout());
+        clientConfig.setSocketTimeout(config.getHttpClientConfig().getSocketTimeout());
+        clientConfig.setMaxConnections(config.getHttpClientConfig().getMaxConnections());
+        clientConfig.setRequestTimeout(config.getHttpClientConfig().getRequestTimeout());
+        clientConfig.setClientExecutionTimeout(config.getHttpClientConfig().getClientExecutionTimeout());
+        clientConfig.setConnectionTTL(config.getHttpClientConfig().getConnectionTTL());
+        clientConfig.setConnectionMaxIdleMillis(config.getHttpClientConfig().getConnectionMaxIdleMillis());
+
         AmazonS3ClientBuilder build = AmazonS3Client.builder()
                 .withEndpointConfiguration(endpointConfig)
                 .withClientConfiguration(clientConfig)

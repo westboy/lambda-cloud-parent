@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * Oss配置
@@ -17,7 +18,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "lambda.oss")
 public class OssProperties {
 
-    private List<Config> configs = new ArrayList<>();
+    @NestedConfigurationProperty
+    private List<Config> clients = new ArrayList<>();
 
     @Data
     public static class Config {
@@ -30,5 +32,19 @@ public class OssProperties {
         private String region;
         private Boolean isHttps = false;
         private String accessPolicy;
+
+        @NestedConfigurationProperty
+        private ClientConfig httpClientConfig = new ClientConfig();
+
+        @Data
+        public static class ClientConfig {
+            private Integer connectionTimeout = 10 * 1000;
+            private Integer socketTimeout = 50 * 1000;
+            private Integer maxConnections = 50;
+            private Integer requestTimeout = 0;
+            private Integer clientExecutionTimeout = 0;
+            private Long connectionTTL = -1L;
+            private Long connectionMaxIdleMillis = 60 * 1000L;
+        }
     }
 }

@@ -31,7 +31,7 @@ public class OssAutoConfiguration {
     @Bean
     public OssClientManager getOssClientManager(@Autowired(required = false) RedisHelper redisHelper) {
         OssClientManager ossClientManager = new OssClientManager();
-        for (OssProperties.Config config : ossProperties.getConfigs()) {
+        for (OssProperties.Config config : ossProperties.getClients()) {
             OssClient ossClient = new OssClient(config);
             ossClient.setRedisHelper(redisHelper);
             ossClient.createBucket();
