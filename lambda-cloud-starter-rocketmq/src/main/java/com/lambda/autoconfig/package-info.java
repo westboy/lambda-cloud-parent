@@ -1,0 +1,1 @@
+package com.lambda.autoconfig;
