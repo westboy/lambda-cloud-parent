@@ -80,8 +80,6 @@
         <module>lambda-cloud-starter-web</module>
         <module>lambda-cloud-starter-swagger</module>
         <module>lambda-cloud-starter-actuator</module>
-        <module>lambda-cloud-starter-plugin</module>
-        <module>lambda-cloud-starter-lucene</module>
         <module>lambda-cloud-starter-datasource</module>
         <module>lambda-cloud-starter-liquibase</module>
         <module>lambda-cloud-starter-websocket</module>
