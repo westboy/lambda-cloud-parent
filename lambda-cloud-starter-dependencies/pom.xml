@@ -54,22 +54,12 @@
             </dependency>
             <dependency>
                 <groupId>com.lambda.cloud</groupId>
-                <artifactId>lambda-cloud-starter-lucene</artifactId>
-                <version>${project.parent.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.lambda.cloud</groupId>
                 <artifactId>lambda-cloud-starter-oss</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.lambda.cloud</groupId>
                 <artifactId>lambda-cloud-starter-mybatis</artifactId>
-                <version>${project.parent.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.lambda.cloud</groupId>
-                <artifactId>lambda-cloud-starter-plugin</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
             <dependency>
@@ -102,20 +92,11 @@
                 <artifactId>lambda-cloud-starter-sms</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.lambda.cloud</groupId>
+                <artifactId>lambda-cloud-starter-rocketmq</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <distributionManagement>
-        <repository>
-            <id>maven-releases</id>
-            <name>releases</name>
-            <url>http://192.168.130.243:8081/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven-snapshots</id>
-            <name>snapshots</name>
-            <url>http://192.168.130.243:8081/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>
