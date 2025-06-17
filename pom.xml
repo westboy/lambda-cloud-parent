@@ -654,9 +654,6 @@
                         <phase>compile</phase>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludeFilterFile>${project.parent.basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -669,7 +666,7 @@
                     <formats>HTML</formats>
                     <excludes>
                         <exclude>**/generated/**</exclude>
-                        <exclude>**/Application.class</exclude>
+                        <exclude>**/*Application.class</exclude>
                         <exclude>**/model/*.class</exclude>
                         <exclude>**/config/*.class</exclude>
                         <exclude>**/autoconfig/*.class</exclude>
