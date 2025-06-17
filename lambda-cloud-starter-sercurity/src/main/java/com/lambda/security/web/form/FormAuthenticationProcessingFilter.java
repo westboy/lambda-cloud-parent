@@ -5,6 +5,7 @@ import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.security.exception.AuthenticationException;
+import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -111,6 +112,15 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         if (loginUser == null) {
             throw new AuthenticationException("用户不存在！");
         }
+
+        if (loginUser.getAccountExpired() == null) {
+            throw new VerifyCodeValidationException("the account is expired");
+        }
+
+        if (loginUser.getAccountLocked() == null ) {
+            throw new VerifyCodeValidationException("the account is locked");
+        }
+
         String credentials = loginUser.getCredentials();
         boolean matches = passwordEncoder.matches(password, credentials);
         if (!matches) {

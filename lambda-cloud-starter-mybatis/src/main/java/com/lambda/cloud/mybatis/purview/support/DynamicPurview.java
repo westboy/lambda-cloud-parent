@@ -11,11 +11,6 @@ import lombok.Data;
  *
  * @author Jin
  */
-
-/**
- * 动态数据权限
- * @author Jin
- */
 @Data
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2", "EI_EXPOSE_REP"})
 public class DynamicPurview implements Serializable {

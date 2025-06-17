@@ -145,7 +145,6 @@ public final class PurviewUtils {
      * @param sql
      * @return
      */
-    @SuppressWarnings("AlibabaJavaConstants.UndefineMagicConstant")
     public static DynamicPurview getReplacePurview(String sql) {
         if (StringUtils.isBlank(sql)) {
             return null;
@@ -159,19 +158,19 @@ public final class PurviewUtils {
             return null;
         }
         // 提取和组装数据权限对象
-        String[] strs = purveiewStr.split("'")[1].split("\\|");
+        String[] tokens = purveiewStr.split("'")[1].split("\\|");
         DynamicPurview purview = new DynamicPurview();
         purview.setReplace(true);
         purview.setType(new int[] {0});
         // 解析type
-        if (strs.length > ONE && StringUtils.isNotBlank(strs[ONE])) {
-            purview.setType(Arrays.stream(strs[1].split(","))
+        if (tokens.length > ONE && StringUtils.isNotBlank(tokens[ONE])) {
+            purview.setType(Arrays.stream(tokens[1].split(","))
                     .mapToInt(Integer::parseInt)
                     .toArray());
         }
         // 解析level
-        if (strs.length > TWO && StringUtils.isNotBlank(strs[TWO])) {
-            Matcher levelMatcher = LEVEL_PATTERN.matcher(strs[TWO]);
+        if (tokens.length > TWO && StringUtils.isNotBlank(tokens[TWO])) {
+            Matcher levelMatcher = LEVEL_PATTERN.matcher(tokens[TWO]);
             if (levelMatcher.matches()) {
                 // 获取运算符，如果没有运算符，则默认为 "="
                 String operator =
@@ -201,7 +200,6 @@ public final class PurviewUtils {
                 return (LoginUser) optional.get();
             }
         }
-        // todo 从shiro 取用户
         return null;
     }
 
@@ -242,7 +240,6 @@ public final class PurviewUtils {
     }
 
     @Nonnull
-    @SuppressWarnings({"AlibabaLowerCamelCaseVariableNaming", "PMD"})
     public static String buildSQL01(@Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
         int[] types = purview.getType();
         Set<String> ids = PurviewUtils.getPurviewIds(operator);
@@ -265,7 +262,6 @@ public final class PurviewUtils {
      * @return java.lang.String
      */
     @Nonnull
-    @SuppressWarnings({"AlibabaLowerCamelCaseVariableNaming", "PMD"})
     public static String buildSQL02(@Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
         int[] types = purview.getType();
         int level = getLevel(purview);

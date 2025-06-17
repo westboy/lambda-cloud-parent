@@ -24,7 +24,6 @@ import org.owasp.esapi.errors.IntrusionException;
  * @author Jin
  */
 @Slf4j
-@SuppressWarnings({"AlibabaClassNamingShouldBeCamel", "PMD"})
 public class XSSRequestWrapper extends HttpServletRequestWrapper {
 
     public static final String[] STRINGS = new String[0];

@@ -43,4 +43,11 @@ public interface LoginUser extends Principal {
      * @return Boolean
      */
     Boolean getAccountExpired();
+
+    /**
+     * tenantId
+     *
+     * @return String
+     */
+    String getTenantId();
 }

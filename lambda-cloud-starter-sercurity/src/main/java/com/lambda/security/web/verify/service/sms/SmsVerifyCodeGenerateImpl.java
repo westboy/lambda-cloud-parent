@@ -101,8 +101,12 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
                 throw new VerifyCodeValidationException("the mobile is not exist");
             }
 
-            if (loginUser.getAccountExpired() == null || loginUser.getAccountExpired()) {
+            if (loginUser.getAccountExpired() == null) {
                 throw new VerifyCodeValidationException("the account is expired");
+            }
+
+            if (loginUser.getAccountLocked() == null ) {
+                throw new VerifyCodeValidationException("the account is locked");
             }
 
             if (!smsVerifyCodeStore.verifyReSend(mobile)) {

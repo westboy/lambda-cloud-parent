@@ -14,7 +14,7 @@ public class DelayLevel {
 
     private int level;
 
-    @SuppressWarnings({"all", "pmd"})
+    @SuppressWarnings({"all"})
     public DelayLevel(int delay) {
         if (delay < 10) {
             this.partition = delay;

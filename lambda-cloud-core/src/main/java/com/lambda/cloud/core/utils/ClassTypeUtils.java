@@ -1,4 +1,4 @@
-package com.lambda.cloud.rocketmq.utils;
+package com.lambda.cloud.core.utils;
 
 public class ClassTypeUtils {
     public static boolean isPrimitiveOrWrapper(Class<?> clazz) {

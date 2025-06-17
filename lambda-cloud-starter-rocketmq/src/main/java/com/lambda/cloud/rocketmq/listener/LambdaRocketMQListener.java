@@ -2,7 +2,7 @@ package com.lambda.cloud.rocketmq.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.rocketmq.message.LambdaMessageView;
-import com.lambda.cloud.rocketmq.utils.ClassTypeUtils;
+import com.lambda.cloud.core.utils.ClassTypeUtils;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
