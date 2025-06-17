@@ -7,6 +7,7 @@ import static com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.NON_FINA
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lambda.cloud.core.jackson.deserializer.LambdaLocalDateTimeDeserializer;
 import com.lambda.cloud.core.jackson.serializer.LambdaLocalDateTimeSerializer;
@@ -24,11 +25,12 @@ public class LambdaObjectMapper extends ObjectMapper {
         this.disable(INDENT_OUTPUT);
         this.setSerializationInclusion(NON_NULL);
         this.setSerializationInclusion(NON_EMPTY);
-        this.activateDefaultTyping(getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
+        final JavaTimeModule javaTimeModule = new JavaTimeModule();
         javaTimeModule.addSerializer(LocalDateTime.class, new LambdaLocalDateTimeSerializer());
         javaTimeModule.addDeserializer(LocalDateTime.class, new LambdaLocalDateTimeDeserializer());
         this.registerModule(javaTimeModule);
+        final PolymorphicTypeValidator polymorphicTypeValidator = getPolymorphicTypeValidator();
+        this.activateDefaultTyping(polymorphicTypeValidator, NON_FINAL, PROPERTY);
     }
 
     @Override

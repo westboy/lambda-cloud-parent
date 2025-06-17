@@ -1,5 +1,6 @@
 package com.lambda.cloud.core;
 
+import com.google.gson.Gson;
 import java.time.format.DateTimeFormatter;
 import lombok.experimental.UtilityClass;
 
@@ -9,6 +10,14 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class Constants {
 
+    /**
+     * Gson
+     */
+    public static final Gson GSON = new Gson();
+
+    /**
+     * 日期和时间格式
+     */
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**

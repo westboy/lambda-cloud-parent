@@ -1,6 +1,6 @@
 package com.lambda.cloud.logger.advices;
 
-import static com.lambda.cloud.core.exception.model.ErrorModel.GSON;
+import static com.lambda.cloud.core.Constants.GSON;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 import cn.hutool.extra.servlet.JakartaServletUtil;

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+    <Match>
+        <Class name="com.lambda.cloud.rocketmq.message.LambdaMessageView" />
+    </Match>
+
+    <Match>
+        <Or>
+            <Package name="~.*\.entity\..*" />
+            <Class name="~.*Entity$" />
+            <Class annotation="javax.persistence.Entity" />
+        </Or>
+    </Match>
+
+    <Match>
+        <Or>
+            <Package name="~.*\.vo\..*" />
+            <Class name="~.*VO$" />
+            <Class name="~.*ValueObject$" />
+        </Or>
+    </Match>
+
+    <Match>
+        <Or>
+            <Package name="~.*\.view\..*" />
+            <Class name="~.*View$" />
+        </Or>
+    </Match>
+
+    <Match>
+        <Or>
+            <Package name="~.*\.dto\..*" />
+            <Class name="~.*DTO$" />
+            <Class name="~.*DataTransferObject$" />
+        </Or>
+    </Match>
+
+    <Match>
+        <Or>
+            <Package name="~.*\.properties\..*" />
+            <Package name="~.*\.config\..*" />
+            <Class name="~.*Properties$" />
+            <Class name="~.*Config$" />
+        </Or>
+    </Match>
+
+    <Match>
+        <Or>
+            <Package name="~.*\.model\..*" />
+            <Class name="~.*Model$" />
+        </Or>
+    </Match>
+
+    <Match>
+        <Bug code="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+    </Match>
+</FindBugsFilter>

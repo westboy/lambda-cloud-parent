@@ -1,6 +1,6 @@
 package com.lambda.cloud.logger.service;
 
-import static com.lambda.cloud.core.exception.model.ErrorModel.GSON;
+import static com.lambda.cloud.core.Constants.GSON;
 
 import com.lambda.cloud.logger.model.OperationBody;
 import lombok.extern.slf4j.Slf4j;

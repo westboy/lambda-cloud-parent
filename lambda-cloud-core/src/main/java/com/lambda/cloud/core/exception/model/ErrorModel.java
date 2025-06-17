@@ -1,7 +1,8 @@
 package com.lambda.cloud.core.exception.model;
 
+import static com.lambda.cloud.core.Constants.GSON;
+
 import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ErrorModel {
-    public static final Gson GSON = new Gson();
     private int status;
     private long timestamp;
     private String error;

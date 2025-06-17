@@ -1,16 +1,16 @@
 package com.lambda.cloud.rocketmq.message;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Collection;
+import java.util.Map;
 import lombok.Data;
 import org.apache.rocketmq.client.apis.message.MessageId;
-import org.apache.rocketmq.client.apis.message.MessageView;
 import org.apache.rocketmq.client.java.route.Endpoints;
 import org.apache.rocketmq.client.java.route.MessageQueueImpl;
 
-import java.util.Collection;
-import java.util.Map;
-
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 @Data
-public class LambdaMessageView<T> implements MessageView {
+public class LambdaMessageView<T> {
     private T body;
     private MessageId messageId;
     private String topic;
