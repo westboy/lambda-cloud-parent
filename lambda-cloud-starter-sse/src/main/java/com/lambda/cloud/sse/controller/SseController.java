@@ -1,0 +1,43 @@
+package com.lambda.cloud.sse.controller;
+
+import com.lambda.cloud.sse.SseEmitterManager;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+/**
+ * SseController
+ *
+ * @author Jin
+ */
+@RestController
+@RequestMapping("${lambda.sse.endpoint-prefix:/sse}")
+public class SseController {
+
+    private final SseEmitterManager emitterManager;
+
+    public SseController(SseEmitterManager emitterManager) {
+        this.emitterManager = emitterManager;
+    }
+
+    @GetMapping("${lambda.sse.subscribe-path:/subscribe}")
+    public SseEmitter subscribe(@RequestParam String clientId) {
+        return emitterManager.createEmitter(clientId);
+    }
+
+    @PostMapping("${lambda.sse.send-path:/send}")
+    public void sendEvent(@RequestParam String clientId,
+                         @RequestParam String eventName,
+                         @RequestBody Object data) {
+        try {
+            emitterManager.sendEvent(clientId, eventName, data);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send SSE event", e);
+        }
+    }
+
+    @PostMapping("${lambda.sse.broadcast-path:/broadcast}")
+    public void broadcast(@RequestParam String eventName,
+                          @RequestBody Object data) {
+        emitterManager.broadcast(eventName, data);
+    }
+}
