@@ -117,7 +117,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
             throw new VerifyCodeValidationException("the account is expired");
         }
 
-        if (loginUser.getAccountLocked() == null ) {
+        if (loginUser.getAccountLocked() == null) {
             throw new VerifyCodeValidationException("the account is locked");
         }
 

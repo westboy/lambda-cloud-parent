@@ -3,14 +3,13 @@ package com.lambda.cloud.sse;
 import cn.hutool.core.thread.ThreadUtil;
 import com.lambda.autoconfig.SseProperties;
 import com.lambda.cloud.sse.exception.SseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * SseEmitterManager
@@ -22,13 +21,13 @@ public class SseEmitterManager {
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final List<SseEventListener> listeners = new CopyOnWriteArrayList<>();
-    private final SseProperties properties;
-    private final ScheduledExecutorService scheduler;
-    private final AtomicInteger connectionCount = new AtomicInteger(0);
+    protected final SseProperties properties;
+    protected final ScheduledExecutorService scheduler;
+    protected final AtomicInteger connectionCount = new AtomicInteger(0);
 
-    private final AtomicInteger totalMessagesSent = new AtomicInteger(0);
-    private final AtomicInteger failedMessages = new AtomicInteger(0);
-    private final AtomicInteger retryAttempts = new AtomicInteger(0);
+    protected final AtomicInteger totalMessagesSent = new AtomicInteger(0);
+    protected final AtomicInteger failedMessages = new AtomicInteger(0);
+    protected final AtomicInteger retryAttempts = new AtomicInteger(0);
 
     public SseEmitterManager(SseProperties properties) {
         this.properties = properties;
@@ -36,15 +35,19 @@ public class SseEmitterManager {
         startHeartbeatTask();
     }
 
-    private void startHeartbeatTask() {
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                broadcast("heartbeat", "ping");
-                logger.debug("Sent heartbeat to {} clients", emitters.size());
-            } catch (Exception e) {
-                logger.error("Heartbeat task failed", e);
-            }
-        }, properties.getHeartbeatInterval(), properties.getHeartbeatInterval(), TimeUnit.MILLISECONDS);
+    protected void startHeartbeatTask() {
+        scheduler.scheduleAtFixedRate(
+                () -> {
+                    try {
+                        broadcast("heartbeat", "ping");
+                        logger.debug("Sent heartbeat to {} clients", emitters.size());
+                    } catch (Exception e) {
+                        logger.error("Heartbeat task failed", e);
+                    }
+                },
+                properties.getHeartbeatInterval(),
+                properties.getHeartbeatInterval(),
+                TimeUnit.MILLISECONDS);
     }
 
     public SseEmitter createEmitter(String clientId) {
@@ -75,9 +78,7 @@ public class SseEmitterManager {
         int attempts = 0;
         while (attempts <= properties.getMaxRetryAttempts()) {
             try {
-                emitter.send(SseEmitter.event()
-                        .name(eventName)
-                        .data(data));
+                emitter.send(SseEmitter.event().name(eventName).data(data));
                 totalMessagesSent.incrementAndGet();
                 listeners.forEach(l -> l.onMessageSent(clientId, eventName));
                 return;
@@ -101,15 +102,13 @@ public class SseEmitterManager {
         List<String> failedClients = new ArrayList<>();
         emitters.forEach((clientId, emitter) -> {
             try {
-                emitter.send(SseEmitter.event()
-                        .name(eventName)
-                        .data(data));
+                emitter.send(SseEmitter.event().name(eventName).data(data));
                 totalMessagesSent.incrementAndGet();
                 listeners.forEach(l -> l.onMessageSent(clientId, eventName));
             } catch (IOException e) {
                 failedClients.add(clientId);
                 failedMessages.incrementAndGet();
-                logger.error("Failed to broadcast to client: " + clientId, e);
+                logger.error("Failed to broadcast to client: {}", clientId, e);
             }
         });
 
@@ -130,15 +129,15 @@ public class SseEmitterManager {
             });
         }
     }
+
     public Map<String, Object> getStatistics() {
         return Map.of(
-            "activeConnections", emitters.size(),
-            "totalConnections", connectionCount.get(),
-            "totalMessagesSent", totalMessagesSent.get(),
-            "failedMessages", failedMessages.get(),
-            "retryAttempts", retryAttempts.get(),
-            "heartbeatInterval", properties.getHeartbeatInterval()
-        );
+                "activeConnections", emitters.size(),
+                "totalConnections", connectionCount.get(),
+                "totalMessagesSent", totalMessagesSent.get(),
+                "failedMessages", failedMessages.get(),
+                "retryAttempts", retryAttempts.get(),
+                "heartbeatInterval", properties.getHeartbeatInterval());
     }
 
     public void addListener(SseEventListener listener) {

@@ -2,7 +2,7 @@
 
 ## 概述
 
-基于Spring Boot的Server-Sent Events(SSE)功能集成starter，提供轻量级的服务端推送能力。
+基于Spring Boot的Server-Sent Events(SSE)功能集成starter，提供轻量级的服务端推送能力，支持单机和分布式集群环境。
 
 ## 功能特性
 
@@ -20,6 +20,12 @@
 - 消息发送重试机制
 - 详细运行统计指标
 
+✔️ **集群支持**
+- 跨节点广播
+- 自动连接同步
+- 集群心跳同步
+- 分布式统计聚合
+
 ✔️ **企业级支持**
 - 线程安全设计
 - 优雅的超时处理
@@ -34,7 +40,14 @@
 <dependency>
     <groupId>com.lambda.cloud</groupId>
     <artifactId>lambda-cloud-starter-sse</artifactId>
-    <version>1.0.0</version>
+    <version>1.2.0</version>
+</dependency>
+
+<!-- 集群模式需要添加 -->
+<dependency>
+    <groupId>org.redisson</groupId>
+    <artifactId>redisson-spring-boot-starter</artifactId>
+    <version>3.23.4</version>
 </dependency>
 ```
 
@@ -86,6 +99,18 @@ lambda:
     subscribe-path: /connect   # 订阅路径
     send-path: /send          # 单播路径
     broadcast-path: /broadcast # 广播路径
+    
+    # 集群配置
+    cluster:
+      enabled: true  # 启用集群模式
+      channel-prefix: "sse:cluster"  # Redis通道前缀
+      sync-timeout: 5000  # 同步超时(毫秒)
+      sync-heartbeat: true  # 是否同步心跳
+
+spring:
+  redis:
+    host: redis-server
+    port: 6379
 ```
 
 ## 高级用法
@@ -114,16 +139,19 @@ public class AuditEventListener implements SseEventListener {
 }
 ```
 
-### 自定义配置
+### 集群模式使用
 
 ```java
-@Configuration
-public class CustomSseConfig {
+@RestController
+public class ClusterSseController {
     
-    @Bean
-    public SseEmitterManager customEmitterManager(SseProperties properties) {
-        // 自定义实现
-        return new CustomSseEmitterManager(properties);
+    private final SseEmitterManager emitterManager;
+    
+    // 集群广播示例
+    @PostMapping("/cluster/broadcast")
+    public void clusterBroadcast(@RequestBody String message) {
+        // 消息会自动广播到所有集群节点
+        emitterManager.broadcast("cluster-msg", message);
     }
 }
 ```
@@ -155,7 +183,8 @@ public class SseMonitorController {
   "totalMessagesSent": 1024,
   "failedMessages": 5,
   "retryAttempts": 8,
-  "heartbeatInterval": 15000
+  "heartbeatInterval": 15000,
+  "clusterNodes": 3  // 集群节点数
 }
 ```
 
@@ -195,16 +224,22 @@ public class SseExceptionHandler {
    - 高并发场景建议配合负载均衡使用
    - 合理设置心跳间隔(默认15秒)
 
-2. **可靠性保障**
+2. **集群模式**
+   - 确保所有节点使用相同的Redis实例
+   - 合理设置通道前缀避免冲突
+   - 生产环境建议配置Redis哨兵或集群
+   - 网络延迟可能影响消息同步时效性
+
+3. **可靠性保障**
    - 默认启用3次消息发送重试
    - 建议实现自定义监听器处理失败场景
    - 监控统计指标及时发现异常
 
-3. **浏览器兼容性**
+4. **浏览器兼容性**
    - 现代浏览器均支持SSE协议
    - 需要处理自动重连逻辑
 
-4. **最佳实践**
+5. **最佳实践**
    - 为每个客户端使用唯一ID
    - 合理设置心跳间隔
    - 及时处理断开事件释放资源
@@ -217,3 +252,4 @@ public class SseExceptionHandler {
 | 1.0  | 2023-08-01 | 初始版本发布         |
 | 1.1  | 2023-09-15 | 增加配置化支持       |
 | 1.2  | 2023-10-01 | 新增心跳和重试机制    |
+| 1.3  | 2023-11-01 | 新增集群支持         |

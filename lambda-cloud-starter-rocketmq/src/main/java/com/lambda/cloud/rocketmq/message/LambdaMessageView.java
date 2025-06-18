@@ -1,11 +1,10 @@
 package com.lambda.cloud.rocketmq.message;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.Data;
-import org.apache.rocketmq.client.apis.message.MessageId;
-
 import java.util.Collection;
 import java.util.Map;
+import lombok.Data;
+import org.apache.rocketmq.client.apis.message.MessageId;
 
 @SuppressFBWarnings({"EI_EXPOSE_REP"})
 @Data

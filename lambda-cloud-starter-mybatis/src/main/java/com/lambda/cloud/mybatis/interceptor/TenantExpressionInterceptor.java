@@ -1,7 +1,7 @@
 package com.lambda.cloud.mybatis.interceptor;
 
-import com.lambda.cloud.mybatis.tenant.TenantContextHolder;
 import com.lambda.cloud.core.convert.TypeConverter;
+import com.lambda.cloud.mybatis.tenant.TenantContextHolder;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import lombok.extern.slf4j.Slf4j;

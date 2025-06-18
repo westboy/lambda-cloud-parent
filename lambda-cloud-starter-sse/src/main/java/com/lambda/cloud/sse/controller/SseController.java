@@ -25,9 +25,7 @@ public class SseController {
     }
 
     @PostMapping("${lambda.sse.send-path:/send}")
-    public void sendEvent(@RequestParam String clientId,
-                         @RequestParam String eventName,
-                         @RequestBody Object data) {
+    public void sendEvent(@RequestParam String clientId, @RequestParam String eventName, @RequestBody Object data) {
         try {
             emitterManager.sendEvent(clientId, eventName, data);
         } catch (Exception e) {
@@ -36,8 +34,7 @@ public class SseController {
     }
 
     @PostMapping("${lambda.sse.broadcast-path:/broadcast}")
-    public void broadcast(@RequestParam String eventName,
-                          @RequestBody Object data) {
+    public void broadcast(@RequestParam String eventName, @RequestBody Object data) {
         emitterManager.broadcast(eventName, data);
     }
 }

@@ -1,28 +1,35 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.sse.SseEmitterManager;
-import com.lambda.cloud.sse.controller.SseController;
 import com.lambda.cloud.sse.SseEventListener;
+import com.lambda.cloud.sse.cluster.ClusterSseEmitterManager;
+import com.lambda.cloud.sse.controller.SseController;
 import com.lambda.cloud.sse.listener.DefaultSseEventListener;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.redisson.api.RedissonClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * SseAutoConfiguration
+ * SSE自动配置
  *
  * @author Jin
  */
-@AutoConfiguration
+@Configuration
 @EnableConfigurationProperties(SseProperties.class)
 public class SseAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean
-    public SseEmitterManager sseEmitterManager(SseProperties properties) {
+    @ConditionalOnProperty(name = "lambda.sse.cluster.enabled", havingValue = "false", matchIfMissing = true)
+    public SseEmitterManager localSseEmitterManager(SseProperties properties) {
         return new SseEmitterManager(properties);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "lambda.sse.cluster.enabled", havingValue = "true")
+    public SseEmitterManager distributedSseEmitterManager(SseProperties properties, RedissonClient redissonClient) {
+        return new ClusterSseEmitterManager(properties, redissonClient);
     }
 
     @Bean
