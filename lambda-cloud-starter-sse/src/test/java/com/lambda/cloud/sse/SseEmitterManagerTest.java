@@ -51,12 +51,8 @@ class SseEmitterManagerTest {
         SseEmitter emitter = manager.createEmitter("client1");
         verify(listener).onConnect("client1");
 
-        try {
-            manager.sendEvent("client1", "testEvent", "testData");
-            verify(listener).onMessageSent("client1", "testEvent");
-        } catch (IOException e) {
-            fail("IOException should not occur");
-        }
+        manager.sendEvent("client1", "testEvent", "testData");
+        verify(listener).onMessageSent("client1", "testEvent");
 
         emitter.complete();
         verify(listener).onDisconnect("client1");
@@ -66,7 +62,7 @@ class SseEmitterManagerTest {
     void testClose() {
         manager.createEmitter("client1");
         manager.createEmitter("client2");
-        manager.close();
+        manager.shutdown();
         assertEquals(0, manager.getActiveConnectionCount());
     }
 }

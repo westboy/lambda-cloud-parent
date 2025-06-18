@@ -146,11 +146,11 @@ public class SseEmitterManager implements DisposableBean {
                 "heartbeatInterval", properties.getHeartbeatInterval());
     }
 
-    public void addListener(SseEventListener listener) {
+    public void addEventListener(SseEventListener listener) {
         listeners.add(listener);
     }
 
-    public void removeListener(SseEventListener listener) {
+    public void removeEventListener(SseEventListener listener) {
         listeners.remove(listener);
     }
 
