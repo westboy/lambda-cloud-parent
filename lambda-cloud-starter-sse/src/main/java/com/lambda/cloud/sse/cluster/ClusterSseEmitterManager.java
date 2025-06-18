@@ -1,6 +1,7 @@
 package com.lambda.cloud.sse.cluster;
 
 import com.lambda.autoconfig.SseProperties;
+import com.lambda.cloud.sse.MessageType;
 import com.lambda.cloud.sse.SseEmitterManager;
 import java.util.concurrent.TimeUnit;
 import org.redisson.api.RTopic;
@@ -19,11 +20,11 @@ public class ClusterSseEmitterManager extends SseEmitterManager {
         this.clusterTopic = redissonClient.getTopic(channelName);
         // 订阅集群消息
         this.clusterTopic.addListener(ClusterMessage.class, (channel, msg) -> {
-            if (msg.getType() == ClusterMessage.MessageType.BROADCAST) {
+            if (msg.getType() == MessageType.BROADCAST) {
                 if (!msg.getSourceNode().equals(getNodeId())) {
                     super.broadcast(msg.getEventName(), msg.getData());
                 }
-            } else if (msg.getType() == ClusterMessage.MessageType.HEARTBEAT) {
+            } else if (msg.getType() == MessageType.HEARTBEAT) {
                 if (properties.getCluster().isSyncHeartbeat()
                         && !msg.getSourceNode().equals(getNodeId())) {
                     super.broadcast("heartbeat", "cluster-ping");
@@ -36,8 +37,7 @@ public class ClusterSseEmitterManager extends SseEmitterManager {
     public void broadcast(String eventName, Object data) {
         super.broadcast(eventName, data);
         if (properties.getCluster().isEnabled()) {
-            ClusterMessage message =
-                    new ClusterMessage(getNodeId(), ClusterMessage.MessageType.BROADCAST, eventName, data);
+            ClusterMessage message = new ClusterMessage(getNodeId(), MessageType.BROADCAST, eventName, data);
             clusterTopic.publish(message);
         }
     }
@@ -47,8 +47,8 @@ public class ClusterSseEmitterManager extends SseEmitterManager {
         if (properties.getCluster().isEnabled() && properties.getCluster().isSyncHeartbeat()) {
             scheduler.scheduleAtFixedRate(
                     () -> {
-                        ClusterMessage message = new ClusterMessage(
-                                getNodeId(), ClusterMessage.MessageType.HEARTBEAT, "heartbeat", "cluster-ping");
+                        ClusterMessage message =
+                                new ClusterMessage(getNodeId(), MessageType.HEARTBEAT, "heartbeat", "cluster-ping");
                         clusterTopic.publish(message);
                     },
                     properties.getHeartbeatInterval(),

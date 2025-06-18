@@ -9,7 +9,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
@@ -45,8 +44,7 @@ public final class WebHttpUtils {
 
     private WebHttpUtils() {}
 
-    public static String getRedirectParameter(HttpServletRequest request, String tokens)
-            throws UnsupportedEncodingException {
+    public static String getRedirectParameter(HttpServletRequest request, String tokens) {
         Object redirectUrl = request.getAttribute(REDIRECT_URL);
         if (redirectUrl != null && StringUtils.isNotBlank(redirectUrl.toString())) {
             String redirect = redirectUrl.toString();

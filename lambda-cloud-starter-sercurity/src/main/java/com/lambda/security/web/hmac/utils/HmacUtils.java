@@ -2,7 +2,7 @@ package com.lambda.security.web.hmac.utils;
 
 import static com.lambda.cloud.mvc.WebHttpUtils.AUTHORIZATION;
 
-import com.lambda.cloud.core.utils.HmacGenerator;
+import com.lambda.cloud.core.hmac.HmacGenerator;
 import com.lambda.security.web.hmac.model.HmacAuthorization;
 import com.lambda.security.web.hmac.wrapper.HmacRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;

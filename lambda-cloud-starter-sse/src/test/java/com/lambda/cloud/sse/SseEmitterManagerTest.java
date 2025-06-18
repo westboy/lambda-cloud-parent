@@ -4,9 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.lambda.autoconfig.SseProperties;
-import java.io.IOException;
-
 import com.lambda.cloud.sse.listener.SseEventListener;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -55,6 +54,8 @@ class SseEmitterManagerTest {
         verify(listener).onMessageSent("client1", "testEvent");
 
         emitter.complete();
+
+        manager.removeEmitter("client1");
         verify(listener).onDisconnect("client1");
     }
 

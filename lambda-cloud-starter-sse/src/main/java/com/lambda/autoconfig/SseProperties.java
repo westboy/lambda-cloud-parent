@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author Jin
  */
+@SuppressFBWarnings("EI_EXPOSE_REP")
 @Setter
 @Getter
 @ConfigurationProperties(prefix = "lambda.sse")

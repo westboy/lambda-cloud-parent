@@ -4,11 +4,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import com.lambda.autoconfig.SseProperties;
 import com.lambda.cloud.sse.exception.SseException;
 import com.lambda.cloud.sse.listener.SseEventListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +12,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * SseEmitterManager
  *
  * @author Jin
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
+@Slf4j
 public class SseEmitterManager implements DisposableBean {
-    private static final Logger logger = LoggerFactory.getLogger(SseEmitterManager.class);
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final List<SseEventListener> listeners = new CopyOnWriteArrayList<>();
@@ -46,9 +46,9 @@ public class SseEmitterManager implements DisposableBean {
                 () -> {
                     try {
                         broadcast("heartbeat", "ping");
-                        logger.debug("Sent heartbeat to {} clients", emitters.size());
+                        log.debug("Sent heartbeat to {} clients", emitters.size());
                     } catch (Exception e) {
-                        logger.error("Heartbeat task failed", e);
+                        log.error("Heartbeat task failed", e);
                     }
                 },
                 properties.getHeartbeatInterval(),
@@ -68,7 +68,7 @@ public class SseEmitterManager implements DisposableBean {
             try {
                 listener.onConnect(clientId);
             } catch (Exception e) {
-                logger.error("Listener error on connect", e);
+                log.error("Listener error on connect", e);
             }
         });
 
@@ -92,11 +92,11 @@ public class SseEmitterManager implements DisposableBean {
                 attempts++;
                 if (attempts <= properties.getMaxRetryAttempts()) {
                     retryAttempts.incrementAndGet();
-                    logger.warn("Retry attempt {} for client {}", attempts, clientId);
+                    log.warn("Retry attempt {} for client {}", attempts, clientId);
                     ThreadUtil.safeSleep(500);
                 } else {
                     failedMessages.incrementAndGet();
-                    logger.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
+                    log.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
                     removeEmitter(clientId);
                     throw new SseException("Failed to send event", e);
                 }
@@ -114,14 +114,14 @@ public class SseEmitterManager implements DisposableBean {
             } catch (IOException e) {
                 failedClients.add(clientId);
                 failedMessages.incrementAndGet();
-                logger.error("Failed to broadcast to client: {}", clientId, e);
+                log.error("Failed to broadcast to client: {}", clientId, e);
             }
         });
 
         failedClients.forEach(this::removeEmitter);
     }
 
-    private void removeEmitter(String clientId) {
+    public void removeEmitter(String clientId) {
         SseEmitter emitter = emitters.remove(clientId);
         if (emitter != null) {
             connectionCount.decrementAndGet();
@@ -130,7 +130,7 @@ public class SseEmitterManager implements DisposableBean {
                 try {
                     listener.onDisconnect(clientId);
                 } catch (Exception e) {
-                    logger.error("Listener error on disconnect", e);
+                    log.error("Listener error on disconnect", e);
                 }
             });
         }

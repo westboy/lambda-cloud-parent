@@ -44,6 +44,11 @@ public class SimpleLoginUser implements LoginUser {
         return "";
     }
 
+    @Override
+    public String getTenantId() {
+        return "";
+    }
+
     @JsonIgnore
     @Override
     public String getName() {

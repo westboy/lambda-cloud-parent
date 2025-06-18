@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.utils;
+package com.lambda.cloud.core.hmac;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
