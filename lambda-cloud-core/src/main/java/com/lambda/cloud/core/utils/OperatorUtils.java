@@ -43,6 +43,11 @@ public class OperatorUtils {
         public Boolean getAccountExpired() {
             return true;
         }
+
+        @Override
+        public String getTenantId() {
+            return "-1";
+        }
     };
 
     public static LoginUser getOperator() {
