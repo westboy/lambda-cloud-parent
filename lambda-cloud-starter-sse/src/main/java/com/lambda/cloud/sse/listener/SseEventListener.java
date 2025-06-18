@@ -1,4 +1,4 @@
-package com.lambda.cloud.sse;
+package com.lambda.cloud.sse.listener;
 
 /**
  * SseEventListener

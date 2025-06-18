@@ -1,10 +1,8 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.sse.SseEmitterManager;
-import com.lambda.cloud.sse.SseEventListener;
 import com.lambda.cloud.sse.cluster.ClusterSseEmitterManager;
 import com.lambda.cloud.sse.controller.SseController;
-import com.lambda.cloud.sse.listener.DefaultSseEventListener;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,11 +34,5 @@ public class SseAutoConfiguration {
     @ConditionalOnProperty(name = "lambda.sse.enable-controller", havingValue = "true", matchIfMissing = true)
     public SseController sseController(SseEmitterManager emitterManager) {
         return new SseController(emitterManager);
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "lambda.sse.enable-logging-listener", havingValue = "true", matchIfMissing = true)
-    public SseEventListener loggingSseEventListener() {
-        return new DefaultSseEventListener();
     }
 }

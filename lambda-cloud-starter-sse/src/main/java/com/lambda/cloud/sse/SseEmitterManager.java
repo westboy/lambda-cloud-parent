@@ -3,20 +3,26 @@ package com.lambda.cloud.sse;
 import cn.hutool.core.thread.ThreadUtil;
 import com.lambda.autoconfig.SseProperties;
 import com.lambda.cloud.sse.exception.SseException;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.lambda.cloud.sse.listener.SseEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * SseEmitterManager
  *
  * @author Jin
  */
-public class SseEmitterManager {
+public class SseEmitterManager implements DisposableBean {
     private static final Logger logger = LoggerFactory.getLogger(SseEmitterManager.class);
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
@@ -80,7 +86,7 @@ public class SseEmitterManager {
             try {
                 emitter.send(SseEmitter.event().name(eventName).data(data));
                 totalMessagesSent.incrementAndGet();
-                listeners.forEach(l -> l.onMessageSent(clientId, eventName));
+                listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
                 return;
             } catch (IOException e) {
                 attempts++;
@@ -104,7 +110,7 @@ public class SseEmitterManager {
             try {
                 emitter.send(SseEmitter.event().name(eventName).data(data));
                 totalMessagesSent.incrementAndGet();
-                listeners.forEach(l -> l.onMessageSent(clientId, eventName));
+                listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
             } catch (IOException e) {
                 failedClients.add(clientId);
                 failedMessages.incrementAndGet();
@@ -160,5 +166,10 @@ public class SseEmitterManager {
         scheduler.shutdown();
         emitters.values().forEach(SseEmitter::complete);
         emitters.clear();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        shutdown();
     }
 }

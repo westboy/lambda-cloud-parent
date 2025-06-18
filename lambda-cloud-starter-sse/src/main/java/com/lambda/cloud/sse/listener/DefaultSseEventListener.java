@@ -1,6 +1,5 @@
 package com.lambda.cloud.sse.listener;
 
-import com.lambda.cloud.sse.SseEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

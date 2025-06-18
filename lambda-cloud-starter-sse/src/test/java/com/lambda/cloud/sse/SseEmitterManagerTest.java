@@ -5,6 +5,8 @@ import static org.mockito.Mockito.*;
 
 import com.lambda.autoconfig.SseProperties;
 import java.io.IOException;
+
+import com.lambda.cloud.sse.listener.SseEventListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
