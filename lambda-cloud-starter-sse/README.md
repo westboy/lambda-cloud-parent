@@ -17,11 +17,14 @@
 - 连接生命周期监听
 - 内置日志监听器
 - 连接数统计监控
+- 消息发送重试机制
+- 详细运行统计指标
 
 ✔️ **企业级支持**
 - 线程安全设计
 - 优雅的超时处理
 - 可扩展的事件监听机制
+- 自定义异常处理
 
 ## 快速开始
 
@@ -66,6 +69,12 @@ lambda:
     # 连接超时(毫秒)
     timeout: 30000
     
+    # 心跳间隔(毫秒)
+    heartbeat-interval: 15000
+    
+    # 消息发送最大重试次数
+    max-retry-attempts: 3
+    
     # 是否启用自动配置的Controller
     enable-controller: true
     
@@ -97,6 +106,11 @@ public class AuditEventListener implements SseEventListener {
     public void onDisconnect(String clientId) {
         // 资源清理
     }
+    
+    @Override
+    public void onMessageSent(String clientId, String eventName) {
+        // 消息发送审计
+    }
 }
 ```
 
@@ -116,7 +130,7 @@ public class CustomSseConfig {
 
 ## 监控管理
 
-### 监控端点
+### 获取详细统计信息
 
 ```java
 @RestController
@@ -125,16 +139,51 @@ public class SseMonitorController {
     
     private final SseEmitterManager emitterManager;
     
-    // 获取活跃连接数
-    @GetMapping("/connections/count")
-    public int getConnectionCount() {
-        return emitterManager.getActiveConnectionCount();
+    @GetMapping("/statistics")
+    public Map<String, Object> getStatistics() {
+        return emitterManager.getStatistics();
     }
+}
+```
+
+### 统计信息示例
+
+```json
+{
+  "activeConnections": 42,
+  "totalConnections": 128,
+  "totalMessagesSent": 1024,
+  "failedMessages": 5,
+  "retryAttempts": 8,
+  "heartbeatInterval": 15000
+}
+```
+
+## 异常处理
+
+### 自定义异常处理
+
+```java
+@RestControllerAdvice
+public class SseExceptionHandler {
     
-    // 获取连接列表
-    @GetMapping("/connections")
-    public List<String> getConnections() {
-        return emitterManager.getActiveClients();
+    @ExceptionHandler(SseException.class)
+    public ResponseEntity<Map<String, Object>> handleSseException(SseException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "SSE Operation Failed");
+        body.put("message", ex.getMessage());
+        
+        if (ex.getClientId() != null) {
+            body.put("clientId", ex.getClientId());
+        }
+        
+        if (ex.getEventName() != null) {
+            body.put("eventName", ex.getEventName());
+        }
+        
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 }
 ```
@@ -144,12 +193,27 @@ public class SseMonitorController {
 1. **性能考量**
    - 建议单个实例连接数不超过5000
    - 高并发场景建议配合负载均衡使用
+   - 合理设置心跳间隔(默认15秒)
 
-2. **浏览器兼容性**
+2. **可靠性保障**
+   - 默认启用3次消息发送重试
+   - 建议实现自定义监听器处理失败场景
+   - 监控统计指标及时发现异常
+
+3. **浏览器兼容性**
    - 现代浏览器均支持SSE协议
    - 需要处理自动重连逻辑
 
-3. **最佳实践**
+4. **最佳实践**
    - 为每个客户端使用唯一ID
    - 合理设置心跳间隔
    - 及时处理断开事件释放资源
+   - 实现异常处理逻辑
+
+## 版本记录
+
+| 版本 | 日期       | 说明                |
+|------|------------|-------------------|
+| 1.0  | 2023-08-01 | 初始版本发布         |
+| 1.1  | 2023-09-15 | 增加配置化支持       |
+| 1.2  | 2023-10-01 | 新增心跳和重试机制    |

@@ -1,15 +1,16 @@
 package com.lambda.cloud.sse;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.lambda.autoconfig.SseProperties;
+import com.lambda.cloud.sse.exception.SseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * SseEmitterManager
@@ -17,109 +18,148 @@ import java.util.concurrent.TimeUnit;
  * @author Jin
  */
 public class SseEmitterManager {
+    private static final Logger logger = LoggerFactory.getLogger(SseEmitterManager.class);
+
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private final List<SseEventListener> listeners = new CopyOnWriteArrayList<>();
     private final SseProperties properties;
-    private final ScheduledExecutorService executorService;
-    private final CopyOnWriteArrayList<SseEventListener> listeners = new CopyOnWriteArrayList<>();
-    private final ScheduledExecutorService heartbeatExecutor;
+    private final ScheduledExecutorService scheduler;
+    private final AtomicInteger connectionCount = new AtomicInteger(0);
+
+    private final AtomicInteger totalMessagesSent = new AtomicInteger(0);
+    private final AtomicInteger failedMessages = new AtomicInteger(0);
+    private final AtomicInteger retryAttempts = new AtomicInteger(0);
 
     public SseEmitterManager(SseProperties properties) {
         this.properties = properties;
-        this.executorService = Executors.newSingleThreadScheduledExecutor();
-        this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
-        this.executorService.scheduleAtFixedRate(this::cleanupExpiredEmitters,
-            1, 1, TimeUnit.MINUTES);
-        this.heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat,
-            0, 30, TimeUnit.SECONDS);
+        this.scheduler = Executors.newSingleThreadScheduledExecutor();
+        startHeartbeatTask();
     }
 
-    private void sendHeartbeat() {
-        emitters.forEach((clientId, emitter) -> {
+    private void startHeartbeatTask() {
+        scheduler.scheduleAtFixedRate(() -> {
             try {
-                emitter.send(SseEmitter.event()
-                    .name("heartbeat")
-                    .data(System.currentTimeMillis()));
-            } catch (IOException e) {
-                emitters.remove(clientId);
-                listeners.forEach(l -> l.onDisconnect(clientId));
+                broadcast("heartbeat", "ping");
+                logger.debug("Sent heartbeat to {} clients", emitters.size());
+            } catch (Exception e) {
+                logger.error("Heartbeat task failed", e);
             }
-        });
-    }
-
-    public void addEventListener(SseEventListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeEventListener(SseEventListener listener) {
-        listeners.remove(listener);
+        }, properties.getHeartbeatInterval(), properties.getHeartbeatInterval(), TimeUnit.MILLISECONDS);
     }
 
     public SseEmitter createEmitter(String clientId) {
         SseEmitter emitter = new SseEmitter(properties.getTimeout());
+        emitter.onCompletion(() -> removeEmitter(clientId));
+        emitter.onTimeout(() -> removeEmitter(clientId));
+
         emitters.put(clientId, emitter);
+        connectionCount.incrementAndGet();
 
-        emitter.onCompletion(() -> {
-            emitters.remove(clientId);
-            listeners.forEach(l -> l.onDisconnect(clientId));
-        });
-        emitter.onTimeout(() -> {
-            emitters.remove(clientId);
-            listeners.forEach(l -> l.onDisconnect(clientId));
-        });
-        emitter.onError(e -> {
-            emitters.remove(clientId);
-            listeners.forEach(l -> l.onDisconnect(clientId));
+        listeners.forEach(listener -> {
+            try {
+                listener.onConnect(clientId);
+            } catch (Exception e) {
+                logger.error("Listener error on connect", e);
+            }
         });
 
-        listeners.forEach(l -> l.onConnect(clientId));
         return emitter;
     }
 
-    public void sendEvent(String clientId, String eventName, Object data) throws IOException {
+    public void sendEvent(String clientId, String eventName, Object data) {
         SseEmitter emitter = emitters.get(clientId);
-        if (emitter != null) {
-            emitter.send(SseEmitter.event()
-                .name(eventName)
-                .data(data));
-            listeners.forEach(l -> l.onMessageSent(clientId, eventName));
+        if (emitter == null) {
+            throw new IllegalArgumentException("No emitter found for client: " + clientId);
+        }
+
+        int attempts = 0;
+        while (attempts <= properties.getMaxRetryAttempts()) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name(eventName)
+                        .data(data));
+                totalMessagesSent.incrementAndGet();
+                listeners.forEach(l -> l.onMessageSent(clientId, eventName));
+                return;
+            } catch (IOException e) {
+                attempts++;
+                if (attempts <= properties.getMaxRetryAttempts()) {
+                    retryAttempts.incrementAndGet();
+                    logger.warn("Retry attempt {} for client {}", attempts, clientId);
+                    ThreadUtil.safeSleep(500);
+                } else {
+                    failedMessages.incrementAndGet();
+                    logger.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
+                    removeEmitter(clientId);
+                    throw new SseException("Failed to send event", e);
+                }
+            }
         }
     }
 
     public void broadcast(String eventName, Object data) {
+        List<String> failedClients = new ArrayList<>();
         emitters.forEach((clientId, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
-                    .name(eventName)
-                    .data(data));
+                        .name(eventName)
+                        .data(data));
+                totalMessagesSent.incrementAndGet();
                 listeners.forEach(l -> l.onMessageSent(clientId, eventName));
             } catch (IOException e) {
-                emitters.remove(clientId);
-                listeners.forEach(l -> l.onDisconnect(clientId));
+                failedClients.add(clientId);
+                failedMessages.incrementAndGet();
+                logger.error("Failed to broadcast to client: " + clientId, e);
             }
         });
+
+        failedClients.forEach(this::removeEmitter);
     }
 
-    private void cleanupExpiredEmitters() {
-        emitters.entrySet().removeIf(entry -> {
-            if (entry.getValue() == null) {
-                listeners.forEach(l -> l.onDisconnect(entry.getKey()));
-                return true;
-            }
-            return false;
-        });
-    }
-
-    public void close() {
-        executorService.shutdown();
-        heartbeatExecutor.shutdown();
-        emitters.forEach((clientId, emitter) -> {
+    private void removeEmitter(String clientId) {
+        SseEmitter emitter = emitters.remove(clientId);
+        if (emitter != null) {
+            connectionCount.decrementAndGet();
             emitter.complete();
-            listeners.forEach(l -> l.onDisconnect(clientId));
-        });
-        emitters.clear();
+            listeners.forEach(listener -> {
+                try {
+                    listener.onDisconnect(clientId);
+                } catch (Exception e) {
+                    logger.error("Listener error on disconnect", e);
+                }
+            });
+        }
+    }
+    public Map<String, Object> getStatistics() {
+        return Map.of(
+            "activeConnections", emitters.size(),
+            "totalConnections", connectionCount.get(),
+            "totalMessagesSent", totalMessagesSent.get(),
+            "failedMessages", failedMessages.get(),
+            "retryAttempts", retryAttempts.get(),
+            "heartbeatInterval", properties.getHeartbeatInterval()
+        );
+    }
+
+    public void addListener(SseEventListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(SseEventListener listener) {
+        listeners.remove(listener);
     }
 
     public int getActiveConnectionCount() {
         return emitters.size();
+    }
+
+    public Set<String> getActiveClients() {
+        return emitters.keySet();
+    }
+
+    public void shutdown() {
+        scheduler.shutdown();
+        emitters.values().forEach(SseEmitter::complete);
+        emitters.clear();
     }
 }
