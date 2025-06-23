@@ -225,7 +225,7 @@ public class OssClient {
             IoUtil.close(object);
             IoUtil.close(outputStream);
         } catch (Exception e) {
-            throw new OssException("文件删除失败！", e);
+            throw new OssException("文件读取失败！", e);
         }
     }
 
