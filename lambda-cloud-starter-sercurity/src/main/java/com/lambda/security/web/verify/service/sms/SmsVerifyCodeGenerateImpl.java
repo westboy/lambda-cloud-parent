@@ -98,15 +98,15 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
 
             if (loginUser == null) {
-                throw new VerifyCodeValidationException("the mobile is not exist");
+                throw new VerifyCodeValidationException("账号密码错误");
             }
 
-            if (loginUser.getAccountExpired() == null) {
-                throw new VerifyCodeValidationException("the account is expired");
+            if (loginUser.getAccountExpired()) {
+                throw new VerifyCodeValidationException("账号已过期");
             }
 
-            if (loginUser.getAccountLocked() == null) {
-                throw new VerifyCodeValidationException("the account is locked");
+            if (loginUser.getAccountLocked()) {
+                throw new VerifyCodeValidationException("账号已锁定");
             }
 
             if (!smsVerifyCodeStore.verifyReSend(mobile)) {
