@@ -12,7 +12,7 @@ public interface ErrorCode extends Serializable {
      *
      * @return java.lang. Integer
      */
-    Integer getCode();
+    String getCode();
 
     /**
      * 获取错误信息

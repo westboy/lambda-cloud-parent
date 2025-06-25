@@ -1,5 +1,7 @@
 package com.lambda.security.handler.impl;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.SaTokenException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
@@ -40,14 +42,19 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
                 response.setHeader("Pragma", "No-cache");
                 response.setHeader("Cache-Control", "no-cache");
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                ErrorModel model = new ErrorModel();
-                model.setStatus(HttpStatus.UNAUTHORIZED.value());
-                String error = HttpStatus.UNAUTHORIZED.getReasonPhrase();
-                model.setError(error);
-                model.setMessage(exception.getMessage());
-                model.setPath(request.getRequestURI());
-                model.setTimestamp(System.currentTimeMillis());
-                objectMapper.writeValue(writer, model);
+                ErrorModel errorModel = new ErrorModel();
+                errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+                if (exception instanceof NotLoginException NotLoginException) {
+                    errorModel.setError(NotLoginException.getType());
+                } else if (exception instanceof SaTokenException saTokenException) {
+                    errorModel.setError(String.valueOf(saTokenException.getCode()));
+                } else {
+                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                }
+                errorModel.setMessage(exception.getMessage());
+                errorModel.setPath(request.getRequestURI());
+                errorModel.setTimestamp(System.currentTimeMillis());
+                objectMapper.writeValue(writer, errorModel);
             }
         } else {
             String redirectUrl = (String) WebHttpUtils.getRedirectAttribute(request);

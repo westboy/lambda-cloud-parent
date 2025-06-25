@@ -97,8 +97,8 @@ public class GlobalControllerAdvice {
         model.setPath(request.getRequestURI());
         model.setTimestamp(System.currentTimeMillis());
         model.setStatus(HttpStatus.UNAUTHORIZED.value());
-        if (exception instanceof SaTokenException) {
-            model.setError(String.valueOf(((SaTokenException) exception).getCode()));
+        if (exception instanceof SaTokenException saTokenException) {
+            model.setError(String.valueOf(saTokenException.getCode()));
         }else {
             model.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
         }
@@ -156,7 +156,7 @@ public class GlobalControllerAdvice {
         model.setTimestamp(System.currentTimeMillis());
         model.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
         model.setMessage(exception.getMessage());
-        model.setError(String.valueOf(exception.getCode()));
+        model.setError(exception.getCode());
         return model;
     }
 
