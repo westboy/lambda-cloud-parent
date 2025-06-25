@@ -152,8 +152,8 @@ public class SecurityAutoConfiguration {
                     .setError(exception -> {
                         ErrorModel errorModel = new ErrorModel();
                         errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
-                        if (exception instanceof SaTokenException) {
-                            errorModel.setError(String.valueOf(((SaTokenException) exception).getCode()));
+                        if (exception instanceof SaTokenException saTokenException) {
+                            errorModel.setError(String.valueOf(saTokenException.getCode()));
                         }else {
                             errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
                         }
