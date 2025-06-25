@@ -108,4 +108,11 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
             List<WsConnectEventService> connectEventServices, List<WsSubscribeEvent> subscribeEvents) {
         return new WsEventHandler(connectEventServices, subscribeEvents);
     }
+
+    public static void main(String[] args) {
+        String s = "180328s2017    caua     b    001 0 eng d";
+        System.out.println(s.length());
+        String result = s.substring(35, 38);
+        System.out.println(result);
+    }
 }

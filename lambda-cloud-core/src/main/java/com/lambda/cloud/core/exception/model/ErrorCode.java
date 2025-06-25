@@ -10,9 +10,9 @@ public interface ErrorCode extends Serializable {
     /**
      * 获取错误码
      *
-     * @return java.lang.String
+     * @return java.lang. Integer
      */
-    String getCode();
+    Integer getCode();
 
     /**
      * 获取错误信息

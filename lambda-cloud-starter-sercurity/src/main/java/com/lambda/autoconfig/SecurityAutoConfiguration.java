@@ -4,6 +4,7 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
 import cn.binarywang.wx.miniapp.config.impl.WxMaRedissonConfigImpl;
 import cn.dev33.satoken.config.SaTokenConfig;
+import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.same.SaSameUtil;
@@ -148,12 +149,16 @@ public class SecurityAutoConfiguration {
                             SaSameUtil.checkCurrentRequestToken();
                         }
                     })
-                    .setError(e -> {
+                    .setError(exception -> {
                         ErrorModel errorModel = new ErrorModel();
                         errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
-                        errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                        if (exception instanceof SaTokenException) {
+                            errorModel.setError(String.valueOf(((SaTokenException) exception).getCode()));
+                        }else {
+                            errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                        }
                         errorModel.setTimestamp(System.currentTimeMillis());
-                        errorModel.setMessage(e.getMessage());
+                        errorModel.setMessage(errorModel.getMessage());
                         return errorModel.toJsonString();
                     });
         }

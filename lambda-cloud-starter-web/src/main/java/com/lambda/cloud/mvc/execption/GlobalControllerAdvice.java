@@ -31,6 +31,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import static com.lambda.cloud.core.Constants.GSON;
+
 /**
  * @author Jin
  */
@@ -97,8 +99,8 @@ public class GlobalControllerAdvice {
         model.setStatus(HttpStatus.UNAUTHORIZED.value());
         if (exception instanceof SaTokenException) {
             model.setError(String.valueOf(((SaTokenException) exception).getCode()));
-        } else {
-            model.setError(exception.getMessage());
+        }else {
+            model.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
         }
         model.setMessage(exception.getMessage());
         return model;

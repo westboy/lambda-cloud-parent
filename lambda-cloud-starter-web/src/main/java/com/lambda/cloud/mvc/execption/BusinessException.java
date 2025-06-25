@@ -1,6 +1,7 @@
 package com.lambda.cloud.mvc.execption;
 
 import cn.hutool.core.util.ArrayUtil;
+import com.lambda.cloud.core.exception.model.ErrorCode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 
@@ -16,11 +17,11 @@ public class BusinessException extends RuntimeException {
 
     private final transient Object[] args;
 
-    public BusinessException(BusinessErrorCode errorCode) {
+    public BusinessException(ErrorCode errorCode) {
         this(errorCode.getCode(), errorCode.getMessage());
     }
 
-    public BusinessException(BusinessErrorCode errorCode, Object... args) {
+    public BusinessException(ErrorCode errorCode, Object... args) {
         this(errorCode.getCode(), errorCode.getMessage(), args);
     }
 
