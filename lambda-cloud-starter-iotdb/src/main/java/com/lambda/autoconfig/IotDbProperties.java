@@ -3,7 +3,8 @@ package com.lambda.autoconfig;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -12,7 +13,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author Jin
  */
-@Data
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "lambda.iotdb")
 public class IotDbProperties {
     private Boolean treeDialect;
@@ -27,6 +29,10 @@ public class IotDbProperties {
     private String database;
     private long ttl;
     private int thriftMaxFrameSize;
+
+    public void setNodeUrls(String[] nodeUrls) {
+        this.nodeUrls = Arrays.copyOf(nodeUrls, nodeUrls.length);
+    }
 
     public List<String> getNodeUrls() {
         if (ArrayUtils.isNotEmpty(nodeUrls)) {

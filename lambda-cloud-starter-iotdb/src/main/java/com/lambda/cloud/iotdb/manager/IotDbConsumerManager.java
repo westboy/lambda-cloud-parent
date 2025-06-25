@@ -5,11 +5,10 @@ import com.lambda.cloud.iotdb.annotation.IotDbSubscription;
 import com.lambda.cloud.iotdb.handler.MessageHandler;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import javax.annotation.Nullable;
 
 /**
  * IotDbMessageListenerInvoker

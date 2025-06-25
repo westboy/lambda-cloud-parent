@@ -4,7 +4,6 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
 import cn.binarywang.wx.miniapp.config.impl.WxMaRedissonConfigImpl;
 import cn.dev33.satoken.config.SaTokenConfig;
-import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
@@ -52,6 +51,7 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,8 +71,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.List;
 
 /**
  * Sa-Token 配置类
@@ -154,7 +152,7 @@ public class SecurityAutoConfiguration {
                     .setError(exception -> {
                         ErrorModel errorModel = new ErrorModel();
                         errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
-                       if (exception instanceof SaTokenException saTokenException) {
+                        if (exception instanceof SaTokenException saTokenException) {
                             errorModel.setError(String.valueOf(saTokenException.getCode()));
                         } else {
                             errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());

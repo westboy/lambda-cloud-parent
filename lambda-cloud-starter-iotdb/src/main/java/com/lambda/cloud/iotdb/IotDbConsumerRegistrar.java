@@ -2,6 +2,7 @@ package com.lambda.cloud.iotdb;
 
 import com.lambda.cloud.iotdb.annotation.IotDbSubscription;
 import com.lambda.cloud.iotdb.manager.IotDbConsumerManager;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Set;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -14,6 +15,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
  *
  * @author Jin
  */
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
 public class IotDbConsumerRegistrar implements BeanFactoryPostProcessor {
 
     private final IotDbConsumerManager manager;
