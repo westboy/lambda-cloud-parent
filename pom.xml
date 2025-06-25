@@ -47,6 +47,8 @@
         <knife4j.version>4.5.0</knife4j.version>
         <dubbo.version>3.3.0</dubbo.version>
         <rocketmq.version>2.3.3</rocketmq.version>
+        <iotdb.version>2.0.3</iotdb.version>
+        <iotdb-jdbc.version>1.3.1</iotdb-jdbc.version>
         <!-- undertow 版本 -->
         <version.xnio>3.8.14.Final</version.xnio>
         <!-- 插件版本 -->
@@ -90,15 +92,11 @@
         <module>lambda-cloud-starter-sms</module>
         <module>lambda-cloud-starter-rocketmq</module>
         <module>lambda-cloud-starter-sse</module>
+        <module>lambda-cloud-starter-iotdb</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.apache.rocketmq</groupId>
-                <artifactId>rocketmq-v5-client-spring-boot-starter</artifactId>
-                <version>${rocketmq.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
@@ -434,6 +432,21 @@
                 <artifactId>auto-service</artifactId>
                 <version>1.1.1</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-v5-client-spring-boot-starter</artifactId>
+                <version>${rocketmq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.iotdb</groupId>
+                <artifactId>iotdb-session</artifactId>
+                <version>${iotdb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.iotdb</groupId>
+                <artifactId>iotdb-jdbc</artifactId>
+                <version>${iotdb-jdbc.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
