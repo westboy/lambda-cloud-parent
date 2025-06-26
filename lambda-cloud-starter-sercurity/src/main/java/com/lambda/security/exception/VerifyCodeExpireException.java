@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginCode;
+import com.lambda.security.LoginErrorCode;
 
 /**
  * VerifyCodeException
@@ -9,6 +9,6 @@ import com.lambda.security.LoginCode;
 public class VerifyCodeExpireException extends AuthenticationException {
 
     public VerifyCodeExpireException(String message) {
-        super(LoginCode.CODE_20005, message);
+        super(LoginErrorCode.CODE_20005, message);
     }
 }

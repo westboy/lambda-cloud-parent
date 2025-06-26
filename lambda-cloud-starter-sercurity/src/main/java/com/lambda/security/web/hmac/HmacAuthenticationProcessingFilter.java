@@ -5,7 +5,7 @@ import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.security.LoginCode;
+import com.lambda.security.LoginErrorCode;
 import com.lambda.security.encoder.HmacShaEncoder;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.BadCredentialsException;
@@ -90,7 +90,7 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
 
                 boolean containsLoginType = StpLogicUtils.containsLoginType(runUserType);
                 if (!containsLoginType) {
-                    throw new AuthenticationException(LoginCode.CODE_20000, "登录类型错误！");
+                    throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
                 }
 
                 String runUserId = requestWrapper.getParameter(REQUEST_HMAC_RUN_USER);

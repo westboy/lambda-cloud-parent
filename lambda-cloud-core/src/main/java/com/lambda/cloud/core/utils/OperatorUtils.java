@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OperatorUtils {
 
-    private static final LoginUser defaultUser = new LoginUser() {
+    private static final LoginUser DEFAULT_USER = new LoginUser() {
         @Override
         public String getName() {
             return "guest";
@@ -55,7 +55,7 @@ public class OperatorUtils {
             return getLoginUser(stpLogic);
         } catch (Exception e) {
             log.warn("获取用户失败，用户未登录！");
-            return defaultUser;
+            return DEFAULT_USER;
         }
     }
 

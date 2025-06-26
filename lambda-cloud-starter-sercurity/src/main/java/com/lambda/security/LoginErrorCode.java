@@ -2,7 +2,7 @@ package com.lambda.security;
 
 import cn.dev33.satoken.error.SaErrorCode;
 
-public interface LoginCode extends SaErrorCode {
+public interface LoginErrorCode extends SaErrorCode {
 
     /**
      * 登录类型错误

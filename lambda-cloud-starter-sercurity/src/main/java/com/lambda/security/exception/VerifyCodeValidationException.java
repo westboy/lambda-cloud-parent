@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginCode;
+import com.lambda.security.LoginErrorCode;
 
 /**
  * VerifyCodeException
@@ -10,6 +10,6 @@ import com.lambda.security.LoginCode;
 public class VerifyCodeValidationException extends AuthenticationException {
 
     public VerifyCodeValidationException(String message) {
-        super(LoginCode.CODE_20004, message);
+        super(LoginErrorCode.CODE_20004, message);
     }
 }

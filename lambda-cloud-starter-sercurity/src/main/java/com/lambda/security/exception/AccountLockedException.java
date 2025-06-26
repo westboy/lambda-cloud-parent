@@ -1,9 +1,9 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginCode;
+import com.lambda.security.LoginErrorCode;
 
 public class AccountLockedException extends AuthenticationException {
     public AccountLockedException(String message) {
-        super(LoginCode.CODE_20002, message);
+        super(LoginErrorCode.CODE_20002, message);
     }
 }

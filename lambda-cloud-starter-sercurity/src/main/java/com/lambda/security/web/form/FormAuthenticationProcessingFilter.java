@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
-import com.lambda.security.LoginCode;
+import com.lambda.security.LoginErrorCode;
 import com.lambda.security.exception.*;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
@@ -105,7 +105,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
 
         if (!containsLoginType) {
-            throw new AuthenticationException(LoginCode.CODE_20000, "登录类型错误！");
+            throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
         }
 
         request.setAttribute(loginTypeParameter, loginType);

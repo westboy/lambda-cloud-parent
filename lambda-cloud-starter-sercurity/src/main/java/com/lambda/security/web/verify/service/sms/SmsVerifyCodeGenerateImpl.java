@@ -11,7 +11,7 @@ import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.sms.SmsMessageSender;
 import com.lambda.cloud.sms.model.SmsSendResult;
 import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
-import com.lambda.security.LoginCode;
+import com.lambda.security.LoginErrorCode;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.VerifyCodeValidationException;
 import com.lambda.security.service.UserDetailService;
@@ -100,7 +100,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
 
             boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
             if (!containsLoginType) {
-                throw new AuthenticationException(LoginCode.CODE_20000, "登录类型错误！");
+                throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
             }
 
             LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);

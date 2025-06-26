@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.StpLogicUtils;
-import com.lambda.security.LoginCode;
+import com.lambda.security.LoginErrorCode;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.provider.ThirdPartLoginProvider;
@@ -49,7 +49,7 @@ public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticat
 
         boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
         if (!containsLoginType) {
-            throw new AuthenticationException(LoginCode.CODE_20000, "登录类型错误！");
+            throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
         }
 
         ThirdPartLoginProvider loginProvider = getThirdPartLoginProvider(thirdId)
