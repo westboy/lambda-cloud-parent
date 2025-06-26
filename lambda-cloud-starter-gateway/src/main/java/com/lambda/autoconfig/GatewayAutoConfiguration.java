@@ -7,8 +7,8 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import com.lambda.cloud.core.exception.model.ErrorModel;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.propertis.CorsProperties;
+import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.gateway.filter.*;
 import com.lambda.cloud.gateway.predicate.BackendRoutePredicateFactory;
 import com.lambda.cloud.gateway.properties.GatewayFirewallProperties;
@@ -128,7 +128,7 @@ public class GatewayAutoConfiguration {
                 .addExclude("/favicon.ico", "/actuator/**")
                 .setAuth(e1 -> SaRouter.match("/**")
                         .notMatch(gatewayFirewallProperties.getWhites())
-                        .check(e2 -> LoginType.getActiveStpLogic().checkLogin()))
+                        .check(e2 -> StpLogicUtils.getActiveStpLogic().checkLogin()))
                 .setError(e -> {
                     ErrorModel errorModel = new ErrorModel();
                     errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());

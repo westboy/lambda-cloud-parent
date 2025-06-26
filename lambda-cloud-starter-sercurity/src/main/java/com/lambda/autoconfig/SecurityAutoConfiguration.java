@@ -3,14 +3,19 @@ package com.lambda.autoconfig;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
 import cn.binarywang.wx.miniapp.config.impl.WxMaRedissonConfigImpl;
+import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.same.SaSameUtil;
+import cn.dev33.satoken.stp.StpLogic;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.core.utils.Assert;
+import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.redis.helper.RedisHelper;
 import com.lambda.cloud.sms.SmsMessageSender;
@@ -51,10 +56,12 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -104,6 +111,27 @@ public class SecurityAutoConfiguration {
         @Autowired
         public void setSecurityProperties(SecurityProperties securityProperties) {
             this.securityProperties = securityProperties;
+        }
+
+        @Bean
+        public ApplicationRunner initSaToken() {
+            return args -> {
+                List<String> initializeLoginTypes = new ArrayList<>();
+                List<SecurityProperties.ExtendSaTokenConfig.LoginType> loginTypes =
+                        securityProperties.getSaToken().getLoginTypes();
+                if (CollUtil.isNotEmpty(loginTypes)) {
+                    loginTypes.stream()
+                            .map(SecurityProperties.ExtendSaTokenConfig.LoginType::getCode)
+                            .forEach(type -> {
+                                StpLogic newStpLogic = new StpLogic(type);
+                                SaManager.putStpLogic(newStpLogic);
+                                initializeLoginTypes.add(type);
+                            });
+                }
+                initializeLoginTypes.add(StpUtil.getLoginType());
+                StpLogicUtils.initializeLoginTypes(initializeLoginTypes);
+                log.trace("init sa-token login types: {}", initializeLoginTypes);
+            };
         }
 
         @Bean

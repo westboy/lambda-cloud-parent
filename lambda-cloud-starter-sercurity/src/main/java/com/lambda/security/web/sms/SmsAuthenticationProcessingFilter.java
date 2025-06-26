@@ -1,9 +1,12 @@
 package com.lambda.security.web.sms;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.StpLogicUtils;
+import com.lambda.security.LoginCode;
 import com.lambda.security.exception.AuthenticationException;
+import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import jakarta.servlet.ServletException;
@@ -51,17 +54,17 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
         if (StrUtil.isBlank(mobile)) {
             Map<String, Object> smsLogin = getUserLoginForRequestBody(request);
             if (MapUtils.isEmpty(smsLogin)) {
-                throw new AuthenticationException("Request body is empty");
+                throw new BadCredentialsException("Request body is empty");
             }
             mobile = (String) smsLogin.getOrDefault(this.mobileParameter, "");
 
             if (StrUtil.isBlank(mobile)) {
-                throw new AuthenticationException("Mobile is empty");
+                throw new BadCredentialsException("Mobile is empty");
             }
             request.setAttribute(mobileParameter, mobile);
 
             if (StrUtil.isBlank(loginType)) {
-                loginType = (String) smsLogin.getOrDefault(this.loginTypeParameter, LoginType.ADMIN.getCode());
+                loginType = (String) smsLogin.getOrDefault(this.loginTypeParameter, StpUtil.getLoginType());
                 request.setAttribute(loginTypeParameter, loginType);
             }
 
@@ -79,6 +82,11 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
             request.setAttribute(loginTypeParameter, loginType);
         }
 
+        boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
+        if (!containsLoginType) {
+            throw new AuthenticationException(LoginCode.CODE_20000, "登录类型错误！");
+        }
+
         if (StrUtil.isNotBlank(device)) {
             request.setAttribute(deviceParameter, device);
         }
@@ -86,7 +94,7 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
         LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
 
         if (loginUser == null) {
-            throw new AuthenticationException("User not found");
+            throw new BadCredentialsException("User not found");
         }
 
         return loginUser;

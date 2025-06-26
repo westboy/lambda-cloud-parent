@@ -1,11 +1,12 @@
 package com.lambda.security.web.form;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.security.exception.AuthenticationException;
-import com.lambda.security.exception.VerifyCodeValidationException;
+import com.lambda.cloud.core.utils.StpLogicUtils;
+import com.lambda.security.LoginCode;
+import com.lambda.security.exception.*;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -79,7 +80,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
                 username = (String) user.getOrDefault(this.getUsernameParameter(), "");
                 password = (String) user.getOrDefault(this.getPasswordParameter(), "");
                 if (StringUtils.isBlank(loginType)) {
-                    loginType = (String) user.getOrDefault(this.getLoginTypeParameter(), "admin");
+                    loginType = (String) user.getOrDefault(this.getLoginTypeParameter(), StpUtil.getLoginType());
                 }
                 if (StringUtils.isBlank(device)) {
                     device = (String) user.getOrDefault(this.getDeviceParameter(), "default");
@@ -87,18 +88,24 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
             }
         }
         if (StringUtils.isBlank(username)) {
-            throw new AuthenticationException("账号不能为空！");
+            throw new UsernameNotFoundException("账号不能为空！");
         }
         if (StringUtils.isBlank(password)) {
-            throw new AuthenticationException("密码不能为空！");
+            throw new UsernameNotFoundException("密码不能为空！");
         }
         if (formLockingStrategy.checkFailureTimes(username)) {
-            throw new AuthenticationException("账号" + username + "已经被锁定:" + formLockingStrategy.getDuration()
+            throw new AccountLockedException("账号" + username + "已经被锁定:" + formLockingStrategy.getDuration()
                     + formLockingStrategy.getTimeUnit().name());
         }
 
         if (StrUtil.isEmpty(loginType)) {
-            loginType = LoginType.ADMIN.getCode();
+            loginType = StpUtil.getLoginType();
+        }
+
+        boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
+
+        if (!containsLoginType) {
+            throw new AuthenticationException(LoginCode.CODE_20000, "登录类型错误！");
         }
 
         request.setAttribute(loginTypeParameter, loginType);
@@ -110,7 +117,7 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
 
         LoginUser loginUser = userDetailService.loginByUsername(username, loginType);
         if (loginUser == null) {
-            throw new AuthenticationException("用户不存在！");
+            throw new UsernameNotFoundException("用户不存在！");
         }
 
         if (loginUser.getAccountExpired() == null) {

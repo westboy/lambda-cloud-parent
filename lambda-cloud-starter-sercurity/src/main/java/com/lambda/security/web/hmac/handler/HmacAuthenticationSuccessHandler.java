@@ -1,8 +1,8 @@
 package com.lambda.security.web.hmac.handler;
 
 import cn.dev33.satoken.stp.StpLogic;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +22,7 @@ public class HmacAuthenticationSuccessHandler implements AuthenticationSuccessHa
         // 多用户类型支持
         String loginType = (String) request.getAttribute("loginType");
         // 获取stpLogic
-        StpLogic stpLogic = LoginType.getStpLogic(loginType);
+        StpLogic stpLogic = StpLogicUtils.getStpLogic(loginType);
         // 用户登录
         stpLogic.login(loginUser.getUsername(), device);
         // 持久化当前用户

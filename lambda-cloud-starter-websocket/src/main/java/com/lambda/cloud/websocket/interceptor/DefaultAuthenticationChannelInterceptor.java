@@ -6,8 +6,8 @@ import static com.lambda.cloud.mvc.WebHttpUtils.BEARER;
 import cn.dev33.satoken.session.SaSession;
 import cn.hutool.core.lang.Opt;
 import com.google.common.collect.Maps;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.websocket.Constants;
 import com.lambda.security.exception.AuthenticationException;
 import java.util.List;
@@ -52,9 +52,8 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
             }
             String accessToken = getAccessToken(accessor);
             if (StringUtils.isNotBlank(accessToken)) {
-                Opt<LoginUser> loginUserOpt = Opt.ofNullable(getLoginUser(LoginType.ADMIN, accessToken))
-                        .or(() -> Opt.ofNullable(getLoginUser(LoginType.USER, accessToken)));
-                accessor.setUser(loginUserOpt.orElseThrow(() -> new AuthenticationException("用户不能存在!")));
+                accessor.setUser(Opt.ofNullable(getLoginUser(accessToken))
+                        .orElseThrow(() -> new AuthenticationException("用户不能存在!")));
             } else {
                 throw new AuthenticationException("认证失败！");
             }
@@ -62,8 +61,8 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
         return message;
     }
 
-    private LoginUser getLoginUser(LoginType loginType, String accessToken) {
-        SaSession tokenSessionByToken = loginType.getStpLogic().getTokenSessionByToken(accessToken);
+    private LoginUser getLoginUser(String accessToken) {
+        SaSession tokenSessionByToken = StpLogicUtils.getSaSession(accessToken);
         return (LoginUser) tokenSessionByToken.get("loginUser");
     }
 

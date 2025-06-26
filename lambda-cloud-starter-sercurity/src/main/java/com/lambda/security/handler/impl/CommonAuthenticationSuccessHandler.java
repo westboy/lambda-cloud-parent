@@ -1,11 +1,11 @@
 package com.lambda.security.handler.impl;
 
+import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
@@ -46,7 +46,7 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
         // 多用户类型支持
         String loginType = (String) request.getAttribute("loginType");
         // 获取stpLogic
-        StpLogic stpLogic = LoginType.getStpLogic(loginType);
+        StpLogic stpLogic = SaManager.getStpLogic(loginType);
         // 用户登录
         stpLogic.login(loginUser.getName(), device);
         // 存储用户信息

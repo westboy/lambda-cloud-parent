@@ -2,8 +2,8 @@ package com.lambda.security.inteceptor;
 
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.stp.StpLogic;
-import com.lambda.cloud.core.principal.LoginType;
 import com.lambda.cloud.core.utils.OperatorUtils;
+import com.lambda.cloud.core.utils.StpLogicUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.web.method.HandlerMethod;
@@ -34,12 +34,10 @@ public class SaTokenInterceptor implements SaParamFunction<Object> {
             return;
         }
 
-        StpLogic stpLogic = LoginType.getActiveStpLogic();
-
-        stpLogic.checkLogin();
+        StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
 
         if (secureInterceptor != null) {
-            secureInterceptor.handle(handler, stpLogic, OperatorUtils.getOperator());
+            secureInterceptor.handle(handler, stpLogic, OperatorUtils.getLoginUser(stpLogic));
         }
     }
 }

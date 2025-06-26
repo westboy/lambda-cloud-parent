@@ -1,9 +1,13 @@
 package com.lambda.security.web.third;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.StpLogicUtils;
+import com.lambda.security.LoginCode;
 import com.lambda.security.exception.AuthenticationException;
+import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.provider.ThirdPartLoginProvider;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -41,7 +45,12 @@ public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticat
 
         String thirdId = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdName(), "");
         String code = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdAuthCode(), "");
-        String loginType = (String) thirdLogin.getOrDefault("loginType", "admin");
+        String loginType = (String) thirdLogin.getOrDefault("loginType", StpUtil.getLoginType());
+
+        boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
+        if (!containsLoginType) {
+            throw new AuthenticationException(LoginCode.CODE_20000, "登录类型错误！");
+        }
 
         ThirdPartLoginProvider loginProvider = getThirdPartLoginProvider(thirdId)
                 .orElseThrow(() -> new AuthenticationException(thirdPartLogin.getThirdName() + " is empty"));
@@ -51,17 +60,17 @@ public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticat
 
     private void validateRequest(Map<String, Object> thirdLogin, SecurityProperties.ThirdPartLogin thirdPartLogin) {
         if (MapUtils.isEmpty(thirdLogin)) {
-            throw new AuthenticationException("Request body is empty");
+            throw new BadCredentialsException("Request body is empty");
         }
 
         String thirdId = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdName(), "");
         if (StrUtil.isBlank(thirdId)) {
-            throw new AuthenticationException("thirdName is empty");
+            throw new BadCredentialsException("thirdName is empty");
         }
 
         String code = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdAuthCode(), "");
         if (StrUtil.isBlank(code)) {
-            throw new AuthenticationException("thirdAuthCode is empty");
+            throw new BadCredentialsException("thirdAuthCode is empty");
         }
     }
 

@@ -12,6 +12,10 @@ public class AuthenticationException extends SaTokenException {
         super(message);
     }
 
+    public AuthenticationException(int code, String message) {
+        super(code, message);
+    }
+
     public AuthenticationException(String message, Throwable cause) {
         super(message, cause);
     }
