@@ -32,7 +32,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 @Slf4j
 @Configuration
-@MapperScan("${mybatis-plus.mapperPackage:com.lambda.cloud.**.mapper}")
+@MapperScan("${mybatis-plus.mapper-package:${mybatis-plus.mapperPackage:com.lambda.cloud.**.mapper}}")
 @Import({MybatisPlusAutoConfiguration.class})
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
