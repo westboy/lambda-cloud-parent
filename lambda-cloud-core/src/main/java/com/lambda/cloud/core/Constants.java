@@ -11,6 +11,11 @@ import lombok.experimental.UtilityClass;
 public final class Constants {
 
     /**
+     * 加密方式
+     */
+    public static final String HMAC = "hmac";
+
+    /**
      * Gson
      */
     public static final Gson GSON = new Gson();

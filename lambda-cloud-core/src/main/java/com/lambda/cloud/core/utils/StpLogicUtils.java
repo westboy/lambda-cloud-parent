@@ -6,12 +6,12 @@ import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;
-import lombok.extern.slf4j.Slf4j;
-
+import com.lambda.cloud.core.Constants;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * StpLogicUtils
@@ -23,12 +23,17 @@ public class StpLogicUtils {
 
     private static final Set<String> LOGIN_TYPE_SET = new HashSet<>();
 
+    static {
+        LOGIN_TYPE_SET.add(Constants.HMAC);
+        LOGIN_TYPE_SET.add(StpUtil.getLoginType());
+    }
+
     /**
      * 初始化
      *
      * @param loginTypeList 登陆类型列表
      */
-    public static void initializeLoginTypes(List<String> loginTypeList) {
+    public static void initializeLoginTypes(Collection<String> loginTypeList) {
         StpLogicUtils.LOGIN_TYPE_SET.addAll(loginTypeList);
     }
 

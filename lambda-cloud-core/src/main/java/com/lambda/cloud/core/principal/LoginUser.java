@@ -1,5 +1,6 @@
 package com.lambda.cloud.core.principal;
 
+import java.io.Serializable;
 import java.security.Principal;
 
 /**
@@ -7,7 +8,7 @@ import java.security.Principal;
  *
  * @author jpjoo
  */
-public interface LoginUser extends Principal {
+public interface LoginUser extends Principal, Serializable {
 
     /**
      * username

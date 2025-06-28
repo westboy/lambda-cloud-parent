@@ -1,5 +1,6 @@
 package com.lambda.cloud.core.utils;
 
+import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.principal.LoginUser;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,7 @@ public class OperatorUtils {
     }
 
     public static LoginUser getLoginUser(StpLogic userStpLogic) {
-        return (LoginUser) userStpLogic.getTokenSession().get("loginUser");
+        SaSession tokenSession = userStpLogic.getTokenSession();
+        return (LoginUser) tokenSession.get("loginUser");
     }
 }
