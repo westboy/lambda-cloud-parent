@@ -76,22 +76,22 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
 
         String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
         if (StringUtils.isBlank(mobile)) {
-            throw new VerifyCodeValidationException("mobile is not blank!");
+            throw new VerifyCodeValidationException("手机号不能为空");
         }
         String code = requestParam.getStr(securityProperties.getSms().getCode());
         if (StringUtils.isBlank(code)) {
-            throw new VerifyCodeValidationException("code is not blank!");
+            throw new VerifyCodeValidationException("验证码不能为空");
         }
 
         SmsVerifyCode<String> verifyCode = smsVerifyCodeStore.get(mobile);
 
         if (verifyCode == null) {
-            throw new VerifyCodeValidationException("code is not exist!");
+            throw new VerifyCodeValidationException("验证码不存在");
         }
 
         boolean verified = smsVerifyCodeStore.verify(mobile, code);
         if (!verified) {
-            throw new VerifyCodeValidationException("code is not valid!");
+            throw new VerifyCodeValidationException("验证码不正确");
         }
         chain.doFilter(httpServletRequestWrapper, httpServletResponse);
     }
