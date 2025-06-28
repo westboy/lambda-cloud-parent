@@ -33,8 +33,7 @@ public class IotDbConsumerRegistrar implements BeanFactoryPostProcessor {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(IotDbSubscription.class));
 
-        Set<BeanDefinition> beans =
-                scanner.findCandidateComponents(properties.getBasePackage());
+        Set<BeanDefinition> beans = scanner.findCandidateComponents(properties.getBasePackage());
 
         for (var bd : beans) {
             try {
