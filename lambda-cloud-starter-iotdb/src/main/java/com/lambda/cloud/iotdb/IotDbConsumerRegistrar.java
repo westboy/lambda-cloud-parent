@@ -1,10 +1,12 @@
 package com.lambda.cloud.iotdb;
 
+import com.lambda.autoconfig.IotDbProperties;
 import com.lambda.cloud.iotdb.annotation.IotDbSubscription;
 import com.lambda.cloud.iotdb.manager.IotDbConsumerManager;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Set;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -19,9 +21,11 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 public class IotDbConsumerRegistrar implements BeanFactoryPostProcessor {
 
     private final IotDbConsumerManager manager;
+    private final IotDbProperties properties;
 
-    public IotDbConsumerRegistrar(IotDbConsumerManager manager) {
+    public IotDbConsumerRegistrar(IotDbConsumerManager manager, IotDbProperties properties) {
         this.manager = manager;
+        this.properties = properties;
     }
 
     @Override
@@ -29,8 +33,8 @@ public class IotDbConsumerRegistrar implements BeanFactoryPostProcessor {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(IotDbSubscription.class));
 
-        Set<org.springframework.beans.factory.config.BeanDefinition> beans =
-                scanner.findCandidateComponents("com.example.iotdb");
+        Set<BeanDefinition> beans =
+                scanner.findCandidateComponents(properties.getBasePackage());
 
         for (var bd : beans) {
             try {

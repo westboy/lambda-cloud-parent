@@ -29,6 +29,7 @@ public class IotDbProperties {
     private String database;
     private long ttl;
     private int thriftMaxFrameSize;
+    private String basePackage = "com.lambda.cloud.iotdb";
 
     public void setNodeUrls(String[] nodeUrls) {
         this.nodeUrls = Arrays.copyOf(nodeUrls, nodeUrls.length);
