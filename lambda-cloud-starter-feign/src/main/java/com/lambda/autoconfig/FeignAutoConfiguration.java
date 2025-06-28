@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Primary;
  */
 @Slf4j
 @Configuration(proxyBeanMethods = false)
-@EnableFeignClients(basePackages = "${spring.cloud.openfeign.client.basePackage:com.lambda.cloud}")
+@EnableFeignClients(basePackages = "${spring.cloud.openfeign.client.base-package:${spring.cloud.openfeign.client.basePackage:com.lambda.cloud}}")
 @EnableConfigurationProperties(ExtendFeignClientProperties.class)
 public class FeignAutoConfiguration {
 
