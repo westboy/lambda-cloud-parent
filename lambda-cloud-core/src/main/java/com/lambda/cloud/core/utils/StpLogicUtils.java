@@ -6,13 +6,12 @@ import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * StpLogicUtils
@@ -40,7 +39,7 @@ public class StpLogicUtils {
      * @return boolean
      */
     public static boolean containsLoginType(String type) {
-        if (StrUtil.isEmpty(type)) {
+        if (type == null || type.isEmpty()) {
             return true;
         }
         return LOGIN_TYPE_SET.contains(type);
@@ -68,7 +67,7 @@ public class StpLogicUtils {
      * @return StpLogic
      */
     public static StpLogic getStpLogic(String loginType) {
-        if (StrUtil.isEmpty(loginType)) {
+        if (loginType == null || loginType.isEmpty()) {
             return StpUtil.getStpLogic();
         }
         return getByLoginType(loginType);
@@ -81,7 +80,7 @@ public class StpLogicUtils {
      * @return SaSession
      */
     public static SaSession getSaSession(String accessToken) {
-        if (CollUtil.isNotEmpty(LOGIN_TYPE_SET)) {
+        if (LOGIN_TYPE_SET.isEmpty()) {
             return StpUtil.getStpLogic().getTokenSessionByToken(accessToken);
         }
         for (String loginType : LOGIN_TYPE_SET) {
@@ -99,7 +98,7 @@ public class StpLogicUtils {
      * @return StpLogic
      */
     public static StpLogic getActiveStpLogic() {
-        if (CollUtil.isEmpty(LOGIN_TYPE_SET)) {
+        if (LOGIN_TYPE_SET.isEmpty()) {
             StpLogic stpLogic = getStpLogic(null);
             stpLogic.checkLogin();
             return stpLogic;
