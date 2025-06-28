@@ -63,6 +63,9 @@ public class DefaultAuthenticationChannelInterceptor implements ChannelIntercept
 
     private LoginUser getLoginUser(String accessToken) {
         SaSession tokenSessionByToken = StpLogicUtils.getSaSession(accessToken);
+        if (tokenSessionByToken == null) {
+            return null;
+        }
         return (LoginUser) tokenSessionByToken.get("loginUser");
     }
 

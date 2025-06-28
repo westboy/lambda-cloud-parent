@@ -108,5 +108,4 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
             List<WsConnectEventService> connectEventServices, List<WsSubscribeEvent> subscribeEvents) {
         return new WsEventHandler(connectEventServices, subscribeEvents);
     }
-
 }
