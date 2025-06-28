@@ -12,7 +12,8 @@ public class SwaggerProperties {
 
     String title;
 
-    Boolean enabled;
+    Boolean enabled = false;
+
     String docUri = "/swagger-ui.html";
 
     String version = "1.0.0";
