@@ -10,10 +10,10 @@ import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.same.SaSameUtil;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
+import com.lambda.cloud.core.model.KeyValue;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.mvc.WebHttpUtils;
@@ -56,8 +56,9 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,21 +117,17 @@ public class SecurityAutoConfiguration {
         @Bean
         public ApplicationRunner initSaToken() {
             return args -> {
-                List<String> initializeLoginTypes = new ArrayList<>();
-                List<SecurityProperties.ExtendSaTokenConfig.LoginType> loginTypes =
-                        securityProperties.getSaToken().getLoginTypes();
+                List<KeyValue> loginTypes = securityProperties.getSaToken().getLoginTypes();
                 if (CollUtil.isNotEmpty(loginTypes)) {
-                    loginTypes.stream()
-                            .map(SecurityProperties.ExtendSaTokenConfig.LoginType::getCode)
-                            .forEach(type -> {
-                                StpLogic newStpLogic = new StpLogic(type);
-                                SaManager.putStpLogic(newStpLogic);
-                                initializeLoginTypes.add(type);
-                            });
+                    Set<String> initializeLoginTypes =
+                            loginTypes.stream().map(KeyValue::getCode).collect(Collectors.toSet());
+                    initializeLoginTypes.forEach(type -> {
+                        StpLogic newStpLogic = new StpLogic(type);
+                        SaManager.putStpLogic(newStpLogic);
+                    });
+                    StpLogicUtils.initializeLoginTypes(initializeLoginTypes);
+                    log.trace("init sa-token login types: {}", initializeLoginTypes);
                 }
-                initializeLoginTypes.add(StpUtil.getLoginType());
-                StpLogicUtils.initializeLoginTypes(initializeLoginTypes);
-                log.trace("init sa-token login types: {}", initializeLoginTypes);
             };
         }
 
