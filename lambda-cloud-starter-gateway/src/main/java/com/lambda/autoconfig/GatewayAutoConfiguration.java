@@ -1,12 +1,16 @@
 package com.lambda.autoconfig;
 
+import static cn.dev33.satoken.SaManager.log;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
+import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.exception.model.ErrorModel;
+import com.lambda.cloud.core.model.KeyValue;
 import com.lambda.cloud.core.propertis.CorsProperties;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.gateway.filter.*;
@@ -20,7 +24,10 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -128,7 +135,8 @@ public class GatewayAutoConfiguration {
                 .addExclude("/favicon.ico", "/actuator/**")
                 .setAuth(e1 -> SaRouter.match("/**")
                         .notMatch(gatewayFirewallProperties.getWhites())
-                        .check(e2 -> StpLogicUtils.getActiveStpLogic().checkLogin()))
+                        .check(saRouterStaff ->
+                                StpLogicUtils.getActiveStpLogic().checkLogin()))
                 .setError(e -> {
                     ErrorModel errorModel = new ErrorModel();
                     errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -137,6 +145,24 @@ public class GatewayAutoConfiguration {
                     errorModel.setMessage(e.getMessage());
                     return errorModel.toJsonString();
                 });
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "lambda.web.firewall", name = "enabled")
+    public ApplicationRunner applicationRunner(GatewayFirewallProperties gatewayFirewallProperties) {
+        return args -> {
+            List<KeyValue> loginTypes = gatewayFirewallProperties.getLoginTypes();
+            if (!loginTypes.isEmpty()) {
+                Set<String> initializeLoginTypes =
+                        loginTypes.stream().map(KeyValue::getCode).collect(Collectors.toSet());
+                initializeLoginTypes.forEach(type -> {
+                    StpLogic newStpLogic = new StpLogic(type);
+                    SaManager.putStpLogic(newStpLogic);
+                });
+                StpLogicUtils.initializeLoginTypes(initializeLoginTypes);
+                log.trace("init sa-token login types: {}", initializeLoginTypes);
+            }
+        };
     }
 
     @Bean
