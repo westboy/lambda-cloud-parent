@@ -1,8 +1,8 @@
 package com.lambda.security.handler.impl;
 
 import cn.dev33.satoken.stp.StpLogic;
-import cn.dev33.satoken.stp.StpUtil;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.security.handler.LogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,7 +16,7 @@ public class CommonLogoutHandler implements LogoutHandler {
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
-        StpLogic stpLogic = StpUtil.getStpLogic();
+        StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
         stpLogic.logout();
     }
 }

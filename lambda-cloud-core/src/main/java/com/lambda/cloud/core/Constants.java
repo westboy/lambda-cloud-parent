@@ -11,9 +11,24 @@ import lombok.experimental.UtilityClass;
 public final class Constants {
 
     /**
-     * 加密方式
+     * HMAC
      */
     public static final String HMAC = "hmac";
+
+    /**
+     * 登录用户
+     */
+    public static final String LOGIN_USER = "loginUser";
+
+    /**
+     * 登录类型
+     */
+    public static final String LOGIN_TYPE = "loginType";
+
+    /**
+     * 登录类型
+     */
+    public static final String LOGIN_DEVICE = "loginDevice";
 
     /**
      * Gson

@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
@@ -42,15 +43,15 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
             throws IOException {
         // sa-token 登录
         // 登录设备
-        String device = (String) request.getAttribute("loginDevice");
+        String device = (String) request.getAttribute(Constants.LOGIN_DEVICE);
         // 多用户类型支持
-        String loginType = (String) request.getAttribute("loginType");
+        String loginType = (String) request.getAttribute(Constants.LOGIN_TYPE);
         // 获取stpLogic
         StpLogic stpLogic = SaManager.getStpLogic(loginType);
         // 用户登录
         stpLogic.login(loginUser.getName(), device);
         // 存储用户信息
-        stpLogic.getTokenSession().set("loginUser", loginUser);
+        stpLogic.getTokenSession().set(Constants.LOGIN_USER, loginUser);
         // 获取token
         SaTokenInfo tokenInfo = stpLogic.getTokenInfo();
         if (WebHttpUtils.isAjaxRequest(request)) {

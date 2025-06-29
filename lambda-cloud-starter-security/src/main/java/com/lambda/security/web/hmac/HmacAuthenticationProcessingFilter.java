@@ -99,8 +99,8 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
                     log.debug("hmac user {} changed to user: {}", hmacClient.getUsername(), runUserId);
                 }
 
-                request.setAttribute("loginType", runUserType);
-                request.setAttribute("loginDevice", "default");
+                requestWrapper.setAttribute("loginType", runUserType);
+                requestWrapper.setAttribute("loginDevice", "default");
                 return hmacClient;
             } else {
                 throw new BadCredentialsException("此请求不支持 Hmac 认证失败！");

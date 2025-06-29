@@ -2,6 +2,7 @@ package com.lambda.security.web.form;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
+import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
@@ -30,8 +31,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class FormAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
     private String usernameParameter = "username";
     private String passwordParameter = "password";
-    private String loginTypeParameter = "loginType";
-    private String deviceParameter = "loginDevice";
     private FormLockingStrategy formLockingStrategy;
     private UserDetailService userDetailService;
     private PasswordEncoder passwordEncoder;
@@ -80,10 +79,10 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
                 username = (String) user.getOrDefault(this.getUsernameParameter(), "");
                 password = (String) user.getOrDefault(this.getPasswordParameter(), "");
                 if (StringUtils.isBlank(loginType)) {
-                    loginType = (String) user.getOrDefault(this.getLoginTypeParameter(), StpUtil.getLoginType());
+                    loginType = (String) user.getOrDefault(Constants.LOGIN_TYPE, StpUtil.getLoginType());
                 }
                 if (StringUtils.isBlank(device)) {
-                    device = (String) user.getOrDefault(this.getDeviceParameter(), "default");
+                    device = (String) user.getOrDefault(Constants.LOGIN_DEVICE, "default");
                 }
             }
         }
@@ -108,12 +107,12 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
             throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
         }
 
-        request.setAttribute(loginTypeParameter, loginType);
+        request.setAttribute(Constants.LOGIN_TYPE, loginType);
 
         if (StrUtil.isEmpty(device)) {
             device = "default";
         }
-        request.setAttribute(deviceParameter, device);
+        request.setAttribute(Constants.LOGIN_DEVICE, device);
 
         LoginUser loginUser = userDetailService.loginByUsername(username, loginType);
         if (loginUser == null) {
@@ -139,12 +138,12 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
     }
 
     private String obtainDevice(HttpServletRequest request) {
-        return request.getParameter(this.deviceParameter);
+        return request.getParameter(Constants.LOGIN_DEVICE);
     }
 
     @Nullable
     protected String obtainLoginType(HttpServletRequest request) {
-        return request.getParameter(this.loginTypeParameter);
+        return request.getParameter(Constants.LOGIN_TYPE);
     }
 
     @Nullable

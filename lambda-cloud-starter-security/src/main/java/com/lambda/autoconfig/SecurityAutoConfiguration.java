@@ -183,7 +183,7 @@ public class SecurityAutoConfiguration {
                             errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
                         }
                         errorModel.setTimestamp(System.currentTimeMillis());
-                        errorModel.setMessage(errorModel.getMessage());
+                        errorModel.setMessage(exception.getMessage());
                         return errorModel.toJsonString();
                     });
         }
@@ -317,11 +317,11 @@ public class SecurityAutoConfiguration {
                     new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter =
                     new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
-            processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
+            processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler(securityProperties));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
-            filterRegistrationBean.setOrder(30);
+            filterRegistrationBean.setOrder(-120);
             return filterRegistrationBean;
         }
     }
@@ -375,7 +375,7 @@ public class SecurityAutoConfiguration {
             processingFilter.setPasswordEncoder(passwordEncoder);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
-            filterRegistrationBean.setOrder(30);
+            filterRegistrationBean.setOrder(-120);
             return filterRegistrationBean;
         }
 
