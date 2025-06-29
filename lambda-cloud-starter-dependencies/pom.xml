@@ -69,7 +69,7 @@
             </dependency>
             <dependency>
                 <groupId>com.lambda.cloud</groupId>
-                <artifactId>lambda-cloud-starter-sercurity</artifactId>
+                <artifactId>lambda-cloud-starter-security</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
             <dependency>

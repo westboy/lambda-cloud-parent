@@ -76,7 +76,7 @@
         <module>lambda-cloud-starter-dependencies</module>
         <module>lambda-cloud-starter-mybatis</module>
         <module>lambda-cloud-starter-redis</module>
-        <module>lambda-cloud-starter-sercurity</module>
+        <module>lambda-cloud-starter-security</module>
         <module>lambda-cloud-starter-oss</module>
         <module>lambda-cloud-starter-logger</module>
         <module>lambda-cloud-starter-web</module>
