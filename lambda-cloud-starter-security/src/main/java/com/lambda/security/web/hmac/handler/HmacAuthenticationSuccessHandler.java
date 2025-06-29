@@ -1,8 +1,8 @@
 package com.lambda.security.web.hmac.handler;
 
+import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.session.SaTerminalInfo;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.hutool.core.collection.CollUtil;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
@@ -12,7 +12,6 @@ import com.lambda.security.web.hmac.wrapper.HmacRequestWrapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,18 +29,21 @@ public class HmacAuthenticationSuccessHandler implements AuthenticationSuccessHa
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
-        if (request instanceof HmacRequestWrapper wrapper) {
+        if (request instanceof HmacRequestWrapper hmacRequestWrapper) {
             StpLogic stpLogic = StpLogicUtils.getStpLogic(Constants.HMAC);
-            List<SaTerminalInfo> terminalInfoList = stpLogic.getTerminalListByLoginId(loginUser.getName());
-            if (CollUtil.isNotEmpty(terminalInfoList)) {
-                String tokenValue = terminalInfoList.getFirst().getTokenValue();
-                wrapper.addHeader(
+            SaSession saSession = stpLogic.getSessionByLoginId(loginUser.getName(), false);
+            if (saSession != null) {
+                SaTerminalInfo terminalInfo = saSession.getTerminalList().getFirst();
+                String tokenValue = terminalInfo.getTokenValue();
+                hmacRequestWrapper.addHeader(
                         securityProperties.getSaToken().getTokenName(),
                         securityProperties.getSaToken().getTokenPrefix() + " " + tokenValue);
             } else {
                 stpLogic.login(loginUser.getName());
                 stpLogic.getTokenSession().set(Constants.LOGIN_USER, loginUser);
             }
+        } else {
+            log.error("HmacAuthenticationSuccessHandler onAuthenticationSuccess request is not HmacRequestWrapper");
         }
     }
 }

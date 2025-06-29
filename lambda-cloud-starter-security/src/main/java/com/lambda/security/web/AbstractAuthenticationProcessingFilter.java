@@ -100,9 +100,6 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     protected void successfulAuthentication(
             HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser)
             throws IOException, ServletException {
-        if (this.logger.isDebugEnabled()) {
-            this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", loginUser));
-        }
         this.successHandler.onAuthenticationSuccess(request, response, loginUser);
         if (this.doNextFilter()) {
             chain.doFilter(request, response);
@@ -112,9 +109,6 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     protected void unsuccessfulAuthentication(
             HttpServletRequest request, HttpServletResponse response, AuthenticationException failed)
             throws IOException, ServletException {
-        this.logger.trace("Failed to process authentication request", failed);
-        this.logger.trace("Cleared SecurityContextHolder");
-        this.logger.trace("Handling authentication failure");
         this.failureHandler.onAuthenticationFailure(request, response, failed);
     }
 
