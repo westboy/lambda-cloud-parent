@@ -375,7 +375,7 @@ public class SecurityAutoConfiguration {
             processingFilter.setPasswordEncoder(passwordEncoder);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
-            filterRegistrationBean.setOrder(-120);
+            filterRegistrationBean.setOrder(30);
             return filterRegistrationBean;
         }
 
