@@ -26,7 +26,7 @@ public class HmacAuthenticationSuccessHandler implements AuthenticationSuccessHa
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
         StpLogic stpLogic = StpLogicUtils.getStpLogic(Constants.HMAC);
         List<SaTerminalInfo> terminalInfoList = stpLogic.getTerminalListByLoginId(loginUser.getName());
-        if (CollUtil.isEmpty(terminalInfoList)) {
+        if (CollUtil.isNotEmpty(terminalInfoList)) {
             String tokenValue = terminalInfoList.getFirst().getTokenValue();
             String tokenName = stpLogic.getTokenName();
             request.setAttribute(tokenName, tokenValue);
