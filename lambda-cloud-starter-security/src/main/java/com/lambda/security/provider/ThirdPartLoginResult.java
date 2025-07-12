@@ -1,9 +1,9 @@
 package com.lambda.security.provider;
 
+import static com.lambda.cloud.core.Constants.GSON;
+
 import com.lambda.cloud.core.utils.ClassTypeUtils;
 import lombok.Data;
-
-import static com.lambda.cloud.core.Constants.GSON;
 
 @Data
 public class ThirdPartLoginResult {
