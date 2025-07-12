@@ -1,9 +1,9 @@
 package com.lambda.security.provider.impl;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
-import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.provider.AbstractThirdPartLoginProvider;
+import com.lambda.security.provider.model.ThirdLoginResult;
 import com.lambda.security.service.ThirdPartyLoginService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -14,20 +14,22 @@ import me.chanjar.weixin.common.error.WxErrorException;
  * @author Jin
  */
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
-public class WxMaLoginProvider extends AbstractThirdPartLoginProvider {
+public class WxMaLoginProvider<T extends WxMaLoginHandler> extends AbstractThirdPartLoginProvider {
 
-    private final WxMaService wxMaService;
+    protected final WxMaService wxMaService;
+    protected final T WxMaLoginHandler;
 
-    public WxMaLoginProvider(ThirdPartyLoginService thirdPartService, WxMaService wxMaService) {
+    public WxMaLoginProvider(ThirdPartyLoginService thirdPartService, WxMaService wxMaService, T wxMaLoginHandler) {
         super(thirdPartService);
         this.wxMaService = wxMaService;
+        this.WxMaLoginHandler = wxMaLoginHandler;
     }
 
     @Override
-    public String getThirdUserId(String code) {
+    public ThirdLoginResult getThirdLoginParam(String loginParam) {
         try {
-            WxMaJscode2SessionResult wxMaJscode2SessionResult = wxMaService.jsCode2SessionInfo(code);
-            return wxMaJscode2SessionResult.getOpenid();
+            Object result = WxMaLoginHandler.handle(loginParam, wxMaService);
+            return new ThirdLoginResult(getThirdType(), result);
         } catch (WxErrorException e) {
             throw new AuthenticationException(e.getMessage());
         }
@@ -35,6 +37,11 @@ public class WxMaLoginProvider extends AbstractThirdPartLoginProvider {
 
     @Override
     public boolean support(String thirdId) {
-        return "wxMa".equals(thirdId);
+        return getThirdType().equals(thirdId);
+    }
+
+    @Override
+    public String getThirdType() {
+        return "wxMa";
     }
 }

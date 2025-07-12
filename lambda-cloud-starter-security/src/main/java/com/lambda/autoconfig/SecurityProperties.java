@@ -322,7 +322,7 @@ public class SecurityProperties {
 
         String thirdName = "thirdType";
 
-        String thirdAuthCode = "thirdAuthParam";
+        String thirdAuthParam = "thirdAuthParam";
 
         String buildAuthorizationUrl = "buildAuthorizationUrl";
 

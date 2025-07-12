@@ -44,7 +44,7 @@ public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticat
         this.validateRequest(thirdLogin, thirdPartLogin);
 
         String thirdId = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdName(), "");
-        String code = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdAuthCode(), "");
+        String authParam = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdAuthParam(), "");
         String loginType = (String) thirdLogin.getOrDefault("loginType", StpUtil.getLoginType());
 
         boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
@@ -55,7 +55,7 @@ public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticat
         ThirdPartLoginProvider loginProvider = getThirdPartLoginProvider(thirdId)
                 .orElseThrow(() -> new AuthenticationException(thirdPartLogin.getThirdName() + " is empty"));
 
-        return loginProvider.authenticate(code, loginType);
+        return loginProvider.authenticate(authParam, loginType);
     }
 
     private void validateRequest(Map<String, Object> thirdLogin, SecurityProperties.ThirdPartLogin thirdPartLogin) {
@@ -68,7 +68,7 @@ public class ThirdPartAuthenticationProcessingFilter extends AbstractAuthenticat
             throw new BadCredentialsException("thirdName is empty");
         }
 
-        String code = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdAuthCode(), "");
+        String code = (String) thirdLogin.getOrDefault(thirdPartLogin.getThirdAuthParam(), "");
         if (StrUtil.isBlank(code)) {
             throw new BadCredentialsException("thirdAuthCode is empty");
         }

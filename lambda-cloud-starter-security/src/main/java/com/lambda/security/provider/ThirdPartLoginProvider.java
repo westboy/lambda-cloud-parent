@@ -11,5 +11,7 @@ public interface ThirdPartLoginProvider {
 
     LoginUser authenticate(String token, String loginType);
 
-    boolean support(String thirdId);
+    boolean support(String thirdType);
+
+    String getThirdType();
 }
