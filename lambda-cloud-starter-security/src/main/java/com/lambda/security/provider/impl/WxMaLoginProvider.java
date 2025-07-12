@@ -3,6 +3,7 @@ package com.lambda.security.provider.impl;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.provider.AbstractThirdPartLoginProvider;
+import com.lambda.security.provider.WxMaLoginHandler;
 import com.lambda.security.provider.model.ThirdLoginResult;
 import com.lambda.security.service.ThirdPartyLoginService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
