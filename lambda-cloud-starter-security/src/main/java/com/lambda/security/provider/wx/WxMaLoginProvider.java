@@ -1,10 +1,9 @@
-package com.lambda.security.provider.impl;
+package com.lambda.security.provider.wx;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.provider.AbstractThirdPartLoginProvider;
-import com.lambda.security.provider.WxMaLoginHandler;
-import com.lambda.security.provider.model.ThirdLoginResult;
+import com.lambda.security.provider.ThirdPartLoginResult;
 import com.lambda.security.service.ThirdPartyLoginService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -27,10 +26,10 @@ public class WxMaLoginProvider<T extends WxMaLoginHandler> extends AbstractThird
     }
 
     @Override
-    public ThirdLoginResult getThirdLoginParam(String loginParam) {
+    public ThirdPartLoginResult getThirdLoginParam(String loginParam) {
         try {
             Object result = WxMaLoginHandler.handle(loginParam, wxMaService);
-            return new ThirdLoginResult(getThirdType(), result);
+            return new ThirdPartLoginResult(getThirdType(), result);
         } catch (WxErrorException e) {
             throw new AuthenticationException(e.getMessage());
         }

@@ -1,4 +1,4 @@
-package com.lambda.security.provider;
+package com.lambda.security.provider.wx;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
