@@ -85,7 +85,6 @@ public class TencentSmsMessageSender implements SmsMessageSender, InitializingBe
                 response.setSuccess(true);
                 return response;
             }
-            log.error("短信发送失败,第三方提示：{}", result.errMsg);
             return response;
         } catch (HTTPException | IOException e) {
             log.error("短信发送失败：{}", e.getMessage());
