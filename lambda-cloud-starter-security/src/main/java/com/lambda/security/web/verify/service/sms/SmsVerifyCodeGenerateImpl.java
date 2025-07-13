@@ -93,7 +93,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
 
             if (mobile == null) {
-                throw new VerifyCodeValidationException("the mobile is not exist");
+                throw new VerifyCodeValidationException("手机号不存在！");
             }
 
             String loginType = requestParam.getStr(loginTypeParameter);
@@ -118,7 +118,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             }
 
             if (!smsVerifyCodeStore.verifyReSend(mobile)) {
-                throw new VerifyCodeValidationException("the sms code request repeatedly");
+                throw new VerifyCodeValidationException("短信验证码重复获取!");
             }
 
             if (smsLogin.isEnableVerify()) {
@@ -139,6 +139,9 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             String code = smsVerifyCodeStore.generate(mobile);
             SmsSendResult smsSendResult = smsMessageSender.sendVerifyCode(mobile, code, smsLogin.getValidMinutes());
             if (smsSendResult == null || !smsSendResult.isSuccess()) {
+                if (smsSendResult != null) {
+                    log.error("短信发送失败, {}",smsSendResult.getMessage());
+                }
                 throw new VerifyCodeValidationException("短信发送失败");
             }
             SmsVerifyCodeResponse smsVerifyCodeResponse = new SmsVerifyCodeResponse();
