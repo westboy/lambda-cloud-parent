@@ -139,7 +139,7 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
             String code = smsVerifyCodeStore.generate(mobile);
             SmsSendResult smsSendResult = smsMessageSender.sendVerifyCode(mobile, code, smsLogin.getValidMinutes());
             if (smsSendResult == null || !smsSendResult.isSuccess()) {
-                throw new VerifyCodeValidationException("the sms code send failed");
+                throw new VerifyCodeValidationException("短信发送失败");
             }
             SmsVerifyCodeResponse smsVerifyCodeResponse = new SmsVerifyCodeResponse();
             smsVerifyCodeResponse.setId(smsSendResult.getId());
