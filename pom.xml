@@ -95,6 +95,7 @@
         <module>lambda-cloud-starter-rocketmq</module>
         <module>lambda-cloud-starter-sse</module>
         <module>lambda-cloud-starter-iotdb</module>
+        <module>lambda-cloud-starter-netty</module>
     </modules>
 
     <dependencyManagement>
