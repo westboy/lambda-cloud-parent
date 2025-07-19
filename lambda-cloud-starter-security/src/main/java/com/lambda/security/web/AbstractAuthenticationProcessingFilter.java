@@ -69,10 +69,6 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
         return request;
     }
 
-    protected boolean doNextFilter() {
-        return false;
-    }
-
     protected boolean nonRequiresAuthentication(HttpServletRequest request) {
         if (ANT_PATH_MATCHER.match(this.filterProcessesUrl, request.getRequestURI())) {
             return false;
@@ -101,9 +97,6 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
             HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser)
             throws IOException, ServletException {
         this.successHandler.onAuthenticationSuccess(request, response, loginUser);
-        if (this.doNextFilter()) {
-            chain.doFilter(request, response);
-        }
     }
 
     protected void unsuccessfulAuthentication(

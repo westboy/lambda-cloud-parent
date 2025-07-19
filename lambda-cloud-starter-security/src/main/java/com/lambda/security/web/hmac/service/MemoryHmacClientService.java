@@ -16,7 +16,7 @@ public class MemoryHmacClientService implements HmacClientService {
 
     public MemoryHmacClientService(UserDetailService userDetailService, List<SecurityProperties.Hmac.Client> clients) {
         for (SecurityProperties.Hmac.Client client : clients) {
-            users.put(client.getAppid(), new HmacClient(client.getAppid(), client.getSecret()));
+            users.put(client.getAppid(), new HmacClient("hmac_" + client.getAppid(), client.getSecret()));
         }
         this.userDetailService = userDetailService;
     }

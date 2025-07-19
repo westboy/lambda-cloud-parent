@@ -1,5 +1,9 @@
 package com.lambda.security.web.hmac;
 
+import cn.dev33.satoken.context.SaTokenContextForThreadLocalStaff;
+import cn.dev33.satoken.servlet.model.SaRequestForServlet;
+import cn.dev33.satoken.servlet.model.SaResponseForServlet;
+import cn.dev33.satoken.servlet.model.SaStorageForServlet;
 import cn.dev33.satoken.stp.StpUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
@@ -16,6 +20,8 @@ import com.lambda.security.web.hmac.model.HmacAuthorization;
 import com.lambda.security.web.hmac.model.HmacClient;
 import com.lambda.security.web.hmac.utils.HmacUtils;
 import com.lambda.security.web.hmac.wrapper.HmacRequestWrapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -43,11 +49,6 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Override
-    protected boolean doNextFilter() {
-        return true;
-    }
-
     protected HmacClient retrieveUser(String username, String remoteAddr) {
         LoginUser loadedUser = this.hmacClientService.loadClientByAppid(username);
         if (loadedUser instanceof HmacClient client) {
@@ -61,6 +62,17 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
             return client;
         }
         throw new UsernameNotFoundException("Client " + username + "not found.");
+    }
+
+    @Override
+    protected void successfulAuthentication(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser)
+            throws IOException, ServletException {
+        SaTokenContextForThreadLocalStaff.setModelBox(
+                new SaRequestForServlet(request), new SaResponseForServlet(response), new SaStorageForServlet(request));
+        super.successfulAuthentication(request, response, chain, loginUser);
+        chain.doFilter(request, response);
+        SaTokenContextForThreadLocalStaff.clearModelBox();
     }
 
     @Override
@@ -118,5 +130,10 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
     @Override
     protected boolean nonRequiresAuthentication(HttpServletRequest request) {
         return WebHttpUtils.isNotHmacRequest(request);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
     }
 }

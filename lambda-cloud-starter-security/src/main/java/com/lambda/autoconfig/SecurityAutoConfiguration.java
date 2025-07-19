@@ -318,11 +318,11 @@ public class SecurityAutoConfiguration {
                     new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter =
                     new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
-            processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler(securityProperties));
+            processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
-            filterRegistrationBean.setOrder(-120);
+            filterRegistrationBean.setOrder(30);
             return filterRegistrationBean;
         }
     }
