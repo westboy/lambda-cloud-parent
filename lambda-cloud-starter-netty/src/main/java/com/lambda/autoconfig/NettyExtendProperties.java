@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -9,6 +10,7 @@ import lombok.Setter;
 import org.springframework.boot.autoconfigure.netty.NettyProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+@SuppressFBWarnings("EI_EXPOSE_REP")
 @Setter
 @Getter
 @ConfigurationProperties(prefix = "spring.netty")

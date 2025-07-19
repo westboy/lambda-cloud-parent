@@ -1,6 +1,7 @@
 package com.lambda.cloud.netty;
 
 import com.lambda.autoconfig.NettyExtendProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import java.net.InetSocketAddress;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * NettyServer
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Slf4j
 @Configuration(proxyBeanMethods = false)
 public class NettyServer implements SmartLifecycle {
