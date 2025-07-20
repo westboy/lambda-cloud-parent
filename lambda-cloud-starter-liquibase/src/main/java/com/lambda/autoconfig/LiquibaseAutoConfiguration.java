@@ -33,7 +33,7 @@ public class LiquibaseAutoConfiguration {
     }
 
     @Primary
-    @Bean("defaultLiquibase")
+    @Bean("lambdaLiquibase")
     public SpringLiquibase liquibase(LiquibaseProperties properties) {
         String url = properties.getUrl();
         String username = properties.getUsername();
@@ -48,7 +48,7 @@ public class LiquibaseAutoConfiguration {
     }
 
     @Bean
-    @DependsOn("defaultLiquibase")
+    @DependsOn("lambdaLiquibase")
     public LiquibaseFinishedPublisher liquibaseFinishedPublisher(
             SpringLiquibase jfLiquibase, List<LiquibasePostExecutor> executors) {
         DataSource dataSource = jfLiquibase.getDataSource();
