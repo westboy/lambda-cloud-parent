@@ -19,6 +19,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import java.net.InetSocketAddress;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -93,7 +94,8 @@ public class NettyAutoConfiguration {
     @Bean("channelInitializer")
     @ConditionalOnMissingBean
     public NettyServerChannelInitializer nettyServerChannelInitializer(
-            ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer) {
+            @Autowired(required = false)
+                    ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer) {
         return new NettyServerChannelInitializer(channelPipelineConfigurationCustomizer);
     }
 

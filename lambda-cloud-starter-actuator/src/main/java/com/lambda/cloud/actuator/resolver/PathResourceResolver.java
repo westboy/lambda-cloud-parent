@@ -24,12 +24,16 @@ import org.springframework.util.ResourceUtils;
 @Slf4j
 public class PathResourceResolver extends PathMatchingResourcePatternResolver implements InfoContributor {
 
-    private static final String LOCATION_PATTERN = "classpath*:com/lambda/cloud/**/*.class";
+    private final String locationPattern;
+
+    public PathResourceResolver(String locationPattern) {
+        this.locationPattern = locationPattern;
+    }
 
     public Map<String, Object> initialization() {
         Map<String, Object> outcomes = new HashMap<>(16);
         try {
-            Resource[] resources = getResources(LOCATION_PATTERN);
+            Resource[] resources = getResources(locationPattern);
             Map<String, Object> back = new HashMap<>(16);
             Map<String, Object> packages = new HashMap<>(16);
             for (Resource resource : resources) {

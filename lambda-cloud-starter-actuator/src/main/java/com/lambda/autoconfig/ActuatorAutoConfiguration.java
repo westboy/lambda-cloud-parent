@@ -10,6 +10,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCusto
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.PrometheusMetricsExportAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @AutoConfigureAfter({MetricsAutoConfiguration.class, PrometheusMetricsExportAutoConfiguration.class})
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties({ActuatorProperties.class})
 public class ActuatorAutoConfiguration {
 
     @Bean
@@ -42,7 +44,8 @@ public class ActuatorAutoConfiguration {
     }
 
     @Bean
-    public PathResourceResolver pathResourceResolver() {
-        return new PathResourceResolver();
+    public PathResourceResolver pathResourceResolver(ActuatorProperties actuatorProperties) {
+        ActuatorProperties.Resource resource = actuatorProperties.getResource();
+        return new PathResourceResolver(resource.getLocationPattern());
     }
 }
