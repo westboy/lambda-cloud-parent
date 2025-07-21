@@ -70,9 +70,12 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
             throws IOException, ServletException {
         SaTokenContextForThreadLocalStaff.setModelBox(
                 new SaRequestForServlet(request), new SaResponseForServlet(response), new SaStorageForServlet(request));
-        super.successfulAuthentication(request, response, chain, loginUser);
-        chain.doFilter(request, response);
-        SaTokenContextForThreadLocalStaff.clearModelBox();
+        try {
+            super.successfulAuthentication(request, response, chain, loginUser);
+            chain.doFilter(request, response);
+        } finally {
+            SaTokenContextForThreadLocalStaff.clearModelBox();
+        }
     }
 
     @Override

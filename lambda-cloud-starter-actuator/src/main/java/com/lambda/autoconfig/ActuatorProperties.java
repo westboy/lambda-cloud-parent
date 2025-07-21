@@ -10,8 +10,7 @@ public class ActuatorProperties {
     private Resource resource = new Resource();
 
     @Data
-    public static class Resource{
-        private String  locationPattern = "classpath*:com/lambda/cloud/**/*.class";
+    public static class Resource {
+        private String locationPattern = "classpath*:com/lambda/cloud/**/*.class";
     }
-
 }
