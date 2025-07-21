@@ -29,12 +29,12 @@
         <okhttp.version>4.12.0</okhttp.version>
         <aspectj.version>1.9.22.1</aspectj.version>
         <lombok.version>1.18.34</lombok.version>
-        <swagger.version>2.2.22</swagger.version>
+        <swagger.version>2.2.25</swagger.version>
+        <springdoc.version>2.8.9</springdoc.version>
         <calcite.version>1.35.0</calcite.version>
         <guava.version>33.2.1-jre</guava.version>
         <redisson.version>3.34.1</redisson.version>
         <fastjson.version>1.2.83</fastjson.version>
-        <springdoc.version>2.8.9</springdoc.version>
         <liquibase.version>4.29.1</liquibase.version>
         <jackson-bom.version>2.17.2</jackson-bom.version>
         <mapstruct.version>1.6.0.RC1</mapstruct.version>
