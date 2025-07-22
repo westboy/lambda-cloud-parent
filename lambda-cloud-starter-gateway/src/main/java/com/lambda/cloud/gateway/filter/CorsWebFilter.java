@@ -18,21 +18,15 @@ import reactor.core.publisher.Mono;
  *
  * @author jpjoo
  */
-public class CorsWebFilter implements WebFilter {
-
-    private final CorsConfigurationSource configSource;
-
-    private final CorsProcessor processor;
+public record CorsWebFilter(CorsConfigurationSource configSource, CorsProcessor processor) implements WebFilter {
 
     public CorsWebFilter(CorsConfigurationSource configSource) {
         this(configSource, new DefaultCorsProcessor());
     }
 
-    public CorsWebFilter(CorsConfigurationSource configSource, CorsProcessor processor) {
+    public CorsWebFilter {
         Assert.notNull(configSource, "CorsConfigurationSource must not be null");
         Assert.notNull(processor, "CorsProcessor must not be null");
-        this.configSource = configSource;
-        this.processor = processor;
     }
 
     @NonNull

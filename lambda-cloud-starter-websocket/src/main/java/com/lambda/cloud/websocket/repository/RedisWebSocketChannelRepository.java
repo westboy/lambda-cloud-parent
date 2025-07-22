@@ -22,7 +22,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "RedisWebSocketChannelRepository")
 @Slf4j
-public class RedisWebSocketChannelRepository implements WebSocketChannelRepository {
+public record RedisWebSocketChannelRepository(StringRedisTemplate template) implements WebSocketChannelRepository {
 
     private static final String KEY = "lambda:websocket:online_user:";
     private static final String ONLINE_KEY = "lambda:websocket:online_users";
@@ -32,11 +32,6 @@ public class RedisWebSocketChannelRepository implements WebSocketChannelReposito
             "if redis.call('DEL', KEYS[1]) == 1 then return redis.call('SREM', KEYS[2]) else return 0 end";
     private static final String SCRIPT3 =
             "if redis.call('SREM', KEYS[1], ARGV[1]) == 1 then return redis.call('SREM', KEYS[2], ARGV[2]) else return 0 end";
-    private final StringRedisTemplate template;
-
-    public RedisWebSocketChannelRepository(StringRedisTemplate template) {
-        this.template = template;
-    }
 
     @Override
     public void add(String uid, String sid) {

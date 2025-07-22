@@ -15,13 +15,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "DefaultConnectEventServiceImpl")
 @Slf4j
-public class DefaultConnectEventServiceImpl implements WsConnectEventService {
-
-    private final WebSocketChannelRepository repository;
-
-    public DefaultConnectEventServiceImpl(WebSocketChannelRepository repository) {
-        this.repository = repository;
-    }
+public record DefaultConnectEventServiceImpl(WebSocketChannelRepository repository) implements WsConnectEventService {
 
     @Override
     public void connectedEvent(WsSessionInfo<SessionConnectedEvent> info) {

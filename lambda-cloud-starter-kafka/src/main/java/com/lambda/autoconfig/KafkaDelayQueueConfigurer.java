@@ -23,7 +23,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class KafkaDelayQueueConfigurer {
 
     public static final String KAFKA_NO_BOUND_TASK_EXECUTOR = "kafkaNoBoundTaskExecutor";
-    public static final String KAFKA_MAXFIXED_TASK_EXECUTOR = "kafkaMaxFixedTaskExecutor";
+    public static final String KAFKA_MAX_FIXED_TASK_EXECUTOR = "kafkaMaxFixedTaskExecutor";
 
     public static final int SIZE = 15;
 
@@ -46,7 +46,7 @@ public class KafkaDelayQueueConfigurer {
         return executor;
     }
 
-    @Bean(name = KAFKA_MAXFIXED_TASK_EXECUTOR)
+    @Bean(name = KAFKA_MAX_FIXED_TASK_EXECUTOR)
     public Executor kafkaMmaxfixedTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         // 核心线程池大小

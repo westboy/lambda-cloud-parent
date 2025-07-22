@@ -26,8 +26,6 @@ import org.owasp.esapi.errors.IntrusionException;
 @Slf4j
 public class XSSRequestWrapper extends HttpServletRequestWrapper {
 
-    public static final String[] STRINGS = new String[0];
-
     public XSSRequestWrapper(HttpServletRequest request) {
         super(request);
     }

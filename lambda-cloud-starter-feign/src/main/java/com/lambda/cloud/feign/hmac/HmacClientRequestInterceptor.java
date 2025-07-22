@@ -25,15 +25,7 @@ import org.springframework.http.HttpMethod;
  * @author westboy
  */
 @Slf4j
-public class HmacClientRequestInterceptor implements RequestInterceptor {
-
-    private final String appid;
-    private final String secret;
-
-    public HmacClientRequestInterceptor(String appid, String secret) {
-        this.appid = appid;
-        this.secret = secret;
-    }
+public record HmacClientRequestInterceptor(String appid, String secret) implements RequestInterceptor {
 
     @SneakyThrows
     @Override
@@ -64,7 +56,7 @@ public class HmacClientRequestInterceptor implements RequestInterceptor {
             if (CollectionUtils.isNotEmpty(values)) {
                 converted.put(entry.getKey(), values.toArray(new String[0]));
             } else {
-                converted.put(entry.getKey(), new String[] {EMPTY});
+                converted.put(entry.getKey(), new String[]{EMPTY});
             }
         }
         return converted;

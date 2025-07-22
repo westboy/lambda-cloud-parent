@@ -15,13 +15,7 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
  * @author jin
  */
 @Slf4j
-public class SaTokenInterceptor implements SaParamFunction<Object> {
-
-    private final SecureInterceptor secureInterceptor;
-
-    public SaTokenInterceptor(SecureInterceptor secureInterceptor) {
-        this.secureInterceptor = secureInterceptor;
-    }
+public record SaTokenInterceptor(SecureInterceptor secureInterceptor) implements SaParamFunction<Object> {
 
     @Override
     public void run(Object handler) {

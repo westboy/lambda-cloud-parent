@@ -17,15 +17,9 @@ import reactor.core.publisher.Mono;
  * @author jpjoo
  */
 @Slf4j
-public class WebSocketExpandFilter implements GlobalFilter, Ordered {
+public record WebSocketExpandFilter(String path) implements GlobalFilter, Ordered {
     private static final String WS = "ws";
     private static final String WSS = "wss";
-
-    private final String path;
-
-    public WebSocketExpandFilter(String path) {
-        this.path = path;
-    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {

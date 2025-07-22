@@ -11,6 +11,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.lang.NonNull;
 
 /**
  * IotDbConsumerRegistrar
@@ -18,18 +19,11 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
  * @author Jin
  */
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
-public class IotDbConsumerRegistrar implements BeanFactoryPostProcessor {
-
-    private final IotDbConsumerManager manager;
-    private final IotDbProperties properties;
-
-    public IotDbConsumerRegistrar(IotDbConsumerManager manager, IotDbProperties properties) {
-        this.manager = manager;
-        this.properties = properties;
-    }
+public record IotDbConsumerRegistrar(IotDbConsumerManager manager,
+                                     IotDbProperties properties) implements BeanFactoryPostProcessor {
 
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory beanFactory) throws BeansException {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(IotDbSubscription.class));
 

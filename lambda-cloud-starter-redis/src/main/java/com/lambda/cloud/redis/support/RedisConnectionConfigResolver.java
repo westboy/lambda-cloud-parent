@@ -19,22 +19,14 @@ import org.springframework.util.StringUtils;
  * @author westboy
  */
 @Slf4j
-public class RedisConnectionConfigResolver {
-    private final RedisProperties properties;
-    private final ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider;
-    private final ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider;
-
+public record RedisConnectionConfigResolver(RedisProperties properties,
+                                            ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
+                                            ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider) {
     @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
-    public RedisConnectionConfigResolver(
-            RedisProperties properties,
-            ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
-            ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider) {
-        this.properties = properties;
-        this.sentinelConfigurationProvider = sentinelConfigurationProvider;
-        this.clusterConfigurationProvider = clusterConfigurationProvider;
+    public RedisConnectionConfigResolver {
     }
 
-    public final RedisStandaloneConfiguration getStandaloneConfig() {
+    public RedisStandaloneConfiguration getStandaloneConfig() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         if (StringUtils.hasText(this.properties.getUrl())) {
             ConnectionInfo connectionInfo = parseUrl(this.properties.getUrl());
@@ -54,7 +46,7 @@ public class RedisConnectionConfigResolver {
         return config;
     }
 
-    public final RedisSentinelConfiguration getSentinelConfig() {
+    public RedisSentinelConfiguration getSentinelConfig() {
         if (this.properties.getSentinel() == null) {
             return null;
         }
@@ -76,7 +68,7 @@ public class RedisConnectionConfigResolver {
         });
     }
 
-    public final RedisClusterConfiguration getClusterConfiguration() {
+    public RedisClusterConfiguration getClusterConfiguration() {
         if (this.properties.getCluster() == null) {
             return null;
         }
@@ -128,7 +120,7 @@ public class RedisConnectionConfigResolver {
         }
     }
 
-    protected void checkPassword(String password) {
+    private void checkPassword(String password) {
         if (!StringUtils.hasLength(password)) {
             log.warn("redis没有设置密码，有安全风险");
         }

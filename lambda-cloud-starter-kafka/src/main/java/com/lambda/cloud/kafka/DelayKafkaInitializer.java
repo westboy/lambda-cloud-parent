@@ -10,17 +10,8 @@ import org.springframework.boot.CommandLineRunner;
 /**
  * @author jin
  */
-public class DelayKafkaInitializer implements CommandLineRunner {
-
-    private final DelayMonitorService delayMonitorService;
-    private final DelayTimeoutService delayTimeoutService;
-
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
-    public DelayKafkaInitializer(DelayMonitorService delayMonitorService, DelayTimeoutService delayTimeoutService) {
-        this.delayMonitorService = delayMonitorService;
-        this.delayTimeoutService = delayTimeoutService;
-    }
-
+public record DelayKafkaInitializer(DelayMonitorService delayMonitorService,
+                                    DelayTimeoutService delayTimeoutService) implements CommandLineRunner {
     @Override
     public void run(String... args) {
         for (int i = 0; i < KafkaDelayQueueConfigurer.SIZE; i++) {

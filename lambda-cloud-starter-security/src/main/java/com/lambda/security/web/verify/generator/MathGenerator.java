@@ -7,16 +7,14 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import java.io.Serial;
 
-public class MathGenerator implements CodeGenerator {
+/**
+ * @param numberLength 参与计算数字最大长度
+ */
+public record MathGenerator(int numberLength) implements CodeGenerator {
     @Serial
     private static final long serialVersionUID = -5514819971774091076L;
 
     private static final String OPERATORS = "+-*";
-
-    /**
-     * 参与计算数字最大长度
-     */
-    private final int numberLength;
 
     /**
      * 构造
@@ -30,8 +28,7 @@ public class MathGenerator implements CodeGenerator {
      *
      * @param numberLength 参与计算最大数字位数
      */
-    public MathGenerator(int numberLength) {
-        this.numberLength = numberLength;
+    public MathGenerator {
     }
 
     @Override

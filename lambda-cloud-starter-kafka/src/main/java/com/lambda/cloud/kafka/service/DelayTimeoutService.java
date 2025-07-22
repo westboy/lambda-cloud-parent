@@ -30,7 +30,7 @@ public class DelayTimeoutService {
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
-    @Async(KafkaDelayQueueConfigurer.KAFKA_MAXFIXED_TASK_EXECUTOR)
+    @Async(KafkaDelayQueueConfigurer.KAFKA_MAX_FIXED_TASK_EXECUTOR)
     public void execute(DelayTopicPartition delayTopicPartition) {
         AtomicInteger counter = delayTopicPartition.getCounter();
         DelayQueue<DelayEntry> queue = delayTopicPartition.getQueue();

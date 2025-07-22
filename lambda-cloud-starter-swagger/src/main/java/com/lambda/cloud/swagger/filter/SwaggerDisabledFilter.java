@@ -10,13 +10,7 @@ import java.io.IOException;
  *
  * @author w
  */
-public class SwaggerDisabledFilter implements Filter {
-
-    private final String docUri;
-
-    public SwaggerDisabledFilter(String docUri) {
-        this.docUri = docUri;
-    }
+public record SwaggerDisabledFilter(String docUri) implements Filter {
 
     @Override
     public void doFilter(ServletRequest arg0, ServletResponse arg1, FilterChain chain)
