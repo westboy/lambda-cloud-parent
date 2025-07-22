@@ -28,8 +28,7 @@ public record MathGenerator(int numberLength) implements CodeGenerator {
      *
      * @param numberLength 参与计算最大数字位数
      */
-    public MathGenerator {
-    }
+    public MathGenerator {}
 
     @Override
     public String generate() {

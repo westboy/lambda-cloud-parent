@@ -19,8 +19,8 @@ import org.springframework.lang.NonNull;
  * @author Jin
  */
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
-public record IotDbConsumerRegistrar(IotDbConsumerManager manager,
-                                     IotDbProperties properties) implements BeanFactoryPostProcessor {
+public record IotDbConsumerRegistrar(IotDbConsumerManager manager, IotDbProperties properties)
+        implements BeanFactoryPostProcessor {
 
     @Override
     public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory beanFactory) throws BeansException {

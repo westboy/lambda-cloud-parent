@@ -40,7 +40,7 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 @AutoConfigureBefore(org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration.class)
 @AutoConfigureAfter({JacksonAutoConfiguration.class})
 @Import(KafkaDelayQueueConfigurer.class)
-public class KafkaAutoConfiguration {
+public class KafkaDelayAutoConfiguration {
 
     public static final String STRING_TEMPLATE = "kafkaTemplate";
     public static final String JSON_TEMPLATE = "jsonKafkaTemplate";
@@ -49,7 +49,7 @@ public class KafkaAutoConfiguration {
     public static final String JSON_PRODUCER_FACTORY = "jsonProducerFactory";
     public static final String OBJECT_PRODUCER_FACTORY = "objectProducerFactory";
 
-    public KafkaAutoConfiguration() {
+    public KafkaDelayAutoConfiguration() {
         log.trace("initializing...");
     }
 

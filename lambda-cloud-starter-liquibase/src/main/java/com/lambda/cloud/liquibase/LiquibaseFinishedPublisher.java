@@ -1,11 +1,10 @@
 package com.lambda.cloud.liquibase;
 
 import jakarta.annotation.PostConstruct;
+import java.util.List;
+import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-
-import javax.sql.DataSource;
-import java.util.List;
 
 /**
  * @author w

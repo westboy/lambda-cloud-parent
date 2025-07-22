@@ -8,7 +8,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.sql.DataSource;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
@@ -19,7 +18,8 @@ import org.apache.commons.lang.StringUtils;
  */
 @Slf4j
 public record DynamicDataSourceServiceImpl(
-        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}) DynamicRoutingDataSource dynamicRoutingDataSource) implements DynamicDataSourceService {
+        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}) DynamicRoutingDataSource dynamicRoutingDataSource)
+        implements DynamicDataSourceService {
 
     @Override
     public boolean addDataSource(DataSourceProperty property) {

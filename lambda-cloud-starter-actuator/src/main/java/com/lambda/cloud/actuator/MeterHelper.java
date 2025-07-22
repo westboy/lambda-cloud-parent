@@ -19,7 +19,7 @@ import org.apache.commons.lang.ArrayUtils;
 public record MeterHelper(MeterRegistry registry) {
 
     public Counter counter(@Nonnull String name, @Nonnull String description) {
-        return counter(name, description, new String[]{});
+        return counter(name, description, new String[] {});
     }
 
     public Counter counter(@Nonnull String name, @Nonnull String description, String... tags) {

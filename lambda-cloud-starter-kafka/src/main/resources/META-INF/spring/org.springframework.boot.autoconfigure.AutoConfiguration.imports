@@ -1,1 +1,1 @@
-com.lambda.autoconfig.KafkaAutoConfiguration
+com.lambda.autoconfig.KafkaDelayAutoConfiguration

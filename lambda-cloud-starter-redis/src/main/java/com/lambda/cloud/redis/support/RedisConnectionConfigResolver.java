@@ -1,7 +1,6 @@
 package com.lambda.cloud.redis.support;
 
 import com.lambda.cloud.redis.model.ConnectionInfo;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -19,12 +18,10 @@ import org.springframework.util.StringUtils;
  * @author westboy
  */
 @Slf4j
-public record RedisConnectionConfigResolver(RedisProperties properties,
-                                            ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
-                                            ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider) {
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
-    public RedisConnectionConfigResolver {
-    }
+public record RedisConnectionConfigResolver(
+        RedisProperties properties,
+        ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
+        ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider) {
 
     public RedisStandaloneConfiguration getStandaloneConfig() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
