@@ -9,13 +9,7 @@ import lombok.SneakyThrows;
 /**
  * @author w
  */
-public class LiquibasePostExecutor {
-
-    private final String changelog;
-
-    public LiquibasePostExecutor(String changelog) {
-        this.changelog = changelog;
-    }
+public record LiquibasePostExecutor(String changelog) {
 
     @SneakyThrows
     public void execute(DataSource dataSource) {
