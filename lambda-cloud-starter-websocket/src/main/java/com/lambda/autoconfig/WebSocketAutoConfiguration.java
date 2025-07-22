@@ -52,7 +52,7 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     @Bean
     @ConditionalOnMissingBean
     public WebSocketChannelRepository webSocketChannelRepository() {
-        if (websocketProperties.getChannelStoreMode().equals(ChannelStoreMode.REDIS)) {
+        if (ChannelStoreMode.REDIS.equals(websocketProperties.getChannelStoreMode())) {
             StringRedisTemplate template = SpringUtil.getBean(StringRedisTemplate.class);
             return new RedisWebSocketChannelRepository(template);
         }

@@ -5,6 +5,7 @@ import com.lambda.cloud.sms.mock.MockSmsMessageSender;
 import com.lambda.cloud.sms.sender.AliYunSmsMessageSender;
 import com.lambda.cloud.sms.sender.TencentSmsMessageSender;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Jin
  */
 @Slf4j
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 public class SmsAutoConfiguration {
 
     public SmsAutoConfiguration() {
