@@ -23,7 +23,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,7 +39,6 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
 
     private final OperationService operationService;
 
-    @Autowired
     public OperationLoggerAdvice(OperationService operationService) {
         this.operationService = operationService;
     }

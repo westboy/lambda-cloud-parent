@@ -27,7 +27,7 @@ public final class LogContext {
         return MDC.get(DESCRIPTION);
     }
 
-    private static void clear() {
+    public static void clear() {
         MDC.clear();
     }
 }

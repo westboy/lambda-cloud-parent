@@ -62,16 +62,14 @@ public class WebFluxUtils {
      * <p>
      * 注意一个request只能读取一次 读取之后需要重新包装
      */
-    public static String resolveBodyFromRequest(ServerHttpRequest serverHttpRequest) {
-        // 获取请求体
-        Flux<DataBuffer> body = serverHttpRequest.getBody();
-        AtomicReference<String> bodyRef = new AtomicReference<>();
-        body.subscribe(buffer -> {
-            CharBuffer charBuffer = StandardCharsets.UTF_8.decode(buffer.asByteBuffer());
-            DataBufferUtils.release(buffer);
-            bodyRef.set(charBuffer.toString());
-        });
-        return bodyRef.get();
+    public static Mono<String> resolveBodyFromRequest(ServerHttpRequest request) {
+        return DataBufferUtils.join(request.getBody())
+                .map(dataBuffer -> {
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
+                    DataBufferUtils.release(dataBuffer);
+                    return new String(bytes, StandardCharsets.UTF_8);
+                });
     }
 
     /**
@@ -82,13 +80,14 @@ public class WebFluxUtils {
      * @return body
      */
     public static String resolveBodyFromCacheRequest(ServerWebExchange exchange) {
-        Object obj = exchange.getAttributes().get(ServerWebExchangeUtils.CACHED_REQUEST_BODY_ATTR);
-        if (obj == null) {
+        DataBuffer buffer = (DataBuffer) exchange.getAttributes().get(ServerWebExchangeUtils.CACHED_REQUEST_BODY_ATTR);
+        if (buffer == null) {
             return null;
         }
-        DataBuffer buffer = (DataBuffer) obj;
-        CharBuffer charBuffer = StandardCharsets.UTF_8.decode(buffer.toByteBuffer());
-        return charBuffer.toString();
+        byte[] bytes = new byte[buffer.readableByteCount()];
+        buffer.read(bytes);
+        DataBufferUtils.release(buffer);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     /**
