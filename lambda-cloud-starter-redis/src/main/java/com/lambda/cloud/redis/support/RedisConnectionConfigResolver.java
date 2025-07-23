@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
  * @author westboy
  */
 @Slf4j
-@SuppressFBWarnings("EI_EXPOSE_REP2")
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public record RedisConnectionConfigResolver(
         RedisProperties properties,
         ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,

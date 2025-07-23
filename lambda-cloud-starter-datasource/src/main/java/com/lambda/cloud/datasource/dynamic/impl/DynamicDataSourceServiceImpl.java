@@ -17,8 +17,10 @@ import org.apache.commons.lang.StringUtils;
  * @author w
  */
 @Slf4j
-public record DynamicDataSourceServiceImpl(
-        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}) DynamicRoutingDataSource dynamicRoutingDataSource)
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP"},
+        justification = "This is a DTO class")
+public record DynamicDataSourceServiceImpl(DynamicRoutingDataSource dynamicRoutingDataSource)
         implements DynamicDataSourceService {
 
     @Override
