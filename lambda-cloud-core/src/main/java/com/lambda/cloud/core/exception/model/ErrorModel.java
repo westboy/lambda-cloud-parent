@@ -8,18 +8,67 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * 错误响应模型类
+ * <p>
+ * 用于封装API错误响应的标准格式，包含HTTP状态码、时间戳、错误信息、
+ * 详细错误列表和请求路径等信息。
+ *
+ * <p>该类遵循RESTful API的错误响应规范，提供统一的错误信息结构，
+ * 便于前端处理和错误日志记录。
+ *
+ * <p>错误列表使用不可变集合 {@link ImmutableList} 来确保数据安全性。
+ *
  * @author jin
+ * @since 1.0.0
  */
 @Getter
 @Setter
 public class ErrorModel {
+
+    /**
+     * HTTP状态码
+     * <p>如：400（客户端错误）、500（服务器错误）等
+     */
     private int status;
+
+    /**
+     * 错误发生时间戳
+     * <p>记录错误发生的具体时间，便于问题追踪
+     */
     private long timestamp;
+
+    /**
+     * 错误类型描述
+     * <p>简短的错误类型说明，如"Bad Request"、"Internal Server Error"等
+     */
     private String error;
+
+    /**
+     * 错误详细信息
+     * <p>对错误的详细描述，用于向用户展示或开发者调试
+     */
     private String message;
+
+    /**
+     * 参数错误列表
+     * <p>当请求参数验证失败时，包含具体的字段错误信息
+     */
     private List<ArgumentError> errors;
+
+    /**
+     * 请求路径
+     * <p>发生错误的API请求路径，便于定位问题
+     */
     private String path;
 
+    /**
+     * 设置参数错误列表
+     * <p>
+     * 使用不可变集合来确保错误列表的安全性，防止外部修改。
+     * 如果传入null，则设置为空的不可变列表。
+     *
+     * @param errors 参数错误列表，可以为null
+     */
     public void setErrors(List<ArgumentError> errors) {
         if (errors == null) {
             this.errors = ImmutableList.of();
@@ -28,6 +77,14 @@ public class ErrorModel {
         }
     }
 
+    /**
+     * 将错误模型转换为JSON字符串
+     * <p>
+     * 使用Gson将当前错误模型对象序列化为JSON格式的字符串，
+     * 便于API响应和日志记录。
+     *
+     * @return JSON格式的错误信息字符串
+     */
     public String toJsonString() {
         return GSON.toJson(this);
     }

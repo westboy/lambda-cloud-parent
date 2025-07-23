@@ -5,92 +5,127 @@ import java.time.format.DateTimeFormatter;
 import lombok.experimental.UtilityClass;
 
 /**
+ * 系统常量定义类
+ * <p>
+ * 该类定义了系统中使用的各种常量，包括：
+ * <ul>
+ *     <li>认证相关常量：HMAC、登录用户、登录类型等</li>
+ *     <li>JSON处理常量：Gson实例</li>
+ *     <li>日期时间格式常量：各种日期时间格式和正则表达式</li>
+ *     <li>时间戳相关常量：时间戳格式和正则表达式</li>
+ * </ul>
+ *
+ * <p>使用 {@link UtilityClass} 注解确保该类不能被实例化，所有常量均为静态常量。
+ *
  * @author w
+ * @since 1.0.0
  */
 @UtilityClass
 public final class Constants {
 
+    // ==================== 认证相关常量 ====================
+
     /**
-     * HMAC
+     * HMAC认证标识
      */
     public static final String HMAC = "hmac";
 
     /**
-     * 登录用户
+     * 登录用户标识
      */
     public static final String LOGIN_USER = "loginUser";
 
     /**
-     * 登录类型
+     * 登录类型标识
      */
     public static final String LOGIN_TYPE = "loginType";
 
     /**
-     * 登录类型
+     * 登录设备标识
      */
     public static final String LOGIN_DEVICE = "loginDevice";
 
+    // ==================== JSON处理常量 ====================
+
     /**
-     * Gson
+     * Gson实例，用于JSON序列化和反序列化
      */
     public static final Gson GSON = new Gson();
 
+    // ==================== 日期时间格式常量 ====================
+
     /**
-     * 日期和时间格式
+     * 标准日期时间格式：yyyy-MM-dd HH:mm:ss
      */
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**
-     * 日期正则表达式
-     */
-    public static final String DATE_REGEX = "[1-9]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])";
-
-    /**
-     * 日期格式
+     * 标准日期格式：yyyy-MM-dd
      */
     public static final String DATE_PATTERN = "yyyy-MM-dd";
 
     /**
-     * 时间正则表达式
-     */
-    public static final String TIME_REGEX = "(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d";
-
-    /**
-     * 时间格式
+     * 标准时间格式：HH:mm:ss
      */
     public static final String TIME_PATTERN = "HH:mm:ss";
 
     /**
-     * 日期和时间正则表达式
+     * 年月格式：yyyy-MM
+     */
+    public static final String YEAR_MONTH_PATTERN = "yyyy-MM";
+
+    /**
+     * ISO8601格式：yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+     */
+    public static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
+    /**
+     * ISO日期时间格式（带T分隔符）
+     */
+    public static final String ISO_DATE_TIME_PATTERN = DATE_TIME_PATTERN + "T " + TIME_PATTERN;
+
+    // ==================== 日期时间正则表达式常量 ====================
+
+    /**
+     * 日期正则表达式，匹配格式：yyyy-MM-dd
+     */
+    public static final String DATE_REGEX = "[1-9]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])";
+
+    /**
+     * 时间正则表达式，匹配格式：HH:mm:ss
+     */
+    public static final String TIME_REGEX = "(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d";
+
+    /**
+     * 日期时间正则表达式，匹配格式：yyyy-MM-dd HH:mm:ss
      */
     public static final String DATE_TIME_REGEX = DATE_REGEX + "\\s" + TIME_REGEX;
 
     /**
-     * 日期和时间格式
-     */
-    public static final String ISO_DATE_TIME_PATTERN = DATE_TIME_PATTERN + "T " + TIME_PATTERN;
-
-    /**
-     * 13位时间戳正则表达式
-     */
-    public static final String TIME_STAMP_REGEX = "1\\d{12}";
-
-    /**
-     * 年和月正则表达式
+     * 年月正则表达式，匹配格式：yyyy-MM
      */
     public static final String YEAR_MONTH_REGEX = "[1-9]\\d{3}-(0[1-9]|1[0-2])";
 
     /**
-     * 年和月格式
+     * ISO8601正则表达式，匹配格式：yyyy-MM-ddTHH:mm:ss.SSSZ
      */
-    public static final String YEAR_MONTH_PATTERN = "yyyy-MM";
-
     public static final String ISO8601_REGEX = DATE_REGEX + "T" + TIME_REGEX + "\\.\\d{3}Z";
 
-    public static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    /**
+     * 13位时间戳正则表达式，匹配毫秒级时间戳
+     */
+    public static final String TIME_STAMP_REGEX = "1\\d{12}";
 
-    public static final DateTimeFormatter YYYY_MM_DD_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    // ==================== DateTimeFormatter常量 ====================
 
+    /**
+     * 日期格式化器：yyyy-MM-dd
+     */
+    public static final DateTimeFormatter YYYY_MM_DD_FORMATTER = DateTimeFormatter.ofPattern(DATE_PATTERN);
+
+    /**
+     * 日期时间格式化器：yyyy-MM-dd HH:mm:ss
+     */
     public static final DateTimeFormatter YYYY_MM_DD_HH_MM_SS_FORMATTER =
             DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
 }
