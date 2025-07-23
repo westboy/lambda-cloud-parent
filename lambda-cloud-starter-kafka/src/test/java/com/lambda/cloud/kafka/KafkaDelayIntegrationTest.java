@@ -20,7 +20,7 @@ import org.springframework.test.annotation.DirtiesContext;
 class KafkaDelayIntegrationTest {
 
     @Autowired
-    private DelayKafkaTemplate delayTemplate;
+    private KafkaDelayTemplate delayTemplate;
 
     private String receivedMessage;
     private long receivedTime;

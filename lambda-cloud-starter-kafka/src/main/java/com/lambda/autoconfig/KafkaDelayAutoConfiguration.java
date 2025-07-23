@@ -1,7 +1,7 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.core.jackson.LambdaObjectMapper;
-import com.lambda.cloud.kafka.DelayKafkaTemplate;
+import com.lambda.cloud.kafka.KafkaDelayTemplate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,17 @@ import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 /**
+ * Kafka延时队列自动配置类
+ * <p>
+ * 提供Kafka延时消息功能的自动配置，包括：
+ * <ul>
+ *   <li>多种序列化方式的KafkaTemplate配置</li>
+ *   <li>消费者工厂和监听器容器工厂配置</li>
+ *   <li>延时消息模板配置</li>
+ * </ul>
+ *
  * @author jin
+ * @since 1.0.0
  */
 @Slf4j
 @EnableKafka
@@ -42,39 +52,72 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 @Import(KafkaDelayQueueConfigurer.class)
 public class KafkaDelayAutoConfiguration {
 
+    /**
+     * Bean名称常量定义
+     */
     public static final String STRING_TEMPLATE = "kafkaTemplate";
+
     public static final String JSON_TEMPLATE = "jsonKafkaTemplate";
     public static final String OBJECT_TEMPLATE = "objectKafkaTemplate";
     public static final String DELAY_TEMPLATE = "delayKafkaTemplate";
     public static final String JSON_PRODUCER_FACTORY = "jsonProducerFactory";
     public static final String OBJECT_PRODUCER_FACTORY = "objectProducerFactory";
 
-    public KafkaDelayAutoConfiguration() {
-        log.trace("initializing...");
-    }
-
+    /**
+     * Kafka配置属性
+     */
     private KafkaProperties properties;
 
-    public RecordFilterStrategy<Object, Object> recordFilterStrategy;
+    /**
+     * 消息过滤策略（可选）
+     */
+    private RecordFilterStrategy<Object, Object> recordFilterStrategy;
 
+    /**
+     * 构造函数
+     */
+    public KafkaDelayAutoConfiguration() {
+        log.trace("Initializing KafkaDelayAutoConfiguration...");
+    }
+
+    /**
+     * 设置Kafka配置属性
+     *
+     * @param properties Kafka配置属性
+     */
     @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
     @Autowired
     public void setProperties(KafkaProperties properties) {
         this.properties = properties;
     }
 
+    /**
+     * 设置消息过滤策略（可选）
+     *
+     * @param recordFilterStrategy 消息过滤策略
+     */
     @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE")
     @Autowired(required = false)
     public void setRecordFilterStrategy(RecordFilterStrategy<Object, Object> recordFilterStrategy) {
         this.recordFilterStrategy = recordFilterStrategy;
     }
 
+    /**
+     * 配置Lambda对象映射器
+     *
+     * @return LambdaObjectMapper实例
+     */
     @Bean
     @ConditionalOnMissingBean
     public LambdaObjectMapper objectMapper() {
         return new LambdaObjectMapper();
     }
 
+    /**
+     * 配置字符串类型的Kafka生产者工厂
+     *
+     * @return 字符串类型的生产者工厂
+     */
     @Bean
     @Primary
     public ProducerFactory<?, ?> kafkaProducerFactory() {
@@ -84,6 +127,12 @@ public class KafkaDelayAutoConfiguration {
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
 
+    /**
+     * 配置字符串类型的Kafka模板
+     *
+     * @param kafkaProducerFactory 生产者工厂
+     * @return 字符串类型的Kafka模板
+     */
     @Primary
     @Bean(name = STRING_TEMPLATE)
     public KafkaTemplate<?, ?> kafkaTemplate(ProducerFactory<Object, Object> kafkaProducerFactory) {
@@ -92,6 +141,11 @@ public class KafkaDelayAutoConfiguration {
         return template;
     }
 
+    /**
+     * 配置JSON类型的Kafka生产者工厂
+     *
+     * @return JSON类型的生产者工厂
+     */
     @Bean(name = JSON_PRODUCER_FACTORY)
     public ProducerFactory<String, Object> jsonProducerFactory() {
         Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
@@ -100,6 +154,12 @@ public class KafkaDelayAutoConfiguration {
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
 
+    /**
+     * 配置JSON类型的Kafka模板
+     *
+     * @param jsonProducerFactory JSON生产者工厂
+     * @return JSON类型的Kafka模板
+     */
     @Bean(name = JSON_TEMPLATE)
     public KafkaTemplate<String, ?> jsonKafkaTemplate(
             @Qualifier(JSON_PRODUCER_FACTORY) ProducerFactory<String, Object> jsonProducerFactory) {
@@ -109,6 +169,12 @@ public class KafkaDelayAutoConfiguration {
         return template;
     }
 
+    /**
+     * 配置对象类型的Kafka生产者工厂
+     *
+     * @param objectMapper 对象映射器
+     * @return 对象类型的生产者工厂
+     */
     @Bean(name = OBJECT_PRODUCER_FACTORY)
     public ProducerFactory<String, Object> objectProducerFactory(LambdaObjectMapper objectMapper) {
         Map<String, Object> producerProperties = this.properties.buildProducerProperties(null);
@@ -120,6 +186,13 @@ public class KafkaDelayAutoConfiguration {
         return new DefaultKafkaProducerFactory<>(producerProperties, keySerializer, valueSerializer);
     }
 
+    /**
+     * 配置对象类型的Kafka模板
+     *
+     * @param objectMapper 对象映射器
+     * @param objectProducerFactory 对象生产者工厂
+     * @return 对象类型的Kafka模板
+     */
     @Bean(name = OBJECT_TEMPLATE)
     public KafkaTemplate<?, ?> objectKafkaTemplate(
             LambdaObjectMapper objectMapper,
@@ -130,6 +203,11 @@ public class KafkaDelayAutoConfiguration {
         return template;
     }
 
+    /**
+     * 配置Kafka消费者工厂
+     *
+     * @return Kafka消费者工厂
+     */
     @Bean
     @Primary
     public ConsumerFactory<?, ?> kafkaConsumerFactory() {
@@ -139,6 +217,13 @@ public class KafkaDelayAutoConfiguration {
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
+    /**
+     * 配置字符串类型的监听器容器工厂
+     *
+     * @param configurer 容器工厂配置器
+     * @param kafkaConsumerFactory 消费者工厂
+     * @return 字符串类型的监听器容器工厂
+     */
     @Bean(name = "stringContainerFactory")
     public KafkaListenerContainerFactory<?> stringContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
@@ -153,6 +238,13 @@ public class KafkaDelayAutoConfiguration {
         return factory;
     }
 
+    /**
+     * 配置JSON类型的监听器容器工厂
+     *
+     * @param configurer 容器工厂配置器
+     * @param kafkaConsumerFactory 消费者工厂
+     * @return JSON类型的监听器容器工厂
+     */
     @Bean(name = "jsonContainerFactory")
     public KafkaListenerContainerFactory<?> jsonContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
@@ -168,6 +260,14 @@ public class KafkaDelayAutoConfiguration {
         return factory;
     }
 
+    /**
+     * 配置对象类型的监听器容器工厂
+     *
+     * @param configurer 容器工厂配置器
+     * @param kafkaConsumerFactory 消费者工厂
+     * @param objectMapper 对象映射器
+     * @return 对象类型的监听器容器工厂
+     */
     @Bean(name = "objectContainerFactory")
     public KafkaListenerContainerFactory<?> objectContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
@@ -184,6 +284,14 @@ public class KafkaDelayAutoConfiguration {
         return factory;
     }
 
+    /**
+     * 配置批量对象类型的监听器容器工厂
+     *
+     * @param configurer 容器工厂配置器
+     * @param kafkaConsumerFactory 消费者工厂
+     * @param objectMapper 对象映射器
+     * @return 批量对象类型的监听器容器工厂
+     */
     @Bean(name = "batchObjectContainerFactory")
     public KafkaListenerContainerFactory<?> batchObjectContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
@@ -199,9 +307,15 @@ public class KafkaDelayAutoConfiguration {
         return factory;
     }
 
+    /**
+     * 配置延时Kafka模板
+     *
+     * @param kafkaTemplate 字符串类型的Kafka模板
+     * @return 延时Kafka模板
+     */
     @Bean(name = DELAY_TEMPLATE)
-    public DelayKafkaTemplate delaykafkaTemplate(
+    public KafkaDelayTemplate delayKafkaTemplate(
             @Qualifier(STRING_TEMPLATE) KafkaTemplate<String, String> kafkaTemplate) {
-        return new DelayKafkaTemplate(kafkaTemplate);
+        return new KafkaDelayTemplate(kafkaTemplate);
     }
 }
