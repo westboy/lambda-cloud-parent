@@ -5,11 +5,9 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 import com.google.gson.Gson;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import java.net.URI;
-import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +23,6 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -63,13 +60,12 @@ public class WebFluxUtils {
      * 注意一个request只能读取一次 读取之后需要重新包装
      */
     public static Mono<String> resolveBodyFromRequest(ServerHttpRequest request) {
-        return DataBufferUtils.join(request.getBody())
-                .map(dataBuffer -> {
-                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(bytes);
-                    DataBufferUtils.release(dataBuffer);
-                    return new String(bytes, StandardCharsets.UTF_8);
-                });
+        return DataBufferUtils.join(request.getBody()).map(dataBuffer -> {
+            byte[] bytes = new byte[dataBuffer.readableByteCount()];
+            dataBuffer.read(bytes);
+            DataBufferUtils.release(dataBuffer);
+            return new String(bytes, StandardCharsets.UTF_8);
+        });
     }
 
     /**

@@ -14,7 +14,7 @@ import org.apache.commons.lang.ArrayUtils;
  */
 @Slf4j
 @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
+        value = "EI_EXPOSE_REP",
         justification = "MeterRegistry is thread-safe and designed for shared access")
 public record MeterHelper(MeterRegistry registry) {
 
