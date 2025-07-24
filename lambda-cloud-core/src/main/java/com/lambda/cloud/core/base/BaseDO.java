@@ -16,7 +16,7 @@ import lombok.Setter;
  * 该抽象类为所有数据库实体提供通用的基础字段，包括创建信息、更新信息和逻辑删除标识。
  * 使用MyBatis-Plus的注解实现字段的自动填充和逻辑删除功能。
  * </p>
- * 
+ *
  * <h3>主要功能：</h3>
  * <ul>
  *   <li>提供统一的审计字段（创建人、创建时间、更新人、更新时间）</li>
@@ -24,7 +24,7 @@ import lombok.Setter;
  *   <li>实现序列化接口，支持对象序列化</li>
  *   <li>使用Lombok简化getter/setter方法</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * @Entity
@@ -35,7 +35,7 @@ import lombok.Setter;
  *     // 其他业务字段...
  * }
  * }</pre>
- * 
+ *
  * @author Jin
  * @since 2025-07-23
  * @see com.baomidou.mybatisplus.annotation.TableField
@@ -95,12 +95,12 @@ public abstract class BaseDO implements Serializable {
      * 值为0表示正常状态，值为1表示已删除状态。
      * 在插入时自动填充为0（正常状态）。
      * </p>
-     * 
+     *
      * <ul>
      *   <li>0：正常状态（未删除）</li>
      *   <li>1：已删除状态</li>
      * </ul>
-     * 
+     *
      * @JsonIgnore 在JSON序列化时忽略该字段
      */
     @JsonIgnore

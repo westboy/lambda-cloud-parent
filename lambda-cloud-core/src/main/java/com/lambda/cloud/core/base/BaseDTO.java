@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  * 该抽象类为所有数据传输对象提供通用的转换方法和分页功能。
  * DTO用于在不同层之间传输数据，避免直接暴露数据库实体。
  * </p>
- * 
+ *
  * <h3>主要功能：</h3>
  * <ul>
  *   <li>提供实体转换的抽象方法</li>
@@ -16,13 +16,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  *   <li>定义统一的数据传输规范</li>
  *   <li>实现数据层与业务层的解耦</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * public class UserDTO extends BaseDTO<UserVO, User> {
  *     private String username;
  *     private String email;
- *     
+ *
  *     @Override
  *     public User convertToEntity() {
  *         // 转换为实体对象
@@ -31,7 +31,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  *             .email(this.email)
  *             .build();
  *     }
- *     
+ *
  *     @Override
  *     public UserVO convertFor(User user) {
  *         // 转换为视图对象
@@ -42,7 +42,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  *     }
  * }
  * }</pre>
- * 
+ *
  * @author Jin
  * @since 2025-07-23
  * @param <D> 目标转换类型（通常是VO或其他DTO）
@@ -57,7 +57,7 @@ public abstract class BaseDTO<D, E> {
      * 该方法用于将数据传输对象转换为数据库实体对象，
      * 通常在保存或更新操作前调用。
      * </p>
-     * 
+     *
      * <h3>使用场景：</h3>
      * <ul>
      *   <li>接收前端请求数据后转换为实体</li>
@@ -75,7 +75,7 @@ public abstract class BaseDTO<D, E> {
      * 该方法用于将数据库实体对象转换为其他类型的对象，
      * 如VO（View Object）或其他DTO，通常在查询操作后调用。
      * </p>
-     * 
+     *
      * <h3>使用场景：</h3>
      * <ul>
      *   <li>查询结果转换为前端展示对象</li>
@@ -94,7 +94,7 @@ public abstract class BaseDTO<D, E> {
      * 该方法用于创建MyBatis-Plus的分页对象，
      * 为分页查询提供便捷的工具方法。
      * </p>
-     * 
+     *
      * <h3>参数说明：</h3>
      * <ul>
      *   <li>current：当前页码，从1开始</li>

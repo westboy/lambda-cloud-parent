@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
  * 提供当前登录用户信息的获取和管理功能。该工具类基于Sa-Token框架，
  * 用于在业务逻辑中获取当前操作员的身份信息。
  * </p>
- * 
+ *
  * <h3>主要功能：</h3>
  * <ul>
  *   <li>获取当前登录用户信息</li>
@@ -19,30 +19,30 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>支持多种登录逻辑的用户获取</li>
  *   <li>异常情况下的安全降级</li>
  * </ul>
- * 
+ *
  * <h3>安全特性：</h3>
  * <ul>
  *   <li>用户未登录时返回受限的默认用户</li>
  *   <li>异常情况下不会抛出错误，而是返回安全的默认值</li>
  *   <li>默认用户具有最小权限，账户被锁定且已过期</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * // 获取当前操作员
  * LoginUser currentUser = OperatorUtils.getOperator();
  * String username = currentUser.getUsername();
- * 
+ *
  * // 检查是否为游客用户
  * if ("guest".equals(currentUser.getUsername())) {
  *     // 处理未登录情况
  * }
- * 
+ *
  * // 基于特定登录逻辑获取用户
  * StpLogic customLogic = StpUtil.stpLogic;
  * LoginUser user = OperatorUtils.getLoginUser(customLogic);
  * }</pre>
- * 
+ *
  * @author jpjoo
  * @see LoginUser
  * @see cn.dev33.satoken.stp.StpLogic
@@ -57,7 +57,7 @@ public class OperatorUtils {
      * 当用户未登录或获取用户信息失败时返回的默认用户对象。
      * 该用户具有最小权限，所有敏感操作都被限制。
      * </p>
-     * 
+     *
      * <h3>默认用户特征：</h3>
      * <ul>
      *   <li>用户名：guest</li>
@@ -109,14 +109,14 @@ public class OperatorUtils {
      * 获取当前登录用户的详细信息。该方法会自动处理异常情况，
      * 当用户未登录或获取失败时，返回安全的默认游客用户。
      * </p>
-     * 
+     *
      * <h3>执行流程：</h3>
      * <ol>
      *   <li>获取当前活跃的登录逻辑</li>
      *   <li>从会话中提取用户信息</li>
      *   <li>异常时返回默认游客用户</li>
      * </ol>
-     * 
+     *
      * <h3>异常处理：</h3>
      * <ul>
      *   <li>用户未登录：返回DEFAULT_USER</li>
@@ -142,7 +142,7 @@ public class OperatorUtils {
      * 从指定的Sa-Token登录逻辑中获取当前登录用户的信息。
      * 该方法直接从Token会话中提取用户对象，不进行异常处理。
      * </p>
-     * 
+     *
      * <h3>注意事项：</h3>
      * <ul>
      *   <li>调用前需确保用户已登录</li>

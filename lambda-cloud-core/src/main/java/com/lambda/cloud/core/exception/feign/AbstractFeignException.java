@@ -9,7 +9,7 @@ import lombok.Getter;
  * 该抽象类为所有Feign客户端相关的异常提供统一的基础结构。
  * 封装了HTTP请求失败时的通用信息，包括时间戳、错误类型、错误消息和请求路径。
  * </p>
- * 
+ *
  * <h3>主要功能：</h3>
  * <ul>
  *   <li>统一Feign异常的数据结构</li>
@@ -17,24 +17,24 @@ import lombok.Getter;
  *   <li>封装错误模型的通用属性</li>
  *   <li>支持异常信息的标准化处理</li>
  * </ul>
- * 
+ *
  * <h3>设计模式：</h3>
  * <p>采用模板方法模式，定义了异常处理的通用流程，子类只需实现具体的HTTP状态码。</p>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * public class CustomFeignException extends AbstractFeignException {
  *     public CustomFeignException(ErrorModel model) {
  *         super(model);
  *     }
- *     
+ *
  *     @Override
  *     public int getStatus() {
  *         return 400; // 具体的HTTP状态码
  *     }
  * }
  * }</pre>
- * 
+ *
  * @author jin
  * @since 2025-07-23
  * @see ErrorModel
@@ -87,7 +87,7 @@ public abstract class AbstractFeignException extends RuntimeException {
      * 基于错误模型创建Feign异常实例。从错误模型中提取所有必要的异常信息，
      * 包括消息、路径、错误类型和时间戳。
      * </p>
-     * 
+     *
      * @param model 错误模型，包含完整的异常信息，不能为null
      * @throws NullPointerException 如果model为null
      */
@@ -105,7 +105,7 @@ public abstract class AbstractFeignException extends RuntimeException {
      * 抽象方法，由子类实现具体的HTTP状态码返回逻辑。
      * 不同类型的Feign异常应该返回对应的HTTP状态码。
      * </p>
-     * 
+     *
      * @return HTTP状态码，如400、401、500等
      */
     public abstract int getStatus();
@@ -115,7 +115,7 @@ public abstract class AbstractFeignException extends RuntimeException {
      * <p>
      * 返回发生异常的HTTP请求路径。该路径信息来源于构造时传入的错误模型。
      * </p>
-     * 
+     *
      * @return 请求路径字符串，可能为null
      */
     public String getPath() {
@@ -127,7 +127,7 @@ public abstract class AbstractFeignException extends RuntimeException {
      * <p>
      * 重写父类方法，返回详细的异常消息。该消息来源于构造时传入的错误模型。
      * </p>
-     * 
+     *
      * @return 异常详细消息
      */
     @Override

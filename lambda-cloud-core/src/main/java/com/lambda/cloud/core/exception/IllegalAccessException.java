@@ -9,7 +9,7 @@ import java.io.Serial;
  * 但当前执行的方法没有访问指定类、字段、方法或构造函数定义的权限时，
  * 会抛出此异常。
  * </p>
- * 
+ *
  * <p>该异常继承自RuntimeException，是一个运行时异常，通常在以下情况下抛出：</p>
  * <ul>
  *   <li>反射访问私有成员时权限不足</li>
@@ -17,7 +17,7 @@ import java.io.Serial;
  *   <li>访问不可访问的类或接口</li>
  *   <li>模块系统中的访问控制限制</li>
  * </ul>
- * 
+ *
  * <h3>常见使用场景：</h3>
  * <ul>
  *   <li>框架中的反射操作权限检查</li>
@@ -25,14 +25,14 @@ import java.io.Serial;
  *   <li>动态代理中的权限验证</li>
  *   <li>序列化/反序列化过程中的访问控制</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * // 当尝试访问私有字段时
  * if (!field.isAccessible()) {
  *     throw new IllegalAccessException("无法访问私有字段: " + field.getName());
  * }
- * 
+ *
  * // 当权限检查失败时
  * if (!hasPermission(user, resource)) {
  *     throw new IllegalAccessException("用户没有访问该资源的权限");

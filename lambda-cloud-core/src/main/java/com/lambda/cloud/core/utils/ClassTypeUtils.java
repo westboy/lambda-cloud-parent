@@ -6,14 +6,14 @@ package com.lambda.cloud.core.utils;
  * 提供基本数据类型和包装类型相关的工具方法，包括类型判断和字符串转换功能。
  * 主要用于反射、序列化、参数转换等场景中的类型处理。
  * </p>
- * 
+ *
  * <h3>主要功能：</h3>
  * <ul>
  *   <li>判断类型是否为基本类型或包装类型</li>
  *   <li>将字符串转换为对应的基本类型或包装类型</li>
  *   <li>支持所有Java基本数据类型的转换</li>
  * </ul>
- * 
+ *
  * <h3>支持的类型：</h3>
  * <ul>
  *   <li>数值类型：Integer、Long、Double、Float、Short、Byte</li>
@@ -21,18 +21,18 @@ package com.lambda.cloud.core.utils;
  *   <li>字符类型：Character</li>
  *   <li>对应的基本类型：int、long、double、float、short、byte、boolean、char</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * // 类型判断
  * boolean isWrapper = ClassTypeUtils.isPrimitiveOrWrapper(Integer.class); // true
  * boolean isPrimitive = ClassTypeUtils.isPrimitiveOrWrapper(int.class); // true
- * 
+ *
  * // 字符串转换
  * Integer intValue = (Integer) ClassTypeUtils.convertPrimitiveOrWrapper(Integer.class, "123");
  * Boolean boolValue = (Boolean) ClassTypeUtils.convertPrimitiveOrWrapper(Boolean.class, "true");
  * }</pre>
- * 
+ *
  * @author Jin
  * @see Class#isPrimitive()
  * @see Number
@@ -44,7 +44,7 @@ public class ClassTypeUtils {
      * 检查给定的Class对象是否表示Java的基本数据类型或其对应的包装类型。
      * 包括所有数值类型、布尔类型和字符类型。
      * </p>
-     * 
+     *
      * <h3>支持的类型：</h3>
      * <ul>
      *   <li>基本类型：int, long, double, float, short, byte, boolean, char</li>
@@ -69,14 +69,14 @@ public class ClassTypeUtils {
      * 根据目标类型将字符串内容转换为对应的基本数据类型或包装类型对象。
      * 支持所有常见的基本类型转换，并提供适当的错误处理。
      * </p>
-     * 
+     *
      * <h3>转换规则：</h3>
      * <ul>
      *   <li>数值类型：使用对应包装类的valueOf方法</li>
      *   <li>布尔类型：使用Boolean.valueOf解析</li>
      *   <li>字符类型：取字符串第一个字符，空字符串返回'\0'</li>
      * </ul>
-     * 
+     *
      * <h3>异常处理：</h3>
      * <ul>
      *   <li>不支持的类型会抛出IllegalArgumentException</li>

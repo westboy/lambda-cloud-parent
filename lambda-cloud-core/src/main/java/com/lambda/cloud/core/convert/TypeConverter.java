@@ -14,7 +14,7 @@ import org.springframework.util.ClassUtils;
  * 提供各种基本数据类型之间的安全转换功能。该工具类支持常见的类型转换操作，
  * 包括数值类型、字符串、布尔值、日期等类型之间的相互转换。
  * </p>
- * 
+ *
  * <h3>支持的转换类型：</h3>
  * <ul>
  *   <li>String - 字符串转换</li>
@@ -24,23 +24,23 @@ import org.springframework.util.ClassUtils;
  *   <li>BigDecimal - 高精度数值转换</li>
  *   <li>Date - 日期类型转换</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * // 数值转换
  * Integer intValue = (Integer) TypeConverter.convert("123", Integer.class);
  * Long longValue = (Long) TypeConverter.convert(123.45, Long.class);
- * 
+ *
  * // 字符串转换
  * String strValue = (String) TypeConverter.convert(123, String.class);
- * 
+ *
  * // 布尔值转换
  * Boolean boolValue = (Boolean) TypeConverter.convert(1, Boolean.class);
- * 
+ *
  * // BigDecimal转换
  * BigDecimal decimal = (BigDecimal) TypeConverter.convert("123.45", BigDecimal.class);
  * }</pre>
- * 
+ *
  * <h3>注意事项：</h3>
  * <ul>
  *   <li>所有方法都进行空值检查，不接受null参数</li>
@@ -48,7 +48,7 @@ import org.springframework.util.ClassUtils;
  *   <li>转换失败时会提供详细的错误信息</li>
  *   <li>该类为工具类，构造函数为私有</li>
  * </ul>
- * 
+ *
  * @author Jin
  * @see java.lang.ClassCastException
  * @see org.springframework.util.ClassUtils
@@ -64,7 +64,7 @@ public class TypeConverter {
      * 将给定的对象转换为指定的目标类型。该方法会根据目标类型自动选择
      * 合适的转换策略，支持常见的基本数据类型转换。
      * </p>
-     * 
+     *
      * <h3>转换规则：</h3>
      * <ul>
      *   <li>如果源对象已经是目标类型，直接返回</li>

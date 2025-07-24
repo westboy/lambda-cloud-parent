@@ -13,7 +13,7 @@ import lombok.Setter;
  * 该抽象类为所有需要分页功能的DTO提供统一的分页参数和查询构造器。
  * 封装了常用的分页逻辑，简化分页查询的实现。
  * </p>
- * 
+ *
  * <h3>主要功能：</h3>
  * <ul>
  *   <li>提供统一的分页参数（页码、页大小）</li>
@@ -21,13 +21,13 @@ import lombok.Setter;
  *   <li>提供MyBatis-Plus分页对象的创建</li>
  *   <li>提供Lambda查询构造器的创建</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * public class UserPageDTO extends BasePageDTO<User> {
  *     private String username;
  *     private Integer status;
- *     
+ *
  *     public LambdaQueryWrapper<User> buildQueryWrapper() {
  *         LambdaQueryWrapper<User> wrapper = getLambdaQueryWrapper();
  *         wrapper.like(StringUtils.hasText(username), User::getUsername, username)
@@ -36,7 +36,7 @@ import lombok.Setter;
  *     }
  * }
  * }</pre>
- * 
+ *
  * @param <T> 实体类型
  * @author Jin
  * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
@@ -86,7 +86,7 @@ public abstract class BasePageDTO<T> {
      * 创建一个新的Lambda查询构造器，用于构建类型安全的查询条件。
      * 子类可以基于此构造器添加具体的查询条件。
      * </p>
-     * 
+     *
      * <h3>使用建议：</h3>
      * <ul>
      *   <li>在子类中重写此方法或创建新的查询构造方法</li>

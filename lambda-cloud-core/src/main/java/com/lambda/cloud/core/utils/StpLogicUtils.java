@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * 该工具类提供了对Sa-Token框架中多种登录类型的统一管理和操作功能。
  * 支持多种登录方式的并存，包括HMAC认证、普通用户登录等。
  * </p>
- * 
+ *
  * <h3>主要功能：</h3>
  * <ul>
  *   <li>管理多种登录类型的注册和查询</li>
@@ -27,30 +27,30 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>提供会话管理和令牌验证功能</li>
  *   <li>自动检测当前活跃的登录状态</li>
  * </ul>
- * 
+ *
  * <h3>支持的登录类型：</h3>
  * <ul>
  *   <li>HMAC认证 - 基于签名的API认证</li>
  *   <li>默认用户登录 - 标准的用户名密码登录</li>
  *   <li>自定义登录类型 - 通过初始化方法添加</li>
  * </ul>
- * 
+ *
  * <h3>使用示例：</h3>
  * <pre>{@code
  * // 初始化自定义登录类型
  * List<String> customTypes = Arrays.asList("admin", "api");
  * StpLogicUtils.initializeLoginTypes(customTypes);
- * 
+ *
  * // 检查登录类型是否支持
  * boolean supported = StpLogicUtils.containsLoginType("hmac");
- * 
+ *
  * // 获取特定类型的登录逻辑
  * StpLogic logic = StpLogicUtils.getStpLogic("hmac");
- * 
+ *
  * // 获取当前活跃的登录逻辑
  * StpLogic activeLogic = StpLogicUtils.getActiveStpLogic();
  * }</pre>
- * 
+ *
  * @author jpjoo
  * @see cn.dev33.satoken.stp.StpLogic
  * @see cn.dev33.satoken.stp.StpUtil
@@ -79,7 +79,7 @@ public class StpLogicUtils {
      * 将自定义的登录类型添加到系统支持的登录类型集合中。
      * 该方法通常在应用启动时调用，用于注册额外的登录方式。
      * </p>
-     * 
+     *
      * <h3>注意事项：</h3>
      * <ul>
      *   <li>登录类型不能为null或空字符串</li>
@@ -154,7 +154,7 @@ public class StpLogicUtils {
      * 遍历所有已注册的登录类型，尝试根据访问令牌获取对应的会话信息。
      * 返回第一个找到的有效会话，如果所有登录类型都无法找到会话则返回null。
      * </p>
-     * 
+     *
      * <h3>查找策略：</h3>
      * <ul>
      *   <li>如果没有注册任何登录类型，使用默认StpLogic查找</li>
@@ -183,14 +183,14 @@ public class StpLogicUtils {
      * 自动检测当前用户的登录状态，返回对应的StpLogic实例。
      * 该方法会遍历所有已注册的登录类型，找到第一个处于登录状态的逻辑。
      * </p>
-     * 
+     *
      * <h3>检测策略：</h3>
      * <ul>
      *   <li>如果没有注册登录类型，直接检查默认登录状态</li>
      *   <li>否则遍历所有登录类型，返回第一个已登录的逻辑</li>
      *   <li>如果所有类型都未登录，抛出异常</li>
      * </ul>
-     * 
+     *
      * <h3>异常处理：</h3>
      * <ul>
      *   <li>忽略"未登录"异常，继续检查下一个类型</li>
