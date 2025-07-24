@@ -20,11 +20,11 @@ import org.slf4j.MDC;
  * // 设置日志上下文
  * LogContext.setDetail("用户ID: 12345");
  * LogContext.setDescription("用户登录操作");
- * 
+ *
  * // 在其他地方获取上下文信息
  * String detail = LogContext.getDetail();
  * String description = LogContext.getDescription();
- * 
+ *
  * // 清除上下文（通常在操作完成后）
  * LogContext.clear();
  * </pre>
@@ -42,7 +42,7 @@ public final class LogContext {
      * 日志详情在 MDC 中的键名。
      */
     private static final String DETAIL_KEY = "detail";
-    
+
     /**
      * 日志描述在 MDC 中的键名。
      */

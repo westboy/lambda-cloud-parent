@@ -1,8 +1,8 @@
 package com.lambda.cloud.logger.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +31,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @Schema(description = "操作日志记录模型")
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class OperationLogRecord {
 
     /**

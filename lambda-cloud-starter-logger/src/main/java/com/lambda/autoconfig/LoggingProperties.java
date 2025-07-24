@@ -64,7 +64,7 @@ public class LoggingProperties {
         @Getter
         @Setter
         public static class Kafka {
-            
+
             /**
              * 是否启用通过 Kafka 收集日志。
              * <p>
@@ -72,7 +72,7 @@ public class LoggingProperties {
              * 当设置为 {@code true} 时，操作日志将通过 Kafka 进行传输和处理。
              */
             private boolean enabled = false;
-            
+
             /**
              * Kafka 日志主题名称。
              * <p>

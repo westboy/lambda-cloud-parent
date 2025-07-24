@@ -7,9 +7,10 @@ import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.OperatorUtils;
 import com.lambda.cloud.logger.annotation.OperationLog;
 import com.lambda.cloud.logger.context.LogContext;
-import com.lambda.cloud.logger.model.OperationLogRecord;
 import com.lambda.cloud.logger.model.OperationContext;
+import com.lambda.cloud.logger.model.OperationLogRecord;
 import com.lambda.cloud.logger.service.OperationService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
@@ -68,6 +69,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  */
 @Slf4j
 @Aspect
+@SuppressFBWarnings({"CT_CONSTRUCTOR_THROW", "REC_CATCH_EXCEPTION"})
 public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
 
     /**
@@ -130,20 +132,20 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         // 启动性能计时器，记录方法执行时长
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        
+
         // 收集方法执行的基本信息
         Object[] methodArgs = joinPoint.getArgs();
         Method targetMethod = getMethodToExecute(joinPoint);
         String methodName = buildMethodName(targetMethod);
         Annotation[][] parameterAnnotations = targetMethod.getParameterAnnotations();
-        
+
         // 获取操作日志注解
         OperationLog operationLogAnnotation = targetMethod.getAnnotation(OperationLog.class);
         if (operationLogAnnotation == null) {
             log.debug("方法 {} 未标注 @OperationLog 注解，跳过日志记录", methodName);
             return joinPoint.proceed();
         }
-        
+
         // 获取 HTTP 请求上下文
         HttpServletRequest httpRequest = getCurrentHttpRequest();
         if (httpRequest == null) {
@@ -151,7 +153,7 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
             log.debug("非Web环境，无法获取HTTP请求信息，跳过日志记录");
             return joinPoint.proceed();
         }
-        
+
         // 收集用户和请求信息
         LoginUser currentUser = OperatorUtils.getOperator();
         HttpMethod httpMethod = parseHttpMethod(httpRequest.getMethod());
@@ -159,55 +161,47 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         String operationId = StringUtils.defaultIfBlank(operationLogAnnotation.value(), methodName);
 
         // 构建操作日志记录对象
-        OperationLogRecord operationLogRecord = buildOperationLogRecord(
-            methodName, httpMethod, operationLogAnnotation, currentUser, httpRequest
-        );
-        
+        OperationLogRecord operationLogRecord =
+                buildOperationLogRecord(methodName, httpMethod, operationLogAnnotation, currentUser, httpRequest);
+
         // 构建操作上下文对象
-        OperationContext operationContext = buildOperationContext(
-            operationId, httpRequest, parameterAnnotations, methodArgs
-        );
-        
+        OperationContext operationContext =
+                buildOperationContext(operationId, httpRequest, parameterAnnotations, methodArgs);
+
         try {
             // 执行目标方法
             Object methodResult = joinPoint.proceed();
-            
+
             // 记录成功执行的结果
             operationContext.setResult(methodResult);
-            
+
             // 设置日志详情和描述
-            String detailJson = StringUtils.defaultIfBlank(
-                LogContext.getDetail(), 
-                GSON.toJson(operationContext)
-            );
+            String detailJson = StringUtils.defaultIfBlank(LogContext.getDetail(), GSON.toJson(operationContext));
             operationLogRecord.setDetail(detailJson);
-            
-            String finalDescription = StringUtils.defaultIfBlank(
-                LogContext.getDescription(), 
-                swaggerDescription
-            );
+
+            String finalDescription = StringUtils.defaultIfBlank(LogContext.getDescription(), swaggerDescription);
             operationLogRecord.setDescription(finalDescription);
-            
+
             return methodResult;
-            
+
         } catch (Exception exception) {
             // 记录异常执行的结果
             operationContext.setResult(getStackTrace(exception));
             operationLogRecord.setDetail(GSON.toJson(operationContext));
             operationLogRecord.setDescription(swaggerDescription + " - 操作执行失败");
-            
+
             // 重新抛出异常，不影响业务流程
             throw exception;
-            
+
         } finally {
             // 停止计时并设置执行信息
             stopWatch.stop();
             operationLogRecord.setTime(new Date());
             operationLogRecord.setDuration(stopWatch.getTotalTimeMillis());
-            
+
             // 保存操作日志
             saveOperationLogSafely(operationLogRecord);
-            
+
             // 清理 MDC 上下文
             LogContext.clear();
         }
@@ -224,34 +218,32 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
      * @param httpRequest HTTP请求对象
      * @return 构建完成的操作日志记录对象
      */
-    private OperationLogRecord buildOperationLogRecord(String methodName, 
-                                                       HttpMethod httpMethod,
-                                                       OperationLog operationLogAnnotation, 
-                                                       LoginUser currentUser,
-                                                       HttpServletRequest httpRequest) {
+    private OperationLogRecord buildOperationLogRecord(
+            String methodName,
+            HttpMethod httpMethod,
+            OperationLog operationLogAnnotation,
+            LoginUser currentUser,
+            HttpServletRequest httpRequest) {
         OperationLogRecord operationLogRecord = new OperationLogRecord();
-        
+
         // 设置基本信息
         operationLogRecord.setMethod(methodName);
         operationLogRecord.setModule(operationLogAnnotation.module());
-        
+
         // 设置HTTP方法类型，优先使用注解配置，否则使用实际HTTP方法
-        String operationType = StringUtils.defaultIfBlank(
-            operationLogAnnotation.type(), 
-            httpMethod.name()
-        );
+        String operationType = StringUtils.defaultIfBlank(operationLogAnnotation.type(), httpMethod.name());
         operationLogRecord.setHttpMethod(operationType);
-        
+
         // 设置操作人信息
         String operatorId = (currentUser != null) ? currentUser.getUsername() : "unknown";
         operationLogRecord.setOperatorId(operatorId);
-        
+
         // 设置客户端IP地址
         operationLogRecord.setIpAddress(JakartaServletUtil.getClientIP(httpRequest));
-        
+
         return operationLogRecord;
     }
-    
+
     /**
      * 构建操作上下文对象
      * <p>根据操作ID、HTTP请求信息、方法参数等构建操作上下文</p>
@@ -262,30 +254,31 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
      * @param methodArgs 方法参数值数组
      * @return 构建完成的操作上下文对象
      */
-    private OperationContext buildOperationContext(String operationId, 
-                                                   HttpServletRequest httpRequest,
-                                                   Annotation[][] parameterAnnotations, 
-                                                   Object[] methodArgs) {
+    private OperationContext buildOperationContext(
+            String operationId,
+            HttpServletRequest httpRequest,
+            Annotation[][] parameterAnnotations,
+            Object[] methodArgs) {
         OperationContext operationContext = new OperationContext();
-        
+
         // 设置基本信息
         operationContext.setOperationId(operationId);
         operationContext.setUri(httpRequest.getRequestURI());
-        
+
         // 设置请求参数和请求体
         Object requestBody = getDeclaredRequestBody(parameterAnnotations, methodArgs);
         if (requestBody != null) {
             operationContext.setBody(requestBody);
         }
-        
+
         Map<String, String[]> parameters = httpRequest.getParameterMap();
         if (MapUtils.isNotEmpty(parameters)) {
             operationContext.setParameters(parameters);
         }
-        
+
         return operationContext;
     }
-    
+
     /**
      * 安全地保存操作日志
      * <p>在独立的事务中保存操作日志，确保即使保存失败也不影响主业务流程</p>
@@ -306,7 +299,7 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
      * <p>遍历方法的所有参数，查找标注了@RequestBody注解的参数并返回其值</p>
      *
      * @param parameterAnnotations 方法参数注解二维数组，每个参数对应一个注解数组
-     * @param args 方法参数值数组
+     * @param methodArgs 方法参数值数组
      * @return 标注了@RequestBody的参数值，如果没有找到则返回null
      */
     private Object getDeclaredRequestBody(Annotation[][] parameterAnnotations, Object[] methodArgs) {
@@ -351,7 +344,8 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
      * @return 当前HTTP请求对象，如果不在Web请求上下文中则返回null
      */
     private HttpServletRequest getCurrentHttpRequest() {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes requestAttributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return requestAttributes != null ? requestAttributes.getRequest() : null;
     }
 
@@ -377,11 +371,11 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
      */
     private String getStackTrace(Throwable throwable) {
         try (StringWriter stringWriter = new StringWriter();
-             PrintWriter printWriter = new PrintWriter(stringWriter)) {
-            
+                PrintWriter printWriter = new PrintWriter(stringWriter)) {
+
             throwable.printStackTrace(printWriter);
             return stringWriter.toString();
-            
+
         } catch (Exception exception) {
             // 如果获取堆栈信息失败，返回基本的异常信息
             return throwable.getClass().getSimpleName() + ": " + throwable.getMessage();
@@ -412,7 +406,7 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
                 return operation.summary();
             }
         }
-        
+
         // 默认使用方法名
         return method.getName();
     }

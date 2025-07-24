@@ -56,7 +56,7 @@ public class DefaultOperationServiceImpl implements OperationService {
     @Override
     public void save(OperationLogRecord operationLogRecord) {
         Assert.notNull(operationLogRecord, "Operation log record must not be null");
-        
+
         try {
             // 记录操作日志到控制台（实际项目中可替换为数据库、消息队列等）
             log.info("Save operation log: {}", GSON.toJson(operationLogRecord));
@@ -65,5 +65,4 @@ public class DefaultOperationServiceImpl implements OperationService {
             log.warn("Failed to save operation log: {}", e.getMessage(), e);
         }
     }
-
 }
