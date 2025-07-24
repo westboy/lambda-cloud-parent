@@ -69,22 +69,22 @@ public class OperatorUtils {
     private static final LoginUser DEFAULT_USER = new LoginUser() {
         @Override
         public String getName() {
-            return "guest";
+            return "anonymous";
         }
 
         @Override
         public String getUsername() {
-            return "guest";
+            return "anonymous";
         }
 
         @Override
         public String getCredentials() {
-            return "guest";
+            return "anonymous";
         }
 
         @Override
         public String getOrgId() {
-            return "guest";
+            return "anonymous";
         }
 
         @Override
