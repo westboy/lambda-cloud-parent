@@ -2,169 +2,308 @@
 
 ## 概述
 
-`lambda-cloud-starter-test` 是 Lambda Cloud 微服务框架的测试模块，提供了丰富的测试辅助工具和基础依赖，帮助开发者快速构建高质量的单元测试和集成测试。
+`lambda-cloud-starter-test` 是 Lambda Cloud 微服务框架的测试模块，提供了丰富的测试辅助工具和基础依赖，帮助开发者快速构建高质量的单元测试和集成测试。该模块基于 Spring Boot Test、JUnit 5、Mockito 等主流测试框架，提供了统一的测试注解、增强的断言工具、便捷的数据构建器、Mock 工具集和性能测试工具。
 
 ## 功能特性
 
-- **统一测试注解**：提供 `@LambdaTest` 组合注解，简化测试配置
-- **测试扩展支持**：内置 `LambdaTestExtension`，提供测试生命周期管理
-- **数据构建工具**：`TestDataBuilder` 提供便捷的测试数据生成
-- **Mock 工具集**：`MockUtils` 提供强大的 Mock 对象管理功能
-- **断言增强**：`LambdaAssertions` 扩展标准断言，支持业务场景
-- **数据库测试**：`TestDatabaseUtils` 提供数据库测试支持
-- **性能测试**：`PerformanceTestUtils` 提供性能和基准测试工具
-- **测试配置**：自动配置测试环境和属性
+- **🎯 统一测试注解**：`@LambdaTest` 组合注解，简化测试配置
+- **🔧 测试扩展支持**：`LambdaTestExtension` 提供测试生命周期管理和监控
+- **🏗️ 数据构建工具**：`TestDataBuilder` 提供便捷的测试数据生成
+- **🎭 Mock 工具集**：`MockUtils` 提供强大的 Mock 对象管理功能
+- **✅ 断言增强**：`LambdaAssertions` 扩展标准断言，支持业务场景
+- **⚡ 性能测试**：`PerformanceTestUtils` 提供性能和基准测试工具
+- **📊 测试监控**：自动记录测试执行时间和结果
 
 ## 核心组件
 
-### 1. 统一测试注解
+### 1. 统一测试注解 - @LambdaTest
 
-**LambdaTest**：组合注解，集成常用测试配置
+`@LambdaTest` 是一个组合注解，集成了常用的测试配置：
 
 ```java
 @LambdaTest
-class MyServiceTest {
-    // 测试代码
+class UserServiceTest {
+    
+    @Autowired
+    private UserService userService;
+    
+    @Test
+    void testCreateUser() {
+        // 测试逻辑
+    }
 }
 
 // 等价于
 @SpringBootTest
 @SpringJUnitConfig
 @ExtendWith(LambdaTestExtension.class)
-class MyServiceTest {
+class UserServiceTest {
     // 测试代码
 }
 ```
 
-### 2. 测试数据构建器
+**支持的配置选项：**
+- `classes`：指定测试使用的配置类
+- `properties`：指定测试使用的配置属性
+- `webEnvironment`：指定 Web 环境类型
 
-**TestDataBuilder**：提供便捷的测试数据生成功能
+### 2. 测试扩展 - LambdaTestExtension
 
-```java
-@Autowired
-private TestDataBuilder testDataBuilder;
+`LambdaTestExtension` 提供测试生命周期管理和监控功能：
 
-@Test
-void testUserCreation() {
-    // 创建测试用户
-    User user = testDataBuilder.create(User.class)
-        .with("name", "John Doe")
-        .with("email", "john@example.com")
-        .build();
-    
-    // 批量创建
-    List<User> users = testDataBuilder.createList(User.class, 5);
-}
+**主要功能：**
+- ⏱️ 自动记录测试类和测试方法的执行时间
+- 📝 详细的测试结果日志记录（成功/失败/跳过/中止）
+- 🔄 测试前后的资源管理
+- 📊 测试上下文信息收集
+
+**日志输出示例：**
+```
+开始执行测试类: UserServiceTest
+✅ 测试通过: testCreateUser()
+测试方法 testCreateUser() 执行完成，耗时: 125 ms
+测试类 UserServiceTest 执行完成，总耗时: 1250 ms
 ```
 
-### 3. Mock 工具集
+### 3. 测试数据构建器 - TestDataBuilder
 
-**MockUtils**：提供强大的 Mock 对象管理功能
+`TestDataBuilder` 提供便捷的测试数据生成功能：
 
 ```java
-@Test
-void testWithMocks() {
-    // 创建 Mock 对象
-    UserService mockService = MockUtils.createMock(UserService.class);
-    
-    // 配置 Mock 行为
-    MockUtils.when(mockService.findById(1L))
-        .thenReturn(new User("John"));
-    
-    // 验证调用
-    MockUtils.verify(mockService).findById(1L);
-}
+// 创建单个对象
+User user = TestDataBuilder.create(User.class)
+    .with("name", "张三")
+    .with("age", 25)
+    .with("email", "zhangsan@example.com")
+    .build();
+
+// 批量创建对象
+List<User> users = TestDataBuilder.createList(User.class, 10);
+
+// 深度复制对象
+User copiedUser = TestDataBuilder.deepCopy(originalUser);
 ```
 
-### 4. 增强断言
+**支持的数据类型：**
+- 基础类型：String、Integer、Long、Double、Float、Boolean
+- 时间类型：LocalDateTime、LocalDate、Date
+- 数值类型：BigDecimal
+- 枚举类型：自动随机选择枚举值
+- 自定义属性：通过 `with()` 方法设置
 
-**LambdaAssertions**：扩展标准断言功能
+### 4. Mock 工具集 - MockUtils
+
+`MockUtils` 提供强大的 Mock 对象管理功能：
 
 ```java
-@Test
-void testWithEnhancedAssertions() {
-    User user = userService.createUser("John", "john@example.com");
-    
-    // 对象断言
-    LambdaAssertions.assertThat(user)
-        .isNotNull()
-        .hasProperty("name", "John")
-        .matches(u -> u.getEmail().contains("@"));
-    
-    // 集合断言
-    List<User> users = userService.findAll();
-    LambdaAssertions.assertThat(users)
-        .hasSize(1)
-        .allMatch(u -> u.getName() != null);
-    
-    // 时间断言
-    LambdaAssertions.assertThat(user.getCreateTime())
-        .isRecentWithin(Duration.ofMinutes(1));
-    
-    // 异步断言
-    LambdaAssertions.assertEventually(
-        () -> asyncService.isCompleted(), 
-        Duration.ofSeconds(5));
+// 创建 Mock 对象
+UserRepository mockRepo = MockUtils.createMock(UserRepository.class);
+
+// 创建并配置 Mock 对象
+UserRepository mockRepo = MockUtils.createMock(UserRepository.class, mock -> {
+    when(mock.findById(anyLong())).thenReturn(Optional.of(new User()));
+    when(mock.save(any(User.class))).thenReturn(new User());
+});
+
+// 创建 Spy 对象
+UserService spyService = MockUtils.createSpy(realUserService);
+
+// 批量注入依赖
+UserService service = new UserService();
+MockUtils.injectMocks(service)
+    .inject("userRepository", mockRepo)
+    .inject("emailService", mockEmailService)
+    .inject("cacheService", mockCacheService);
+
+// Mock 静态方法
+try (MockedStatic<DateUtils> mockedStatic = MockUtils.mockStatic(DateUtils.class)) {
+    mockedStatic.when(DateUtils::getCurrentTime)
+               .thenReturn(LocalDateTime.of(2023, 1, 1, 12, 0));
+    // 测试逻辑
 }
+
+// 验证交互
+MockUtils.verify(mockRepo).findById(1L);
+MockUtils.verify(mockRepo, 2).save(any(User.class));
+MockUtils.verifyNever(mockRepo).deleteById(anyLong());
 ```
 
-### 5. 数据库测试工具
+### 5. 增强断言 - LambdaAssertions
 
-**TestDatabaseUtils**：提供数据库测试支持
+`LambdaAssertions` 扩展了标准断言功能，提供更丰富的断言方法：
 
+#### 对象断言
 ```java
-@Autowired
-private TestDatabaseUtils dbUtils;
+User user = userService.createUser("张三", "zhangsan@example.com");
 
-@Test
-void testDatabaseOperations() {
-    // 清理数据库
-    dbUtils.cleanDatabase();
-    
-    // 执行SQL
-    dbUtils.executeSql("INSERT INTO users (name) VALUES ('John')");
-    
-    // 验证数据
-    long count = dbUtils.countRecords("users");
-    assertEquals(1, count);
-    
-    // 查询数据
-    List<Map<String, Object>> users = dbUtils.queryForList("SELECT * FROM users");
-    assertFalse(users.isEmpty());
-}
+// 使用 assertLambda 方法（推荐）
+LambdaAssertions.assertLambda(user)
+    .isNotNull()
+    .isEqualTo(expectedUser)
+    .isInstanceOf(User.class)
+    .hasProperty("name", "张三")
+    .hasProperty("email", "zhangsan@example.com")
+    .toStringContains("张三")
+    .hasHashCode(expectedHashCode)
+    .isSameAs(user)
+    .isNotSameAs(otherUser);
+
+// 也可以使用 assertThat 方法
+LambdaAssertions.assertThat(user).isNotNull();
 ```
 
-### 6. 性能测试工具
-
-**PerformanceTestUtils**：提供性能和基准测试功能
-
+#### 集合断言
 ```java
-@Test
-void testPerformance() {
-    // 测量执行时间
-    Duration duration = PerformanceTestUtils.measureTime(() -> {
-        service.processLargeDataset();
+List<User> users = userService.findAll();
+
+LambdaAssertions.assertLambda(users)
+    .isNotNull()
+    .isNotEmpty()
+    .hasSize(3)
+    .contains(expectedUser)
+    .doesNotContain(unexpectedUser)
+    .allMatch(u -> u.getName() != null)
+    .anyMatch(u -> u.getAge() > 18)
+    .noneMatch(u -> u.getEmail() == null);
+```
+
+#### 时间断言
+```java
+LocalDateTime createTime = user.getCreateTime();
+
+LambdaAssertions.assertLambda(createTime)
+    .isNotNull()
+    .isAfter(startTime)
+    .isBefore(endTime)
+    .isAfterOrEqualTo(startTime)
+    .isBeforeOrEqualTo(endTime)
+    .isBetween(startTime, endTime)
+    .isToday()
+    .isCloseTo(LocalDateTime.now(), 5); // 5秒容忍度
+```
+
+#### 异常断言
+```java
+// 断言抛出异常
+RuntimeException exception = LambdaAssertions.assertThrows(RuntimeException.class, () -> {
+    userService.createUser(null, null);
+});
+
+LambdaAssertions.assertLambda(exception.getMessage())
+    .contains("用户名不能为空");
+
+// 断言不抛出异常
+LambdaAssertions.assertDoesNotThrow(() -> {
+    userService.createUser("张三", "zhangsan@example.com");
+});
+
+// 异步断言
+LambdaAssertions.assertEventually(
+    () -> asyncService.isCompleted(), 
+    Duration.ofSeconds(5)
+);
+
+// 在指定时间内完成
+LambdaAssertions.assertCompletesWithin(
+    () -> longRunningService.process(),
+    Duration.ofSeconds(10)
+);
+```
+
+#### 性能断言
+```java
+// 断言执行时间
+LambdaAssertions.assertExecutionTime(
+    () -> service.processLargeDataset(),
+    Duration.ofSeconds(5) // 最大允许执行时间
+);
+```
+
+### 6. 性能测试工具 - PerformanceTestUtils
+
+`PerformanceTestUtils` 提供全面的性能测试功能：
+
+#### 执行时间测量
+```java
+// 测量执行时间
+Duration duration = PerformanceTestUtils.measureTime(() -> {
+    service.processLargeDataset();
+});
+
+// 测量带返回值的操作
+PerformanceTestUtils.TimedResult<String> result = 
+    PerformanceTestUtils.measureTimeWithResult(() -> {
+        return service.generateReport();
     });
-    
-    // 基准测试
-    BenchmarkResult result = PerformanceTestUtils.benchmark(
-        () -> service.processRequest(), 5, 10);
-    
-    System.out.println(result); // 输出性能统计
-    
-    // 并发测试
-    ConcurrentTestResult concurrentResult = PerformanceTestUtils.concurrentTest(
-        () -> service.handleRequest(), 10, 100);
-    
-    // 吞吐量测试
-    ThroughputTestResult throughputResult = PerformanceTestUtils.throughputTest(
-        () -> service.processMessage(), Duration.ofSeconds(10));
-}
+
+System.out.println("结果: " + result.getResult());
+System.out.println("耗时: " + result.getDuration());
+```
+
+#### 基准测试
+```java
+// 基准测试（默认参数：5次预热，10次测量）
+PerformanceTestUtils.BenchmarkResult result = 
+    PerformanceTestUtils.benchmark(() -> {
+        service.processRequest();
+    });
+
+// 自定义参数的基准测试
+PerformanceTestUtils.BenchmarkResult result = 
+    PerformanceTestUtils.benchmark(
+        () -> service.processRequest(),
+        10,  // 预热次数
+        20   // 测量次数
+    );
+
+System.out.println(result);
+// 输出: BenchmarkResult{平均: PT0.125S, 最小: PT0.100S, 最大: PT0.150S, 标准差: PT0.015S, 样本数: 20, 每秒操作数: 8.00}
+```
+
+#### 并发性能测试
+```java
+// 并发测试：10个线程，每个线程执行100次
+PerformanceTestUtils.ConcurrentTestResult result = 
+    PerformanceTestUtils.concurrentTest(
+        () -> service.handleRequest(),
+        10,   // 线程数
+        100   // 每个线程的执行次数
+    );
+
+System.out.println(result);
+// 输出: ConcurrentTestResult{线程数: 10, 每线程操作数: 100, 总时间: PT5.234S, 平均执行时间: PT0.052S, 吞吐量: 191.06 ops/s}
+```
+
+#### 吞吐量测试
+```java
+// 吞吐量测试：持续10秒
+PerformanceTestUtils.ThroughputTestResult result = 
+    PerformanceTestUtils.throughputTest(
+        () -> service.processMessage(),
+        Duration.ofSeconds(10)
+    );
+
+System.out.println(result);
+// 输出: ThroughputTestResult{执行次数: 1250, 测试时长: PT10S, 吞吐量: 125.00 ops/s, 平均执行时间: PT0.008S}
+```
+
+#### 内存使用测试
+```java
+// 内存使用测试
+PerformanceTestUtils.MemoryUsageResult result = 
+    PerformanceTestUtils.measureMemoryUsage(() -> {
+        service.loadLargeDataset();
+    });
+
+System.out.println(result);
+// 输出: MemoryUsageResult{使用前: 52428800 bytes, 使用后: 104857600 bytes, 使用量: 52428800 bytes (50.00 MB)}
 ```
 
 ## 快速开始
 
 ### 1. 添加依赖
+
+在项目的 `pom.xml` 中添加依赖：
 
 ```xml
 <dependency>
@@ -182,42 +321,43 @@ void testPerformance() {
 class UserServiceTest {
     
     @Autowired
-    private TestDataBuilder testDataBuilder;
-    
-    @Autowired
-    private TestDatabaseUtils dbUtils;
+    private UserService userService;
     
     @MockBean
     private UserRepository userRepository;
     
-    @Autowired
-    private UserService userService;
-    
-    @BeforeEach
-    void setUp() {
-        dbUtils.cleanDatabase();
-    }
-    
     @Test
     void shouldCreateUser() {
         // Given
-        User user = testDataBuilder.create(User.class)
-            .with("name", "John Doe")
-            .with("email", "john@example.com")
+        User expectedUser = TestDataBuilder.create(User.class)
+            .with("name", "张三")
+            .with("email", "zhangsan@example.com")
             .build();
         
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenReturn(expectedUser);
         
         // When
-        User result = userService.createUser("John Doe", "john@example.com");
+        User result = userService.createUser("张三", "zhangsan@example.com");
         
         // Then
-        LambdaAssertions.assertThat(result)
+        LambdaAssertions.assertLambda(result)
             .isNotNull()
-            .hasProperty("name", "John Doe")
-            .hasProperty("email", "john@example.com");
+            .hasProperty("name", "张三")
+            .hasProperty("email", "zhangsan@example.com");
         
-        verify(userRepository).save(any(User.class));
+        MockUtils.verify(userRepository).save(any(User.class));
+    }
+    
+    @Test
+    void shouldThrowExceptionWhenNameIsNull() {
+        // When & Then
+        IllegalArgumentException exception = LambdaAssertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.createUser(null, "test@example.com")
+        );
+        
+        LambdaAssertions.assertLambda(exception.getMessage())
+            .contains("用户名不能为空");
     }
 }
 ```
@@ -231,80 +371,70 @@ class UserControllerIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
     
-    @Autowired
-    private TestDatabaseUtils dbUtils;
-    
-    @BeforeEach
-    void setUp() {
-        dbUtils.cleanDatabase();
-    }
-    
     @Test
     void shouldCreateUserViaApi() {
         // Given
-        CreateUserRequest request = new CreateUserRequest("John", "john@example.com");
+        CreateUserRequest request = new CreateUserRequest("张三", "zhangsan@example.com");
         
         // When
         ResponseEntity<User> response = restTemplate.postForEntity(
             "/api/users", request, User.class);
         
         // Then
-        LambdaAssertions.assertThat(response.getStatusCode())
+        LambdaAssertions.assertLambda(response.getStatusCode())
             .isEqualTo(HttpStatus.CREATED);
         
-        LambdaAssertions.assertThat(response.getBody())
+        LambdaAssertions.assertLambda(response.getBody())
             .isNotNull()
-            .hasProperty("name", "John");
-        
-        // 验证数据库
-        long userCount = dbUtils.countRecords("users");
-        assertEquals(1, userCount);
+            .hasProperty("name", "张三")
+            .hasProperty("email", "zhangsan@example.com");
     }
 }
 ```
 
-## 配置说明
-
-### 测试属性配置
-
-测试模块会自动配置以下属性：
-
-```properties
-# 数据库配置
-spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-spring.datasource.driver-class-name=org.h2.Driver
-spring.jpa.hibernate.ddl-auto=create-drop
-
-# 日志配置
-logging.level.com.lambda.cloud=DEBUG
-logging.level.org.springframework=WARN
-
-# Lambda Cloud 配置
-lambda.logging.operation.kafka.enabled=false
-lambda.cache.enabled=false
-```
-
-### 自定义配置
-
-可以通过 `TestConfigurationHelper` 进行自定义配置：
+### 4. 性能测试示例
 
 ```java
-@Autowired
-private TestConfigurationHelper configHelper;
-
-@Test
-void testWithCustomConfig() {
-    // 启用调试模式
-    configHelper.enableDebugMode();
+@LambdaTest
+class UserServicePerformanceTest {
     
-    // 设置自定义属性
-    configHelper.setTestProperty("custom.property", "test-value");
+    @Autowired
+    private UserService userService;
     
-    // 执行测试
-    // ...
+    @Test
+    void testCreateUserPerformance() {
+        // 基准测试
+        PerformanceTestUtils.BenchmarkResult benchmark = 
+            PerformanceTestUtils.benchmark(() -> {
+                userService.createUser("测试用户", "test@example.com");
+            });
+        
+        // 断言平均执行时间小于100ms
+        LambdaAssertions.assertLambda(benchmark.getAverage())
+            .isLessThan(Duration.ofMillis(100));
+        
+        System.out.println("创建用户性能测试结果: " + benchmark);
+    }
     
-    // 清理配置
-    configHelper.clearTestProperty("custom.property");
+    @Test
+    void testConcurrentUserCreation() {
+        // 并发测试：5个线程，每个线程创建20个用户
+        PerformanceTestUtils.ConcurrentTestResult result = 
+            PerformanceTestUtils.concurrentTest(
+                () -> userService.createUser(
+                    "并发用户" + System.nanoTime(), 
+                    "concurrent@example.com"
+                ),
+                5,   // 线程数
+                20   // 每线程执行次数
+            );
+        
+        // 断言吞吐量大于50 ops/s
+        LambdaAssertions.assertLambda(result.getThroughput())
+            .isGreaterThan(50.0);
+        
+        System.out.println("并发创建用户测试结果: " + result);
+    }
 }
 ```
 
@@ -312,73 +442,172 @@ void testWithCustomConfig() {
 
 ### 1. 测试结构
 
+遵循 **Given-When-Then** 模式：
+
 ```java
 @LambdaTest
 class ServiceTest {
     
-    // Given - 准备测试数据
-    @BeforeEach
-    void setUp() {
-        // 初始化测试环境
-    }
-    
-    // When - 执行测试操作
     @Test
     void shouldDoSomething() {
-        // Given
-        // 准备测试数据
+        // Given - 准备测试数据和环境
+        User user = TestDataBuilder.create(User.class)
+            .with("name", "测试用户")
+            .build();
         
-        // When
-        // 执行被测试的方法
+        UserRepository mockRepo = MockUtils.createMock(UserRepository.class, mock -> {
+            when(mock.findById(1L)).thenReturn(Optional.of(user));
+        });
         
-        // Then
-        // 验证结果
-    }
-    
-    // Then - 清理测试环境
-    @AfterEach
-    void tearDown() {
-        // 清理测试数据
+        MockUtils.injectMocks(userService)
+            .inject("userRepository", mockRepo);
+        
+        // When - 执行被测试的方法
+        User result = userService.getUserById(1L);
+        
+        // Then - 验证结果
+        LambdaAssertions.assertLambda(result)
+            .isNotNull()
+            .isEqualTo(user);
+        
+        MockUtils.verify(mockRepo).findById(1L);
     }
 }
 ```
 
 ### 2. 数据管理
 
-- 使用 `TestDataBuilder` 创建测试数据
-- 使用 `TestDatabaseUtils` 管理数据库状态
-- 每个测试方法前清理数据库
-- 使用事务回滚保证测试隔离
+- **使用 TestDataBuilder**：统一管理测试数据创建
+- **避免硬编码**：使用构建器模式设置测试数据
+- **数据隔离**：每个测试方法使用独立的测试数据
 
-### 3. Mock 使用
+```java
+// ✅ 推荐
+User user = TestDataBuilder.create(User.class)
+    .with("name", "张三")
+    .with("age", 25)
+    .build();
 
-- 优先使用真实对象进行集成测试
-- 对外部依赖使用 Mock
-- 使用 `MockUtils` 简化 Mock 配置
-- 验证重要的交互行为
+// ❌ 不推荐
+User user = new User();
+user.setName("张三");
+user.setAge(25);
+```
+
+### 3. Mock 使用策略
+
+- **优先集成测试**：对于简单的依赖，优先使用真实对象
+- **Mock 外部依赖**：对于数据库、网络调用等外部依赖使用 Mock
+- **验证重要交互**：验证关键的方法调用和参数
+
+```java
+// Mock 外部服务
+EmailService mockEmailService = MockUtils.createMock(EmailService.class);
+
+// 验证重要交互
+MockUtils.verify(mockEmailService).sendWelcomeEmail(user.getEmail());
+```
 
 ### 4. 断言策略
 
-- 使用 `LambdaAssertions` 提供更好的错误信息
-- 断言应该具体和有意义
-- 避免过度断言
-- 使用自定义断言提高可读性
+- **使用 LambdaAssertions**：提供更好的错误信息和链式调用
+- **断言要具体**：避免过于宽泛的断言
+- **组合断言**：使用链式调用组合多个断言
+
+```java
+// ✅ 推荐：具体且有意义的断言
+LambdaAssertions.assertLambda(user)
+    .isNotNull()
+    .hasProperty("name", "张三")
+    .hasProperty("status", UserStatus.ACTIVE);
+
+// ❌ 不推荐：过于宽泛的断言
+assertThat(user).isNotNull();
+```
+
+### 5. 性能测试指南
+
+- **基准测试**：用于测量单个操作的性能
+- **并发测试**：用于测试系统在并发场景下的表现
+- **吞吐量测试**：用于测试系统的处理能力
+- **设置合理的性能目标**：根据业务需求设置性能断言
+
+```java
+// 设置合理的性能目标
+PerformanceTestUtils.BenchmarkResult result = 
+    PerformanceTestUtils.benchmark(() -> service.processRequest());
+
+// 根据业务需求设置断言
+LambdaAssertions.assertLambda(result.getAverage())
+    .isLessThan(Duration.ofMillis(200)); // 平均响应时间小于200ms
+
+LambdaAssertions.assertLambda(result.getOperationsPerSecond())
+    .isGreaterThan(100.0); // 每秒处理超过100个请求
+```
 
 ## 核心依赖
 
-- `spring-boot-starter-test`：Spring Boot 测试框架
-- `junit-jupiter`：JUnit 5 测试引擎
-- `mockito-core`：Mockito Mock 框架
-- `mockito-inline`：Mockito 内联支持
-- `assertj-core`：AssertJ 断言库
-- `awaitility`：异步测试工具
-- `h2`：内存数据库（测试用）
-- `spring-boot-starter-data-jpa`：JPA 测试支持
-- `lambda-cloud-core`：Lambda Cloud 核心模块
+该模块基于以下核心依赖构建：
 
-## 版本兼容性
+```xml
+<!-- 测试框架 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+</dependency>
 
-- Spring Boot 2.7+
-- JUnit 5.8+
-- Mockito 4.6+
-- Java 8+
+<!-- JUnit 5 -->
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-params</artifactId>
+</dependency>
+
+<!-- Mockito -->
+<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-core</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-inline</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-junit-jupiter</artifactId>
+</dependency>
+
+<!-- 断言库 -->
+<dependency>
+    <groupId>org.assertj</groupId>
+    <artifactId>assertj-core</artifactId>
+</dependency>
+
+<!-- 异步测试 -->
+<dependency>
+    <groupId>org.awaitility</groupId>
+    <artifactId>awaitility</artifactId>
+</dependency>
+
+<!-- 数据库测试 -->
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+    <optional>true</optional>
+</dependency>
+
+<!-- Lambda Cloud 核心 -->
+<dependency>
+    <groupId>com.lambda.cloud</groupId>
+    <artifactId>lambda-cloud-core</artifactId>
+</dependency>
+```
+
