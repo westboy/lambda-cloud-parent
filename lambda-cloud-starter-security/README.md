@@ -1450,303 +1450,7 @@ document.getElementById('refreshCaptchaBtn')?.addEventListener('click', async ()
 
 ### 6. HMAC认证
 
-#### 6.1 JavaScript端使用示例
-
-```javascript
-/**
- * HMAC认证类
- * 基于lambda-cloud框架的HMAC认证实现
- * 严格按照HmacGenerator和HmacUtils的Java实现
- */
-class HmacAuth {
-    constructor(appid, secret, runUserId = null, runType = null) {
-        this.appid = appid;
-        this.secret = secret;
-        this.runUserId = runUserId;
-        this.runType = runType;
-    }
-    
-    /**
-     * 构建基础签名字符串
-     * 严格按照HmacGenerator.baseString的Java实现
-     */
-    buildBaseString(queryParams, requestBody) {
-        const parts = [];
-        
-        // 1. 处理查询参数（模拟Java的Map<String, String[]>）
-        if (queryParams && queryParams.size > 0) {
-            const sortedParams = Array.from(queryParams.entries())
-                .sort(([a], [b]) => a.localeCompare(b));
-            
-            for (const [key, values] of sortedParams) {
-                // 模拟Java数组格式：[value1, value2]
-                const arrayStr = Array.isArray(values) 
-                    ? `[${values.join(', ')}]`
-                    : `[${values}]`;
-                parts.push(`${key}=${arrayStr}`);
-            }
-        }
-        
-        // 2. 添加appid
-        parts.push(`appid=${this.appid}`);
-        
-        // 3. 添加时间戳
-        const timestamp = Date.now();
-        parts.push(`timestamp=${timestamp}`);
-        
-        // 4. 处理请求体（清理空白字符和反斜杠，与Java的replaceAll("\\s+|\\\\+", "")一致）
-        if (requestBody) {
-            const cleanedBody = requestBody.replace(/\s+|\\+/g, '');
-            if (cleanedBody) {
-                parts.push(cleanedBody);
-            }
-        }
-        
-        return {
-            baseString: parts.join(''),
-            timestamp: timestamp
-        };
-    }
-    
-    /**
-     * 生成HMAC-SHA1签名
-     * 使用UTF-8编码，与Java的实现保持一致
-     */
-    async generateHmacSha1Signature(baseString) {
-        const encoder = new TextEncoder();
-        const keyData = encoder.encode(this.secret);
-        const messageData = encoder.encode(baseString);
-        
-        const cryptoKey = await crypto.subtle.importKey(
-            'raw',
-            keyData,
-            { name: 'HMAC', hash: 'SHA-1' },
-            false,
-            ['sign']
-        );
-        
-        const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
-        
-        // 转换为Base64，与Java的Base64.encodeBase64String一致
-        return btoa(String.fromCharCode(...new Uint8Array(signature)));
-    }
-    
-    /**
-     * 执行HMAC认证
-     * 支持GET和POST请求，支持代理用户参数
-     */
-    async authenticate(url, requestData = null) {
-        try {
-            const urlObj = new URL(url);
-            const queryParams = new Map();
-            
-            // 解析现有查询参数
-            for (const [key, value] of urlObj.searchParams) {
-                queryParams.set(key, value);
-            }
-            
-            // 添加代理用户参数
-            if (this.runUserId) {
-                queryParams.set('hmac-run-user', this.runUserId);
-            }
-            if (this.runType) {
-                queryParams.set('hmac-run-type', this.runType);
-            }
-            
-            // 构建请求体
-            const requestBody = requestData ? JSON.stringify(requestData) : null;
-            const { baseString, timestamp } = this.buildBaseString(queryParams, requestBody);
-            
-            // 生成签名
-            const signature = await this.generateHmacSha1Signature(baseString);
-            
-            // 构建Authorization头（格式：HmacSHA appid:timestamp:signature）
-            const authorization = `HmacSHA ${this.appid}:${timestamp}:${signature}`;
-            
-            // 构建完整URL（添加查询参数）
-            const fullPath = new URLSearchParams();
-            for (const [key, value] of queryParams) {
-                fullPath.append(key, value);
-            }
-            const fullUrl = `${urlObj.origin}${urlObj.pathname}?${fullPath.toString()}`;
-            
-            // 发送请求
-            const response = await fetch(fullUrl, {
-                method: requestData ? 'POST' : 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': authorization
-                },
-                body: requestBody
-            });
-            
-            const result = await response.json();
-            
-            if (response.ok && result.code === 200) {
-                // 认证成功，保存token信息
-                if (result.data && result.data.tokenValue) {
-                    localStorage.setItem('satoken', result.data.tokenValue);
-                    localStorage.setItem('tokenInfo', JSON.stringify(result.data));
-                }
-                return { success: true, data: result.data };
-            } else {
-                return { success: false, message: result.message || '认证失败' };
-            }
-        } catch (error) {
-            console.error('HMAC认证错误:', error);
-            return { success: false, message: error.message };
-        }
-    }
-    
-    /**
-     * 发送GET请求
-     * 简化的GET请求方法
-     */
-    async get(url) {
-        return await this.authenticate(url, null);
-    }
-    
-    /**
-     * 发送POST请求
-     * 简化的POST请求方法
-     */
-    async post(url, data) {
-        return await this.authenticate(url, data);
-    }
-}
-
-/**
- * HMAC客户端工具类
- * 提供静态方法进行HMAC认证请求
- */
-class HmacClient {
-    /**
-     * 创建HMAC认证实例
-     */
-    static create(appid, secret, runUserId = null, runType = null) {
-        return new HmacAuth(appid, secret, runUserId, runType);
-    }
-    
-    /**
-     * 发送基本HMAC请求
-     */
-    static async request(appid, secret, url, data = null) {
-        const auth = new HmacAuth(appid, secret);
-        return await auth.authenticate(url, data);
-    }
-    
-    /**
-     * 发送代理用户HMAC请求
-     */
-    static async proxyRequest(appid, secret, url, data, runUserId, runType = 'default') {
-        const auth = new HmacAuth(appid, secret, runUserId, runType);
-        return await auth.authenticate(url, data);
-    }
-}
-
-// ========== 使用示例 ==========
-
-// 1. 基本HMAC认证请求
-const basicExample = async () => {
-    const hmacAuth = new HmacAuth('test-app', 'test-secret');
-    
-    try {
-        const result = await hmacAuth.post('http://localhost:8080/api/protected-resource', {
-            operation: 'query',
-            data: 'some important data',
-            timestamp: Date.now()
-        });
-        
-        if (result.success) {
-            console.log('基本请求成功:', result.data);
-        } else {
-            console.error('基本请求失败:', result.message);
-        }
-    } catch (error) {
-        console.error('请求异常:', error);
-    }
-};
-
-// 2. HMAC客户端代理用户请求
-const proxyExample = async () => {
-    const proxyAuth = new HmacAuth('test-app', 'test-secret', 'user123', 'admin');
-    
-    try {
-        const result = await proxyAuth.post('http://localhost:8080/api/user-proxy', {
-            operation: 'update_profile',
-            data: { 
-                name: '张三', 
-                email: 'zhangsan@example.com' 
-            }
-        });
-        
-        console.log('代理请求结果:', result);
-    } catch (error) {
-        console.error('代理请求异常:', error);
-    }
-};
-
-// 3. GET请求示例
-const getExample = async () => {
-    const hmacAuth = new HmacAuth('test-app', 'test-secret');
-    
-    try {
-        const result = await hmacAuth.get('http://localhost:8080/api/info?param1=value1&param2=value2');
-        console.log('GET请求结果:', result);
-    } catch (error) {
-        console.error('GET请求异常:', error);
-    }
-};
-
-// 4. 使用静态方法的示例
-const staticExample = async () => {
-    // 基本请求
-    const basicResult = await HmacClient.request(
-        'test-app', 
-        'test-secret', 
-        'http://localhost:8080/api/protected-resource',
-        { operation: 'query', data: 'test data' }
-    );
-    console.log('静态方法基本请求:', basicResult);
-    
-    // 代理请求
-    const proxyResult = await HmacClient.proxyRequest(
-        'test-app', 
-        'test-secret',
-        'http://localhost:8080/api/user-proxy',
-        { operation: 'update', data: { name: '李四' } },
-        'user456',
-        'admin'
-    );
-    console.log('静态方法代理请求:', proxyResult);
-};
-
-// 5. 页面加载时执行示例
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('=== HMAC客户端示例 ===');
-    
-    // 可以根据需要调用不同的示例
-    // basicExample();
-    // proxyExample();
-    // getExample();
-    // staticExample();
-});
-
-// 6. 按钮事件绑定示例
-if (document.getElementById('hmac-basic-btn')) {
-    document.getElementById('hmac-basic-btn').addEventListener('click', basicExample);
-}
-
-if (document.getElementById('hmac-proxy-btn')) {
-    document.getElementById('hmac-proxy-btn').addEventListener('click', proxyExample);
-}
-
-if (document.getElementById('hmac-get-btn')) {
-    document.getElementById('hmac-get-btn').addEventListener('click', getExample);
-}
-```
-
-#### 6.2 Java端配置
+#### 6.1 Java端配置
 
 ```yaml
 # application.yml
@@ -1763,7 +1467,7 @@ spring:
           # 不设置hosts表示不限制IP
 ```
 
-#### 6.3 Java端服务实现
+#### 6.2 Java端服务实现
 
 ```java
 /**
@@ -1836,7 +1540,7 @@ public class HmacProtectedController {
 }
 ```
 
-#### 6.4 自定义HMAC客户端服务
+#### 6.3 自定义HMAC客户端服务
 
 ```java
 /**
@@ -1888,19 +1592,9 @@ public class DatabaseHmacClientService implements HmacClientService {
 }
 ```
 
-#### 6.5 Java客户端HMAC工具类
+#### 6.4 Java客户端HMAC工具类
 
 ```java
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lambda.security.web.hmac.utils.HmacUtils;
-
 /**
  * Java客户端HMAC签名工具类
  * 基于HmacGenerator和HmacUtils的实现，提供完整的HMAC客户端功能
@@ -1913,34 +1607,23 @@ public class HmacClientUtils {
      * 
      * @param appid 应用ID
      * @param secret 应用密钥
-     * @param method HTTP方法（GET/POST等）
-     * @param uri 请求URI（包含路径和查询参数）
-     * @param queryParams 查询参数Map
+     * @param requestPath 请求路径
+     * @param queryParams 查询参数
      * @param requestBody 请求体
-     * @return Authorization头值（格式：HMAC appid:timestamp:digest）
+     * @return Authorization头值
      */
     public static String generateAuthorization(String appid, String secret, 
-                                              String method, String uri,
+                                              String requestPath, 
                                               Map<String, String[]> queryParams,
                                               String requestBody) {
         try {
             long timestamp = System.currentTimeMillis();
             
-            // 使用HmacUtils.getHmacSaltValue生成盐值字符串
-            // 格式：METHOD + URI + QUERY + BODY + TIMESTAMP
-            String saltValue = HmacUtils.getHmacSaltValue(method, uri, queryParams, requestBody, appid, timestamp);
+            // 构造基础签名字符串（使用HmacGenerator.baseString）
+            String baseString = HmacGenerator.baseString(appid, timestamp, queryParams, requestBody);
             
-            // 使用HMAC-SHA256算法生成签名
-            Mac mac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            mac.init(secretKeySpec);
-            byte[] digest = mac.doFinal(saltValue.getBytes(StandardCharsets.UTF_8));
-            
-            // Base64编码
-            String signature = Base64.getEncoder().encodeToString(digest);
-            
-            // 构造Authorization头：HMAC appid:timestamp:digest
-            return String.format("HMAC %s:%d:%s", appid, timestamp, signature);
+            // 生成Authorization头（使用HmacGenerator.authorization）
+            return HmacGenerator.authorization(appid, secret, timestamp, baseString);
         } catch (Exception e) {
             throw new RuntimeException("生成HMAC签名失败", e);
         }
@@ -1962,10 +1645,18 @@ public class HmacClientUtils {
                                        String requestBody, String runUserId, String runType) {
         try {
             URL requestUrl = new URL(url);
-            String method = requestBody != null ? "POST" : "GET";
+            String requestPath = requestUrl.getPath();
             
             // 构造查询参数Map
             Map<String, String[]> queryParams = new HashMap<>();
+            
+            // 添加代理用户参数
+            if (runUserId != null) {
+                queryParams.put("hmac-run-user", new String[]{runUserId});
+            }
+            if (runType != null) {
+                queryParams.put("hmac-run-type", new String[]{runType});
+            }
             
             // 解析URL中的查询参数
             String query = requestUrl.getQuery();
@@ -1981,30 +1672,8 @@ public class HmacClientUtils {
                 }
             }
             
-            // 添加代理用户参数
-            if (runUserId != null) {
-                queryParams.put("hmac-run-user", new String[]{runUserId});
-            }
-            if (runType != null) {
-                queryParams.put("hmac-run-type", new String[]{runType});
-            }
-            
-            // 构造完整URI（包含查询参数）
-            StringBuilder uriBuilder = new StringBuilder(requestUrl.getPath());
-            if (!queryParams.isEmpty()) {
-                uriBuilder.append("?");
-                List<String> paramList = new ArrayList<>();
-                for (Map.Entry<String, String[]> entry : queryParams.entrySet()) {
-                    for (String value : entry.getValue()) {
-                        paramList.add(entry.getKey() + "=" + URLEncoder.encode(value, StandardCharsets.UTF_8));
-                    }
-                }
-                uriBuilder.append(String.join("&", paramList));
-            }
-            String uri = uriBuilder.toString();
-            
             // 生成Authorization头
-            String authorization = generateAuthorization(appid, secret, method, uri, queryParams, requestBody);
+            String authorization = generateAuthorization(appid, secret, requestPath, queryParams, requestBody);
             
             // 构造完整的请求URL
             StringBuilder fullUrl = new StringBuilder();
@@ -2013,7 +1682,22 @@ public class HmacClientUtils {
             if (requestUrl.getPort() != -1) {
                 fullUrl.append(":").append(requestUrl.getPort());
             }
-            fullUrl.append(uri);  // 使用已构造的URI（包含所有查询参数）
+            fullUrl.append(requestPath);
+            
+            // 添加查询参数
+            List<String> paramList = new ArrayList<>();
+            if (query != null) {
+                paramList.add(query);
+            }
+            if (runUserId != null) {
+                paramList.add("hmac-run-user=" + URLEncoder.encode(runUserId, StandardCharsets.UTF_8));
+            }
+            if (runType != null) {
+                paramList.add("hmac-run-type=" + URLEncoder.encode(runType, StandardCharsets.UTF_8));
+            }
+            if (!paramList.isEmpty()) {
+                fullUrl.append("?").append(String.join("&", paramList));
+            }
             
             // 发送HTTP请求
             HttpURLConnection connection = (HttpURLConnection) new URL(fullUrl.toString()).openConnection();
@@ -2069,7 +1753,7 @@ public class HmacClientUtils {
 }
 ```
 
-#### 6.6 Java客户端使用示例
+#### 6.5 Java客户端使用示例
 
 ```java
 /**
@@ -2353,23 +2037,3 @@ spring:
 - **环境隔离**：不同环境使用不同的配置文件
 - **敏感信息**：使用环境变量或配置中心管理敏感配置
 
-## 版本兼容性
-
-| 版本     | Spring Boot | Sa-Token | JDK |
-|--------|-------------|----------|-----|
-| 2025.1 | 3.0.x | 1.36.x | 17+ |
-
-## 许可证
-
-Apache License 2.0
-
-## 贡献指南
-
-欢迎提交Issue和Pull Request来改进这个项目。
-
-## 技术支持
-
-如有问题，请通过以下方式联系：
-- 提交GitHub Issue
-- 发送邮件至技术支持团队
-- 查看在线文档和FAQ
