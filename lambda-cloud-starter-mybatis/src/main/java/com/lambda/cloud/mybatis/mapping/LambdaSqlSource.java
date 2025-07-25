@@ -7,10 +7,8 @@ import org.apache.ibatis.mapping.SqlSource;
 /**
  * @author Jin
  */
-public class LambdaSqlSource implements SqlSource {
-
-    @SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
-    private final BoundSql boundSql;
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
+public record LambdaSqlSource(BoundSql boundSql) implements SqlSource {
 
     public LambdaSqlSource(BoundSql boundSql) {
         this.boundSql = boundSql;

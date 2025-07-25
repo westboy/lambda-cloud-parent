@@ -12,9 +12,9 @@ import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.purview.support.Parameters;
-import com.lambda.cloud.mybatis.purview.utils.PurviewUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.*;
 import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
@@ -35,18 +35,16 @@ import org.springframework.util.ClassUtils;
  */
 @Slf4j
 @Intercepts({
-    @Signature(
-            type = Executor.class,
-            method = "query",
-            args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
+        @Signature(
+                type = Executor.class,
+                method = "query",
+                args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
-public class PurviewInterceptor implements Interceptor {
+public record PurviewInterceptor(
+        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}) Map<Integer, Integer> typeMapper) implements Interceptor {
 
     private static final String PURVIEW_MS_ID = "purviewMappedStatementId";
     private static final int MAX = 1000;
-
-    @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
-    private final Map<Integer, Integer> typeMapper;
 
     public PurviewInterceptor(Map<Integer, Integer> typeMapper) {
         this.typeMapper = typeMapper;
@@ -94,11 +92,11 @@ public class PurviewInterceptor implements Interceptor {
             log.warn("When using @Purview, the user must be provided. Otherwise it will be ignored.");
             return invocation.proceed();
         }
-        boolean owner = PurviewUtils.isOwner(operator);
+        boolean owner = isOwner(operator);
         String updated;
         if (owner) {
             if (replace) {
-                updated = PurviewUtils.modifySqlForOwner(sql);
+                updated = modifySqlForOwner(sql);
             } else {
                 return invocation.proceed();
             }
@@ -143,7 +141,7 @@ public class PurviewInterceptor implements Interceptor {
             RowBounds rowBounds,
             DynamicPurview purview,
             LoginUser operator)
-            throws java.sql.SQLException {
+            throws SQLException {
         final Configuration configuration = statement.getConfiguration();
         MappedStatement pms = buildPurviewMappedStatement(configuration, purview, operator);
         List<String> result = executor.query(pms, null, rowBounds, null);
@@ -158,7 +156,7 @@ public class PurviewInterceptor implements Interceptor {
 
     private MappedStatement buildPurviewMappedStatement(
             @Nonnull Configuration configuration, @Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
-        String sql = PurviewUtils.buildSQL01(purview, operator);
+        String sql = buildSQL01(purview, operator);
         SqlSource sqlSource = new StaticSqlSource(configuration, sql);
         MappedStatement.Builder builder =
                 new MappedStatement.Builder(configuration, PURVIEW_MS_ID, sqlSource, SqlCommandType.SELECT);
