@@ -90,55 +90,22 @@ public class User {
 @Component
 public class CustomEntityMetaFiller implements EntityMetaFiller {
     @Override
-    public void insertFill(MetaObject metaObject) {
+    public void insertFill(MetaObjectHandler handler, MetaObject metaObject) {
         // 插入时的自动填充逻辑
-        this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-        this.strictInsertFill(metaObject, "createUser", String.class, getCurrentUser());
+        handler.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
+        handler.strictInsertFill(metaObject, "createUser", String.class, getCurrentUser());
     }
     
     @Override
-    public void updateFill(MetaObject metaObject) {
+    public void updateFill(MetaObjectHandler handler, MetaObject metaObject) {
         // 更新时的自动填充逻辑
-        this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
-        this.strictUpdateFill(metaObject, "updateUser", String.class, getCurrentUser());
+        handler.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        handler.strictUpdateFill(metaObject, "updateUser", String.class, getCurrentUser());
     }
 }
 ```
 
-### 5. 数据权限 - @Purview
-
-通过 `@Purview` 注解实现方法级数据权限控制：
-
-```java
-@Mapper
-public interface UserMapper extends LambdaBaseMapper<User> {
-    
-    @Purview(type = {1, 2}, mode = Purview.Mode.SUB_QUERY)
-    List<User> selectUserList();
-    
-    @Purview(
-        key = "T.dept_id",
-        level = 3,
-        levelExp = Purview.Expression.LE,
-        type = {1},
-        mode = Purview.Mode.INNER,
-        scheme = Purview.Scheme.CASCADE
-    )
-    List<User> selectUsersByDept();
-}
-```
-
-**@Purview 注解属性：**
-- `key`：数据权限关联的字段名（默认："T.id"）
-- `level`：数据权限级别（默认：Integer.MAX_VALUE）
-- `levelExp`：级别表达式（EQ、GT、LT、GE、LE）
-- `type`：权限树类型数组
-- `mode`：查询模式（SUB_QUERY、INNER、STATISTICS）
-- `scheme`：权限方案（CASCADE、NOT_CASCADE、ORGAN）
-- `pretreatment`：是否开启预处理功能
-- `checked`：级联模式下的选择状态（0：忽略，1：全选，2：半选）
-
-### 6. 字段加密 - AesEncryptHandler
+### 5. 字段加密 - AesEncryptHandler
 
 通过 `AesEncryptHandler` 实现字段级 AES 加密：
 
@@ -149,29 +116,6 @@ public class User {
     
     @TableField(typeHandler = AesEncryptHandler.class)
     private String idCard;
-}
-```
-
-### 7. 多租户支持
-
-提供两种租户实现方式：
-
-#### 标准租户线处理器
-```java
-@Configuration
-public class TenantConfig {
-    @Bean
-    public TenantLineHandler tenantLineHandler() {
-        return new TenantHandler(mybatisPlusExtendProperties);
-    }
-}
-```
-
-#### 表达式租户拦截器
-```java
-@Bean
-public TenantExpressionInterceptor tenantExpressionInterceptor() {
-    return new TenantExpressionInterceptor("tenant_id");
 }
 ```
 
