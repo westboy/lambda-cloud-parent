@@ -1,6 +1,7 @@
 package com.lambda.cloud.mybatis.interceptor;
 
 import com.lambda.cloud.core.convert.TypeConverter;
+import com.lambda.cloud.core.utils.OperatorUtils;
 import com.lambda.cloud.mybatis.tenant.TenantContextHolder;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
@@ -17,7 +18,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.BeanUtils;
 
 /**
- * 数据权限拦截器
+ * 租户拦截拦截器
  *
  * @author Jin
  */
@@ -44,13 +45,7 @@ import org.springframework.beans.BeanUtils;
                 BoundSql.class
             })
 })
-public class TenantExpressionInterceptor implements Interceptor {
-
-    private final String name;
-
-    public TenantExpressionInterceptor(String name) {
-        this.name = name;
-    }
+public record TenantExpressionInterceptor(String name) implements Interceptor {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -102,7 +97,7 @@ public class TenantExpressionInterceptor implements Interceptor {
     }
 
     private String getTenantFromUser() {
-        return null;
+        return OperatorUtils.getOperator().getTenantId();
     }
 
     @Override

@@ -1,7 +1,9 @@
 package com.lambda.autoconfig;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.Data;
 import lombok.Getter;
@@ -23,13 +25,24 @@ public class MybatisPlusExtendProperties {
     private String mapperPackage = "com.lambda.cloud.**.mapper";
 
     @NestedConfigurationProperty
-    private Encrypt encrypt = new Encrypt();
+    private EncryptConfig encrypt = new EncryptConfig();
 
+    @NestedConfigurationProperty
     private Map<String, String> databaseIdMap = new HashMap<>();
 
+    @NestedConfigurationProperty
+    private TenantConfig tenantConfig = new TenantConfig();
+
     @Data
-    public static class Encrypt {
-        private String key = "1234567890123456";
+    public static class EncryptConfig {
         private Boolean enabled = false;
+        private String key = "1234567890123456";
+    }
+
+    @Data
+    public static class TenantConfig {
+        private Boolean enabled = false;
+        private String tenantColumn = "tenant_id";
+        private List<String> ignoreTables = new ArrayList<>();
     }
 }

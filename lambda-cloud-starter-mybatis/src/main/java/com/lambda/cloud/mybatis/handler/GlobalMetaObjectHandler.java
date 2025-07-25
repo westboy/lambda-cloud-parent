@@ -1,9 +1,10 @@
 package com.lambda.cloud.mybatis.handler;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.core.utils.OperatorUtils;
-import java.time.LocalDateTime;
+import java.util.List;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 
@@ -13,20 +14,24 @@ import org.apache.ibatis.reflection.MetaObject;
  * @author Jin
  */
 @Slf4j
-public class GlobalMetaObjectHandler implements MetaObjectHandler {
+@SuppressFBWarnings("EI_EXPOSE_REP")
+public record GlobalMetaObjectHandler(List<EntityMetaFiller> entityMetaFillers) implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        LoginUser loginUser = OperatorUtils.getOperator();
-        this.strictInsertFill(metaObject, "createUser", String.class, loginUser.getName());
-        this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-        this.strictInsertFill(metaObject, "delFlag", Boolean.class, false);
+        if (CollUtil.isNotEmpty(entityMetaFillers)) {
+            for (EntityMetaFiller entityMetaFiller : entityMetaFillers) {
+                entityMetaFiller.insertFill(this, metaObject);
+            }
+        }
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        LoginUser loginUser = OperatorUtils.getOperator();
-        this.strictUpdateFill(metaObject, "updateUser", String.class, loginUser.getName());
-        this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        if (CollUtil.isNotEmpty(entityMetaFillers)) {
+            for (EntityMetaFiller entityMetaFiller : entityMetaFillers) {
+                entityMetaFiller.insertFill(this, metaObject);
+            }
+        }
     }
 }

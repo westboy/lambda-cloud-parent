@@ -3,12 +3,19 @@ package com.lambda.autoconfig;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
+import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
+import com.lambda.cloud.mybatis.handler.EntityMetaFiller;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
 import com.lambda.cloud.mybatis.injector.LambdaExtendSqlInjector;
 import com.lambda.cloud.mybatis.interceptor.InsertBatchInterceptor;
+import com.lambda.cloud.mybatis.interceptor.TenantExpressionInterceptor;
+import com.lambda.cloud.mybatis.tenant.TenantHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.List;
 import java.util.Properties;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +25,7 @@ import org.apache.ibatis.type.JdbcType;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -58,8 +66,9 @@ public class MyBatisAutoConfiguration {
      * @return GlobalMetaObjectHandler
      */
     @Bean
-    public GlobalMetaObjectHandler globalMetaObjectHandler() {
-        return new GlobalMetaObjectHandler();
+    public GlobalMetaObjectHandler globalMetaObjectHandler(
+            @Autowired(required = false) List<EntityMetaFiller> entityMetaFillers) {
+        return new GlobalMetaObjectHandler(entityMetaFillers);
     }
 
     /**
@@ -107,6 +116,18 @@ public class MyBatisAutoConfiguration {
         return new JdbcTemplate(dataSource);
     }
 
+    /***
+     * Mybatis拦截器
+     * @return mybatisPlusInterceptor
+     */
+    @Bean
+    @Order(0)
+    public MybatisPlusInterceptor mybatisPlusInterceptor(List<InnerInterceptor> innerInterceptors) {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.setInterceptors(innerInterceptors);
+        return interceptor;
+    }
+
     /**
      * 批量插入攔截器
      *
@@ -120,13 +141,12 @@ public class MyBatisAutoConfiguration {
 
     /***
      * 分页拦截器
-     * @return MybatisPlusInterceptor
+     * @return mybatisPlusInterceptor
      */
     @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
-        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
-        return interceptor;
+    @Order(20)
+    public InnerInterceptor pageInnerInterceptor() {
+        return new PaginationInnerInterceptor();
     }
 
     /**
@@ -151,6 +171,36 @@ public class MyBatisAutoConfiguration {
         @Bean
         public ConfigurationCustomizer registerAesEncryptHandler(AesEncryptHandler aesEncryptHandler) {
             return configuration -> configuration.getTypeHandlerRegistry().register(aesEncryptHandler);
+        }
+    }
+
+    /**
+     * Tenant配置
+     */
+    @Configuration
+    @ConditionalOnProperty(prefix = "mybatis-plus.tenant", name = "enabled")
+    public static class TenantConfig {
+
+        @Bean
+        @Order(9)
+        @ConditionalOnMissingBean
+        public TenantLineHandler tenantLineHandler(MybatisPlusExtendProperties mybatisProperties) {
+            return new TenantHandler(mybatisProperties);
+        }
+
+        @Bean
+        @Order(10)
+        public InnerInterceptor tenantLineInnerInterceptor(TenantLineHandler tenantLineHandler) {
+            TenantLineInnerInterceptor tenantLineInnerInterceptor = new TenantLineInnerInterceptor();
+            tenantLineInnerInterceptor.setTenantLineHandler(tenantLineHandler);
+            return tenantLineInnerInterceptor;
+        }
+
+        @Bean
+        @Order(Short.MAX_VALUE)
+        public TenantExpressionInterceptor tenantExpressionInterceptor(MybatisPlusExtendProperties mybatisProperties) {
+            String name = mybatisProperties.getTenantConfig().getTenantColumn();
+            return new TenantExpressionInterceptor(name);
         }
     }
 }
