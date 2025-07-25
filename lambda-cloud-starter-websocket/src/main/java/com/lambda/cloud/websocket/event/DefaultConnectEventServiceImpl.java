@@ -13,7 +13,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
  *
  * @author jpjoo
  */
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "DefaultConnectEventServiceImpl")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "DefaultConnectEventServiceImpl")
 @Slf4j
 public record DefaultConnectEventServiceImpl(WebSocketChannelRepository repository) implements WsConnectEventService {
 

@@ -1,5 +1,6 @@
 package com.lambda.cloud.kafka.core;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
 
 /**
@@ -26,6 +27,7 @@ import lombok.Data;
  * @since 1.0.0
  */
 @Data
+@SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
 public class KafkaDelayLevel {
 
     /**

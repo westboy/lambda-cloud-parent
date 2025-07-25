@@ -96,7 +96,6 @@ public class KafkaDelayAutoConfiguration {
      *
      * @param recordFilterStrategy 消息过滤策略
      */
-    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE")
     @Autowired(required = false)
     public void setRecordFilterStrategy(RecordFilterStrategy<Object, Object> recordFilterStrategy) {
         this.recordFilterStrategy = recordFilterStrategy;

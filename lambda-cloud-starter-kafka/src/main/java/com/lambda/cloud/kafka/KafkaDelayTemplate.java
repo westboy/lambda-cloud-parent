@@ -26,6 +26,7 @@ import org.springframework.validation.annotation.Validated;
  */
 @Slf4j
 @Validated
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2")
 public class KafkaDelayTemplate {
 
     /**
@@ -38,7 +39,7 @@ public class KafkaDelayTemplate {
      *
      * @param kafkaTemplate Kafka模板实例
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
+    @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW")
     public KafkaDelayTemplate(KafkaTemplate<String, String> kafkaTemplate) {
         if (kafkaTemplate == null) {
             throw new IllegalArgumentException("KafkaTemplate cannot be null");

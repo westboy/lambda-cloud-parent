@@ -1,5 +1,6 @@
 package com.lambda.cloud.kafka.core;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
@@ -24,6 +25,7 @@ import org.apache.kafka.common.TopicPartition;
  * @since 1.0.0
  */
 @Data
+@SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
 public class KafkaDelayEntry implements Delayed {
     /**
      * 到期时间（毫秒时间戳）

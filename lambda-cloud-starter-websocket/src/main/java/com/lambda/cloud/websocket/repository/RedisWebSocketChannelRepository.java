@@ -20,7 +20,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
  *
  * @author jpjoo
  */
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "RedisWebSocketChannelRepository")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "RedisWebSocketChannelRepository")
 @Slf4j
 public record RedisWebSocketChannelRepository(StringRedisTemplate template) implements WebSocketChannelRepository {
 

@@ -33,7 +33,7 @@ import org.apache.kafka.common.TopicPartition;
  */
 @Slf4j
 @Getter
-@SuppressFBWarnings(value = "EI_EXPOSE_REP")
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class KafkaDelayPartition {
 
     /**
@@ -67,6 +67,7 @@ public class KafkaDelayPartition {
      * @param partition 分区号，必须大于等于0
      * @throws IllegalArgumentException 当分区号小于0时抛出
      */
+    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public KafkaDelayPartition(int partition) {
         if (partition < 0) {
             throw new IllegalArgumentException("Partition must be non-negative, but was: " + partition);
