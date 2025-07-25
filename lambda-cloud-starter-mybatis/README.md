@@ -119,6 +119,72 @@ public class User {
 }
 ```
 
+### 6. 多租户支持
+
+实现方式：
+
+```java
+@Configuration
+public class TenantConfig {
+    @Bean
+    public TenantLineHandler tenantLineHandler() {
+        return new TenantHandler(mybatisPlusExtendProperties);
+    }
+}
+```
+#### 表达式租户拦截器 - TenantExpressionInterceptor
+
+`TenantExpressionInterceptor` 是一个 MyBatis 拦截器，用于自动从方法参数中提取租户ID并设置到租户上下文中：
+
+```java
+@Bean
+public TenantExpressionInterceptor tenantExpressionInterceptor() {
+    return new TenantExpressionInterceptor("tenant_id");
+}
+```
+
+**工作原理：**
+1. **拦截 SQL 执行**：拦截 MyBatis 的 `update` 和 `query` 方法
+2. **多源租户ID获取**：按优先级从以下位置获取租户ID：
+   - 方法参数 Map 中的指定字段
+   - 方法参数 Bean 的指定属性
+   - 当前登录用户的租户ID
+3. **自动设置上下文**：将获取到的租户ID设置到 `TenantContextHolder` 中
+4. **自动清理**：方法执行完成后自动清理租户上下文
+
+**支持的参数类型：**
+- **Map 参数**：从 `MapperMethod.ParamMap` 中获取指定 key 的值
+- **Bean 参数**：通过反射获取 Bean 对象的指定属性值
+- **用户上下文**：从 `OperatorUtils.getOperator().getTenantId()` 获取
+
+### 7. 租户上下文管理 - TenantContextHolder
+
+`TenantContextHolder` 是线程安全的租户上下文管理器，用于在多租户环境中管理当前线程的租户信息：
+
+#### 核心方法
+```java
+// 获取单例实例
+TenantContextHolder holder = TenantContextHolder.getInstance();
+
+// 设置当前租户ID
+holder.setTenantId("tenant_001");
+
+// 获取当前租户ID
+String tenantId = TenantContextHolder.getCurrentTenantId();
+
+// 安全执行带租户上下文的代码块
+String result = TenantContextHolder.runWithTenant("tenant_001", () -> {
+    // 在此代码块中，租户ID会自动设置为 tenant_001
+    return userService.getUserList();
+});
+```
+
+#### 特性说明
+- **线程安全**：基于 `ThreadLocal` 实现，确保多线程环境下的数据隔离
+- **自动清理**：实现了 `AutoCloseable` 接口，支持 try-with-resources 语法自动清理
+- **非空校验**：设置租户ID时会进行非空校验，防止空值污染
+- **单例模式**：采用静态内部类实现单例，确保全局唯一实例
+
 ## 配置说明
 
 ### 1. 基础配置
@@ -217,67 +283,277 @@ public class User {
 }
 ```
 
-### 3. 数据权限使用
+### 3. 自定义元数据填充
+
+```java
+import com.lambda.cloud.core.utils.OperatorUtils;
+
+@Component
+public class UserMetaFiller implements EntityMetaFiller {
+
+    @Override
+    public void insertFill(MetaObject metaObject) {
+        // 获取当前用户（需要自己实现）
+        String currentUser = getCurrentUser();
+
+        this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
+        this.strictInsertFill(metaObject, "createUser", String.class, currentUser);
+        this.strictInsertFill(metaObject, "delFlag", Integer.class, 0);
+    }
+
+    @Override
+    public void updateFill(MetaObject metaObject) {
+        String currentUser = getCurrentUser();
+
+        this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        this.strictUpdateFill(metaObject, "updateUser", String.class, currentUser);
+    }
+
+    private String getCurrentUser() {
+        // 实现获取当前用户的逻辑
+        return OperatorUtils.getOperator().getName();
+    }
+}
+```
+
+### 4. TenantExpressionInterceptor 使用示例
+
+#### Map 参数方式
+```java
+@Mapper
+public interface UserMapper extends LambdaBaseMapper<User> {
+    
+    /**
+     * 使用 Map 参数传递租户ID
+     * 拦截器会自动从参数中提取 tenant_id
+     */
+    List<User> selectUsersByTenant(@Param("tenant_id") String tenantId, 
+                                   @Param("userName") String userName);
+    
+    /**
+     * 使用 ParamMap 传递多个参数
+     */
+    List<User> selectUsersWithCondition(Map<String, Object> params);
+}
+```
+
+```java
+@Service
+public class UserService {
+    
+    @Autowired
+    private UserMapper userMapper;
+    
+    public List<User> getUsersByTenant(String tenantId, String userName) {
+        // 拦截器会自动从参数中提取 tenant_id 并设置到上下文
+        return userMapper.selectUsersByTenant(tenantId, userName);
+    }
+    
+    public List<User> getUsersWithMap(String tenantId, String status) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("tenant_id", tenantId);  // 拦截器会提取这个值
+        params.put("status", status);
+        return userMapper.selectUsersWithCondition(params);
+    }
+}
+```
+
+#### Bean 参数方式
+```java
+@Data
+public class UserQuery {
+    private String tenantId;  // 拦截器会通过反射获取这个属性
+    private String userName;
+    private String status;
+    private Date createTimeStart;
+    private Date createTimeEnd;
+}
+```
 
 ```java
 @Mapper
 public interface UserMapper extends LambdaBaseMapper<User> {
     
     /**
-     * 查询用户列表（子查询模式）
+     * 使用 Bean 参数传递租户ID
+     * 拦截器会通过反射获取 UserQuery.tenantId 属性
      */
-    @Purview(type = {1, 2}, mode = Purview.Mode.SUB_QUERY)
-    List<User> selectUserList(@Param("userName") String userName);
-    
-    /**
-     * 按部门查询用户（内联模式）
-     */
-    @Purview(
-        key = "T.dept_id",
-        type = {1},
-        mode = Purview.Mode.INNER,
-        scheme = Purview.Scheme.CASCADE
-    )
-    List<User> selectUsersByDept(@Param("deptId") Long deptId);
-    
-    /**
-     * 统计用户数量（统计模式）
-     */
-    @Purview(type = {1}, mode = Purview.Mode.STATISTICS)
-    Long countUsers();
+    List<User> selectUsersByQuery(UserQuery query);
 }
 ```
-
-### 4. 自定义元数据填充
 
 ```java
-@Component
-public class UserMetaFiller implements EntityMetaFiller {
+@Service
+public class UserService {
     
-    @Override
-    public void insertFill(MetaObject metaObject) {
-        // 获取当前用户（需要自己实现）
-        String currentUser = getCurrentUser();
+    public List<User> searchUsers(String tenantId, String userName, String status) {
+        UserQuery query = new UserQuery();
+        query.setTenantId(tenantId);  // 拦截器会自动提取
+        query.setUserName(userName);
+        query.setStatus(status);
         
-        this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-        this.strictInsertFill(metaObject, "createUser", String.class, currentUser);
-        this.strictInsertFill(metaObject, "delFlag", Integer.class, 0);
-    }
-    
-    @Override
-    public void updateFill(MetaObject metaObject) {
-        String currentUser = getCurrentUser();
-        
-        this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
-        this.strictUpdateFill(metaObject, "updateUser", String.class, currentUser);
-    }
-    
-    private String getCurrentUser() {
-        // 实现获取当前用户的逻辑
-        return "system";
+        return userMapper.selectUsersByQuery(query);
     }
 }
 ```
+
+#### 用户上下文方式
+```java
+@Service
+public class UserService {
+    
+    /**
+     * 当方法参数中没有租户ID时，
+     * 拦截器会从当前登录用户上下文中获取租户ID
+     */
+    public List<User> getCurrentTenantUsers() {
+        // 拦截器会调用 OperatorUtils.getOperator().getTenantId()
+        return userMapper.selectList(null);
+    }
+}
+```
+
+#### 配置示例
+```java
+@Configuration
+public class MyBatisConfig {
+    
+    /**
+     * 配置租户表达式拦截器
+     * 参数 "tenantId" 指定要提取的字段/属性名
+     */
+    @Bean
+    public TenantExpressionInterceptor tenantExpressionInterceptor() {
+        return new TenantExpressionInterceptor("tenantId");
+    }
+    
+    /**
+     * 如果租户字段名为其他名称，可以自定义
+     */
+    @Bean
+    public TenantExpressionInterceptor customTenantInterceptor() {
+        return new TenantExpressionInterceptor("orgId");  // 使用 orgId 作为租户字段
+    }
+}
+```
+
+### 5. 多租户上下文使用
+
+#### 基本使用方式
+```java
+@Service
+public class TenantService {
+    
+    @Autowired
+    private UserMapper userMapper;
+    
+    /**
+     * 方式一：手动管理租户上下文
+     */
+    public List<User> getUsersByTenant(String tenantId) {
+        try (TenantContextHolder holder = TenantContextHolder.getInstance()) {
+            holder.setTenantId(tenantId);
+            return userMapper.selectList(null);
+        }
+    }
+    
+    /**
+     * 方式二：使用 runWithTenant 方法
+     */
+    public List<User> getUsersWithTenant(String tenantId) throws Exception {
+        return TenantContextHolder.runWithTenant(tenantId, () -> {
+            return userMapper.selectList(null);
+        });
+    }
+    
+    /**
+     * 方式三：在 Controller 层设置租户上下文
+     */
+    public void processMultiTenantData() {
+        List<String> tenantIds = Arrays.asList("tenant_001", "tenant_002", "tenant_003");
+        
+        for (String tenantId : tenantIds) {
+            try (TenantContextHolder holder = TenantContextHolder.getInstance()) {
+                holder.setTenantId(tenantId);
+                
+                // 处理当前租户的数据
+                List<User> users = userMapper.selectList(null);
+                log.info("Tenant {} has {} users", tenantId, users.size());
+                
+                // 执行其他业务逻辑
+                processUsersForTenant(users);
+            }
+        }
+    }
+}
+```
+
+#### 在拦截器中使用
+```java
+@Component
+public class TenantInterceptor implements HandlerInterceptor {
+    
+    @Override
+    public boolean preHandle(HttpServletRequest request, 
+                           HttpServletResponse response, 
+                           Object handler) throws Exception {
+        // 从请求头或参数中获取租户ID
+        String tenantId = request.getHeader("X-Tenant-Id");
+        if (StringUtils.isNotBlank(tenantId)) {
+            TenantContextHolder.getInstance().setTenantId(tenantId);
+        }
+        return true;
+    }
+    
+    @Override
+    public void afterCompletion(HttpServletRequest request, 
+                              HttpServletResponse response, 
+                              Object handler, Exception ex) throws Exception {
+        // 请求完成后清理租户上下文
+        try (TenantContextHolder holder = TenantContextHolder.getInstance()) {
+            // 自动清理
+        }
+    }
+}
+```
+
+#### 异步任务中的租户上下文传递
+```java
+@Service
+public class AsyncTenantService {
+    
+    @Async
+    public CompletableFuture<Void> processAsyncTask(String tenantId, List<Long> userIds) {
+        return CompletableFuture.runAsync(() -> {
+            try (TenantContextHolder holder = TenantContextHolder.getInstance()) {
+                holder.setTenantId(tenantId);
+                
+                // 异步处理租户数据
+                for (Long userId : userIds) {
+                    User user = userMapper.selectById(userId);
+                    // 处理用户数据
+                    processUser(user);
+                }
+            }
+        });
+    }
+    
+    /**
+     * 使用 runWithTenant 简化异步任务
+     */
+    @Async
+    public CompletableFuture<List<User>> getAsyncUsers(String tenantId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return TenantContextHolder.runWithTenant(tenantId, () -> {
+                    return userMapper.selectList(null);
+                });
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to get users for tenant: " + tenantId, e);
+            }
+        });
+    }
+}
 
 ## 核心依赖
 
@@ -323,40 +599,29 @@ public class UserMetaFiller implements EntityMetaFiller {
    - `insertAllBatch` 方法会自动分批处理大量数据，默认每批 1000 条
    - 批量操作建议在事务中执行
 
-3. **数据权限**：
-   - 使用数据权限功能需要配合权限管理系统
-   - 权限拦截器会自动修改 SQL 语句添加权限条件
-
-4. **字段加密**：
+3. **字段加密**：
    - 启用加密功能后，密钥配置必须是 16 位字符串
    - 加密字段在数据库中存储的是加密后的值
    - 查询时会自动解密返回原始值
 
-5. **多租户**：
+4. **多租户**：
    - 租户功能启用后会自动在 SQL 中添加租户条件
    - 可以通过 `ignore-tables` 配置忽略某些表的租户过滤
 
-6. **SQL 监控**：
+6. **TenantContextHolder 使用**：
+   - 推荐使用 try-with-resources 语法确保租户上下文自动清理
+   - 在异步任务中需要手动传递租户上下文
+   - 设置租户ID时会进行非空校验，传入 null 值会抛出异常
+   - 多线程环境下每个线程的租户上下文是独立的
+
+7. **TenantExpressionInterceptor 使用**：
+   - 拦截器按优先级获取租户ID：参数 Map > 参数 Bean > 用户上下文
+   - Bean 参数方式需要提供对应属性的 getter 方法
+   - 拦截器名称参数必须与实际字段/属性名保持一致
+   - 如果所有方式都无法获取到租户ID，则不会设置租户上下文
+   - 拦截器会自动进行类型转换，将获取到的值转换为 String 类型
+
+8. **SQL 监控**：
    - P6Spy 会记录所有 SQL 执行情况
    - 生产环境建议关闭或调整日志级别
 
-## 版本兼容性
-
-- **Spring Boot**: 3.0+
-- **MyBatis-Plus**: 3.5+
-- **Java**: 17+
-- **数据库**: MySQL 5.7+、Oracle 11g+、PostgreSQL 10+、H2、DB2、达梦数据库
-
-## 更新日志
-
-### v1.0.0-SNAPSHOT
-- ✨ 初始版本发布
-- 🔧 提供 MyBatis-Plus 自动配置
-- 📝 实现 `LambdaBaseMapper` 扩展 Mapper
-- 🔄 支持字段自动填充功能
-- 🛡️ 实现 `@Purview` 数据权限控制
-- 🏢 支持多租户数据隔离
-- 🔐 提供 AES 字段加密功能
-- 📊 集成 P6Spy SQL 监控
-- 🗄️ 支持多种数据库类型
-- ⚡ 优化批量插入性能
