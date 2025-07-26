@@ -40,15 +40,11 @@ import org.springframework.util.ClassUtils;
             method = "query",
             args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
-public record PurviewInterceptor(@SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}) Map<Integer, Integer> typeMapper)
-        implements Interceptor {
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
+public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements Interceptor {
 
     private static final String PURVIEW_MS_ID = "purviewMappedStatementId";
     private static final int MAX = 1000;
-
-    public PurviewInterceptor(Map<Integer, Integer> typeMapper) {
-        this.typeMapper = typeMapper;
-    }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {

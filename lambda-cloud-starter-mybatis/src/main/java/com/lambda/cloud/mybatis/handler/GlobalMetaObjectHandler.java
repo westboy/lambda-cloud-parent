@@ -29,7 +29,7 @@ public record GlobalMetaObjectHandler(List<EntityMetaFiller> entityMetaFillers) 
     public void updateFill(MetaObject metaObject) {
         if (CollUtil.isNotEmpty(entityMetaFillers)) {
             for (EntityMetaFiller entityMetaFiller : entityMetaFillers) {
-                entityMetaFiller.insertFill(this, metaObject);
+                entityMetaFiller.updateFill(this, metaObject);
             }
         }
     }
