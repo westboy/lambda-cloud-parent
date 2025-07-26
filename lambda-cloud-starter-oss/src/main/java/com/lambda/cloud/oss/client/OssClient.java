@@ -90,18 +90,20 @@ public class OssClient {
     }
 
     public void createBucket() {
-        try {
-            String bucketName = config.getBucket();
-            if (client.doesBucketExistV2(bucketName)) {
-                return;
+        if (OssType.MINIO.name().equalsIgnoreCase(config.getType())) {
+            try {
+                String bucketName = config.getBucket();
+                if (client.doesBucketExistV2(bucketName)) {
+                    return;
+                }
+                CreateBucketRequest createBucketRequest = new CreateBucketRequest(bucketName);
+                AccessPolicyType accessPolicy = getAccessPolicy();
+                createBucketRequest.setCannedAcl(accessPolicy.getAcl());
+                client.createBucket(createBucketRequest);
+                client.setBucketPolicy(bucketName, getPolicy(bucketName, accessPolicy.getPolicyType()));
+            } catch (Exception e) {
+                throw new OssException("创建存储桶异常！", e);
             }
-            CreateBucketRequest createBucketRequest = new CreateBucketRequest(bucketName);
-            AccessPolicyType accessPolicy = getAccessPolicy();
-            createBucketRequest.setCannedAcl(accessPolicy.getAcl());
-            client.createBucket(createBucketRequest);
-            client.setBucketPolicy(bucketName, getPolicy(bucketName, accessPolicy.getPolicyType()));
-        } catch (Exception e) {
-            throw new OssException("创建存储桶异常！", e);
         }
     }
 
