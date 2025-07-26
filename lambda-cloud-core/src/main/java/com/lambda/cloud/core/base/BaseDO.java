@@ -87,24 +87,4 @@ public abstract class BaseDO implements Serializable {
      */
     @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime updateTime;
-
-    /**
-     * 逻辑删除标识
-     * <p>
-     * 用于实现逻辑删除功能，避免物理删除数据。
-     * 值为0表示正常状态，值为1表示已删除状态。
-     * 在插入时自动填充为0（正常状态）。
-     * </p>
-     *
-     * <ul>
-     *   <li>0：正常状态（未删除）</li>
-     *   <li>1：已删除状态</li>
-     * </ul>
-     *
-     * @JsonIgnore 在JSON序列化时忽略该字段
-     */
-    @JsonIgnore
-    @TableLogic(value = "0", delval = "1")
-    @TableField(fill = FieldFill.INSERT)
-    private Boolean delFlag;
 }

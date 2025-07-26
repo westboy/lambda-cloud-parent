@@ -35,13 +35,13 @@ import org.springframework.util.ClassUtils;
  */
 @Slf4j
 @Intercepts({
-        @Signature(
-                type = Executor.class,
-                method = "query",
-                args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
+    @Signature(
+            type = Executor.class,
+            method = "query",
+            args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
-public record PurviewInterceptor(
-        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}) Map<Integer, Integer> typeMapper) implements Interceptor {
+public record PurviewInterceptor(@SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}) Map<Integer, Integer> typeMapper)
+        implements Interceptor {
 
     private static final String PURVIEW_MS_ID = "purviewMappedStatementId";
     private static final int MAX = 1000;

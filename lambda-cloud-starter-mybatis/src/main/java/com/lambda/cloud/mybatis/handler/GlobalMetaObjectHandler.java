@@ -2,9 +2,8 @@ package com.lambda.cloud.mybatis.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import java.util.List;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 
