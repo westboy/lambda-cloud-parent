@@ -12,7 +12,7 @@ import org.springframework.util.StringUtils;
  * <p>
  * 该记录类提供了在主要Liquibase迁移完成后执行额外变更脚本的能力。
  * 每个执行器实例负责执行一个特定的变更日志文件。
- * 
+ *
  * <p>主要特性：
  * <ul>
  *   <li>支持执行自定义的Liquibase变更日志</li>
@@ -20,7 +20,7 @@ import org.springframework.util.StringUtils;
  *   <li>提供完整的错误处理和日志记录</li>
  *   <li>使用记录类型确保不可变性</li>
  * </ul>
- * 
+ *
  * <p>使用示例：
  * <pre>
  * {@code
@@ -30,9 +30,9 @@ import org.springframework.util.StringUtils;
  * }
  * }
  * </pre>
- * 
+ *
  * <p>执行器会在{@link LiquibaseFinishedPublisher}中被自动调用。
- * 
+ *
  * @param changelog 变更日志文件路径，不能为null或空字符串
  * @author westboy
  * @version 1.0.0
@@ -62,9 +62,9 @@ public record LiquibasePostExecutor(String changelog) {
         if (dataSource == null) {
             throw new IllegalArgumentException("DataSource cannot be null");
         }
-        
+
         log.info("Executing Liquibase changelog: {}", changelog);
-        
+
         try {
             SpringLiquibase liquibase = new SpringLiquibase();
             liquibase.setResourceLoader(SpringUtil.getApplicationContext());
@@ -72,7 +72,7 @@ public record LiquibasePostExecutor(String changelog) {
             liquibase.setDataSource(dataSource);
             liquibase.setContexts(IdUtil.fastSimpleUUID());
             liquibase.afterPropertiesSet();
-            
+
             log.info("Successfully executed Liquibase changelog: {}", changelog);
         } catch (Exception e) {
             log.error("Failed to execute Liquibase changelog: {}", changelog, e);

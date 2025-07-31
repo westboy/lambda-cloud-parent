@@ -1,6 +1,7 @@
 package com.lambda.cloud.liquibase.filter;
 
 import cn.hutool.core.io.FileUtil;
+import com.lambda.cloud.liquibase.comparator.DefaultLiquibaseComparator;
 import java.util.regex.Pattern;
 import liquibase.changelog.IncludeAllFilter;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,7 @@ import org.springframework.util.StringUtils;
  * 该类实现了{@link IncludeAllFilter}接口，用于在Liquibase扫描变更日志文件时
  * 过滤出符合特定命名模式的文件。只有匹配{@code lambda-*-changelog.xml}模式的
  * 文件才会被包含在变更日志执行列表中。
- * 
+ *
  * <p>支持的文件命名模式：
  * <ul>
  *   <li>{@code lambda-datasource-changelog.xml} - 数据源相关变更</li>
@@ -21,7 +22,7 @@ import org.springframework.util.StringUtils;
  *   <li>{@code lambda-additional-changelog.xml} - 附加变更</li>
  *   <li>其他符合{@code lambda-{模块名}-changelog.xml}模式的文件</li>
  * </ul>
- * 
+ *
  * <p>该过滤器具有以下特性：
  * <ul>
  *   <li>使用预编译的正则表达式提高性能</li>
@@ -29,7 +30,7 @@ import org.springframework.util.StringUtils;
  *   <li>安全的异常处理机制</li>
  *   <li>空值和边界条件检查</li>
  * </ul>
- * 
+ *
  * @author westboy
  * @version 1.0.0
  * @since 2024-01-01
@@ -38,12 +39,12 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j
 public class DefaultLiquibaseFilter implements IncludeAllFilter {
-    
+
     /**
      * 变更日志文件名匹配模式：lambda-{模块名}-changelog.xml
      */
     private static final String PATTERN = "lambda-\\w*-changelog\\.xml";
-    
+
     /**
      * 编译后的正则表达式模式，提高性能
      */
@@ -61,14 +62,14 @@ public class DefaultLiquibaseFilter implements IncludeAllFilter {
             log.debug("File path is null or empty, excluding from changelog");
             return false;
         }
-        
+
         try {
             String name = FileUtil.getName(file);
             if (!StringUtils.hasText(name)) {
                 log.debug("File name is null or empty for path: {}, excluding from changelog", file);
                 return false;
             }
-            
+
             boolean matches = COMPILED_PATTERN.matcher(name).matches();
             log.debug("File {} {} the pattern {}", name, matches ? "matches" : "does not match", PATTERN);
             return matches;

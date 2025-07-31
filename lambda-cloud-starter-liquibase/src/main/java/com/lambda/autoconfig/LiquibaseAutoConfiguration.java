@@ -27,10 +27,10 @@ import org.springframework.util.StringUtils;
  *   <li>管理变更日志文件的执行</li>
  *   <li>提供后置处理器支持</li>
  * </ul>
- * 
+ *
  * <p>配置属性通过{@link LiquibaseProperties}进行管理，支持通过
  * {@code lambda.liquibase.enabled}属性控制是否启用。
- * 
+ *
  * @author westboy
  * @version 1.0.0
  * @since 2024-01-01
@@ -56,12 +56,12 @@ public class LiquibaseAutoConfiguration {
         if (properties == null) {
             throw new IllegalArgumentException("LiquibaseProperties cannot be null");
         }
-        
+
         String url = properties.getUrl();
         String username = properties.getUsername();
         String password = properties.getPassword();
         String driver = properties.getDriverClassName();
-        
+
         // 验证必要的数据库连接参数
         if (!StringUtils.hasText(url)) {
             throw new IllegalArgumentException("Database URL cannot be null or empty");
@@ -69,9 +69,9 @@ public class LiquibaseAutoConfiguration {
         if (!StringUtils.hasText(driver)) {
             throw new IllegalArgumentException("Database driver class name cannot be null or empty");
         }
-        
+
         log.info("Initializing Liquibase with URL: {}, Driver: {}", url, driver);
-        
+
         try {
             DataSource dataSource = DataSourceUtils.getInstance(url, username, password, driver);
             SpringLiquibase liquibase = new SpringLiquibase();
@@ -92,15 +92,14 @@ public class LiquibaseAutoConfiguration {
         if (lambdaLiquibase == null) {
             throw new IllegalArgumentException("SpringLiquibase cannot be null");
         }
-        
+
         DataSource dataSource = lambdaLiquibase.getDataSource();
         if (dataSource == null) {
             throw new IllegalStateException("DataSource from SpringLiquibase cannot be null");
         }
-        
-        log.debug("Creating LiquibaseFinishedPublisher with {} executors", 
-                 executors != null ? executors.size() : 0);
-        
+
+        log.debug("Creating LiquibaseFinishedPublisher with {} executors", executors != null ? executors.size() : 0);
+
         return new LiquibaseFinishedPublisher(dataSource, executors);
     }
 }
