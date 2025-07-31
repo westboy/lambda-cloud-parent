@@ -10,45 +10,52 @@
     <artifactId>lambda-cloud-starter-dubbo</artifactId>
 
     <dependencies>
+        <!-- Lambda Cloud Core -->
         <dependency>
             <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo</artifactId>
-            <version>3.3.0</version>
-        </dependency>
+
+        <!-- Dubbo Spring Boot Starter (包含了dubbo-core) -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-spring-boot-starter</artifactId>
             <version>${dubbo.version}</version>
         </dependency>
+
+        <!-- Dubbo Spring Boot Actuator (健康检查支持) -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-spring-boot-actuator</artifactId>
             <version>${dubbo.version}</version>
+            <optional>true</optional>
         </dependency>
+
+        <!-- Spring Boot Actuator (健康检查基础) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Nacos服务发现 (可选依赖) -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+            <optional>true</optional>
         </dependency>
+
+        <!-- Spring Retry (重试机制支持) -->
         <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
-            <version>5.4.0</version>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
         </dependency>
+
+        <!-- Spring AOP (拦截器支持) -->
         <dependency>
-            <groupId>de.javakaffee</groupId>
-            <artifactId>kryo-serializers</artifactId>
-            <version>0.45</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>kryo</artifactId>
-                    <groupId>com.esotericsoftware</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
         </dependency>
     </dependencies>
 </project>

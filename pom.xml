@@ -45,10 +45,9 @@
         <satoken.version>1.43.0</satoken.version>
         <wxjava.version>4.7.0</wxjava.version>
         <p6spy.version>3.9.1</p6spy.version>
-        <nacos.version>2.3.2</nacos.version>
-        <knife4j.version>4.5.0</knife4j.version>
         <nacos.client.version>3.0.2</nacos.client.version>
-        <dubbo.version>3.3.1</dubbo.version>
+        <knife4j.version>4.5.0</knife4j.version>
+        <dubbo.version>3.3.5</dubbo.version>
         <rocketmq.version>2.3.4</rocketmq.version>
         <iotdb.version>2.0.3</iotdb.version>
         <iotdb-jdbc.version>1.3.1</iotdb-jdbc.version>
@@ -325,7 +324,7 @@
             <dependency>
                 <groupId>com.alibaba.nacos</groupId>
                 <artifactId>nacos-client</artifactId>
-                <version>${nacos.version}</version>
+                <version>${nacos.client.version}</version>
             </dependency>
             <!-- 汉语 拼音 转换的包-->
             <dependency>

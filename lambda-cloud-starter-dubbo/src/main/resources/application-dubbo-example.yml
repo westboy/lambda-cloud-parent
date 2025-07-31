@@ -1,0 +1,52 @@
+# Lambda Dubbo Configuration Properties
+
+# Lambda Dubbo增强配置
+lambda:
+  dubbo:
+    # 安全配置
+    security:
+      enabled: true
+      token-header: Authorization
+      user-header: X-User-Id
+      tenant-header: X-Tenant-Id
+    
+    # 监控配置
+    monitoring:
+      enabled: true
+      enable-metrics: true
+      enable-logging: true
+      metrics-prefix: dubbo
+      slow-call-threshold: 1000
+    
+    # 重试配置
+    retry:
+      enabled: true
+      max-attempts: 3
+      initial-interval: 1000
+      multiplier: 2.0
+      max-interval: 10000
+      retryable-exceptions:
+        - java.util.concurrent.TimeoutException
+        - java.net.SocketTimeoutException
+    
+    # 多租户配置
+    tenant:
+      enabled: false
+      tenant-id-header: X-Tenant-Id
+      default-tenant: default
+      inherit-tenant-context: true
+
+# 标准Dubbo配置
+dubbo:
+  application:
+    name: ${spring.application.name}
+  registry:
+    address: nacos://localhost:8848
+  protocol:
+    name: dubbo
+    port: -1
+  consumer:
+    timeout: 3000
+    retries: 0
+  provider:
+    timeout: 3000

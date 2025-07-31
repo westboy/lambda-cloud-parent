@@ -1,0 +1,5 @@
+lambdaAuth=com.lambda.cloud.dubbo.filter.AuthenticationFilter
+lambdaLogging=com.lambda.cloud.dubbo.filter.LoggingFilter
+lambdaTenant=com.lambda.cloud.dubbo.filter.TenantFilter
+lambdaMetrics=com.lambda.cloud.dubbo.monitor.MetricsFilter
+lambdaRetry=com.lambda.cloud.dubbo.interceptor.DubboRetryInterceptor
