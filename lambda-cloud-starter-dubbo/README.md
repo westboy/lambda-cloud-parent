@@ -1,8 +1,4 @@
 # Lambda Cloud Dubbo Starter
-
-[![Maven Central](https://img.shields.io/maven-central/v/com.lambda.cloud/lambda-cloud-starter-dubbo.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.lambda.cloud%22%20AND%20a:%22lambda-cloud-starter-dubbo%22)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Dubbo](https://img.shields.io/badge/Dubbo-3.3.5-orange.svg)](https://dubbo.apache.org/)
 
 Lambda Cloud Dubbo Starter 是基于 Apache Dubbo 3.3.5 的企业级增强封装，为 Spring Boot 应用提供开箱即用的 Dubbo 企业级功能。
@@ -29,10 +25,6 @@ Lambda Cloud Dubbo Starter 是基于 Apache Dubbo 3.3.5 的企业级增强封装
 - **上下文自动传播** - 跨服务的租户信息传递
 - **默认租户配置** - 兜底的租户处理机制
 
-### 🛠️ 开发友好
-- **配置验证** - 启动时自动验证配置合法性
-- **Mock服务支持** - 开发测试期间的服务模拟
-- **丰富的配置选项** - 细粒度的功能开关控制
 
 ## 🚀 快速开始
 
@@ -230,69 +222,3 @@ public class CustomDubboFilter implements Filter {
     }
 }
 ```
-
-### 扩展配置
-
-```java
-@Configuration
-@ConditionalOnProperty(value = "lambda.dubbo.custom.enabled", havingValue = "true")
-public class CustomDubboConfiguration {
-    
-    @Bean
-    public CustomDubboComponent customDubboComponent() {
-        return new CustomDubboComponent();
-    }
-}
-```
-
-## 🔌 与 Lambda Cloud 生态集成
-
-Lambda Cloud Dubbo Starter 与其他 Lambda Cloud 组件无缝集成：
-
-- **lambda-cloud-starter-redis** - 分布式缓存支持
-- **lambda-cloud-starter-mybatis** - 数据访问层集成
-- **lambda-cloud-starter-security** - 统一安全认证
-- **lambda-cloud-starter-gateway** - API网关集成
-
-## 📋 兼容性
-
-| 组件 | 版本要求 |
-|------|---------|
-| Spring Boot | 3.5.3+ |
-| Apache Dubbo | 3.3.5 |
-| Java | 21+ |
-| Nacos (可选) | 2.x |
-
-## 🤝 贡献指南
-
-我们欢迎社区贡献！请查看 [贡献指南](CONTRIBUTING.md) 了解如何参与项目开发。
-
-### 开发环境搭建
-
-```bash
-# 克隆项目
-git clone https://github.com/lambda-cloud/lambda-cloud-parent.git
-
-# 进入项目目录
-cd lambda-cloud-parent/lambda-cloud-starter-dubbo
-
-# 编译项目
-mvn clean compile
-
-# 运行测试
-mvn test
-```
-
-## 📄 许可证
-
-本项目基于 [Apache License 2.0](LICENSE) 开源协议。
-
-## 📞 支持与反馈
-
-- **问题反馈**: [GitHub Issues](https://github.com/lambda-cloud/lambda-cloud-parent/issues)
-- **功能建议**: [GitHub Discussions](https://github.com/lambda-cloud/lambda-cloud-parent/discussions)
-- **技术交流**: [加入社区群组](#)
-
----
-
-⭐ 如果这个项目对你有帮助，请给我们一个 Star！
