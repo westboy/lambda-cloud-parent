@@ -40,6 +40,7 @@ import lombok.Getter;
  * @see ErrorModel
  * @see feign.FeignException
  */
+@Getter
 public abstract class AbstractFeignException extends RuntimeException {
 
     /**
@@ -49,7 +50,6 @@ public abstract class AbstractFeignException extends RuntimeException {
      * 时间戳采用毫秒级精度的Unix时间戳格式。
      * </p>
      */
-    @Getter
     private final long timestamp;
 
     /**
@@ -59,7 +59,6 @@ public abstract class AbstractFeignException extends RuntimeException {
      * 通常对应HTTP状态码的标准描述。
      * </p>
      */
-    @Getter
     private final String error;
 
     /**
@@ -77,8 +76,14 @@ public abstract class AbstractFeignException extends RuntimeException {
      * 发生异常的HTTP请求路径，用于定位具体的API端点。
      * 包含完整的路径信息，便于问题排查。
      * </p>
+     * -- GETTER --
+     *  获取请求路径
+     *  <p>
+     *  返回发生异常的HTTP请求路径。该路径信息来源于构造时传入的错误模型。
+     *  </p>
+     *
+     *
      */
-    @Getter
     private final String path;
 
     /**
@@ -109,18 +114,6 @@ public abstract class AbstractFeignException extends RuntimeException {
      * @return HTTP状态码，如400、401、500等
      */
     public abstract int getStatus();
-
-    /**
-     * 获取请求路径
-     * <p>
-     * 返回发生异常的HTTP请求路径。该路径信息来源于构造时传入的错误模型。
-     * </p>
-     *
-     * @return 请求路径字符串，可能为null
-     */
-    public String getPath() {
-        return path;
-    }
 
     /**
      * 获取异常消息
