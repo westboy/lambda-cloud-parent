@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,31 +11,34 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * 提供dubbo-spring-boot-starter之外的企业级增强功能配置，
  * 包括安全认证、监控可观测性、重试机制、多租户支持等功能。
  * </p>
- * 
+ *
  * <p>配置前缀: lambda.dubbo</p>
- * 
+ *
  * @author Lambda Cloud Team
  * @since 1.0.0
  */
 @Data
 @ConfigurationProperties(prefix = "lambda.dubbo")
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP"},
+        justification = "Spring Boot Configuration Properties require mutable objects for binding")
 public class DubboProperties {
 
     /**
      * 安全认证配置
      */
     private Security security = new Security();
-    
+
     /**
      * 监控和可观测性配置
      */
     private Monitoring monitoring = new Monitoring();
-    
+
     /**
      * 重试机制配置
      */
     private Retry retry = new Retry();
-    
+
     /**
      * 多租户配置
      */
@@ -147,7 +151,6 @@ public class DubboProperties {
                 List.of("java.util.concurrent.TimeoutException", "java.net.SocketTimeoutException");
     }
 
-
     /**
      * 多租户配置类
      * <p>用于配置多租户隔离和上下文传播</p>
@@ -178,5 +181,4 @@ public class DubboProperties {
          */
         private boolean inheritTenantContext = true;
     }
-
 }

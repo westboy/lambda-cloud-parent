@@ -1,6 +1,7 @@
 package com.lambda.cloud.dubbo.health;
 
 import com.lambda.cloud.dubbo.monitor.DubboMetricsCollector;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
@@ -30,6 +31,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
  */
 @ConditionalOnClass(HealthIndicator.class)
 @RequiredArgsConstructor
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "Health indicator requires metrics collector from framework")
 public class DubboHealthIndicator implements HealthIndicator {
 
     private final DubboMetricsCollector metricsCollector;

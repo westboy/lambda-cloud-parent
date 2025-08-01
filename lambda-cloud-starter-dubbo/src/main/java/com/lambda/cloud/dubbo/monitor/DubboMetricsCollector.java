@@ -1,6 +1,7 @@
 package com.lambda.cloud.dubbo.monitor;
 
 import com.lambda.autoconfig.DubboProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,9 @@ import org.apache.dubbo.rpc.Invoker;
  */
 @Slf4j
 @RequiredArgsConstructor
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP2"},
+        justification = "Metrics collector requires configuration object from framework")
 public class DubboMetricsCollector {
 
     private final DubboProperties.Monitoring monitoringProperties;
@@ -335,6 +339,9 @@ public class DubboMetricsCollector {
          * 获取错误计数统计
          * @return 按异常类型分组的错误计数映射
          */
+        @SuppressFBWarnings(
+                value = "EI_EXPOSE_REP",
+                justification = "Error counts map is used for read-only monitoring purposes")
         public ConcurrentHashMap<String, AtomicLong> getErrorCounts() {
             return errorCounts;
         }

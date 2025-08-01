@@ -1,11 +1,11 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.dubbo.authorize.AuthenticationFilter;
-import com.lambda.cloud.dubbo.logging.LoggingFilter;
 import com.lambda.cloud.dubbo.authorize.TenantFilter;
 import com.lambda.cloud.dubbo.health.DubboHealthIndicator;
-import com.lambda.cloud.dubbo.retry.DubboRetryInterceptor;
+import com.lambda.cloud.dubbo.logging.LoggingFilter;
 import com.lambda.cloud.dubbo.monitor.DubboMetricsCollector;
+import com.lambda.cloud.dubbo.retry.DubboRetryInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -160,10 +160,7 @@ public class DubboAutoConfiguration {
      * @return Dubbo健康检查指示器实例
      */
     @Bean
-    @ConditionalOnProperty(
-            value = "lambda.dubbo.monitoring.enabled",
-            havingValue = "true",
-            matchIfMissing = true)
+    @ConditionalOnProperty(value = "lambda.dubbo.monitoring.enabled", havingValue = "true", matchIfMissing = true)
     @ConditionalOnClass(name = "org.springframework.boot.actuate.health.HealthIndicator")
     @ConditionalOnMissingBean
     public DubboHealthIndicator dubboHealthIndicator(DubboMetricsCollector metricsCollector) {

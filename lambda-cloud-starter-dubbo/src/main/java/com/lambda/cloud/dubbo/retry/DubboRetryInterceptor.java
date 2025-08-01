@@ -1,6 +1,7 @@
 package com.lambda.cloud.dubbo.retry;
 
 import com.lambda.autoconfig.DubboProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +74,9 @@ import org.springframework.retry.support.RetryTemplate;
  */
 @Slf4j
 @Activate(group = {CommonConstants.CONSUMER})
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "Retry interceptor requires configuration object from framework")
 public class DubboRetryInterceptor implements Filter {
 
     private final DubboProperties.Retry retryProperties;

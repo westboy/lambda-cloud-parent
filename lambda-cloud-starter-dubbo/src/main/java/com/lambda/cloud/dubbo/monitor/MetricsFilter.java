@@ -1,5 +1,6 @@
 package com.lambda.cloud.dubbo.monitor;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
@@ -48,6 +49,9 @@ import org.apache.dubbo.rpc.*;
  */
 @Slf4j
 @Activate(group = {CommonConstants.PROVIDER, CommonConstants.CONSUMER})
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP"},
+        justification = "Filter requires metrics collector object from framework")
 public record MetricsFilter(DubboMetricsCollector metricsCollector) implements Filter {
 
     @Override

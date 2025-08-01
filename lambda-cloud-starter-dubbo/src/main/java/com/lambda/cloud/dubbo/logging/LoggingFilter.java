@@ -1,6 +1,7 @@
 package com.lambda.cloud.dubbo.logging;
 
 import com.lambda.autoconfig.DubboProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
@@ -49,6 +50,9 @@ import org.apache.dubbo.rpc.*;
  */
 @Slf4j
 @Activate(group = {CommonConstants.PROVIDER, CommonConstants.CONSUMER})
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP"},
+        justification = "Filter requires immutable configuration object from framework")
 public record LoggingFilter(DubboProperties.Monitoring monitoringProperties) implements Filter {
 
     /**
