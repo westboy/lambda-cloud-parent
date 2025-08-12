@@ -188,16 +188,12 @@ public class OperatorUtils {
                 throw new IllegalStateException("User not logged in");
             }
             if (!clazz.isInstance(loginUser)) {
-                throw new ClassCastException(
-                        String.format("Cannot cast %s to %s",
-                                loginUser.getClass().getSimpleName(),
-                                clazz.getSimpleName())
-                );
+                throw new ClassCastException(String.format(
+                        "Cannot cast %s to %s", loginUser.getClass().getSimpleName(), clazz.getSimpleName()));
             }
             return clazz.cast(loginUser);
         } catch (Exception e) {
-            log.error("Failed to get login user of type {}: {}",
-                    clazz.getSimpleName(), e.getMessage());
+            log.error("Failed to get login user of type {}: {}", clazz.getSimpleName(), e.getMessage());
             throw e;
         }
     }
