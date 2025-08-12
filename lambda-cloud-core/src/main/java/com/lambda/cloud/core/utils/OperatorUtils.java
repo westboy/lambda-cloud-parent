@@ -172,4 +172,33 @@ public class OperatorUtils {
         SaHolder.getStorage().set(Constants.LOGIN_USER, loginUser);
         return loginUser;
     }
+
+    /**
+     * 获取当前登录用户
+     * @param clazz 期望的用户类型
+     * @param <T> LoginUser的子类型
+     * @return 指定类型的登录用户实例
+     * @throws IllegalStateException 当用户未登录时
+     * @throws ClassCastException 当类型转换失败时
+     */
+    public static <T extends LoginUser> T getLoginUser(Class<T> clazz) {
+        try {
+            LoginUser loginUser = getOperator();
+            if (loginUser == null) {
+                throw new IllegalStateException("User not logged in");
+            }
+            if (!clazz.isInstance(loginUser)) {
+                throw new ClassCastException(
+                        String.format("Cannot cast %s to %s",
+                                loginUser.getClass().getSimpleName(),
+                                clazz.getSimpleName())
+                );
+            }
+            return clazz.cast(loginUser);
+        } catch (Exception e) {
+            log.error("Failed to get login user of type {}: {}",
+                    clazz.getSimpleName(), e.getMessage());
+            throw e;
+        }
+    }
 }
