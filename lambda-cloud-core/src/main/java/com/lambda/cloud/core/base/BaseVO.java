@@ -16,7 +16,7 @@ public abstract class BaseVO<V, E> implements Converter<V, E> {
      */
     @Override
     public E doForward(V v) {
-        return null;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**
@@ -26,6 +26,6 @@ public abstract class BaseVO<V, E> implements Converter<V, E> {
      */
     @Override
     public V doBackward(E e) {
-        return null;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
