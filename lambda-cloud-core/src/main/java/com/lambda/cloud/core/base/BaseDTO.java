@@ -82,7 +82,7 @@ public abstract class BaseDTO<D, E> {
      * @param e 源实体对象
      * @return 转换后的目标对象
      */
-    public  D convertFor(E e) {
+    public D convertFor(E e) {
         throw new UnsupportedOperationException("Unsupported operation");
     }
 }
