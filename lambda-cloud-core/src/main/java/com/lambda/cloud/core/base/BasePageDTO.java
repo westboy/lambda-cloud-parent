@@ -3,7 +3,13 @@ package com.lambda.cloud.core.base;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.lambda.cloud.core.Constants;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,7 +50,28 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public abstract class BasePageDTO<T> {
+public abstract class BasePageDTO<T> implements Serializable {
+
+    /**
+     * 默认页码
+     */
+    public static final int DEFAULT_PAGE_NUM = 1;
+
+    /**
+     * 默认页大小
+     */
+    public static final int DEFAULT_PAGE_SIZE = 20;
+
+    /**
+     * 最大页大小限制
+     */
+    public static final int MAX_PAGE_SIZE = 1000;
+
+    /**
+     * 最小页大小
+     */
+    public static final int MIN_PAGE_SIZE = 1;
+
     /**
      * 页码
      * <p>
@@ -52,8 +79,10 @@ public abstract class BasePageDTO<T> {
      * 默认值为1，表示查询第一页数据。
      * </p>
      */
-    @NotNull(message = "pageNum不能为空")
-    private Integer pageNum = 1;
+    @Schema(description = "当前页码，从1开始", example = "1", defaultValue = "1")
+    @NotNull(message = Constants.MSG_PAGE_NUM_NOT_NULL)
+    @Min(value = 1, message = "页码必须大于等于1")
+    private Integer pageNum = DEFAULT_PAGE_NUM;
 
     /**
      * 每页记录数
@@ -61,10 +90,14 @@ public abstract class BasePageDTO<T> {
      * 每页显示的记录数量。默认值为Integer.MAX_VALUE，
      * 表示不限制每页记录数（相当于查询所有数据）。
      * 在实际使用中，建议设置合理的页大小以提高性能。
+     * 默认20条，最大1000条，防止大数据量查询影响性能
      * </p>
      */
-    @NotNull(message = "pageSize不能为空")
-    private Integer pageSize = Integer.MAX_VALUE;
+    @Schema(description = "每页条数", example = "20", defaultValue = "20")
+    @NotNull(message = Constants.MSG_PAGE_SIZE_NOT_NULL)
+    @Min(value = MIN_PAGE_SIZE, message = "每页条数必须大于等于1")
+    @Max(value = MAX_PAGE_SIZE, message = "每页条数不能超过1000")
+    private Integer pageSize = DEFAULT_PAGE_SIZE;
 
     /**
      * 创建分页对象
@@ -76,6 +109,7 @@ public abstract class BasePageDTO<T> {
      * @return MyBatis-Plus分页对象
      * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
      */
+    @JsonIgnore
     public Page<T> getPage() {
         return new Page<>(pageNum, pageSize);
     }
@@ -97,7 +131,8 @@ public abstract class BasePageDTO<T> {
      * @return Lambda查询构造器
      * @see com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
      */
-    protected LambdaQueryWrapper<T> getLambdaQueryWrapper() {
+    @JsonIgnore
+    public LambdaQueryWrapper<T> getLambdaQueryWrapper() {
         return Wrappers.lambdaQuery();
     }
 }

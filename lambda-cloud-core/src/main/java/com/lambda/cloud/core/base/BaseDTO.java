@@ -1,11 +1,8 @@
 package com.lambda.cloud.core.base;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
 /**
  * 数据传输对象基类（Data Transfer Object）
  * <p>
- * 该抽象类为所有数据传输对象提供通用的转换方法和分页功能。
  * DTO用于在不同层之间传输数据，避免直接暴露数据库实体。
  * </p>
  *
@@ -43,11 +40,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  * }
  * }</pre>
  *
- * @author Jin
- * @since 2025-07-23
  * @param <D> 目标转换类型（通常是VO或其他DTO）
  * @param <E> 源实体类型（通常是数据库实体）
- * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
+ * @author Jin
+ * @since 2025-07-23
  */
 public abstract class BaseDTO<D, E> {
 
@@ -87,26 +83,4 @@ public abstract class BaseDTO<D, E> {
      * @return 转换后的目标对象
      */
     public abstract D convertFor(E e);
-
-    /**
-     * 创建分页对象
-     * <p>
-     * 该方法用于创建MyBatis-Plus的分页对象，
-     * 为分页查询提供便捷的工具方法。
-     * </p>
-     *
-     * <h3>参数说明：</h3>
-     * <ul>
-     *   <li>current：当前页码，从1开始</li>
-     *   <li>size：每页记录数</li>
-     * </ul>
-     *
-     * @param current 当前页码（从1开始）
-     * @param size 每页记录数
-     * @return 分页对象
-     * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
-     */
-    protected Page<E> getPage(long current, long size) {
-        return new Page<>(current, size);
-    }
 }

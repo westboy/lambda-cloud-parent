@@ -128,4 +128,10 @@ public final class Constants {
      */
     public static final DateTimeFormatter YYYY_MM_DD_HH_MM_SS_FORMATTER =
             DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
+
+    // ========== 分页相关常量 ==========
+    /** 页码不能为空的错误消息 */
+    public static final String MSG_PAGE_NUM_NOT_NULL = "pageNum不能为空";
+    /** 页面大小不能为空的错误消息 */
+    public static final String MSG_PAGE_SIZE_NOT_NULL = "pageSize不能为空";
 }
