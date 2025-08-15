@@ -12,10 +12,6 @@ import java.util.stream.Collectors;
  * @param <T> 目标对象类型
  * @author Jin
  */
-@Mapper(componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BaseConverter<S, T> {
 
     /**
@@ -24,7 +20,6 @@ public interface BaseConverter<S, T> {
      * @param source 源对象
      * @return 目标对象，如果输入为 null 则返回 null
      */
-    @Mapping(target = "id", ignore = true)
     T convertTo(S source);
 
     /**
