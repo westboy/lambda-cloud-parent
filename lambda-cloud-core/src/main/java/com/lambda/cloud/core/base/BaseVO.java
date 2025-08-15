@@ -1,31 +1,35 @@
 package com.lambda.cloud.core.base;
 
-import com.lambda.cloud.core.convert.Converter;
+import com.lambda.cloud.core.convert.BaseConverter;
+
+import java.util.List;
 
 /**
- * BaseVo
+ * VO 基类
  *
+ * @param <V>
+ * @param <E>
  * @author Jin
  */
-public abstract class BaseVO<V, E> implements Converter<V, E> {
+public abstract class BaseVO<V, E> {
+
+    protected abstract BaseConverter<V, E> getConverter();
 
     /**
-     * doForward
-     * @param  v V
-     * @return E
+     * 转换为实体
+     * @param entity 实体
+     * @return VO
      */
-    @Override
-    public E doForward(V v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public V fromEntity(E entity) {
+        return getConverter().convertFrom(entity);
     }
 
     /**
-     * doBackward
-     * @param e E
-     * @return V
+     * 转换为实体列表
+     * @param entityList 实体列表
+     * @return VO列表
      */
-    @Override
-    public V doBackward(E e) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<V> fromEntityList(List<E> entityList) {
+        return getConverter().convertFromList(entityList);
     }
 }
