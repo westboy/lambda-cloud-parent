@@ -23,7 +23,7 @@ public record DefaultConnectEventServiceImpl(WebSocketChannelRepository reposito
         String sid = info.getSessionId();
         String framework = info.getFramework();
         if (user != null && framework != null) {
-            String uid = user.getUsername();
+            String uid = user.getName();
             repository.add(uid, sid);
             log.debug("Websocket Connected -> [sid : {}, uid : {}]", sid, uid);
         }
@@ -35,7 +35,7 @@ public record DefaultConnectEventServiceImpl(WebSocketChannelRepository reposito
         String sid = info.getSessionId();
         String framework = info.getFramework();
         if (user != null && framework != null) {
-            String uid = user.getUsername();
+            String uid = user.getName();
             repository.remove(uid, sid);
             log.debug("Disconnect -> [sid : {}, uid : {}]", sid, uid);
         }
