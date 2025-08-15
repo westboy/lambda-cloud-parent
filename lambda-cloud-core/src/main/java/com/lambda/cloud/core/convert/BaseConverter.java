@@ -1,9 +1,8 @@
 package com.lambda.cloud.core.convert;
 
-import org.mapstruct.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
+import org.mapstruct.*;
 
 /**
  * 通用转换器接口

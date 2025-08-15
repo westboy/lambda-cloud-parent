@@ -54,13 +54,22 @@ import lombok.ToString;
 public class SimpleLoginUser implements LoginUser {
 
     /**
-     * 用户唯一标识
+     * 组织ID
      * <p>
-     * 用户在系统中的唯一标识符，通常为数据库主键或UUID。
-     * 用于在整个系统中唯一标识一个用户。
+     * 用户所属的组织标识，用于多组织架构系统。
+     * 在简单实现中返回空字符串，实际应用中可根据需要返回具体的组织ID。
      * </p>
      */
-    private String id;
+    private String orgId;
+
+    /**
+     * 租户ID
+     * <p>
+     * 用户所属的租户标识，用于多租户系统。
+     * 在简单实现中返回空字符串，实际应用中可根据需要返回具体的租户ID。
+     * </p>
+     */
+    private String tenantId;
 
     /**
      * 用户名
@@ -100,26 +109,6 @@ public class SimpleLoginUser implements LoginUser {
      * </p>
      */
     private Boolean accountLocked;
-
-    /**
-     * 用户角色集合
-     * <p>
-     * 用户拥有的角色列表，用于基于角色的访问控制(RBAC)。
-     * 使用Set集合避免重复角色，默认为空集合。
-     * 角色通常表示用户的职能或权限级别，如ADMIN、USER等。
-     * </p>
-     */
-    private Set<String> roles = Set.of();
-
-    /**
-     * 用户权限集合
-     * <p>
-     * 用户拥有的具体权限列表，用于细粒度的权限控制。
-     * 使用Set集合避免重复权限，默认为空集合。
-     * 权限通常表示具体的操作权限，如READ、WRITE、DELETE等。
-     * </p>
-     */
-    private Set<String> permissions = Set.of();
 
     /**
      * 获取用户认证凭据
@@ -176,6 +165,6 @@ public class SimpleLoginUser implements LoginUser {
     @JsonIgnore
     @Override
     public String getName() {
-        return id;
+        return username;
     }
 }

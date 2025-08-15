@@ -32,16 +32,6 @@ import java.security.Principal;
 public interface LoginUser extends Principal, Serializable {
 
     /**
-     * 获取用户名
-     * <p>
-     * 返回用户的登录用户名，通常是唯一标识符。
-     * 该方法覆盖了 {@link Principal#getName()} 方法。
-     *
-     * @return 用户名，不应为null
-     */
-    String getUsername();
-
-    /**
      * 获取用户凭证
      * <p>
      * 返回用户的认证凭证，如密码、令牌等。
@@ -50,6 +40,16 @@ public interface LoginUser extends Principal, Serializable {
      * @return 用户凭证，可能为null（如基于令牌的认证）
      */
     String getCredentials();
+
+    /**
+     * 获取租户ID
+     * <p>
+     * 返回用户所属的租户标识，用于多租户系统中的数据隔离和权限控制。
+     * 在SaaS应用中，不同租户的数据应该完全隔离。
+     *
+     * @return 租户ID，可能为null（如单租户系统）
+     */
+    String getTenantId();
 
     /**
      * 获取组织ID
@@ -77,14 +77,4 @@ public interface LoginUser extends Principal, Serializable {
      * @return true表示账户已过期，false表示账户有效，null表示状态未知
      */
     Boolean getAccountExpired();
-
-    /**
-     * 获取租户ID
-     * <p>
-     * 返回用户所属的租户标识，用于多租户系统中的数据隔离和权限控制。
-     * 在SaaS应用中，不同租户的数据应该完全隔离。
-     *
-     * @return 租户ID，可能为null（如单租户系统）
-     */
-    String getTenantId();
 }

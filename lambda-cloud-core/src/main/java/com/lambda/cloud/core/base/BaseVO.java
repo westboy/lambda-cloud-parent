@@ -1,7 +1,6 @@
 package com.lambda.cloud.core.base;
 
 import com.lambda.cloud.core.convert.BaseConverter;
-
 import java.util.List;
 
 /**
