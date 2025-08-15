@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.convert.BaseConverter;
 
-import java.util.List;
-
 /**
  * DTO 基类
  *
@@ -21,10 +19,6 @@ public abstract class BaseDTO<D, E> {
     @SuppressWarnings("unchecked")
     public E toEntity() {
         return getConverter().convertTo((D) this);
-    }
-
-    public List<E> toEntityList(List<D> dtoList) {
-        return getConverter().convertToList(dtoList);
     }
 
     @JsonIgnore
