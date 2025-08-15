@@ -150,7 +150,7 @@ public class HmacAuthenticationSuccessHandler implements AuthenticationSuccessHa
                 log.error(" hmacAuthorization is null");
                 return;
             }
-            String saToken = SaSecureUtil.sha256(loginUser.getUsername() + loginUser.getCredentials());
+            String saToken = SaSecureUtil.sha256(loginUser.getName() + loginUser.getCredentials());
             StpLogic stpLogic = StpLogicUtils.getStpLogic(Constants.HMAC);
             SaSession saSession = stpLogic.getSessionByLoginId(loginUser.getName(), false);
             if (saSession != null) {

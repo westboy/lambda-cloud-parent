@@ -235,7 +235,7 @@ public class OperationLoggerAdvice extends AbstractAdvice<OperationLog> {
         operationLogRecord.setHttpMethod(operationType);
 
         // 设置操作人信息
-        String operatorId = (currentUser != null) ? currentUser.getUsername() : "unknown";
+        String operatorId = (currentUser != null) ? currentUser.getName() : "unknown";
         operationLogRecord.setOperatorId(operatorId);
 
         // 设置客户端IP地址

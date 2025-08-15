@@ -77,11 +77,6 @@ public class OperatorUtils {
         }
 
         @Override
-        public String getUsername() {
-            return "anonymous";
-        }
-
-        @Override
         public String getCredentials() {
             return "anonymous";
         }

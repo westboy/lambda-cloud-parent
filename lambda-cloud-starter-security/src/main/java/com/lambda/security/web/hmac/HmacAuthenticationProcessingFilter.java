@@ -311,7 +311,7 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
                 String runUserId = requestWrapper.getParameter(REQUEST_HMAC_RUN_USER);
                 if (runUserId != null) {
                     hmacClient = hmacClientService.loginByUsername(runUserId, runUserType);
-                    log.debug("hmac user {} changed to user: {}", hmacClient.getUsername(), runUserId);
+                    log.debug("hmac user {} changed to user: {}", hmacClient.getName(), runUserId);
                 }
 
                 requestWrapper.setAttribute("loginType", runUserType);

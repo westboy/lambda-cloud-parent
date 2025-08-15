@@ -2,12 +2,7 @@ package com.lambda.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.principal.LoginUser;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * 简单登录用户实现类
@@ -44,13 +39,7 @@ import lombok.ToString;
  * @since 1.0.0
  * @see LoginUser
  */
-@SuppressFBWarnings(
-        value = {"EI_EXPOSE_REP"},
-        justification = "springboot properties")
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
 public class SimpleLoginUser implements LoginUser {
 
     /**
@@ -123,34 +112,6 @@ public class SimpleLoginUser implements LoginUser {
     @Override
     public String getCredentials() {
         return password;
-    }
-
-    /**
-     * 获取用户所属组织ID
-     * <p>
-     * 返回用户所属的组织标识。
-     * 在简单实现中返回空字符串，实际应用中可根据需要返回具体的组织ID。
-     * </p>
-     *
-     * @return 组织ID，简单实现返回空字符串
-     */
-    @Override
-    public String getOrgId() {
-        return "";
-    }
-
-    /**
-     * 获取用户所属租户ID
-     * <p>
-     * 返回用户所属的租户标识，用于多租户系统中的数据隔离。
-     * 在简单实现中返回空字符串，实际应用中可根据需要返回具体的租户ID。
-     * </p>
-     *
-     * @return 租户ID，简单实现返回空字符串
-     */
-    @Override
-    public String getTenantId() {
-        return "";
     }
 
     /**

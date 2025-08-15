@@ -327,31 +327,6 @@ public class HmacClient implements LoginUser {
     }
 
     /**
-     * 获取用户名
-     * <p>
-     * 实现LoginUser接口的方法，返回应用ID作为用户名。
-     * 在HMAC认证体系中，应用ID即为用户标识。
-     * </p>
-     *
-     * @return 应用ID作为用户名
-     *
-     * <h4>接口实现</h4>
-     * <p>该方法实现了LoginUser接口的getUsername()方法，
-     * 使得HmacClient可以与现有的认证体系兼容。</p>
-     *
-     * <h4>使用场景</h4>
-     * <ul>
-     *   <li>认证过程中的用户标识</li>
-     *   <li>日志记录中的用户信息</li>
-     *   <li>权限检查时的用户识别</li>
-     * </ul>
-     */
-    @Override
-    public String getUsername() {
-        return this.appid;
-    }
-
-    /**
      * 获取认证凭据
      * <p>
      * 实现LoginUser接口的方法，返回应用密钥作为认证凭据。
