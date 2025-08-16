@@ -1,5 +1,6 @@
 package com.lambda.cloud.core.base;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.cloud.core.convert.BaseConverter;
 import java.util.List;
 
@@ -12,7 +13,12 @@ import java.util.List;
  */
 public abstract class BaseVO<V, E> {
 
-    protected abstract BaseConverter<V, E> getConverter();
+    protected abstract Class<? extends BaseConverter<V, E>> getConverterClass();
+
+    protected BaseConverter<V, E> getConverter() {
+        Class<? extends BaseConverter<V, E>> converterClass = getConverterClass();
+        return SpringUtil.getBean(converterClass);
+    }
 
     /**
      * 转换为实体

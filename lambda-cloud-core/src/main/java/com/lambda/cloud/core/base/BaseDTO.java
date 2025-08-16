@@ -1,14 +1,14 @@
 package com.lambda.cloud.core.base;
 
+import static com.lambda.cloud.core.Constants.GSON;
+
+import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.gson.Gson;
 import com.lambda.cloud.core.convert.BaseConverter;
 import java.util.Map;
 import org.mapstruct.Named;
-
-import static com.lambda.cloud.core.Constants.GSON;
 
 /**
  * DTO 基类
@@ -19,7 +19,12 @@ import static com.lambda.cloud.core.Constants.GSON;
  */
 public abstract class BaseDTO<D, E> {
 
-    protected abstract BaseConverter<D, E> getConverter();
+    protected abstract Class<? extends BaseConverter<D, E>> getConverterClass();
+
+    protected BaseConverter<D, E> getConverter() {
+        Class<? extends BaseConverter<D, E>> converterClass = getConverterClass();
+        return SpringUtil.getBean(converterClass);
+    }
 
     @SuppressWarnings("unchecked")
     public E toEntity() {
