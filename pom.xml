@@ -69,6 +69,9 @@
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-spotless.version>2.44.4</maven-spotless.version>
         <maven-spotbugs.version>4.9.3.0</maven-spotbugs.version>
+        <maven-spotbugs.excludeFilterFile>
+            ${project.parent.basedir}/spotbugs-exclude.xml
+        </maven-spotbugs.excludeFilterFile>
     </properties>
 
     <modules>
@@ -688,7 +691,7 @@
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>${maven-spotbugs.version}</version>
                 <configuration>
-                    <excludeFilterFile>${project.parent.basedir}/spotbugs-exclude.xml</excludeFilterFile>
+                    <excludeFilterFile>${maven-spotbugs.excludeFilterFile}</excludeFilterFile>
                 </configuration>
                 <executions>
                     <execution>
