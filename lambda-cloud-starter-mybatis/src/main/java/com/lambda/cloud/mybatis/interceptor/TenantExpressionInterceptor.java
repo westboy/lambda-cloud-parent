@@ -61,7 +61,7 @@ public record TenantExpressionInterceptor(String name) implements Interceptor {
             tenantid = getTenantFromUser();
         }
 
-        if (StringUtils.isBlank(tenantid)) {
+        if (StringUtils.isNotBlank(tenantid)) {
             return invocation.proceed();
         }
         try (TenantContextHolder tenantManager = TenantContextHolder.getInstance()) {
