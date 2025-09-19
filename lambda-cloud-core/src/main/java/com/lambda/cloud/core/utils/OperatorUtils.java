@@ -3,8 +3,6 @@ package com.lambda.cloud.core.utils;
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import lombok.extern.slf4j.Slf4j;
@@ -157,10 +155,6 @@ public class OperatorUtils {
         LoginUser loginUser = (LoginUser) SaHolder.getStorage().get(Constants.LOGIN_USER);
         if (loginUser != null) {
             return loginUser;
-        }
-        SaSession session = StpUtil.getTokenSession();
-        if (ObjectUtil.isNull(session)) {
-            return null;
         }
         SaSession tokenSession = userStpLogic.getTokenSession();
         loginUser = (LoginUser) tokenSession.get(Constants.LOGIN_USER);
