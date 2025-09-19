@@ -70,7 +70,7 @@
         <maven-spotless.version>2.44.4</maven-spotless.version>
         <maven-spotbugs.version>4.9.3.0</maven-spotbugs.version>
         <maven-spotbugs.excludeFilterFile>
-            ${project.parent.basedir}/spotbugs-exclude.xml
+            ${project.basedir}/spotbugs-exclude.xml
         </maven-spotbugs.excludeFilterFile>
     </properties>
 
