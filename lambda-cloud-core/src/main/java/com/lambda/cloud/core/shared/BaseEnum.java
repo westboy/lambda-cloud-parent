@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.base;
+package com.lambda.cloud.core.shared;
 
 /**
  * 枚举基础接口

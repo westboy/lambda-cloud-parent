@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.base;
+package com.lambda.cloud.core.shared;
 
 import static com.lambda.cloud.core.Constants.GSON;
 

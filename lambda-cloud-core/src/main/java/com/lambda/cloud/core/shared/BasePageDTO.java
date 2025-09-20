@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.base;
+package com.lambda.cloud.core.shared;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;

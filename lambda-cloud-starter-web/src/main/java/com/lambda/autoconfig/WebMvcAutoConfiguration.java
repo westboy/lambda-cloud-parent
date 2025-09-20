@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lambda.cloud.core.jackson.JacksonModuleConfigurer;
 import com.lambda.cloud.core.jackson.LambdaObjectMapper;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
-import com.lambda.cloud.core.propertis.CorsProperties;
+import com.lambda.cloud.core.shared.CorsProperty;
 import com.lambda.cloud.mvc.StringToDateConverter;
 import com.lambda.cloud.mvc.execption.GlobalControllerAdvice;
 import com.lambda.cloud.mvc.filter.OrderedTimeHandlerFilter;
@@ -65,7 +65,7 @@ public class WebMvcAutoConfiguration {
     @Bean
     @SuppressWarnings("all")
     public WebMvcConfigurer webMvcConfigurer(
-            CorsProperties corsProperties, LocalValidatorFactoryBean defaultValidator) {
+            CorsProperty corsProperty, LocalValidatorFactoryBean defaultValidator) {
         return new WebMvcConfigurer() {
             @Override
             public void addFormatters(FormatterRegistry registry) {
@@ -79,20 +79,20 @@ public class WebMvcAutoConfiguration {
 
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                if (corsProperties.isEnabled()) {
-                    CorsRegistration registration = registry.addMapping(CorsProperties.ALL_PATH);
-                    List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+                if (corsProperty.isEnabled()) {
+                    CorsRegistration registration = registry.addMapping(CorsProperty.ALL_PATH);
+                    List<String> allowedOrigins = corsProperty.getAllowedOrigins();
                     if (CollectionUtils.isNotEmpty(allowedOrigins)) {
                         registration.allowedOriginPatterns(allowedOrigins.toArray(new String[0]));
                     } else {
-                        registration.allowedOriginPatterns(CorsProperties.ALL);
+                        registration.allowedOriginPatterns(CorsProperty.ALL);
                     }
                     registration
                             .allowCredentials(true)
-                            .allowedMethods(CorsProperties.ALLOWED_METHOD.toArray(new String[0]))
-                            .exposedHeaders(CorsProperties.EXPOSED_HEADERS.toArray(new String[0]))
-                            .allowedHeaders(CorsProperties.ALLOWED_HEADERS.toArray(new String[0]))
-                            .maxAge(corsProperties.getMaxAge());
+                            .allowedMethods(CorsProperty.ALLOWED_METHOD.toArray(new String[0]))
+                            .exposedHeaders(CorsProperty.EXPOSED_HEADERS.toArray(new String[0]))
+                            .allowedHeaders(CorsProperty.ALLOWED_HEADERS.toArray(new String[0]))
+                            .maxAge(corsProperty.getMaxAge());
                 }
             }
         };
@@ -100,8 +100,8 @@ public class WebMvcAutoConfiguration {
 
     @Bean
     @ConfigurationProperties(prefix = "lambda.web.cors")
-    public CorsProperties corsProperties() {
-        return new CorsProperties();
+    public CorsProperty corsProperties() {
+        return new CorsProperty();
     }
 
     @Primary

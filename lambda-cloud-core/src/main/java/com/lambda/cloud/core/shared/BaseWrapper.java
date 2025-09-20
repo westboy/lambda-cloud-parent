@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.base;
+package com.lambda.cloud.core.shared;
 
 import cn.hutool.core.lang.tree.TreeNode;
 import com.baomidou.mybatisplus.core.metadata.IPage;

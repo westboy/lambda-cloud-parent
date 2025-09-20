@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.convert;
+package com.lambda.cloud.core.annotation;
 
 import java.lang.annotation.*;
 import org.mapstruct.Mapper;
@@ -19,4 +19,6 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public @interface AutoConverter {}
+public @interface AutoConverter {
+    Class<?> target();
+}

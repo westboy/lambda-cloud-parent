@@ -11,7 +11,7 @@ import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.core.model.KeyValue;
-import com.lambda.cloud.core.propertis.CorsProperties;
+import com.lambda.cloud.core.shared.CorsProperty;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.gateway.filter.*;
 import com.lambda.cloud.gateway.predicate.BackendRoutePredicateFactory;
@@ -113,8 +113,8 @@ public class GatewayAutoConfiguration {
 
     @Bean
     @ConfigurationProperties(prefix = "lambda.web.cors")
-    public CorsProperties corsProperties() {
-        return new CorsProperties();
+    public CorsProperty corsProperties() {
+        return new CorsProperty();
     }
 
     @Bean
@@ -167,21 +167,21 @@ public class GatewayAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "lambda.web.cors", name = "enabled", havingValue = "true")
-    public CorsWebFilter corsWebFilter(CorsProperties corsProperties) {
+    public CorsWebFilter corsWebFilter(CorsProperty corsProperty) {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+        List<String> allowedOrigins = corsProperty.getAllowedOrigins();
         if (CollectionUtils.isNotEmpty(allowedOrigins)) {
             corsConfig.setAllowedOrigins(allowedOrigins);
         } else {
-            corsConfig.setAllowedOrigins(Collections.singletonList(CorsProperties.ALL));
+            corsConfig.setAllowedOrigins(Collections.singletonList(CorsProperty.ALL));
         }
-        corsConfig.setMaxAge(corsProperties.getMaxAge());
-        CorsProperties.ALLOWED_METHOD.forEach(method -> corsConfig.addAllowedMethod(HttpMethod.valueOf(method)));
-        CorsProperties.ALLOWED_HEADERS.forEach(corsConfig::addAllowedHeader);
-        CorsProperties.EXPOSED_HEADERS.forEach(corsConfig::addExposedHeader);
+        corsConfig.setMaxAge(corsProperty.getMaxAge());
+        CorsProperty.ALLOWED_METHOD.forEach(method -> corsConfig.addAllowedMethod(HttpMethod.valueOf(method)));
+        CorsProperty.ALLOWED_HEADERS.forEach(corsConfig::addAllowedHeader);
+        CorsProperty.EXPOSED_HEADERS.forEach(corsConfig::addExposedHeader);
         corsConfig.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration(CorsProperties.ALL_PATH, corsConfig);
+        source.registerCorsConfiguration(CorsProperty.ALL_PATH, corsConfig);
         return new CorsWebFilter(source);
     }
 

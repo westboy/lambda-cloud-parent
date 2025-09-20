@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.base;
+package com.lambda.cloud.core.shared;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.cloud.core.convert.BaseConverter;

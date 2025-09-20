@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.propertis;
+package com.lambda.cloud.core.shared;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -28,7 +28,7 @@ import lombok.Data;
  * @since 1.0.0
  */
 @Data
-public class CorsProperties {
+public class CorsProperty {
 
     /**
      * 匹配所有路径的通配符
