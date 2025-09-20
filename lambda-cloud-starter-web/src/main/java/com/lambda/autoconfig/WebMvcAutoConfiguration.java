@@ -64,8 +64,7 @@ public class WebMvcAutoConfiguration {
 
     @Bean
     @SuppressWarnings("all")
-    public WebMvcConfigurer webMvcConfigurer(
-            CorsProperty corsProperty, LocalValidatorFactoryBean defaultValidator) {
+    public WebMvcConfigurer webMvcConfigurer(CorsProperty corsProperty, LocalValidatorFactoryBean defaultValidator) {
         return new WebMvcConfigurer() {
             @Override
             public void addFormatters(FormatterRegistry registry) {

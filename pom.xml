@@ -27,7 +27,6 @@
         <jsr305.version>3.0.2</jsr305.version>
         <quartz.version>2.3.2</quartz.version>
         <okhttp.version>4.12.0</okhttp.version>
-        <aspectj.version>1.9.22.1</aspectj.version>
         <lombok.version>1.18.34</lombok.version>
         <swagger.version>2.2.25</swagger.version>
         <springdoc.version>2.8.9</springdoc.version>
@@ -483,6 +482,12 @@
                 <artifactId>iotdb-jdbc</artifactId>
                 <version>${iotdb-jdbc.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.lambda.cloud</groupId>
+                <artifactId>lambda-cloud-processor</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -602,10 +607,6 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
                             <version>0.2.0</version>
-                        </path>
-                        <path>
-                            <groupId>com.google.auto.service</groupId>
-                            <artifactId>auto-service</artifactId>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

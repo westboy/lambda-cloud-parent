@@ -1,13 +1,9 @@
 package com.lambda.cloud.processor;
 
 import com.lambda.cloud.core.annotation.AutoConverter;
-import lombok.extern.slf4j.Slf4j;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.springframework.javapoet.*;
-
+import com.lambda.cloud.core.annotation.AutoMapper;
+import java.io.IOException;
+import java.util.Set;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -15,8 +11,11 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import java.io.IOException;
-import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.springframework.javapoet.*;
 
 /**
  *
@@ -41,12 +40,12 @@ public class AutoConverterProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element element : roundEnv.getElementsAnnotatedWith(AutoConverter.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(AutoMapper.class)) {
             if (element.getKind() != ElementKind.CLASS) {
                 continue;
             }
             TypeElement dtoClass = (TypeElement) element;
-            AutoConverter anno = dtoClass.getAnnotation(AutoConverter.class);
+            AutoMapper anno = dtoClass.getAnnotation(AutoMapper.class);
 
             String dtoClassName = dtoClass.getQualifiedName().toString();
             String dtoSimpleName = dtoClass.getSimpleName().toString();
@@ -69,29 +68,30 @@ public class AutoConverterProcessor extends AbstractProcessor {
 
             MethodSpec updateEntity = MethodSpec.methodBuilder("updateEntity")
                     .addAnnotation(AnnotationSpec.builder(BeanMapping.class)
-                            .addMember("nullValuePropertyMappingStrategy",
-                                    "$T.IGNORE", NullValuePropertyMappingStrategy.class)
+                            .addMember(
+                                    "nullValuePropertyMappingStrategy",
+                                    "$T.IGNORE",
+                                    NullValuePropertyMappingStrategy.class)
                             .build())
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                     .returns(TypeName.VOID)
                     .addParameter(ClassName.bestGuess(dtoClassName), "dto")
                     .addParameter(ParameterSpec.builder(ClassName.bestGuess(targetClassName), "entity")
-                            .addAnnotation(MappingTarget.class).build())
+                            .addAnnotation(MappingTarget.class)
+                            .build())
                     .build();
 
             TypeSpec mapperInterface = TypeSpec.interfaceBuilder(mapperName)
                     .addModifiers(Modifier.PUBLIC)
-                    .addAnnotation(AnnotationSpec.builder(Mapper.class)
-                            .addMember("componentModel", "$S", "spring")
-                            .build())
+                    .addAnnotation(AnnotationSpec.builder(AutoConverter.class).build())
                     .addMethod(toEntity)
                     .addMethod(fromEntity)
                     .addMethod(updateEntity)
                     .build();
 
-            String packageName = elementUtils.getPackageOf(dtoClass).getQualifiedName().toString();
-            JavaFile javaFile = JavaFile.builder(packageName, mapperInterface)
-                    .build();
+            String packageName =
+                    elementUtils.getPackageOf(dtoClass).getQualifiedName().toString();
+            JavaFile javaFile = JavaFile.builder(packageName, mapperInterface).build();
 
             try {
                 javaFile.writeTo(filer);

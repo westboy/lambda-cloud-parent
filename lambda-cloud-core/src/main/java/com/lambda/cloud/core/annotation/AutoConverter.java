@@ -19,6 +19,4 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public @interface AutoConverter {
-    Class<?> target();
-}
+public @interface AutoConverter {}
