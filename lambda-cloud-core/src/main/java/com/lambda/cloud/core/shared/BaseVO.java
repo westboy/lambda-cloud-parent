@@ -13,11 +13,18 @@ import java.util.List;
  */
 public abstract class BaseVO<V, E> {
 
-    protected abstract Class<? extends BaseConverter<V, E>> getConverterClass();
+    private BaseConverter<V, E> converter;
 
+    /**
+     * 获取转换器
+     * @return converter
+     */
     protected BaseConverter<V, E> getConverter() {
-        Class<? extends BaseConverter<V, E>> converterClass = getConverterClass();
-        return SpringUtil.getBean(converterClass);
+        if (converter == null) {
+            String beanName = this.getClass().getSimpleName() + "Converter";
+            converter = SpringUtil.getBean(beanName);
+        }
+        return converter;
     }
 
     /**

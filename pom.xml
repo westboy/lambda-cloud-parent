@@ -599,6 +599,11 @@
                             <version>${lombok.version}</version>
                         </path>
                         <path>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>lambda-cloud-processor</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${mapstruct.version}</version>
@@ -610,6 +615,31 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-and-filter-allatori-config</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/allatori</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>allatori.xml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
