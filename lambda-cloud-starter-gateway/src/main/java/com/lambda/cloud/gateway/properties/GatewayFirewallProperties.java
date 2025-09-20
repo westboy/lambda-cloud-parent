@@ -1,7 +1,7 @@
 package com.lambda.cloud.gateway.properties;
 
 import com.google.common.collect.Lists;
-import com.lambda.cloud.core.model.KeyValue;
+import com.lambda.cloud.core.shared.KeyValue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;

@@ -7,7 +7,7 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
 import com.google.common.collect.Maps;
-import com.lambda.cloud.core.hmac.HmacGenerator;
+import com.lambda.cloud.core.utils.HmacGenerator;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import java.util.Collection;

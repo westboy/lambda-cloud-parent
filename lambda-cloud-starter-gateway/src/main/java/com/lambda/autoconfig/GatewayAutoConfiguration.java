@@ -10,7 +10,7 @@ import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.exception.model.ErrorModel;
-import com.lambda.cloud.core.model.KeyValue;
+import com.lambda.cloud.core.shared.KeyValue;
 import com.lambda.cloud.core.shared.CorsProperty;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.gateway.filter.*;

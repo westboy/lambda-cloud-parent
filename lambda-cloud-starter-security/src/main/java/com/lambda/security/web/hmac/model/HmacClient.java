@@ -2,6 +2,7 @@ package com.lambda.security.web.hmac.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.HmacGenerator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -80,7 +81,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author jpjoo
  * @see LoginUser
- * @see com.lambda.cloud.core.hmac.HmacGenerator
+ * @see HmacGenerator
  * @since 1.0.0
  */
 @SuppressFBWarnings(

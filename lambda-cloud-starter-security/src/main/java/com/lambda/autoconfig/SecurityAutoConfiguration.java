@@ -13,7 +13,7 @@ import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.core.collection.CollUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
-import com.lambda.cloud.core.model.KeyValue;
+import com.lambda.cloud.core.shared.KeyValue;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.mvc.WebHttpUtils;

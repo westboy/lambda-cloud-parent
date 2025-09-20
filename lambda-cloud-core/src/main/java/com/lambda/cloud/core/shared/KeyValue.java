@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.model;
+package com.lambda.cloud.core.shared;
 
 import java.io.Serial;
 import java.io.Serializable;

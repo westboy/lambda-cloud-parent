@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.hmac;
+package com.lambda.cloud.core.utils;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -71,7 +71,6 @@ public final class HmacGenerator {
      * @param queries 查询参数映射，键为参数名，值为参数值数组，可以为null
      * @param body 请求体内容，可以为null
      * @return 构造好的基础签名字符串
-     * @throws UnsupportedEncodingException 当URL解码失败时抛出
      */
     @SneakyThrows
     public static String baseString(

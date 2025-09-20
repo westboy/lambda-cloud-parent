@@ -4,7 +4,7 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.lambda.cloud.core.model.KeyValue;
+import com.lambda.cloud.core.shared.KeyValue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
