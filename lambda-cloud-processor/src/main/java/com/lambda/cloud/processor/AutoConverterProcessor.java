@@ -1,7 +1,6 @@
 package com.lambda.cloud.processor;
 
 import com.lambda.cloud.core.annotation.AutoConverter;
-import com.lambda.cloud.core.annotation.AutoMapper;
 import java.io.IOException;
 import java.util.Set;
 import javax.annotation.processing.*;
@@ -13,6 +12,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.javapoet.*;
 
 /**
@@ -22,7 +24,7 @@ import org.springframework.javapoet.*;
  * @author jin
  */
 @Slf4j
-@SupportedAnnotationTypes("com.lambda.cloud.core.annotation.AutoMapper")
+@SupportedAnnotationTypes("com.lambda.cloud.core.annotation.AutoConverter")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class AutoConverterProcessor extends AbstractProcessor {
 
@@ -57,7 +59,15 @@ public class AutoConverterProcessor extends AbstractProcessor {
                             ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
                             ClassName.bestGuess(dtoClassName),
                             ClassName.bestGuess(targetClassName)))
-                    .addAnnotation(AnnotationSpec.builder(AutoMapper.class).build())
+                    .addAnnotation(AnnotationSpec.builder(ClassName.get("org.mapstruct", "Mapper"))
+                            .addMember("componentModel", "$S", "spring")
+                            .addMember(
+                                    "nullValuePropertyMappingStrategy",
+                                    "$T.IGNORE",
+                                    NullValuePropertyMappingStrategy.class)
+                            .addMember("nullValueCheckStrategy", "$T.ALWAYS", NullValueCheckStrategy.class)
+                            .addMember("unmappedTargetPolicy", "$T.IGNORE", ReportingPolicy.class)
+                            .build())
                     .build();
 
             String packageName =

@@ -83,7 +83,6 @@ public interface BaseConverter<S, T> {
      * @return 更新后的目标对象
      */
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id", ignore = true)
     T updateTarget(S source, @MappingTarget T target);
 
     /**
