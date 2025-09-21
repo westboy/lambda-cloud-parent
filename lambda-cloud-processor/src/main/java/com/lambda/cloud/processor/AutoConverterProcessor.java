@@ -56,7 +56,7 @@ public class AutoConverterProcessor extends AbstractProcessor {
             TypeSpec mapperInterface = TypeSpec.interfaceBuilder(mapperName)
                     .addModifiers(Modifier.PUBLIC)
                     .addSuperinterface(ParameterizedTypeName.get(
-                            ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
+                            ClassName.get("com.lambda.cloud.core.shared", "BaseConverter"),
                             ClassName.bestGuess(dtoClassName),
                             ClassName.bestGuess(targetClassName)))
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.mapstruct", "Mapper"))

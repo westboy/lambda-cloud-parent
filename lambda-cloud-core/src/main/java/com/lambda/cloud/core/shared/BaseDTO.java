@@ -2,11 +2,9 @@ package com.lambda.cloud.core.shared;
 
 import static com.lambda.cloud.core.Constants.GSON;
 
-import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.lambda.cloud.core.convert.BaseConverter;
 import java.util.Map;
 import org.mapstruct.Named;
 
@@ -19,20 +17,7 @@ import org.mapstruct.Named;
  */
 public abstract class BaseDTO<D, E> {
 
-    private BaseConverter<D, E> converter;
-
-    /**
-     * 获取转换器
-     *
-     * @return converter
-     */
-    protected BaseConverter<D, E> getConverter() {
-        if (converter == null) {
-            String beanName = this.getClass().getSimpleName() + "Converter";
-            converter = SpringUtil.getBean(beanName);
-        }
-        return converter;
-    }
+    private final ConvertCache<D, E> convertCache = new ConvertCache<>();
 
     /**
      * 转换为实体
@@ -41,7 +26,7 @@ public abstract class BaseDTO<D, E> {
      */
     @SuppressWarnings("unchecked")
     public E toEntity() {
-        return getConverter().convertTo((D) this);
+        return convertCache.getConverter(this.getClass()).convertTo((D) this);
     }
 
     /**
@@ -57,7 +42,7 @@ public abstract class BaseDTO<D, E> {
     /**
      * Map 转 String
      *
-     * @param  map  Map<String, Object>
+     * @param map Map<String, Object>
      * @return String
      */
     @Named("mapToString")

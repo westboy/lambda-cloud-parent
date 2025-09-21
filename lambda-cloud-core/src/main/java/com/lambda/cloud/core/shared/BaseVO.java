@@ -1,7 +1,5 @@
 package com.lambda.cloud.core.shared;
 
-import cn.hutool.extra.spring.SpringUtil;
-import com.lambda.cloud.core.convert.BaseConverter;
 import java.util.List;
 
 /**
@@ -13,35 +11,25 @@ import java.util.List;
  */
 public abstract class BaseVO<V, E> {
 
-    private BaseConverter<V, E> converter;
-
-    /**
-     * 获取转换器
-     * @return converter
-     */
-    protected BaseConverter<V, E> getConverter() {
-        if (converter == null) {
-            String beanName = this.getClass().getSimpleName() + "Converter";
-            converter = SpringUtil.getBean(beanName);
-        }
-        return converter;
-    }
+    private final ConvertCache<V, E> convertCache = new ConvertCache<>();
 
     /**
      * 转换为实体
+     *
      * @param entity 实体
      * @return VO
      */
     public V fromEntity(E entity) {
-        return getConverter().convertFrom(entity);
+        return convertCache.getConverter(this.getClass()).convertFrom(entity);
     }
 
     /**
      * 转换为实体列表
+     *
      * @param entityList 实体列表
      * @return VO列表
      */
     public List<V> fromEntityList(List<E> entityList) {
-        return getConverter().convertFromList(entityList);
+        return convertCache.getConverter(this.getClass()).convertFromList(entityList);
     }
 }

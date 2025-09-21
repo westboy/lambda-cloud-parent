@@ -1,8 +1,10 @@
-package com.lambda.cloud.core.convert;
+package com.lambda.cloud.core.shared;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 /**
  * 通用转换器接口
