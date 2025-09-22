@@ -1,6 +1,7 @@
 package com.lambda.cloud.core.shared;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -110,7 +111,7 @@ public abstract class BasePageDTO<T> implements Serializable {
      * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
      */
     @JsonIgnore
-    public Page<T> getPage() {
+    public IPage<T> getPage() {
         return new Page<>(pageNum, pageSize);
     }
 

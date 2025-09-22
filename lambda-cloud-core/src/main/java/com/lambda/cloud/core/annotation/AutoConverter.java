@@ -2,6 +2,17 @@ package com.lambda.cloud.core.annotation;
 
 import java.lang.annotation.*;
 
+/**
+ * 自动生成转换接口。
+ * <p>
+ * 默认情况下，生成的接口继承 BaseConverter<S, T>，并实现其抽象方法。
+ * <p>
+ * 如果指定了 converter 属性，则生成的接口继承该属性指定的接口，并实现其抽象方法。
+ * <p>
+ * 如果指定了 uses 属性，则生成的接口会添加 @Mapper.uses 配置。
+ * <p>
+ * 如果指定了 config 属性，则生成的接口会添加 @Mapper.config 配置。
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 @Documented
