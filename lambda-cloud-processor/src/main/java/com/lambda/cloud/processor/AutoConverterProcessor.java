@@ -2,14 +2,12 @@ package com.lambda.cloud.processor;
 
 import com.lambda.cloud.core.annotation.AutoConverter;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import lombok.extern.slf4j.Slf4j;
@@ -45,16 +43,11 @@ public class AutoConverterProcessor extends AbstractProcessor {
             if (element.getKind() != ElementKind.CLASS) {
                 continue;
             }
-            TypeElement dtoClass = (TypeElement) element;
-            AutoConverter anno = dtoClass.getAnnotation(AutoConverter.class);
+            TypeElement typeElement = (TypeElement) element;
+            AutoConverter anno = typeElement.getAnnotation(AutoConverter.class);
 
-            String dtoClassName = dtoClass.getQualifiedName().toString();
-            String dtoSimpleName = dtoClass.getSimpleName().toString();
-
-            String mapperName = dtoSimpleName + "Converter";
-            String targetClassName = getTargetClassName(anno);
-
-            ParameterizedTypeName superInterface = getParameterizedTypeName(anno, dtoClassName, targetClassName);
+            String sourceClassName = typeElement.getQualifiedName().toString();
+            String sourceSimpleName = typeElement.getSimpleName().toString();
 
             AnnotationSpec.Builder builder = AnnotationSpec.builder(ClassName.get("org.mapstruct", "Mapper"))
                     .addMember("componentModel", "$S", "spring")
@@ -62,21 +55,27 @@ public class AutoConverterProcessor extends AbstractProcessor {
                     .addMember("nullValueCheckStrategy", "$T.ALWAYS", NullValueCheckStrategy.class)
                     .addMember("unmappedTargetPolicy", "$T.IGNORE", ReportingPolicy.class);
 
-            if (anno.uses().length > 0) {
+            List<TypeMirror> uses = getTypeMirrors(typeElement, "uses");
+            if (!uses.isEmpty()) {
                 CodeBlock.Builder usesBlock = CodeBlock.builder().add("{ ");
-                for (int i = 0; i < anno.uses().length; i++) {
+                for (int i = 0; i < uses.size(); i++) {
                     if (i > 0) usesBlock.add(", ");
-                    usesBlock.add("$T.class", anno.uses()[i]);
+                    usesBlock.add("$T.class", ClassName.get((TypeElement)
+                            processingEnv.getTypeUtils().asElement(uses.get(i))));
                 }
                 usesBlock.add(" }");
                 builder.addMember("uses", usesBlock.build());
             }
 
-            if (anno.config() != Void.class) {
+            TypeMirror config = getTypeMirror(typeElement, "config");
+            if (config != null) {
                 builder.addMember("config", "$T.class", anno.config());
             }
 
             AnnotationSpec annotationSpec = builder.build();
+
+            String mapperName = sourceSimpleName + "Converter";
+            ParameterizedTypeName superInterface = getParameterizedTypeName(typeElement, sourceClassName);
 
             TypeSpec mapperInterface = TypeSpec.interfaceBuilder(mapperName)
                     .addModifiers(Modifier.PUBLIC)
@@ -85,7 +84,7 @@ public class AutoConverterProcessor extends AbstractProcessor {
                     .build();
 
             String packageName =
-                    elementUtils.getPackageOf(dtoClass).getQualifiedName().toString();
+                    elementUtils.getPackageOf(typeElement).getQualifiedName().toString();
 
             JavaFile javaFile = JavaFile.builder(packageName, mapperInterface).build();
 
@@ -98,39 +97,60 @@ public class AutoConverterProcessor extends AbstractProcessor {
         return true;
     }
 
-    private ParameterizedTypeName getParameterizedTypeName(
-            AutoConverter anno, String dtoClassName, String targetClassName) {
+    private ParameterizedTypeName getParameterizedTypeName(TypeElement typeElement, String sourceClassName) {
         ParameterizedTypeName superInterface;
-        if (anno.converter() == Void.class) {
+
+        TypeMirror targetMirror = getTypeMirror(typeElement, "target");
+        if (targetMirror == null) {
+            throw new RuntimeException("target class not found");
+        }
+
+        TypeMirror sourceMirror = getTypeMirror(typeElement, "converter");
+
+        if (sourceMirror == null) {
             superInterface = ParameterizedTypeName.get(
-                    ClassName.get("com.lambda.cloud.core.shared", "BaseConverter"),
-                    ClassName.bestGuess(dtoClassName),
-                    ClassName.bestGuess(targetClassName));
+                    ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
+                    ClassName.bestGuess(sourceClassName),
+                    ClassName.bestGuess(targetMirror.toString()));
         } else {
-            TypeMirror sourceMirror;
-            try {
-                Class<?> sourceClass = anno.converter();
-                sourceMirror = processingEnv
-                        .getElementUtils()
-                        .getTypeElement(sourceClass.getCanonicalName())
-                        .asType();
-            } catch (MirroredTypeException mte) {
-                sourceMirror = mte.getTypeMirror();
-            }
             superInterface = ParameterizedTypeName.get(
                     (ClassName) ClassName.get(sourceMirror),
-                    ClassName.bestGuess(dtoClassName),
-                    ClassName.bestGuess(targetClassName));
+                    ClassName.bestGuess(sourceClassName),
+                    ClassName.bestGuess(targetMirror.toString()));
         }
         return superInterface;
     }
 
-    private String getTargetClassName(AutoConverter anno) {
-        try {
-            Class<?> target = anno.target();
-            return target.getName();
-        } catch (MirroredTypeException mte) {
-            return mte.getTypeMirror().toString();
+    private TypeMirror getTypeMirror(Element element, String name) {
+        for (AnnotationMirror am : element.getAnnotationMirrors()) {
+            if (am.getAnnotationType().toString().equals(AutoConverter.class.getCanonicalName())) {
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+                        am.getElementValues().entrySet()) {
+                    if (name.equals(entry.getKey().getSimpleName().toString())) {
+                        return (TypeMirror) entry.getValue().getValue();
+                    }
+                }
+            }
         }
+        return null;
+    }
+
+    private List<TypeMirror> getTypeMirrors(Element element, String name) {
+        for (AnnotationMirror am : element.getAnnotationMirrors()) {
+            if (am.getAnnotationType().toString().equals(AutoConverter.class.getCanonicalName())) {
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+                        am.getElementValues().entrySet()) {
+                    if (name.equals(entry.getKey().getSimpleName().toString())) {
+                        @SuppressWarnings("unchecked")
+                        List<? extends AnnotationValue> values = (List<? extends AnnotationValue>)
+                                entry.getValue().getValue();
+                        return values.stream()
+                                .map(v -> (TypeMirror) v.getValue())
+                                .toList();
+                    }
+                }
+            }
+        }
+        return List.of();
     }
 }

@@ -1,5 +1,7 @@
 package com.lambda.cloud.core.shared;
 
+import com.lambda.cloud.core.convert.BaseConverter;
+import com.lambda.cloud.core.resolver.ConverterResolver;
 import java.util.List;
 
 /**
@@ -10,8 +12,6 @@ import java.util.List;
  */
 public abstract class BaseVO<E> {
 
-    private final ConverterResolver converterResolver = new ConverterResolver();
-
     /**
      * 转换为实体
      *
@@ -19,7 +19,7 @@ public abstract class BaseVO<E> {
      * @return VO
      */
     public <V extends BaseVO<E>> V fromEntity(E entity) {
-        BaseConverter<V, E> converter = converterResolver.getConverter(this.getClass());
+        BaseConverter<V, E> converter = ConverterResolver.getConverter(this.getClass());
         return converter.convertFrom(entity);
     }
 
@@ -30,7 +30,7 @@ public abstract class BaseVO<E> {
      * @return VO列表
      */
     public <V extends BaseVO<E>> List<V> fromEntityList(List<E> entityList) {
-        BaseConverter<V, E> converter = converterResolver.getConverter(this.getClass());
+        BaseConverter<V, E> converter = ConverterResolver.getConverter(this.getClass());
         return converter.convertFromList(entityList);
     }
 }

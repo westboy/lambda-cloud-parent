@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.shared;
+package com.lambda.cloud.core.convert;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -5,6 +5,8 @@ import static com.lambda.cloud.core.Constants.GSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.lambda.cloud.core.convert.BaseConverter;
+import com.lambda.cloud.core.resolver.ConverterResolver;
 import java.util.Map;
 import org.mapstruct.Named;
 
@@ -16,15 +18,13 @@ import org.mapstruct.Named;
  */
 public abstract class BaseDTO<E> {
 
-    private final ConverterResolver converterResolver = new ConverterResolver();
-
     /**
      * 转换为实体
      *
      * @return 实体
      */
     public E toEntity() {
-        BaseConverter<BaseDTO<E>, E> converter = converterResolver.getConverter(this.getClass());
+        BaseConverter<BaseDTO<E>, E> converter = ConverterResolver.getConverter(this.getClass());
         return converter.convertTo(this);
     }
 
