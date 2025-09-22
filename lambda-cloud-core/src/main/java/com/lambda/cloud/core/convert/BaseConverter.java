@@ -1,7 +1,10 @@
 package com.lambda.cloud.core.convert;
 
+import static com.lambda.cloud.core.Constants.GSON;
+
 import java.util.*;
 import java.util.stream.Collectors;
+import org.mapstruct.Named;
 
 /**
  * 通用转换器接口
@@ -160,5 +163,17 @@ public interface BaseConverter<S, T> {
                 .map(this::convertFrom)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Map 转 String
+     *
+     * @param map Map<String, Object>
+     * @return String
+     */
+    @Named("mapToString")
+    default String mapToString(Map<String, Object> map) {
+        if (map == null) return null;
+        return GSON.toJson(map);
     }
 }

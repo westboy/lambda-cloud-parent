@@ -8,6 +8,8 @@ import java.util.Set;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import lombok.extern.slf4j.Slf4j;
@@ -72,16 +74,32 @@ public class AutoConverterProcessor extends AbstractProcessor {
                 builder.addMember("config", "$T.class", anno.config());
             }
 
-            AnnotationSpec annotationSpec = builder.build();
-
             String mapperName = sourceSimpleName + "Converter";
-            ParameterizedTypeName superInterface = getParameterizedTypeName(typeElement, sourceClassName);
 
-            TypeSpec mapperInterface = TypeSpec.interfaceBuilder(mapperName)
-                    .addModifiers(Modifier.PUBLIC)
-                    .addSuperinterface(superInterface)
-                    .addAnnotation(annotationSpec)
-                    .build();
+            TypeMirror targetMirror = getTypeMirror(typeElement, "target");
+            if (targetMirror == null) {
+                throw new RuntimeException("target class not found");
+            }
+
+            TypeSpec.Builder addModifiers =
+                    TypeSpec.interfaceBuilder(mapperName).addModifiers(Modifier.PUBLIC);
+
+            TypeMirror sourceMirror = getTypeMirror(typeElement, "converter");
+
+            if (sourceMirror == null) {
+                ParameterizedTypeName superInterface = ParameterizedTypeName.get(
+                        ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
+                        ClassName.bestGuess(sourceClassName),
+                        ClassName.bestGuess(targetMirror.toString()));
+                addModifiers.addSuperinterface(superInterface);
+
+            } else {
+                TypeElement typeMirror = getClassNameFromTypeMirror(sourceMirror);
+                addModifiers.addSuperinterface(ClassName.get(typeMirror));
+            }
+
+            TypeSpec mapperInterface =
+                    addModifiers.addAnnotation(builder.build()).build();
 
             String packageName =
                     elementUtils.getPackageOf(typeElement).getQualifiedName().toString();
@@ -97,28 +115,11 @@ public class AutoConverterProcessor extends AbstractProcessor {
         return true;
     }
 
-    private ParameterizedTypeName getParameterizedTypeName(TypeElement typeElement, String sourceClassName) {
-        ParameterizedTypeName superInterface;
-
-        TypeMirror targetMirror = getTypeMirror(typeElement, "target");
-        if (targetMirror == null) {
-            throw new RuntimeException("target class not found");
+    private TypeElement getClassNameFromTypeMirror(TypeMirror typeMirror) {
+        if (typeMirror.getKind() == TypeKind.DECLARED) {
+            return (TypeElement) ((DeclaredType) typeMirror).asElement();
         }
-
-        TypeMirror sourceMirror = getTypeMirror(typeElement, "converter");
-
-        if (sourceMirror == null) {
-            superInterface = ParameterizedTypeName.get(
-                    ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
-                    ClassName.bestGuess(sourceClassName),
-                    ClassName.bestGuess(targetMirror.toString()));
-        } else {
-            superInterface = ParameterizedTypeName.get(
-                    (ClassName) ClassName.get(sourceMirror),
-                    ClassName.bestGuess(sourceClassName),
-                    ClassName.bestGuess(targetMirror.toString()));
-        }
-        return superInterface;
+        throw new IllegalArgumentException("Unsupported type mirror: " + typeMirror);
     }
 
     private TypeMirror getTypeMirror(Element element, String name) {
@@ -135,6 +136,7 @@ public class AutoConverterProcessor extends AbstractProcessor {
         return null;
     }
 
+    //noinspection used
     private List<TypeMirror> getTypeMirrors(Element element, String name) {
         for (AnnotationMirror am : element.getAnnotationMirrors()) {
             if (am.getAnnotationType().toString().equals(AutoConverter.class.getCanonicalName())) {
