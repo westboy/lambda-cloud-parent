@@ -2,9 +2,6 @@ package com.lambda.cloud.core.shared;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 /**
  * 通用转换器接口
@@ -76,16 +73,6 @@ public interface BaseConverter<S, T> {
         }
         return (C) convertFromList(targetList);
     }
-
-    /**
-     * 部分更新目标对象（仅更新非空字段）
-     *
-     * @param source 包含更新数据的源对象
-     * @param target 目标对象
-     * @return 更新后的目标对象
-     */
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    T updateTarget(S source, @MappingTarget T target);
 
     /**
      * 将源对象转换为 Optional 包装的目标对象

@@ -35,7 +35,7 @@
                 <version>${maven-resources-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>process-META</id>
+                        <id>processor-meta</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-resources</goal>

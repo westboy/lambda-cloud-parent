@@ -11,22 +11,21 @@ import org.mapstruct.Named;
 /**
  * DTO 基类
  *
- * @param <D>
  * @param <E>
  * @author Jin
  */
-public abstract class BaseDTO<D, E> {
+public abstract class BaseDTO<E> {
 
-    private final ConvertCache<D, E> convertCache = new ConvertCache<>();
+    private final ConverterResolver converterResolver = new ConverterResolver();
 
     /**
      * 转换为实体
      *
      * @return 实体
      */
-    @SuppressWarnings("unchecked")
     public E toEntity() {
-        return convertCache.getConverter(this.getClass()).convertTo((D) this);
+        BaseConverter<BaseDTO<E>, E> converter = converterResolver.getConverter(this.getClass());
+        return converter.convertTo(this);
     }
 
     /**
