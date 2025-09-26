@@ -13,12 +13,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-web</artifactId>
             <version>${project.version}</version>
         </dependency>

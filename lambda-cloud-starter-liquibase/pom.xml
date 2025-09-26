@@ -13,7 +13,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-datasource</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

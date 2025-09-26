@@ -599,7 +599,7 @@
                             <version>${lombok.version}</version>
                         </path>
                         <path>
-                            <groupId>${project.groupId}</groupId>
+                            <groupId>com.lambda.cloud</groupId>
                             <artifactId>lambda-cloud-processor</artifactId>
                             <version>${project.version}</version>
                         </path>

@@ -11,7 +11,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-core</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -46,12 +46,12 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-actuator</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-redis</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
