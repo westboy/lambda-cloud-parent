@@ -1,8 +1,11 @@
 package com.lambda.cloud.sse.exception;
 
+import lombok.Getter;
+
 /**
  * SSE操作异常基类
  */
+@Getter
 public class SseException extends RuntimeException {
     private final String clientId;
     private final String eventName;
@@ -31,11 +34,4 @@ public class SseException extends RuntimeException {
         this.eventName = eventName;
     }
 
-    public String getClientId() {
-        return clientId;
-    }
-
-    public String getEventName() {
-        return eventName;
-    }
 }
