@@ -5,6 +5,7 @@ import io.netty.channel.ChannelPipeline;
 /**
  * 自定义处理ChannelPipeline
  */
+@FunctionalInterface
 public interface ChannelPipelineConfigurationCustomizer {
     /**
      * 自定义配置
