@@ -12,8 +12,11 @@ import lombok.Getter;
 @Getter
 public class FeignArgumentNotValidException extends AbstractFeignException {
 
+    final List<ArgumentError> errors;
+
     public FeignArgumentNotValidException(ErrorModel model) {
         super(model);
+        this.errors = model.getErrors() != null ? ImmutableList.copyOf(model.getErrors()) : ImmutableList.of();
     }
 
     @Override
