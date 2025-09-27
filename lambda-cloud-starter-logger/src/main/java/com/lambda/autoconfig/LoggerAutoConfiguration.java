@@ -1,7 +1,7 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.logger.advices.OperationLoggerAdvice;
-import com.lambda.cloud.logger.service.DefaultOperationServiceImpl;
+import com.lambda.cloud.logger.service.impl.DefaultOperationServiceImpl;
 import com.lambda.cloud.logger.service.OperationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

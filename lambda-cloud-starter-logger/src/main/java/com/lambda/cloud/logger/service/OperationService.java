@@ -1,6 +1,7 @@
 package com.lambda.cloud.logger.service;
 
 import com.lambda.cloud.logger.model.OperationLogRecord;
+import com.lambda.cloud.logger.service.impl.DefaultOperationServiceImpl;
 
 /**
  * 操作日志服务接口。

@@ -1,8 +1,9 @@
-package com.lambda.cloud.logger.service;
+package com.lambda.cloud.logger.service.impl;
 
 import static com.lambda.cloud.core.Constants.GSON;
 
 import com.lambda.cloud.logger.model.OperationLogRecord;
+import com.lambda.cloud.logger.service.OperationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
