@@ -6,11 +6,12 @@
 
     <groupId>com.lambda.cloud</groupId>
     <artifactId>lambda-cloud-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>2025.1.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <properties>
+        <lambda-cloud.version>2025.1.1-SNAPSHOT</lambda-cloud.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -487,7 +488,7 @@
             <dependency>
                 <groupId>com.lambda.cloud</groupId>
                 <artifactId>lambda-cloud-processor</artifactId>
-                <version>${project.version}</version>
+                <version>${lambda-cloud.version}</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
@@ -603,7 +604,7 @@
                         <path>
                             <groupId>com.lambda.cloud</groupId>
                             <artifactId>lambda-cloud-processor</artifactId>
-                            <version>${project.version}</version>
+                            <version>${lambda-cloud.version}</version>
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>

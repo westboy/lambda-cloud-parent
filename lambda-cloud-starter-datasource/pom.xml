@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.lambda.cloud</groupId>
         <artifactId>lambda-cloud-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>2025.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>lambda-cloud-starter-datasource</artifactId>
