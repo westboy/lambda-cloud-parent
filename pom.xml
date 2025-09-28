@@ -98,6 +98,7 @@
         <module>lambda-cloud-starter-iotdb</module>
         <module>lambda-cloud-starter-netty</module>
         <module>lambda-cloud-processor</module>
+        <module>lambda-cloud-starter-nacos</module>
     </modules>
 
     <dependencyManagement>
