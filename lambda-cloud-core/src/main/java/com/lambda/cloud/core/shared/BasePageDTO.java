@@ -83,7 +83,7 @@ public abstract class BasePageDTO<T> implements Serializable {
     @Schema(description = "当前页码，从1开始", example = "1", defaultValue = "1")
     @NotNull(message = Constants.MSG_PAGE_NUM_NOT_NULL)
     @Min(value = 1, message = "页码必须大于等于1")
-    private Integer pageNum = DEFAULT_PAGE_NUM;
+    protected Integer pageNum = DEFAULT_PAGE_NUM;
 
     /**
      * 每页记录数
@@ -98,7 +98,7 @@ public abstract class BasePageDTO<T> implements Serializable {
     @NotNull(message = Constants.MSG_PAGE_SIZE_NOT_NULL)
     @Min(value = MIN_PAGE_SIZE, message = "每页条数必须大于等于1")
     @Max(value = MAX_PAGE_SIZE, message = "每页条数不能超过1000")
-    private Integer pageSize = DEFAULT_PAGE_SIZE;
+    protected Integer pageSize = DEFAULT_PAGE_SIZE;
 
     /**
      * 创建分页对象
