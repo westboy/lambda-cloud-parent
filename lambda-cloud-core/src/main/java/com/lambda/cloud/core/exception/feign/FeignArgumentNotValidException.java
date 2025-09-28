@@ -1,4 +1,5 @@
 package com.lambda.cloud.core.exception.feign;
+
 import com.lambda.cloud.core.exception.model.ArgumentError;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import java.util.List;

@@ -33,5 +33,4 @@ public class SseException extends RuntimeException {
         this.clientId = clientId;
         this.eventName = eventName;
     }
-
 }
