@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.convert.BaseConverter;
 import com.lambda.cloud.core.resolver.ConverterResolver;
+import lombok.Data;
 
 /**
  * DTO 基类
@@ -12,6 +13,7 @@ import com.lambda.cloud.core.resolver.ConverterResolver;
  * @param <E>
  * @author Jin
  */
+@Data
 public abstract class BaseDTO<E> {
 
     /**

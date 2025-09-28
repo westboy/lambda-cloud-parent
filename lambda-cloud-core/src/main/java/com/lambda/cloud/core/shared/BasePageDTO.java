@@ -1,19 +1,14 @@
 package com.lambda.cloud.core.shared;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.Constants;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import lombok.*;
 
 /**
  * 分页数据传输对象基类
@@ -50,10 +45,10 @@ import lombok.experimental.SuperBuilder;
  * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
  * @see com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
  */
-@Getter
-@Setter
-@SuperBuilder
-public abstract class BasePageDTO<T> implements Serializable {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public abstract class BasePageDTO<T> implements PageRequest<T> {
 
     /**
      * 默认页码
@@ -101,21 +96,6 @@ public abstract class BasePageDTO<T> implements Serializable {
     @Min(value = MIN_PAGE_SIZE, message = "每页条数必须大于等于1")
     @Max(value = MAX_PAGE_SIZE, message = "每页条数不能超过1000")
     protected Integer pageSize = DEFAULT_PAGE_SIZE;
-
-    /**
-     * 创建分页对象
-     * <p>
-     * 根据当前的页码和页大小创建MyBatis-Plus的分页对象。
-     * 该方法为分页查询提供便捷的工具。
-     * </p>
-     *
-     * @return MyBatis-Plus分页对象
-     * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
-     */
-    @JsonIgnore
-    public IPage<T> getPage() {
-        return new Page<>(pageNum, pageSize);
-    }
 
     /**
      * 创建Lambda查询构造器
