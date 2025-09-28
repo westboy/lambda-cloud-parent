@@ -1,6 +1,4 @@
 package com.lambda.cloud.core.exception.feign;
-
-import com.google.common.collect.ImmutableList;
 import com.lambda.cloud.core.exception.model.ArgumentError;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import java.util.List;
@@ -16,7 +14,7 @@ public class FeignArgumentNotValidException extends AbstractFeignException {
 
     public FeignArgumentNotValidException(ErrorModel model) {
         super(model);
-        this.errors = model.getErrors() != null ? ImmutableList.copyOf(model.getErrors()) : ImmutableList.of();
+        this.errors = model.getErrors() != null ? List.copyOf(model.getErrors()) : List.of();
     }
 
     @Override
