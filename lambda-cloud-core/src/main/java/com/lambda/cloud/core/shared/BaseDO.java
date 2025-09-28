@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 数据库实体基类（Data Object）
@@ -39,6 +40,7 @@ import lombok.Setter;
  * @see com.baomidou.mybatisplus.annotation.TableField
  * @see com.baomidou.mybatisplus.annotation.TableLogic
  */
+@SuperBuilder
 @Getter
 @Setter
 public abstract class BaseDO implements Serializable {

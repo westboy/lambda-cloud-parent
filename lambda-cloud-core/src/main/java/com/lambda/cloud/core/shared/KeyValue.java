@@ -3,6 +3,7 @@ package com.lambda.cloud.core.shared;
 import java.io.Serial;
 import java.io.Serializable;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 键值对模型类
@@ -15,6 +16,7 @@ import lombok.Data;
  * @author lambda
  * @since 1.0.0
  */
+@SuperBuilder
 @Data
 public class KeyValue implements Serializable {
 

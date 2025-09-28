@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 分页数据传输对象基类
@@ -51,6 +52,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@SuperBuilder
 public abstract class BasePageDTO<T> implements Serializable {
 
     /**
