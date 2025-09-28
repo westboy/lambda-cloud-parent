@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- 排除Lombok生成的代码 -->
+    <Match>
+        <Class name="~.*\$.*"/>
+    </Match>
+    
+    <!-- 排除配置类的字段暴露警告 -->
+    <Match>
+        <Class name="~.*Properties.*"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+    
+    <!-- 排除自动配置类的警告 -->
+    <Match>
+        <Class name="~.*AutoConfiguration"/>
+    </Match>
+</FindBugsFilter>

@@ -85,6 +85,7 @@
         <module>lambda-cloud-starter-oss</module>
         <module>lambda-cloud-starter-logger</module>
         <module>lambda-cloud-starter-web</module>
+        <module>lambda-cloud-starter-webclient</module>
         <module>lambda-cloud-starter-swagger</module>
         <module>lambda-cloud-starter-actuator</module>
         <module>lambda-cloud-starter-datasource</module>
