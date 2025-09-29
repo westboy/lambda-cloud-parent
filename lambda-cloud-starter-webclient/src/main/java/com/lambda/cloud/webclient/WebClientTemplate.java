@@ -26,9 +26,9 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WebClientService {
+public class WebClientTemplate {
 
-    private final WebClientFactory webClientFactory;
+    private final WebClientTemplateFactory webClientTemplateFactory;
 
     /**
      * GET请求 - 返回字符串
@@ -48,7 +48,7 @@ public class WebClientService {
      * GET请求 - 使用指定客户端
      */
     public <E> Mono<E> get(String clientName, String url, Class<E> responseType) {
-        return webClientFactory
+        return webClientTemplateFactory
                 .create(clientName)
                 .get()
                 .uri(url)
@@ -69,7 +69,7 @@ public class WebClientService {
      */
     public <E> Mono<E> get(String clientName, String url, Map<String, Object> params, Class<E> responseType) {
         WebClient.RequestHeadersUriSpec<?> spec =
-                webClientFactory.create(clientName).get();
+                webClientTemplateFactory.create(clientName).get();
         if (params != null && !params.isEmpty()) {
             spec.uri(uriBuilder -> {
                 UriBuilder builder = uriBuilder.path(url);
@@ -93,7 +93,7 @@ public class WebClientService {
      * POST请求 - 使用指定客户端
      */
     public <E> Mono<E> post(String clientName, String url, Object requestBody, Class<E> responseType) {
-        return webClientFactory
+        return webClientTemplateFactory
                 .create(clientName)
                 .post()
                 .uri(url)
@@ -107,19 +107,20 @@ public class WebClientService {
     /**
      * POST请求 - 表单数据
      */
-    public <E> Mono<E> postForm(String url, MultiValueMap<String, String> formData, Class<E> responseType) {
-        return postForm("default", url, formData, responseType);
+    public <E> Mono<E> post(String url, MultiValueMap<String, String> formData, Class<E> responseType) {
+        return post("default", url, formData, responseType);
     }
 
     /**
      * POST请求 - 使用指定客户端，表单数据
      */
-    public <E> Mono<E> postForm(
+    public <E> Mono<E> post(
             String clientName, String url, MultiValueMap<String, String> formData, Class<E> responseType) {
-        return webClientFactory
+        return webClientTemplateFactory
                 .create(clientName)
                 .post()
                 .uri(url)
+                .attribute("requestData", formData)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
@@ -138,15 +139,16 @@ public class WebClientService {
      * PUT请求 - 使用指定客户端
      */
     public <E> Mono<E> put(String clientName, String url, Object requestBody, Class<E> responseType) {
-        return webClientFactory
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
+        return webClientTemplateFactory
                 .create(clientName)
                 .put()
                 .uri(url)
                 .contentType(MediaType.APPLICATION_JSON)
-                .attribute("requestBody", requestBody)
+                .attribute("requestData", requestBody)
                 .bodyValue(requestBody)
                 .retrieve()
-                .bodyToMono(responseType)
+                .bodyToMono(typeRef)
                 .doOnError(this::logError);
     }
 
@@ -161,12 +163,13 @@ public class WebClientService {
      * DELETE请求 - 使用指定客户端
      */
     public <E> Mono<E> delete(String clientName, String url, Class<E> responseType) {
-        return webClientFactory
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
+        return webClientTemplateFactory
                 .create(clientName)
                 .delete()
                 .uri(url)
                 .retrieve()
-                .bodyToMono(responseType)
+                .bodyToMono(typeRef)
                 .doOnError(this::logError);
     }
 
@@ -180,15 +183,16 @@ public class WebClientService {
             Object requestBody,
             Class<E> responseType,
             Consumer<HttpHeaders> headersConsumer) {
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
         WebClient.RequestBodyUriSpec spec = (WebClient.RequestBodyUriSpec)
-                webClientFactory.create(clientName).method(method).uri(url);
+                webClientTemplateFactory.create(clientName).method(method).uri(url);
         if (headersConsumer != null) {
             spec.headers(headersConsumer);
         }
         if (requestBody != null) {
             spec.contentType(MediaType.APPLICATION_JSON).bodyValue(requestBody);
         }
-        return spec.retrieve().bodyToMono(responseType).doOnError(this::logError);
+        return spec.retrieve().bodyToMono(typeRef).doOnError(this::logError);
     }
 
     /**
@@ -202,59 +206,13 @@ public class WebClientService {
      * 流式请求 - 使用指定客户端
      */
     public <E> Flux<E> getStream(String clientName, String url, Class<E> responseType) {
-        return webClientFactory
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
+        return webClientTemplateFactory
                 .create(clientName)
                 .get()
                 .uri(url)
                 .retrieve()
-                .bodyToFlux(responseType)
-                .doOnError(this::logError);
-    }
-
-    /**
-     * 获取Result包装的响应
-     */
-    public <E> Mono<E> getResult(String url, Class<E> dataType) {
-        return getResult("default", url, dataType);
-    }
-
-    /**
-     * 获取Result包装的响应 - 使用指定客户端
-     */
-    public <E> Mono<E> getResult(String clientName, String url, Class<E> dataType) {
-        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(dataType);
-
-        return webClientFactory
-                .create(clientName)
-                .get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(typeRef)
-                .doOnError(this::logError);
-    }
-
-    /**
-     * POST请求获取Result包装的响应
-     */
-    public <E> Mono<E> postResult(String url, Object requestBody, Class<E> dataType) {
-        return postResult("default", url, requestBody, dataType);
-    }
-
-    /**
-     * POST请求获取Result包装的响应 - 使用指定客户端
-     */
-    public <E> Mono<E> postResult(String clientName, String url, Object requestBody, Class<E> dataType) {
-        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(dataType);
-
-        return webClientFactory
-                .create(clientName)
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .attribute("requestBody", requestBody)
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(typeRef)
+                .bodyToFlux(typeRef)
                 .doOnError(this::logError);
     }
 

@@ -2,9 +2,6 @@ package com.lambda.cloud.webclient.hmac;
 
 import com.lambda.autoconfig.WebClientProperties;
 import com.lambda.cloud.core.utils.HmacGenerator;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -16,6 +13,13 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
+
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.lambda.cloud.core.Constants.GSON;
 
 /**
  * HMAC认证过滤器
@@ -37,7 +41,6 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 public class HmacExchangeFilterFunction implements ExchangeFilterFunction {
-
     private WebClientProperties.HmacConfig hmacConfig;
 
     /**
@@ -51,84 +54,72 @@ public class HmacExchangeFilterFunction implements ExchangeFilterFunction {
         return this;
     }
 
+    /**
+     *
+     * @param request the current request
+     * @param next the next exchange function in the chain
+     * @return Mono<ClientResponse>
+     */
     @NonNull
     @Override
     public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
-        if (hmacConfig == null || hmacConfig.getAppId() == null || hmacConfig.getSecret() == null) {
-            log.debug("HMAC配置为空，跳过HMAC认证");
+        if (!hmacConfig.isEnabled()) {
+            log.debug("HMAC配置未启用，跳过HMAC认证");
             return next.exchange(request);
         }
+        return extractRequestBodyFromBody(request)
+                .flatMap(requestBody -> Mono.fromCallable(() -> {
+                            try {
+                                // 生成时间戳（毫秒）
+                                long timestamp = System.currentTimeMillis();
 
-        return extractRequestBody(request).flatMap(requestBody -> {
-            try {
-                // 生成时间戳（毫秒）
-                long timestamp = System.currentTimeMillis();
+                                // 提取查询参数
+                                Map<String, String[]> queryParams = extractQueryParams(request);
 
-                // 提取查询参数
-                Map<String, String[]> queryParams = extractQueryParams(request);
+                                // 生成基础签名字符串
+                                String baseString =
+                                        HmacGenerator.baseString(hmacConfig.getAppId(), timestamp, queryParams, requestBody);
 
-                // 生成基础签名字符串
-                String baseString =
-                        HmacGenerator.baseString(hmacConfig.getAppId(), timestamp, queryParams, requestBody);
+                                // 生成Authorization头
+                                String authorization = HmacGenerator.authorization(
+                                        hmacConfig.getAppId(), hmacConfig.getSecret(), timestamp, baseString);
 
-                // 生成Authorization头
-                String authorization = HmacGenerator.authorization(
-                        hmacConfig.getAppId(), hmacConfig.getSecret(), timestamp, baseString);
+                                // 构建新的请求，添加认证头
+                                ClientRequest newRequest = ClientRequest.from(request)
+                                        .header("Authorization", authorization)
+                                        .build();
 
-                // 构建新的请求，添加认证头
-                ClientRequest newRequest = ClientRequest.from(request)
-                        .header("Authorization", authorization)
-                        .build();
-
-                log.debug("HMAC认证头已添加: {}", authorization);
-                return next.exchange(newRequest);
-
-            } catch (UnsupportedEncodingException e) {
-                log.error("HMAC签名生成失败", e);
-                return Mono.error(new RuntimeException("HMAC签名生成失败", e));
-            }
-        });
+                                log.debug("HMAC认证头已添加: {}", authorization);
+                                return newRequest;
+                            } catch (UnsupportedEncodingException e) {
+                                log.error("HMAC签名生成失败", e);
+                                throw new RuntimeException("HMAC签名生成失败", e);
+                            }
+                        })
+                        .flatMap(next::exchange));
     }
 
     /**
-     * 提取请求体内容用于HMAC签名
-     * <p>
-     * 根据配置的签名策略决定是否包含请求体内容。
-     * 支持从ClientRequest的attributes中获取用户设置的请求体内容。
-     * </p>
-     *
-     * <h3>使用方式：</h3>
-     * <pre>{@code
-     * // 使用HmacRequestBodyHelper设置请求体
-     * String requestBody = "{\"name\":\"test\"}";
-     * webClient.post()
-     *     .uri("/api/test")
-     *     .attribute(HmacRequestBodyHelper.HMAC_REQUEST_BODY_ATTR, requestBody)
-     *     .bodyValue(requestBody)
-     *     .retrieve();
-     * }</pre>
+     * 从request.body()提取请求体内容用于HMAC签名
      *
      * @param request 客户端请求
      * @return 请求体字符串的Mono
      */
-    private Mono<String> extractRequestBody(ClientRequest request) {
-        // 检查配置的签名策略
-        if (hmacConfig != null) {
-            HttpMethod method = request.method();
-            if (method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH) {
-                Object requestBody = request.attributes().get("requestBody");
-                if (requestBody instanceof String bodyContent) {
-                    log.debug("从请求属性中获取到字符串请求体内容，长度: {} 字符", bodyContent.length());
-                    return Mono.just(bodyContent);
-                } else if (requestBody instanceof byte[] bodyBytes) {
-                    String bodyContent = new String(bodyBytes, java.nio.charset.StandardCharsets.UTF_8);
-                    log.debug("从请求属性中获取到字节数组请求体内容，长度: {} 字节", bodyBytes.length);
-                    return Mono.just(bodyContent);
-                } else if (requestBody != null) {
-                    log.warn(
-                            "请求属性中的请求体内容类型不支持: {}，期望String或byte[]类型",
-                            requestBody.getClass().getSimpleName());
+    private Mono<String> extractRequestBodyFromBody(ClientRequest request) {
+        HttpMethod method = request.method();
+        if (method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH) {
+            try {
+                Optional<Object> attribute = request.attribute("requestData");
+                if (attribute.isPresent()) {
+                    Object body = attribute.get();
+                    if (body instanceof String str) {
+                        return Mono.just(str);
+                    } else {
+                        return Mono.just(GSON.toJson(body));
+                    }
                 }
+            } catch (Exception e) {
+                log.warn("从request.attribute()提取 requestData 时发生异常: {}", e.getMessage());
             }
         }
         return Mono.just("");
@@ -142,12 +133,9 @@ public class HmacExchangeFilterFunction implements ExchangeFilterFunction {
      */
     private Map<String, String[]> extractQueryParams(ClientRequest request) {
         Map<String, String[]> queryParams = new HashMap<>();
-
         MultiValueMap<String, String> params =
                 UriComponentsBuilder.fromUri(request.url()).build().getQueryParams();
-
         params.forEach((key, values) -> queryParams.put(key, values.toArray(new String[0])));
-
         return queryParams;
     }
 }

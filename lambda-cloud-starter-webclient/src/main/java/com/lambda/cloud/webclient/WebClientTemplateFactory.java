@@ -29,7 +29,7 @@ import reactor.netty.resources.ConnectionProvider;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WebClientFactory {
+public class WebClientTemplateFactory {
 
     private final WebClientProperties properties;
     private final LoggingExchangeFilterFunction loggingFilter;
@@ -92,7 +92,7 @@ public class WebClientFactory {
             builder.filter(retryFilter.withConfig(config.getRetry()));
         }
 
-        if (config.isHmacEnabled()) {
+        if (config.getHmac().isEnabled()) {
             builder.filter(hmacFilter.withConfig(config.getHmac()));
         }
 

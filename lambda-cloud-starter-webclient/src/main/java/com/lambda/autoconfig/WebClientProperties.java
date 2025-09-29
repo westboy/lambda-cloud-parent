@@ -95,12 +95,6 @@ public class WebClientProperties {
         private RetryConfig retry = new RetryConfig();
 
         /**
-         * 负载均衡配置
-         */
-        @NestedConfigurationProperty
-        private LoadBalancerConfig loadBalancer = new LoadBalancerConfig();
-
-        /**
          * SSL配置
          */
         @NestedConfigurationProperty
@@ -185,36 +179,6 @@ public class WebClientProperties {
         private int[] retryableStatusCodes = {500, 502, 503, 504};
     }
 
-    /**
-     * 负载均衡配置
-     */
-    @Data
-    public static class LoadBalancerConfig {
-        /**
-         * 是否启用负载均衡
-         */
-        private boolean enabled = false;
-
-        /**
-         * 负载均衡策略
-         */
-        private String strategy = "round_robin";
-
-        /**
-         * 服务实例列表
-         */
-        private String[] instances = {};
-
-        /**
-         * 健康检查URL
-         */
-        private String healthCheckUrl = "/actuator/health";
-
-        /**
-         * 健康检查间隔
-         */
-        private Duration healthCheckInterval = Duration.ofSeconds(30);
-    }
 
     /**
      * SSL配置
@@ -258,6 +222,10 @@ public class WebClientProperties {
     @Data
     public static class HmacConfig {
         /**
+         * 是否启用
+         */
+        private boolean enabled = false;
+        /**
          * 应用ID
          */
         private String appId;
@@ -266,33 +234,5 @@ public class WebClientProperties {
          * 密钥
          */
         private String secret;
-
-        /**
-         * 签名算法
-         */
-        private String algorithm = "HmacSHA256";
-
-        /**
-         * 时间戳容差（秒）
-         */
-        private long timestampTolerance = 300;
-
-        /**
-         * 请求体缓存最大大小（字节）
-         * <p>
-         * 控制单个请求体的最大缓存大小，超过此大小的请求体将不会被缓存。
-         * 这是为了防止大文件上传等场景消耗过多内存。
-         * </p>
-         *
-         * <h3>大小建议：</h3>
-         * <ul>
-         *   <li><strong>1MB（默认）</strong> - 适用于一般API请求</li>
-         *   <li><strong>10MB</strong> - 适用于包含较大JSON的请求</li>
-         *   <li><strong>100MB+</strong> - 适用于文件上传场景（需谨慎使用）</li>
-         * </ul>
-         *
-         * <p><strong>注意：</strong>设置过大可能导致内存溢出，设置过小可能导致缓存失效</p>
-         */
-        private long maxCacheSize = 1024 * 1024; // 1MB
     }
 }

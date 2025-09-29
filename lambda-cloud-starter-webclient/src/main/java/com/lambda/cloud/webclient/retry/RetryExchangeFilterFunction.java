@@ -3,6 +3,7 @@ package com.lambda.cloud.webclient.retry;
 import com.lambda.autoconfig.WebClientProperties;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -26,8 +27,9 @@ public class RetryExchangeFilterFunction implements ExchangeFilterFunction {
         return this;
     }
 
+    @NonNull
     @Override
-    public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
+    public Mono<ClientResponse> filter(    @NonNull ClientRequest request,     @NonNull ExchangeFunction next) {
         if (retryConfig == null || !retryConfig.isEnabled()) {
             return next.exchange(request);
         }
