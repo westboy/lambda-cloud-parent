@@ -1,7 +1,7 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.webclient.WebClientTemplateFactory;
 import com.lambda.cloud.webclient.WebClientTemplate;
+import com.lambda.cloud.webclient.WebClientTemplateFactory;
 import com.lambda.cloud.webclient.hmac.HmacExchangeFilterFunction;
 import com.lambda.cloud.webclient.logging.LoggingExchangeFilterFunction;
 import com.lambda.cloud.webclient.metrics.MetricsExchangeFilterFunction;

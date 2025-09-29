@@ -1,7 +1,13 @@
 package com.lambda.cloud.webclient.hmac;
 
+import static com.lambda.cloud.core.Constants.GSON;
+
 import com.lambda.autoconfig.WebClientProperties;
 import com.lambda.cloud.core.utils.HmacGenerator;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -13,13 +19,6 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static com.lambda.cloud.core.Constants.GSON;
 
 /**
  * HMAC认证过滤器
@@ -67,36 +66,35 @@ public class HmacExchangeFilterFunction implements ExchangeFilterFunction {
             log.debug("HMAC配置未启用，跳过HMAC认证");
             return next.exchange(request);
         }
-        return extractRequestBodyFromBody(request)
-                .flatMap(requestBody -> Mono.fromCallable(() -> {
-                            try {
-                                // 生成时间戳（毫秒）
-                                long timestamp = System.currentTimeMillis();
+        return extractRequestBodyFromBody(request).flatMap(requestBody -> Mono.fromCallable(() -> {
+                    try {
+                        // 生成时间戳（毫秒）
+                        long timestamp = System.currentTimeMillis();
 
-                                // 提取查询参数
-                                Map<String, String[]> queryParams = extractQueryParams(request);
+                        // 提取查询参数
+                        Map<String, String[]> queryParams = extractQueryParams(request);
 
-                                // 生成基础签名字符串
-                                String baseString =
-                                        HmacGenerator.baseString(hmacConfig.getAppId(), timestamp, queryParams, requestBody);
+                        // 生成基础签名字符串
+                        String baseString =
+                                HmacGenerator.baseString(hmacConfig.getAppId(), timestamp, queryParams, requestBody);
 
-                                // 生成Authorization头
-                                String authorization = HmacGenerator.authorization(
-                                        hmacConfig.getAppId(), hmacConfig.getSecret(), timestamp, baseString);
+                        // 生成Authorization头
+                        String authorization = HmacGenerator.authorization(
+                                hmacConfig.getAppId(), hmacConfig.getSecret(), timestamp, baseString);
 
-                                // 构建新的请求，添加认证头
-                                ClientRequest newRequest = ClientRequest.from(request)
-                                        .header("Authorization", authorization)
-                                        .build();
+                        // 构建新的请求，添加认证头
+                        ClientRequest newRequest = ClientRequest.from(request)
+                                .header("Authorization", authorization)
+                                .build();
 
-                                log.debug("HMAC认证头已添加: {}", authorization);
-                                return newRequest;
-                            } catch (UnsupportedEncodingException e) {
-                                log.error("HMAC签名生成失败", e);
-                                throw new RuntimeException("HMAC签名生成失败", e);
-                            }
-                        })
-                        .flatMap(next::exchange));
+                        log.debug("HMAC认证头已添加: {}", authorization);
+                        return newRequest;
+                    } catch (UnsupportedEncodingException e) {
+                        log.error("HMAC签名生成失败", e);
+                        throw new RuntimeException("HMAC签名生成失败", e);
+                    }
+                })
+                .flatMap(next::exchange));
     }
 
     /**

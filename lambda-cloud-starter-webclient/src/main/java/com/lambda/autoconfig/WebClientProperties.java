@@ -179,7 +179,6 @@ public class WebClientProperties {
         private int[] retryableStatusCodes = {500, 502, 503, 504};
     }
 
-
     /**
      * SSL配置
      */

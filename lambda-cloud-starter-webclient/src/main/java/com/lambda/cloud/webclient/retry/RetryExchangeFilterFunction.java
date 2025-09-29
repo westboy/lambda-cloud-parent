@@ -29,7 +29,7 @@ public class RetryExchangeFilterFunction implements ExchangeFilterFunction {
 
     @NonNull
     @Override
-    public Mono<ClientResponse> filter(    @NonNull ClientRequest request,     @NonNull ExchangeFunction next) {
+    public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
         if (retryConfig == null || !retryConfig.isEnabled()) {
             return next.exchange(request);
         }
