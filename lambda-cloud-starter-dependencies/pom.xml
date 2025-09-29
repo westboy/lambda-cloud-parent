@@ -117,6 +117,11 @@
                 <artifactId>lambda-cloud-starter-nacos</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.lambda.cloud</groupId>
+                <artifactId>lambda-cloud-starter-webclient</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
