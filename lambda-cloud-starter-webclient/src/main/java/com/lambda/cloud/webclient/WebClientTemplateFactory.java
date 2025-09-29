@@ -1,6 +1,7 @@
 package com.lambda.cloud.webclient;
 
 import com.lambda.autoconfig.WebClientProperties;
+import com.lambda.cloud.webclient.authorization.AuthorizationExchangeFilterFunction;
 import com.lambda.cloud.webclient.hmac.HmacExchangeFilterFunction;
 import com.lambda.cloud.webclient.logging.LoggingExchangeFilterFunction;
 import com.lambda.cloud.webclient.metrics.MetricsExchangeFilterFunction;
@@ -35,6 +36,7 @@ public class WebClientTemplateFactory {
 
     private final WebClientProperties properties;
     private final LoggingExchangeFilterFunction loggingFilter;
+    private final AuthorizationExchangeFilterFunction authorizationFilter;
     private final MetricsExchangeFilterFunction metricsFilter;
     private final HmacExchangeFilterFunction hmacFilter;
     private final RetryExchangeFilterFunction retryFilter;
@@ -88,6 +90,10 @@ public class WebClientTemplateFactory {
 
         if (properties.isMetricsEnabled()) {
             builder.filter(metricsFilter.withName(name));
+        }
+
+        if(config.isAuthorizationEnabled()){
+            builder.filter(authorizationFilter.withConfig(config));
         }
 
         if (config.getRetry().isEnabled()) {

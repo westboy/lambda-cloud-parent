@@ -48,12 +48,13 @@ public class WebClientTemplate {
      * GET请求 - 使用指定客户端
      */
     public <E> Mono<E> get(String clientName, String url, Class<E> responseType) {
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
         return webClientTemplateFactory
                 .create(clientName)
                 .get()
                 .uri(url)
                 .retrieve()
-                .bodyToMono(responseType)
+                .bodyToMono(typeRef)
                 .doOnError(this::logError);
     }
 
@@ -68,6 +69,7 @@ public class WebClientTemplate {
      * GET请求 - 使用指定客户端，带参数
      */
     public <E> Mono<E> get(String clientName, String url, Map<String, Object> params, Class<E> responseType) {
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
         WebClient.RequestHeadersUriSpec<?> spec =
                 webClientTemplateFactory.create(clientName).get();
         if (params != null && !params.isEmpty()) {
@@ -79,7 +81,7 @@ public class WebClientTemplate {
         } else {
             spec.uri(url);
         }
-        return spec.retrieve().bodyToMono(responseType).doOnError(this::logError);
+        return spec.retrieve().bodyToMono(typeRef).doOnError(this::logError);
     }
 
     /**
@@ -93,6 +95,7 @@ public class WebClientTemplate {
      * POST请求 - 使用指定客户端
      */
     public <E> Mono<E> post(String clientName, String url, Object requestBody, Class<E> responseType) {
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
         return webClientTemplateFactory
                 .create(clientName)
                 .post()
@@ -100,7 +103,7 @@ public class WebClientTemplate {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .retrieve()
-                .bodyToMono(responseType)
+                .bodyToMono(typeRef)
                 .doOnError(this::logError);
     }
 
@@ -116,6 +119,7 @@ public class WebClientTemplate {
      */
     public <E> Mono<E> post(
             String clientName, String url, MultiValueMap<String, String> formData, Class<E> responseType) {
+        ParameterizedTypeReference<E> typeRef = ParameterizedTypeReference.forType(responseType);
         return webClientTemplateFactory
                 .create(clientName)
                 .post()
@@ -124,7 +128,7 @@ public class WebClientTemplate {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
-                .bodyToMono(responseType)
+                .bodyToMono(typeRef)
                 .doOnError(this::logError);
     }
 

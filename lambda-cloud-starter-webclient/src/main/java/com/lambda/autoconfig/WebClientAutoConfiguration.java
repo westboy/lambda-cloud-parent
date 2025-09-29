@@ -2,6 +2,7 @@ package com.lambda.autoconfig;
 
 import com.lambda.cloud.webclient.WebClientTemplate;
 import com.lambda.cloud.webclient.WebClientTemplateFactory;
+import com.lambda.cloud.webclient.authorization.AuthorizationExchangeFilterFunction;
 import com.lambda.cloud.webclient.hmac.HmacExchangeFilterFunction;
 import com.lambda.cloud.webclient.logging.LoggingExchangeFilterFunction;
 import com.lambda.cloud.webclient.metrics.MetricsExchangeFilterFunction;
@@ -49,6 +50,12 @@ public class WebClientAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public AuthorizationExchangeFilterFunction authorizationExchangeFilterFunction() {
+        return new AuthorizationExchangeFilterFunction();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public RetryExchangeFilterFunction retryExchangeFilterFunction() {
         return new RetryExchangeFilterFunction();
     }
@@ -58,10 +65,11 @@ public class WebClientAutoConfiguration {
     public WebClientTemplateFactory webClientFactory(
             WebClientProperties properties,
             LoggingExchangeFilterFunction loggingFilter,
+            AuthorizationExchangeFilterFunction authorizationFilter,
             MetricsExchangeFilterFunction metricsFilter,
             HmacExchangeFilterFunction hmacFilter,
             RetryExchangeFilterFunction retryFilter) {
-        return new WebClientTemplateFactory(properties, loggingFilter, metricsFilter, hmacFilter, retryFilter);
+        return new WebClientTemplateFactory(properties, loggingFilter,authorizationFilter, metricsFilter, hmacFilter, retryFilter);
     }
 
     @Bean

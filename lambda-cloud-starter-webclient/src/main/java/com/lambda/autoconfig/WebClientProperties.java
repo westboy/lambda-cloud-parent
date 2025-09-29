@@ -58,6 +58,11 @@ public class WebClientProperties {
         private String baseUrl;
 
         /**
+         * 开启请求头
+         */
+        private boolean AuthorizationEnabled = true;
+
+        /**
          * 连接超时时间
          */
         private Duration connectTimeout = Duration.ofSeconds(10);
