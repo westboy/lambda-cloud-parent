@@ -5,6 +5,7 @@ import com.lambda.cloud.webclient.hmac.HmacExchangeFilterFunction;
 import com.lambda.cloud.webclient.logging.LoggingExchangeFilterFunction;
 import com.lambda.cloud.webclient.metrics.MetricsExchangeFilterFunction;
 import com.lambda.cloud.webclient.retry.RetryExchangeFilterFunction;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -26,6 +27,7 @@ import reactor.netty.resources.ConnectionProvider;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Slf4j
 @Component
 @RequiredArgsConstructor

@@ -1,6 +1,7 @@
 package com.lambda.cloud.webclient.retry;
 
 import com.lambda.autoconfig.WebClientProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -17,6 +18,7 @@ import reactor.util.retry.Retry;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Slf4j
 public class RetryExchangeFilterFunction implements ExchangeFilterFunction {
 

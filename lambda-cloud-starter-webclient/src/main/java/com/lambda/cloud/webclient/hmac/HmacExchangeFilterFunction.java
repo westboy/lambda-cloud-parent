@@ -4,6 +4,7 @@ import static com.lambda.cloud.core.Constants.GSON;
 
 import com.lambda.autoconfig.WebClientProperties;
 import com.lambda.cloud.core.utils.HmacGenerator;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,7 @@ import reactor.core.publisher.Mono;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Slf4j
 @RequiredArgsConstructor
 public class HmacExchangeFilterFunction implements ExchangeFilterFunction {

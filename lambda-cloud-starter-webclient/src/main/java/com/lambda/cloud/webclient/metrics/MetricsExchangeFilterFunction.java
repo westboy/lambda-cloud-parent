@@ -1,5 +1,6 @@
 package com.lambda.cloud.webclient.metrics;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @RequiredArgsConstructor
 @ConditionalOnClass(MeterRegistry.class)
 public class MetricsExchangeFilterFunction implements ExchangeFilterFunction {
