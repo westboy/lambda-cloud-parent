@@ -106,11 +106,6 @@ public class WebClientProperties {
         private Map<String, String> headers = new HashMap<>();
 
         /**
-         * 是否启用HMAC认证
-         */
-        private boolean hmacEnabled = false;
-
-        /**
          * HMAC配置
          */
         @NestedConfigurationProperty
