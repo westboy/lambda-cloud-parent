@@ -1,5 +1,6 @@
 package com.lambda.cloud.webclient;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.autoconfig.WebClientProperties;
 import com.lambda.cloud.webclient.authorization.AuthorizationExchangeFilterFunction;
 import com.lambda.cloud.webclient.hmac.HmacExchangeFilterFunction;
@@ -35,11 +36,6 @@ import reactor.netty.resources.ConnectionProvider;
 public class WebClientTemplateFactory {
 
     private final WebClientProperties properties;
-    private final LoggingExchangeFilterFunction loggingFilter;
-    private final AuthorizationExchangeFilterFunction authorizationFilter;
-    private final MetricsExchangeFilterFunction metricsFilter;
-    private final HmacExchangeFilterFunction hmacFilter;
-    private final RetryExchangeFilterFunction retryFilter;
 
     /**
      * 创建默认WebClient
@@ -85,22 +81,28 @@ public class WebClientTemplateFactory {
 
         // 添加过滤器
         if (properties.isLoggingEnabled()) {
-            builder.filter(loggingFilter);
+            LoggingExchangeFilterFunction loggingFilter = SpringUtil.getBean(LoggingExchangeFilterFunction.class);
+            builder.filter(loggingFilter.withName(name));
         }
 
         if (properties.isMetricsEnabled()) {
+            MetricsExchangeFilterFunction metricsFilter = SpringUtil.getBean(MetricsExchangeFilterFunction.class);
             builder.filter(metricsFilter.withName(name));
         }
 
-        if(config.isAuthorizationEnabled()){
-            builder.filter(authorizationFilter.withConfig(config));
+        if (config.isAuthorizationEnabled()) {
+            AuthorizationExchangeFilterFunction authorizationFilter =
+                    SpringUtil.getBean(AuthorizationExchangeFilterFunction.class);
+            builder.filter(authorizationFilter);
         }
 
         if (config.getRetry().isEnabled()) {
+            RetryExchangeFilterFunction retryFilter = SpringUtil.getBean(RetryExchangeFilterFunction.class);
             builder.filter(retryFilter.withConfig(config.getRetry()));
         }
 
         if (config.getHmac().isEnabled()) {
+            HmacExchangeFilterFunction hmacFilter = SpringUtil.getBean(HmacExchangeFilterFunction.class);
             builder.filter(hmacFilter.withConfig(config.getHmac()));
         }
 

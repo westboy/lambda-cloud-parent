@@ -58,45 +58,45 @@ public class HmacExchangeFilterFunction implements ExchangeFilterFunction {
     /**
      *
      * @param request the current request
-     * @param next the next exchange function in the chain
+     * @param next    the next exchange function in the chain
      * @return Mono<ClientResponse>
      */
     @NonNull
     @Override
     public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
-        if (!hmacConfig.isEnabled()) {
-            log.debug("HMAC配置未启用，跳过HMAC认证");
-            return next.exchange(request);
+        if (hmacConfig.isEnabled()) {
+            return extractRequestBodyFromBody(request).flatMap(requestBody -> Mono.fromCallable(() -> {
+                        try {
+                            // 生成时间戳（毫秒）
+                            long timestamp = System.currentTimeMillis();
+
+                            // 提取查询参数
+                            Map<String, String[]> queryParams = extractQueryParams(request);
+
+                            // 生成基础签名字符串
+                            String baseString = HmacGenerator.baseString(
+                                    hmacConfig.getAppId(), timestamp, queryParams, requestBody);
+
+                            // 生成Authorization头
+                            String authorization = HmacGenerator.authorization(
+                                    hmacConfig.getAppId(), hmacConfig.getSecret(), timestamp, baseString);
+
+                            // 构建新的请求，添加认证头
+                            ClientRequest newRequest = ClientRequest.from(request)
+                                    .header("Authorization", authorization)
+                                    .build();
+
+                            log.debug("HMAC认证头已添加: {}", authorization);
+                            return newRequest;
+                        } catch (UnsupportedEncodingException e) {
+                            log.error("HMAC签名生成失败", e);
+                            throw new RuntimeException("HMAC签名生成失败", e);
+                        }
+                    })
+                    .flatMap(next::exchange));
         }
-        return extractRequestBodyFromBody(request).flatMap(requestBody -> Mono.fromCallable(() -> {
-                    try {
-                        // 生成时间戳（毫秒）
-                        long timestamp = System.currentTimeMillis();
-
-                        // 提取查询参数
-                        Map<String, String[]> queryParams = extractQueryParams(request);
-
-                        // 生成基础签名字符串
-                        String baseString =
-                                HmacGenerator.baseString(hmacConfig.getAppId(), timestamp, queryParams, requestBody);
-
-                        // 生成Authorization头
-                        String authorization = HmacGenerator.authorization(
-                                hmacConfig.getAppId(), hmacConfig.getSecret(), timestamp, baseString);
-
-                        // 构建新的请求，添加认证头
-                        ClientRequest newRequest = ClientRequest.from(request)
-                                .header("Authorization", authorization)
-                                .build();
-
-                        log.debug("HMAC认证头已添加: {}", authorization);
-                        return newRequest;
-                    } catch (UnsupportedEncodingException e) {
-                        log.error("HMAC签名生成失败", e);
-                        throw new RuntimeException("HMAC签名生成失败", e);
-                    }
-                })
-                .flatMap(next::exchange));
+        log.debug("HMAC配置未启用，跳过HMAC认证");
+        return next.exchange(request);
     }
 
     /**

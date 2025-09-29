@@ -17,6 +17,12 @@ import reactor.core.publisher.Mono;
  */
 @Slf4j
 public class LoggingExchangeFilterFunction implements ExchangeFilterFunction {
+    private String clientName = "default";
+
+    public LoggingExchangeFilterFunction withName(String name) {
+        this.clientName = name;
+        return this;
+    }
 
     @NonNull
     @Override
@@ -24,8 +30,10 @@ public class LoggingExchangeFilterFunction implements ExchangeFilterFunction {
         Instant start = Instant.now();
 
         if (log.isDebugEnabled()) {
-            log.debug("WebClient Request: {} {}", request.method(), request.url());
-            request.headers().forEach((name, values) -> log.debug("Request Header: {}={}", name, values));
+            log.debug("WebClient [ {} ] Request: {} {}", clientName, request.method(), request.url());
+            request.headers()
+                    .forEach((name, values) ->
+                            log.debug("WebClient [ {} ] Request Header: {}={}", clientName, name, values));
         }
 
         return next.exchange(request)
@@ -33,20 +41,23 @@ public class LoggingExchangeFilterFunction implements ExchangeFilterFunction {
                     Duration duration = Duration.between(start, Instant.now());
                     if (log.isDebugEnabled()) {
                         log.debug(
-                                "WebClient Response: {} {} - {} ({}ms)",
+                                "WebClient  [ {} ]  Response: {} {} - {} ({}ms)",
+                                clientName,
                                 request.method(),
                                 request.url(),
                                 response.statusCode(),
                                 duration.toMillis());
                         response.headers()
                                 .asHttpHeaders()
-                                .forEach((name, values) -> log.debug("Response Header: {}={}", name, values));
+                                .forEach((name, values) -> log.debug(
+                                        "WebClient  [ {} ]  Response  Header: {}={}", clientName, name, values));
                     }
                 })
                 .doOnError(error -> {
                     Duration duration = Duration.between(start, Instant.now());
                     log.error(
-                            "WebClient Error: {} {} - {} ({}ms)",
+                            "WebClient  [ {} ]  Error: {} {} - {} ({}ms)",
+                            clientName,
                             request.method(),
                             request.url(),
                             error.getMessage(),

@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
@@ -30,22 +31,33 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientAutoConfiguration {
 
     @Bean
+    @Scope("prototype")
     @ConditionalOnMissingBean
     public LoggingExchangeFilterFunction loggingExchangeFilterFunction() {
         return new LoggingExchangeFilterFunction();
     }
 
     @Bean
+    @Scope("prototype")
     @ConditionalOnMissingBean
     @ConditionalOnClass(MeterRegistry.class)
-    public MetricsExchangeFilterFunction metricsExchangeFilterFunction(MeterRegistry meterRegistry) {
+    public MetricsExchangeFilterFunction metricsExchangeFilterFunction(
+            @SuppressWarnings("all") MeterRegistry meterRegistry) {
         return new MetricsExchangeFilterFunction(meterRegistry);
     }
 
     @Bean
+    @Scope("prototype")
     @ConditionalOnMissingBean
     public HmacExchangeFilterFunction hmacExchangeFilterFunction() {
         return new HmacExchangeFilterFunction();
+    }
+
+    @Bean
+    @Scope("prototype")
+    @ConditionalOnMissingBean
+    public RetryExchangeFilterFunction retryExchangeFilterFunction() {
+        return new RetryExchangeFilterFunction();
     }
 
     @Bean
@@ -56,20 +68,8 @@ public class WebClientAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public RetryExchangeFilterFunction retryExchangeFilterFunction() {
-        return new RetryExchangeFilterFunction();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public WebClientTemplateFactory webClientFactory(
-            WebClientProperties properties,
-            LoggingExchangeFilterFunction loggingFilter,
-            AuthorizationExchangeFilterFunction authorizationFilter,
-            MetricsExchangeFilterFunction metricsFilter,
-            HmacExchangeFilterFunction hmacFilter,
-            RetryExchangeFilterFunction retryFilter) {
-        return new WebClientTemplateFactory(properties, loggingFilter,authorizationFilter, metricsFilter, hmacFilter, retryFilter);
+    public WebClientTemplateFactory webClientFactory(WebClientProperties properties) {
+        return new WebClientTemplateFactory(properties);
     }
 
     @Bean
