@@ -12,11 +12,6 @@
     <dependencies>
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
-            <artifactId>logback-adapter</artifactId>
-            <version>${nacos.logback.adapter.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
         </dependency>
         <dependency>

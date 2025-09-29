@@ -20,7 +20,6 @@
         <spring-boot.version>3.5.3</spring-boot.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.3.3</spring-cloud-alibaba.version>
-        <nacos.logback.adapter.version>1.1.4</nacos.logback.adapter.version>
         <nacos.client.version>3.0.2</nacos.client.version>
         <gson.version>2.11.0</gson.version>
         <slf4j.version>2.0.16</slf4j.version>
