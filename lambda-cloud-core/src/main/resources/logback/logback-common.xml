@@ -8,8 +8,11 @@
     <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/${log.path}/info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/${log.path}/info.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/${log.path}/info.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+
+  +          <maxFileSize>100MB</maxFileSize>
             <maxHistory>60</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>
@@ -30,8 +33,10 @@
     <appender name="file_error" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/${log.path}/error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/${log.path}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/${log.path}/error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
             <maxHistory>60</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>
