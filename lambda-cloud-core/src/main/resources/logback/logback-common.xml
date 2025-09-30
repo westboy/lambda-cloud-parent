@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <included>
+    <!-- ======================= 日志格式 ======================= -->
     <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %level %logger{36} - %msg%n"/>
 
+    <!-- ===================== INFO 级别日志 ===================== -->
     <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/${log.path}/info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -11,12 +13,10 @@
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>
-            <charset>utf-8</charset>
+            <charset>UTF-8</charset>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
 
@@ -26,7 +26,7 @@
         <appender-ref ref="file_info"/>
     </appender>
 
-
+    <!-- ===================== ERROR 级别日志 ===================== -->
     <appender name="file_error" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/${log.path}/error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -35,21 +35,20 @@
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>
-            <charset>utf-8</charset>
+            <charset>UTF-8</charset>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
 
     <appender name="async_error" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>0</discardingThreshold>
-        <queueSize>512</queueSize>
+        <charset>UTF-8</charset>
         <appender-ref ref="file_error"/>
     </appender>
 
+    <!-- ===================== ROOT 日志配置 ===================== -->
     <root level="info">
         <appender-ref ref="async_info"/>
         <appender-ref ref="async_error"/>
