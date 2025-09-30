@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <included>
-
     <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %level %logger{36} - %msg%n"/>
 
     <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/${log.path}/info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.path}/info.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/${log.path}/info.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>60</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -31,7 +30,7 @@
     <appender name="file_error" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/${log.path}/error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.path}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/${log.path}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>60</maxHistory>
         </rollingPolicy>
         <encoder>
