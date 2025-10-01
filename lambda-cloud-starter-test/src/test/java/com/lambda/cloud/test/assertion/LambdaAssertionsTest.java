@@ -27,7 +27,7 @@ class LambdaAssertionsTest {
         String testString = "Hello World";
 
         // 使用assertLambda方法进行对象断言
-        assertLambda(testString)
+        newAssert(testString)
                 .isNotNull()
                 .isEqualTo("Hello World")
                 .isNotEqualTo("Goodbye")
@@ -47,14 +47,14 @@ class LambdaAssertionsTest {
         TestObject testObj = new TestObject("test", 42, true);
 
         // 测试hasProperty方法的各种情况
-        assertLambda(testObj)
+        newAssert(testObj)
                 .hasProperty("name", "test") // 标准getter
                 .hasProperty("value", 42) // 数值属性
                 .hasProperty("active", true); // 布尔属性（is方法）
 
         // 测试null值属性
         TestObject nullObj = new TestObject(null, 0, false);
-        assertLambda(nullObj).hasProperty("name", null).hasProperty("value", 0).hasProperty("active", false);
+        newAssert(nullObj).hasProperty("name", null).hasProperty("value", 0).hasProperty("active", false);
     }
 
     @Test
@@ -63,32 +63,32 @@ class LambdaAssertionsTest {
 
         // 测试属性名为null的情况
         assertThrows(AssertionError.class, () -> {
-            assertLambda(testObj).hasProperty(null, "test");
+            newAssert(testObj).hasProperty(null, "test");
         });
 
         // 测试属性名为空字符串的情况
         assertThrows(AssertionError.class, () -> {
-            assertLambda(testObj).hasProperty("", "test");
+            newAssert(testObj).hasProperty("", "test");
         });
 
         // 测试属性名为空白字符串的情况
         assertThrows(AssertionError.class, () -> {
-            assertLambda(testObj).hasProperty("   ", "test");
+            newAssert(testObj).hasProperty("   ", "test");
         });
 
         // 测试不存在的属性
         assertThrows(AssertionError.class, () -> {
-            assertLambda(testObj).hasProperty("nonExistent", "test");
+            newAssert(testObj).hasProperty("nonExistent", "test");
         });
 
         // 测试属性值不匹配的情况
         assertThrows(AssertionError.class, () -> {
-            assertLambda(testObj).hasProperty("name", "wrong");
+            newAssert(testObj).hasProperty("name", "wrong");
         });
 
         // 测试对象为null的情况
         assertThrows(AssertionError.class, () -> {
-            assertLambda((TestObject) null).hasProperty("name", "test");
+            newAssert((TestObject) null).hasProperty("name", "test");
         });
     }
 
@@ -101,7 +101,7 @@ class LambdaAssertionsTest {
         List<String> list = Arrays.asList("apple", "banana", "cherry");
 
         // 使用assertLambda方法进行集合断言
-        LambdaCollectionAssert<String> stringLambdaCollectionAssert = assertLambda(list)
+        LambdaCollectionAssert<String> stringLambdaCollectionAssert = newAssert(list)
                 .isNotNull()
                 .isNotEmpty()
                 .hasSize(3)
@@ -111,7 +111,7 @@ class LambdaAssertionsTest {
                 .anyMatch(s -> s.startsWith("a"))
                 .noneMatch(s -> s.startsWith("z"));
 
-        LambdaCollectionAssert<Object> objectLambdaCollectionAssert = assertLambda(Collections.emptyList());
+        LambdaCollectionAssert<Object> objectLambdaCollectionAssert = newAssert(Collections.emptyList());
 
         // 也可以使用assertThat方法（扩展版本）
         assertThat(list).hasSize(3);
@@ -125,7 +125,7 @@ class LambdaAssertionsTest {
         LocalDateTime future = now.plusHours(1);
 
         // 使用assertLambda方法进行时间断言
-        assertLambda(now)
+        newAssert(now)
                 .isNotNull()
                 .isAfter(past)
                 .isBefore(future)

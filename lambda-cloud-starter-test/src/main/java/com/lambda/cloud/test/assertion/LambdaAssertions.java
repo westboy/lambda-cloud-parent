@@ -58,7 +58,7 @@ public class LambdaAssertions extends Assertions {
      * @param <T>    泛型类型
      * @return Lambda对象断言实例
      */
-    public static <T> LambdaObjectAssert<T> assertLambda(T actual) {
+    public static <T> LambdaObjectAssert<T> newAssert(T actual) {
         return new LambdaObjectAssert<>(actual);
     }
 
@@ -69,7 +69,7 @@ public class LambdaAssertions extends Assertions {
      * @param <T>    集合元素类型
      * @return Lambda集合断言实例
      */
-    public static <T> LambdaCollectionAssert<T> assertLambda(Collection<T> actual) {
+    public static <T> LambdaCollectionAssert<T> newAssert(Collection<T> actual) {
         return new LambdaCollectionAssert<>(actual);
     }
 
@@ -79,7 +79,7 @@ public class LambdaAssertions extends Assertions {
      * @param actual 实际时间
      * @return Lambda时间断言实例
      */
-    public static LambdaDateTimeAssert assertLambda(LocalDateTime actual) {
+    public static LambdaDateTimeAssert newAssert(LocalDateTime actual) {
         return new LambdaDateTimeAssert(actual);
     }
 
