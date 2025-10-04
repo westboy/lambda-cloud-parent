@@ -12,6 +12,9 @@ import java.util.List;
  */
 public abstract class BaseVO<E> {
 
+    private static final StackWalker WALKER =
+            StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+
     /**
      * 静态方法：自动推断VO类型并转换单个实体
      * <p>
@@ -36,8 +39,7 @@ public abstract class BaseVO<E> {
         }
 
         // 使用StackWalker获取调用者类
-        Class<?> callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-                .getCallerClass();
+        Class<?> callerClass = WALKER.getCallerClass();
 
         // 检查调用者是否是BaseVO的子类
         if (BaseVO.class.isAssignableFrom(callerClass) && !BaseVO.class.equals(callerClass)) {
@@ -71,8 +73,7 @@ public abstract class BaseVO<E> {
         }
 
         // 使用StackWalker获取调用者类
-        Class<?> callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-                .getCallerClass();
+        Class<?> callerClass = WALKER.getCallerClass();
 
         // 检查调用者是否是BaseVO的子类
         if (BaseVO.class.isAssignableFrom(callerClass) && !BaseVO.class.equals(callerClass)) {
