@@ -34,19 +34,17 @@ public abstract class BaseVO<E> {
         if (entity == null) {
             return null;
         }
-        
+
         // 使用StackWalker获取调用者类
         Class<?> callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                 .getCallerClass();
-        
+
         // 检查调用者是否是BaseVO的子类
         if (BaseVO.class.isAssignableFrom(callerClass) && !BaseVO.class.equals(callerClass)) {
             return fromEntity((Class<V>) callerClass, entity);
         }
-        
-        throw new IllegalStateException(
-            "无法自动推断VO类型。请使用 fromEntity(Class<V> voClass, E entity) 方法并显式传递VO类型。"
-        );
+
+        throw new IllegalStateException("无法自动推断VO类型。请使用 fromEntity(Class<V> voClass, E entity) 方法并显式传递VO类型。");
     }
 
     /**
@@ -71,19 +69,18 @@ public abstract class BaseVO<E> {
         if (entityList == null || entityList.isEmpty()) {
             return List.of();
         }
-        
+
         // 使用StackWalker获取调用者类
         Class<?> callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                 .getCallerClass();
-        
+
         // 检查调用者是否是BaseVO的子类
         if (BaseVO.class.isAssignableFrom(callerClass) && !BaseVO.class.equals(callerClass)) {
             return fromEntityList((Class<V>) callerClass, entityList);
         }
-        
+
         throw new IllegalStateException(
-            "无法自动推断VO类型。请使用 fromEntityList(Class<V> voClass, List<E> entityList) 方法并显式传递VO类型。"
-        );
+                "无法自动推断VO类型。请使用 fromEntityList(Class<V> voClass, List<E> entityList) 方法并显式传递VO类型。");
     }
 
     /**
@@ -129,5 +126,4 @@ public abstract class BaseVO<E> {
         BaseConverter<V, E> converter = ConverterResolver.getConverter(voClass);
         return converter.convertFromList(entityList);
     }
-
 }
