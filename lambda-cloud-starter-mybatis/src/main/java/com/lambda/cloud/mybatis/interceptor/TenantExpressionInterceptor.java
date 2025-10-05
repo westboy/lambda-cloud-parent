@@ -1,6 +1,6 @@
 package com.lambda.cloud.mybatis.interceptor;
 
-import com.lambda.cloud.core.convert.TypeConverter;
+import com.lambda.cloud.core.utils.TypeConverter;
 import com.lambda.cloud.core.utils.OperatorUtils;
 import com.lambda.cloud.mybatis.tenant.TenantContextHolder;
 import java.beans.PropertyDescriptor;
