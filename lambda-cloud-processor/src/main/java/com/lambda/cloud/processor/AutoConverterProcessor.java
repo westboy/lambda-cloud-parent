@@ -341,7 +341,6 @@ public class AutoConverterProcessor extends AbstractProcessor {
             builder.addMember("conditionQualifiedByName", "$S", fieldMapping.conditionQualifiedByName());
         }
 
-        List<TypeMirror> conditionQualifiedBys = getTypeMirrors(typeElement, "conditionQualifiedBy");
         if (fieldMapping.conditionQualifiedBy().length > 0) {
             CodeBlock.Builder conditionQualifiedByBlock = CodeBlock.builder().add("{ ");
             for (int i = 0; i < fieldMapping.conditionQualifiedBy().length; i++) {
@@ -353,7 +352,6 @@ public class AutoConverterProcessor extends AbstractProcessor {
             builder.addMember("conditionQualifiedBy", conditionQualifiedByBlock.build());
         }
 
-        List<TypeMirror> qualifiedBys = getTypeMirrors(typeElement, "qualifiedBy");
         if (fieldMapping.qualifiedBy().length > 0) {
             CodeBlock.Builder qualifiedByBlock = CodeBlock.builder().add("{ ");
             for (int i = 0; i < fieldMapping.qualifiedBy().length; i++) {
