@@ -1,7 +1,7 @@
 package com.lambda.cloud.core.shared;
 
 import com.lambda.cloud.core.convert.BaseConverter;
-import com.lambda.cloud.core.resolver.ConverterResolver;
+import com.lambda.cloud.core.convert.ConverterResolver;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

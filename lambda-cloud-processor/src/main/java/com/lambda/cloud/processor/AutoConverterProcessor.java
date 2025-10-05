@@ -48,7 +48,6 @@ public class AutoConverterProcessor extends AbstractProcessor {
                 continue;
             }
             TypeElement typeElement = (TypeElement) element;
-            AutoConverter anno = typeElement.getAnnotation(AutoConverter.class);
 
             String sourceClassName = typeElement.getQualifiedName().toString();
             String sourceSimpleName = typeElement.getSimpleName().toString();
@@ -60,10 +59,10 @@ public class AutoConverterProcessor extends AbstractProcessor {
                     .addMember("unmappedTargetPolicy", "$T.IGNORE", ReportingPolicy.class);
 
             List<TypeMirror> uses = getTypeMirrors(typeElement);
-
+            CodeBlock.Builder usesBlock = CodeBlock.builder().add("{ ");
+            usesBlock.add("$T.class", ClassName.get("com.lambda.cloud.core.convert", "ConvertFunction"));
             if (!uses.isEmpty()) {
-                CodeBlock.Builder usesBlock = CodeBlock.builder().add("{ ");
-                int index = 0;
+                int index = 1;
                 // 添加原有的 uses 类
                 for (TypeMirror use : uses) {
                     if (index > 0) usesBlock.add(", ");
@@ -71,13 +70,14 @@ public class AutoConverterProcessor extends AbstractProcessor {
                             processingEnv.getTypeUtils().asElement(use)));
                     index++;
                 }
-                usesBlock.add(" }");
-                builder.addMember("uses", usesBlock.build());
             }
+            usesBlock.add(" }");
+            builder.addMember("uses", usesBlock.build());
 
             TypeMirror config = getTypeMirror(typeElement, "config");
             if (config != null) {
-                builder.addMember("config", "$T.class", anno.config());
+                builder.addMember("config", "$T.class", ClassName.get((TypeElement)
+                        processingEnv.getTypeUtils().asElement(config)));
             }
 
             String mapperName = sourceSimpleName + "Converter";

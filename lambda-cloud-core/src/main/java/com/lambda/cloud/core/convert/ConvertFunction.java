@@ -11,6 +11,12 @@ import java.util.Map;
 import java.util.UUID;
 import org.mapstruct.Named;
 
+
+/**
+ * ConvertFunction
+ *
+ * @author Jin
+ */
 public interface ConvertFunction {
 
     // ------------------ Map 与 String ------------------

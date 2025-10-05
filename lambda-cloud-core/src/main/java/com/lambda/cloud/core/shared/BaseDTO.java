@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.convert.BaseConverter;
-import com.lambda.cloud.core.resolver.ConverterResolver;
+import com.lambda.cloud.core.convert.ConverterResolver;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.Data;
 
