@@ -1,5 +1,6 @@
 package com.lambda.cloud.processor;
 
+import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.annotation.AutoConverter;
 import com.lambda.cloud.core.annotation.FieldMapping;
 import com.lambda.cloud.core.annotation.FieldMappings;
@@ -9,6 +10,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -57,13 +59,17 @@ public class AutoConverterProcessor extends AbstractProcessor {
                     .addMember("nullValueCheckStrategy", "$T.ALWAYS", NullValueCheckStrategy.class)
                     .addMember("unmappedTargetPolicy", "$T.IGNORE", ReportingPolicy.class);
 
-            List<TypeMirror> uses = getTypeMirrors(typeElement, "uses");
+            List<TypeMirror> uses = getTypeMirrors(typeElement);
+
             if (!uses.isEmpty()) {
                 CodeBlock.Builder usesBlock = CodeBlock.builder().add("{ ");
-                for (int i = 0; i < uses.size(); i++) {
-                    if (i > 0) usesBlock.add(", ");
+                int index = 0;
+                // 添加原有的 uses 类
+                for (TypeMirror use : uses) {
+                    if (index > 0) usesBlock.add(", ");
                     usesBlock.add("$T.class", ClassName.get((TypeElement)
-                            processingEnv.getTypeUtils().asElement(uses.get(i))));
+                            processingEnv.getTypeUtils().asElement(use)));
+                    index++;
                 }
                 usesBlock.add(" }");
                 builder.addMember("uses", usesBlock.build());
@@ -87,11 +93,20 @@ public class AutoConverterProcessor extends AbstractProcessor {
             TypeMirror sourceMirror = getTypeMirror(typeElement, "converter");
 
             if (sourceMirror == null) {
-                ParameterizedTypeName superInterface = ParameterizedTypeName.get(
-                        ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
-                        ClassName.bestGuess(sourceClassName),
-                        ClassName.bestGuess(targetMirror.toString()));
-                addModifiers.addSuperinterface(superInterface);
+                String superclassName = getSuperclassName(typeElement);
+                if (StrUtil.endWith(superclassName, "BaseDTO")) {
+                    ParameterizedTypeName superInterface = ParameterizedTypeName.get(
+                            ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
+                            ClassName.bestGuess(sourceClassName),
+                            ClassName.bestGuess(targetMirror.toString()));
+                    addModifiers.addSuperinterface(superInterface);
+                } else {
+                    ParameterizedTypeName superInterface = ParameterizedTypeName.get(
+                            ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
+                            ClassName.bestGuess(targetMirror.toString()),
+                            ClassName.bestGuess(sourceClassName));
+                    addModifiers.addSuperinterface(superInterface);
+                }
 
             } else {
                 TypeElement typeMirror = getClassNameFromTypeMirror(sourceMirror);
@@ -145,12 +160,12 @@ public class AutoConverterProcessor extends AbstractProcessor {
     }
 
     //noinspection used
-    private List<TypeMirror> getTypeMirrors(Element element, String name) {
+    private List<TypeMirror> getTypeMirrors(Element element) {
         for (AnnotationMirror am : element.getAnnotationMirrors()) {
             if (am.getAnnotationType().toString().equals(AutoConverter.class.getCanonicalName())) {
                 for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                         am.getElementValues().entrySet()) {
-                    if (name.equals(entry.getKey().getSimpleName().toString())) {
+                    if ("uses".equals(entry.getKey().getSimpleName().toString())) {
                         @SuppressWarnings("unchecked")
                         List<? extends AnnotationValue> values = (List<? extends AnnotationValue>)
                                 entry.getValue().getValue();
@@ -182,6 +197,7 @@ public class AutoConverterProcessor extends AbstractProcessor {
         }
 
         // 2. 从类上的 @FieldMapping 注解中提取（单个）
+        //noinspection DuplicatedCode
         FieldMapping singleMapping = typeElement.getAnnotation(FieldMapping.class);
         if (singleMapping != null) {
             fieldMappings.add(singleMapping);
@@ -193,7 +209,21 @@ public class AutoConverterProcessor extends AbstractProcessor {
             fieldMappings.addAll(Arrays.asList(multipleMappings.value()));
         }
 
-        // 类字段
+        // 4. 从类字段上提取 @FieldMapping 注解
+        for (Element enclosedElement : typeElement.getEnclosedElements()) {
+            if (enclosedElement.getKind() == ElementKind.FIELD) {
+                //noinspection DuplicatedCode
+                FieldMapping fieldMapping = enclosedElement.getAnnotation(FieldMapping.class);
+                if (fieldMapping != null) {
+                    fieldMappings.add(fieldMapping);
+                }
+
+                FieldMappings fieldMappingsAnno = enclosedElement.getAnnotation(FieldMappings.class);
+                if (fieldMappingsAnno != null) {
+                    fieldMappings.addAll(Arrays.asList(fieldMappingsAnno.value()));
+                }
+            }
+        }
 
         return fieldMappings;
     }
@@ -215,90 +245,6 @@ public class AutoConverterProcessor extends AbstractProcessor {
             builder.addMember("source", "$S", fieldMapping.source());
         }
 
-        // ignore 属性
-        generateMappingAnnotation(typeElement, fieldMapping, builder);
-
-        return builder.build();
-    }
-
-    /**
-     * 在生成的接口中添加带有 @Mapping 注解的方法
-     *
-     * @param typeBuilder     接口构建器
-     * @param fieldMappings   字段映射配置列表
-     * @param sourceClassName 源类名
-     * @param targetClassName 目标类名
-     */
-    private void addMappingMethods(
-            TypeElement typeElement,
-            TypeSpec.Builder typeBuilder,
-            List<FieldMapping> fieldMappings,
-            String sourceClassName,
-            String targetClassName) {
-
-        // 生成 @Mapping 注解列表
-        List<AnnotationSpec> mappingAnnotations = fieldMappings.stream()
-                .map(fieldMapping -> generateMappingAnnotation(typeElement, fieldMapping))
-                .toList();
-
-        // 添加 convertTo 方法（源对象 -> 目标对象）
-        MethodSpec.Builder convertToBuilder = MethodSpec.methodBuilder("convertTo")
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .addParameter(ClassName.bestGuess(sourceClassName), "source")
-                .returns(ClassName.bestGuess(targetClassName));
-
-        // 添加所有 @Mapping 注解
-        for (AnnotationSpec mappingAnnotation : mappingAnnotations) {
-            convertToBuilder.addAnnotation(mappingAnnotation);
-        }
-
-        typeBuilder.addMethod(convertToBuilder.build());
-
-        // 添加 convertFrom 方法（目标对象 -> 源对象）
-        // 注意：对于 convertFrom 方法，需要交换 source 和 target
-        List<AnnotationSpec> reverseMappingAnnotations = fieldMappings.stream()
-                .map(fieldMapping -> generateReverseMappingAnnotation(typeElement, fieldMapping))
-                .toList();
-
-        MethodSpec.Builder convertFromBuilder = MethodSpec.methodBuilder("convertFrom")
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .addParameter(ClassName.bestGuess(targetClassName), "target")
-                .returns(ClassName.bestGuess(sourceClassName));
-
-        // 添加所有反向 @Mapping 注解
-        for (AnnotationSpec mappingAnnotation : reverseMappingAnnotations) {
-            convertFromBuilder.addAnnotation(mappingAnnotation);
-        }
-
-        typeBuilder.addMethod(convertFromBuilder.build());
-    }
-
-    /**
-     * 生成反向 @Mapping 注解（用于 convertFrom 方法）
-     *
-     * @param fieldMapping 字段映射配置
-     * @return 反向 @Mapping 注解规范
-     */
-    private AnnotationSpec generateReverseMappingAnnotation(TypeElement typeElement, FieldMapping fieldMapping) {
-        AnnotationSpec.Builder builder = AnnotationSpec.builder(ClassName.get("org.mapstruct", "Mapping"));
-
-        // 对于反向映射，交换 source 和 target
-        if (!fieldMapping.source().isEmpty()) {
-            builder.addMember("target", "$S", fieldMapping.source());
-            builder.addMember("source", "$S", fieldMapping.target());
-        } else {
-            // 如果原始映射没有指定 source，则在反向映射中忽略该字段
-            builder.addMember("target", "$S", fieldMapping.target());
-            builder.addMember("ignore", "$L", true);
-        }
-
-        generateMappingAnnotation(typeElement, fieldMapping, builder);
-
-        return builder.build();
-    }
-
-    private void generateMappingAnnotation(
-            TypeElement typeElement, FieldMapping fieldMapping, AnnotationSpec.Builder builder) {
         // ignore 属性保持不变
         if (fieldMapping.ignore()) {
             builder.addMember("ignore", "$L", true);
@@ -341,25 +287,91 @@ public class AutoConverterProcessor extends AbstractProcessor {
             builder.addMember("conditionQualifiedByName", "$S", fieldMapping.conditionQualifiedByName());
         }
 
-        if (fieldMapping.conditionQualifiedBy().length > 0) {
-            CodeBlock.Builder conditionQualifiedByBlock = CodeBlock.builder().add("{ ");
-            for (int i = 0; i < fieldMapping.conditionQualifiedBy().length; i++) {
-                if (i > 0) conditionQualifiedByBlock.add(", ");
-                conditionQualifiedByBlock.add(
-                        "$T.class", ClassName.get(fieldMapping.conditionQualifiedBy()[i]));
+        generateMappingAnnotation(fieldMapping, builder, "conditionQualifiedBy");
+        generateMappingAnnotation(fieldMapping, builder, "qualifiedBy");
+
+        return builder.build();
+    }
+
+    private void generateMappingAnnotation(
+            FieldMapping fieldMapping, AnnotationSpec.Builder builder, String methodName) {
+        try {
+            Class<?>[] conditionQualifiedBy = fieldMapping.conditionQualifiedBy(); // 编译期调用可能触发异常
+            if (conditionQualifiedBy.length > 0) {
+                CodeBlock.Builder cb = CodeBlock.builder().add("{");
+                for (int i = 0; i < conditionQualifiedBy.length; i++) {
+                    if (i > 0) cb.add(", ");
+                    cb.add("$T.class", ClassName.get(conditionQualifiedBy[i]));
+                }
+                cb.add("}");
+                builder.addMember(methodName, "$L", cb.build());
             }
-            conditionQualifiedByBlock.add(" }");
-            builder.addMember("conditionQualifiedBy", conditionQualifiedByBlock.build());
+        } catch (MirroredTypesException e) {
+            List<? extends TypeMirror> mirrors = e.getTypeMirrors();
+            if (!mirrors.isEmpty()) {
+                CodeBlock.Builder cb = CodeBlock.builder().add("{");
+                for (int i = 0; i < mirrors.size(); i++) {
+                    if (i > 0) cb.add(", ");
+                    TypeElement te = (TypeElement) ((DeclaredType) mirrors.get(i)).asElement();
+                    cb.add("$T.class", ClassName.get(te));
+                }
+                cb.add("}");
+                builder.addMember(methodName, "$L", cb.build());
+            }
+        }
+    }
+
+    /**
+     * 在生成的接口中添加带有 @Mapping 注解的方法
+     *
+     * @param typeBuilder     接口构建器
+     * @param fieldMappings   字段映射配置列表
+     * @param sourceClassName 源类名
+     * @param targetClassName 目标类名
+     */
+    private void addMappingMethods(
+            TypeElement typeElement,
+            TypeSpec.Builder typeBuilder,
+            List<FieldMapping> fieldMappings,
+            String sourceClassName,
+            String targetClassName) {
+
+        String superclassName = getSuperclassName(typeElement);
+
+        // 生成 @Mapping 注解列表
+        List<AnnotationSpec> mappingAnnotations = fieldMappings.stream()
+                .map(fieldMapping -> generateMappingAnnotation(typeElement, fieldMapping))
+                .toList();
+
+        // 添加 convertTo 方法（源对象 -> 目标对象）
+        MethodSpec.Builder convertToBuilder = MethodSpec.methodBuilder("convertTo");
+
+        if (StrUtil.endWith(superclassName, "BaseDTO")) {
+            convertToBuilder
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .addParameter(ClassName.bestGuess(sourceClassName), "source")
+                    .returns(ClassName.bestGuess(targetClassName));
+        } else {
+            convertToBuilder
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .addParameter(ClassName.bestGuess(targetClassName), "source")
+                    .returns(ClassName.bestGuess(sourceClassName));
         }
 
-        if (fieldMapping.qualifiedBy().length > 0) {
-            CodeBlock.Builder qualifiedByBlock = CodeBlock.builder().add("{ ");
-            for (int i = 0; i < fieldMapping.qualifiedBy().length; i++) {
-                if (i > 0) qualifiedByBlock.add(", ");
-                qualifiedByBlock.add("$T.class", ClassName.get(fieldMapping.qualifiedBy()[i]));
-            }
-            qualifiedByBlock.add(" }");
-            builder.addMember("qualifiedBy", qualifiedByBlock.build());
+        // 添加所有 @Mapping 注解
+        for (AnnotationSpec mappingAnnotation : mappingAnnotations) {
+            convertToBuilder.addAnnotation(mappingAnnotation);
         }
+
+        typeBuilder.addMethod(convertToBuilder.build());
+    }
+
+    private String getSuperclassName(TypeElement typeElement) {
+        TypeMirror superclassMirror = typeElement.getSuperclass();
+        if (superclassMirror.getKind() == TypeKind.DECLARED) {
+            TypeElement superclassElement = (TypeElement) ((DeclaredType) superclassMirror).asElement();
+            return superclassElement.getQualifiedName().toString();
+        }
+        return null;
     }
 }

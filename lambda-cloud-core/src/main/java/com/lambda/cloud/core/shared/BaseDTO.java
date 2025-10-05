@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.convert.BaseConverter;
 import com.lambda.cloud.core.resolver.ConverterResolver;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.Data;
 
 /**
@@ -21,6 +22,8 @@ public abstract class BaseDTO<E> {
      *
      * @return 实体
      */
+    @Hidden
+    @JsonIgnore
     public E toEntity() {
         BaseConverter<BaseDTO<E>, E> converter = ConverterResolver.getConverter(this.getClass());
         return converter.convertTo(this);
@@ -31,8 +34,9 @@ public abstract class BaseDTO<E> {
      *
      * @return 查询条件
      */
+    @Hidden
     @JsonIgnore
-    public LambdaQueryWrapper<E> getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<E> lambdaQueryWrapper() {
         return Wrappers.lambdaQuery();
     }
 }

@@ -1,10 +1,7 @@
 package com.lambda.cloud.core.convert;
 
-import static com.lambda.cloud.core.Constants.GSON;
-
 import java.util.*;
 import java.util.stream.Collectors;
-import org.mapstruct.Named;
 
 /**
  * 通用转换器接口
@@ -24,28 +21,12 @@ public interface BaseConverter<S, T> {
     T convertTo(S source);
 
     /**
-     * 将目标对象转换为源对象
-     *
-     * @param target 目标对象
-     * @return 源对象，如果输入为 null 则返回 null
-     */
-    S convertFrom(T target);
-
-    /**
      * 将源对象列表转换为目标对象列表
      *
      * @param sourceList 源对象列表
      * @return 目标对象列表，如果输入为 null 或空列表则返回空列表
      */
     List<T> convertToList(List<S> sourceList);
-
-    /**
-     * 将目标对象列表转换为源对象列表
-     *
-     * @param targetList 目标对象列表
-     * @return 源对象列表，如果输入为 null 或空列表则返回空列表
-     */
-    List<S> convertFromList(List<T> targetList);
 
     /**
      * 将源对象列表转换为指定类型的集合
@@ -63,21 +44,6 @@ public interface BaseConverter<S, T> {
     }
 
     /**
-     * 将目标对象列表转换为指定类型的集合
-     *
-     * @param targetList 目标对象列表
-     * @param <C>        集合类型
-     * @return 源对象集合
-     */
-    @SuppressWarnings("unchecked")
-    default <C extends Collection<S>> C convertFromCollection(List<T> targetList) {
-        if (targetList == null || targetList.isEmpty()) {
-            return (C) new ArrayList<S>();
-        }
-        return (C) convertFromList(targetList);
-    }
-
-    /**
      * 将源对象转换为 Optional 包装的目标对象
      *
      * @param source 源对象
@@ -85,16 +51,6 @@ public interface BaseConverter<S, T> {
      */
     default Optional<T> convertToOptional(S source) {
         return Optional.ofNullable(convertTo(source));
-    }
-
-    /**
-     * 将目标对象转换为 Optional 包装的源对象
-     *
-     * @param target 目标对象
-     * @return Optional 包装的源对象
-     */
-    default Optional<S> convertFromOptional(T target) {
-        return Optional.ofNullable(convertFrom(target));
     }
 
     /**
@@ -115,23 +71,6 @@ public interface BaseConverter<S, T> {
     }
 
     /**
-     * 过滤并转换非空的目标对象列表为源对象列表
-     *
-     * @param targetList 目标对象列表
-     * @return 过滤后的源对象列表
-     */
-    default List<S> convertNonNullFromList(List<T> targetList) {
-        if (targetList == null) {
-            return new ArrayList<>();
-        }
-        return targetList.stream()
-                .filter(Objects::nonNull)
-                .map(this::convertFrom)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * 批量转换并返回 Set 集合
      *
      * @param sourceList 源对象列表
@@ -146,34 +85,5 @@ public interface BaseConverter<S, T> {
                 .map(this::convertTo)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-    }
-
-    /**
-     * 批量转换并返回 Set 集合
-     *
-     * @param targetList 目标对象列表
-     * @return 源对象 Set 集合
-     */
-    default Set<S> convertFromSet(List<T> targetList) {
-        if (targetList == null || targetList.isEmpty()) {
-            return new HashSet<>();
-        }
-        return targetList.stream()
-                .filter(Objects::nonNull)
-                .map(this::convertFrom)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * Map 转 String
-     *
-     * @param map Map<String, Object>
-     * @return String
-     */
-    @Named("mapToString")
-    default String mapToString(Map<String, Object> map) {
-        if (map == null) return null;
-        return GSON.toJson(map);
     }
 }

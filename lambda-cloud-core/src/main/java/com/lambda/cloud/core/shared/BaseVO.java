@@ -105,8 +105,8 @@ public abstract class BaseVO<E> {
         if (entity == null) {
             return null;
         }
-        BaseConverter<V, E> converter = ConverterResolver.getConverter(voClass);
-        return converter.convertFrom(entity);
+        BaseConverter<E, V> converter = ConverterResolver.getConverter(voClass);
+        return converter.convertTo(entity);
     }
 
     /**
@@ -127,7 +127,7 @@ public abstract class BaseVO<E> {
         if (entityList == null || entityList.isEmpty()) {
             return List.of();
         }
-        BaseConverter<V, E> converter = ConverterResolver.getConverter(voClass);
-        return converter.convertFromList(entityList);
+        BaseConverter<E, V> converter = ConverterResolver.getConverter(voClass);
+        return converter.convertToList(entityList);
     }
 }
