@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.mapstruct.Named;
 
-
 /**
  * ConvertFunction
  *
