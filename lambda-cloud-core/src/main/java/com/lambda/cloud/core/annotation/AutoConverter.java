@@ -12,6 +12,10 @@ import java.lang.annotation.*;
  * 如果指定了 uses 属性，则生成的接口会添加 @Mapper.uses 配置。
  * <p>
  * 如果指定了 config 属性，则生成的接口会添加 @Mapper.config 配置。
+ * <p>
+ * 如果指定了 fieldMappings 属性，则生成的接口方法会添加相应的 @Mapping 注解。
+ * <p>
+ * 也可以直接在类上使用 @FieldMapping 注解来定义字段映射。
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
@@ -42,4 +46,14 @@ public @interface AutoConverter {
      * MapStruct 的公共配置类（参考  @Mapper.config 配置）。
      */
     Class<?> config() default void.class;
+
+    /**
+     * 字段映射配置
+     * <p>
+     * 定义源对象和目标对象之间的字段映射关系。
+     * 这些配置会被转换为 MapStruct 的 @Mapping 注解。
+     * <p>
+     * 注意：也可以直接在类上使用 @FieldMapping 注解来定义字段映射。
+     */
+    FieldMapping[] fieldMappings() default {};
 }
