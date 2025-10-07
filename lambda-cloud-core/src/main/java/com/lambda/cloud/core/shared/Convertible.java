@@ -1,4 +1,4 @@
-package com.lambda.cloud.core.convert;
+package com.lambda.cloud.core.shared;
 
 /**
  * Convertible<T>
