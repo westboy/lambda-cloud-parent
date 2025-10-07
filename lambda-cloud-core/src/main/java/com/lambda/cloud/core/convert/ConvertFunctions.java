@@ -16,7 +16,7 @@ import org.mapstruct.Named;
  *
  * @author Jin
  */
-public interface ConvertFunction {
+public interface ConvertFunctions {
 
     // ------------------ Map 与 String ------------------
 

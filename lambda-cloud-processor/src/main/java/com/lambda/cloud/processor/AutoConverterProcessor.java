@@ -60,7 +60,7 @@ public class AutoConverterProcessor extends AbstractProcessor {
 
             List<TypeMirror> uses = getTypeMirrors(typeElement);
             CodeBlock.Builder usesBlock = CodeBlock.builder().add("{ ");
-            usesBlock.add("$T.class", ClassName.get("com.lambda.cloud.core.convert", "ConvertFunction"));
+            usesBlock.add("$T.class", ClassName.get("com.lambda.cloud.core.convert", "ConvertFunctions"));
             if (!uses.isEmpty()) {
                 int index = 1;
                 // 添加原有的 uses 类
