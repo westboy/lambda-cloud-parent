@@ -183,6 +183,171 @@ BaseConverter<UserVO, UserEntity> voConverter =
 UserVO vo = voConverter.convertFrom(entity);
 ```
 
+#### 重要说明：转换方向控制机制
+
+**⚠️ 关键特性**：`@AutoConverter` 注解的 `isReverse` 属性控制生成的转换器接口的泛型参数顺序和转换方向。这个机制决定了转换器的 `convertTo` 方法的参数类型和返回类型，同时影响 `@FieldMapping` 注解中 `source` 和 `target` 字段的含义。
+
+##### 转换方向控制规则
+
+| isReverse 值 | 生成的转换器泛型 | convertTo 方法签名 | 转换方向 | 典型使用场景 |
+|-------------|-----------------|-------------------|---------|-------------|
+| `false`（默认） | `BaseConverter<Target, Source>` | `Source convertTo(Target input)` | Target → Source | DTO → Entity（接收前端数据，保存到数据库） |
+| `true` | `BaseConverter<Source, Target>` | `Target convertTo(Source input)` | Source → Target | Entity → VO（从数据库查询，返回给前端） |
+
+**核心理解**：
+- `isReverse = false`：转换器接受 Target 类型参数，返回 Source 类型结果
+- `isReverse = true`：转换器接受 Source 类型参数，返回 Target 类型结果
+
+##### FieldMapping 注解使用差异
+
+**核心区别**：`@FieldMapping` 注解中的 `source` 和 `target` 字段含义会根据 `isReverse` 属性发生变化。
+
+**重要提示**：在 `@FieldMapping` 中：
+- `source`：始终指向**输入对象**的字段（convertTo 方法的参数对象）
+- `target`：始终指向**输出对象**的字段（convertTo 方法的返回对象）
+
+###### 1. isReverse = false（默认情况）
+```java
+@AutoConverter(target = UserEntity.class)  // isReverse = false（默认）
+public class UserCreateDTO extends BaseDTO<UserEntity> {
+    // convertTo 方法：UserEntity convertTo(UserCreateDTO input)
+    // source 指输入对象（UserCreateDTO）字段，target 指输出对象（UserEntity）字段
+    @FieldMapping(source = "userName", target = "username")  // DTO.userName → Entity.username
+    private String userName;
+    
+    @FieldMapping(source = "age", target = "userAge")        // DTO.age → Entity.userAge
+    private Integer age;
+}
+
+// 生成的转换器：BaseConverter<UserCreateDTO, UserEntity>
+// 生成的方法：UserEntity convertTo(UserCreateDTO input)
+// 转换方向：UserCreateDTO → UserEntity
+```
+
+###### 2. isReverse = true（参数反转）
+```java
+@AutoConverter(target = UserEntity.class, isReverse = true)
+public class UserVO extends BaseVO<UserEntity> {
+    // convertTo 方法：UserVO convertTo(UserEntity input)
+    // source 指输入对象（UserEntity）字段，target 指输出对象（UserVO）字段
+    @FieldMapping(source = "username", target = "userName")  // Entity.username → VO.userName
+    private String userName;
+    
+    @FieldMapping(source = "userAge", target = "age")        // Entity.userAge → VO.age
+    private Integer age;
+}
+
+// 生成的转换器：BaseConverter<UserEntity, UserVO>
+// 生成的方法：UserVO convertTo(UserEntity input)
+// 转换方向：UserEntity → UserVO
+```
+
+##### 实际应用对比
+
+**场景1：保存用户信息（isReverse = false，默认）**
+```java
+@AutoConverter(target = UserEntity.class)  // isReverse = false（默认）
+public class UserCreateDTO extends BaseDTO<UserEntity> {
+    // 输入：UserCreateDTO，输出：UserEntity
+    @FieldMapping(source = "userName", target = "username")  // DTO.userName → Entity.username
+    private String userName;
+}
+
+// 生成的方法：UserEntity convertTo(UserCreateDTO input)
+// 使用：DTO → Entity
+UserEntity entity = userCreateDTOConverter.convertTo(userCreateDTO);
+```
+
+**场景2：查询用户信息（isReverse = true）**
+```java
+@AutoConverter(target = UserVO.class, isReverse = true)
+public class UserEntity extends BaseVO<UserVO> {
+    // 输入：UserEntity，输出：UserVO
+    @FieldMapping(source = "username", target = "userName")  // Entity.username → VO.userName
+    private String username;
+}
+
+// 生成的方法：UserVO convertTo(UserEntity input)
+// 使用：Entity → VO
+UserVO vo = userEntityConverter.convertTo(userEntity);
+```
+
+##### 技术原理
+
+这种转换方向控制机制在 `AutoConverterProcessor` 的第97行和第346行实现：
+
+**1. 泛型参数顺序控制（第97行）**：
+```java
+// 核心判断逻辑
+AutoConverter anno = typeElement.getAnnotation(AutoConverter.class);
+ParameterizedTypeName superInterface;
+if (anno.isReverse()) {
+    // isReverse = true：反转参数顺序
+    superInterface = ParameterizedTypeName.get(
+            ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
+            ClassName.bestGuess(sourceClassName),      // Source 在前
+            ClassName.bestGuess(targetMirror.toString())); // Target 在后
+} else {
+    // isReverse = false（默认）：标准参数顺序
+    superInterface = ParameterizedTypeName.get(
+            ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
+            ClassName.bestGuess(targetMirror.toString()),   // Target 在前
+            ClassName.bestGuess(sourceClassName));         // Source 在后
+}
+```
+
+**2. 转换方法参数控制（第346行）**：
+```java
+// 转换方法的参数和返回值
+if (anno.isReverse()) {
+    // isReverse = true：Source -> Target
+    convertToBuilder
+            .addParameter(ClassName.bestGuess(sourceClassName), "source")
+            .returns(ClassName.bestGuess(targetClassName));
+} else {
+    // isReverse = false（默认）：Target -> Source
+    convertToBuilder
+            .addParameter(ClassName.bestGuess(targetClassName), "source")
+            .returns(ClassName.bestGuess(sourceClassName));
+}
+```
+
+**关键机制**：框架通过 `@AutoConverter` 注解的 `isReverse` 属性来控制转换方向，而不是通过类名后缀判断。当继承 `BaseVO` 时，通常需要设置 `isReverse = true` 来实现 Entity → VO 的转换方向。
+
+##### 最佳实践建议
+
+1. **明确转换方向**：在编写 `@FieldMapping` 注解前，先确认 `@AutoConverter` 的 `isReverse` 属性值和生成的 `convertTo` 方法签名
+2. **记住核心原则**：
+   - `source` 始终指向**输入对象**的字段（convertTo 方法的参数）
+   - `target` 始终指向**输出对象**的字段（convertTo 方法的返回值）
+3. **统一使用规范**：
+   - DTO → Entity 转换：使用 `isReverse = false`（默认）
+   - Entity → VO 转换：使用 `isReverse = true`
+4. **注释说明**：在复杂的字段映射上添加注释，说明转换方向和字段对应关系
+5. **测试验证**：编写单元测试验证字段映射的正确性
+
+```java
+// 推荐：明确的注释说明
+@AutoConverter(target = UserVO.class, isReverse = true)  // Entity → VO
+public class UserEntity extends BaseVO<UserVO> {
+    @FieldMapping(source = "username", target = "userName")  // Entity.username → VO.userName
+    private String username;
+}
+```
+
+6. **理解字段映射本质**：
+   - 不要依赖类名后缀判断转换方向
+   - 始终以 `convertTo` 方法的实际签名为准
+   - `source` 和 `target` 的含义完全由 `isReverse` 属性决定
+
+6. **命名约定**：
+   - 保持一致的命名规范，减少映射配置
+   - 使用有意义的字段名，便于理解转换方向
+
+7. **类型转换**：
+   - 合理使用 `ConvertFunction` 中的转换方法
+   - 注意日期、数字等类型的格式化需求
+
 #### 生成的代码示例
 
 以上 `UserCreateDTO` 会自动生成如下 MapStruct Mapper 接口：

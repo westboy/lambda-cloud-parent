@@ -98,6 +98,68 @@ public class UserDTO {
 }
 ```
 
+### 继承关系与参数反转
+
+#### 重要说明：BaseVO 继承的特殊处理
+
+当类继承 `BaseVO` 时，生成的转换器接口会**自动反转泛型参数顺序**，这会影响 `@FieldMapping` 注解的使用：
+
+##### 1. BaseDTO 继承（标准情况）
+```java
+@AutoConverter(target = UserEntity.class)
+public class UserCreateDTO extends BaseDTO<UserEntity> {
+    @FieldMapping(target = "userName", source = "name")  // DTO字段 -> Entity字段
+    private String name;
+}
+
+// 生成：BaseConverter<UserCreateDTO, UserEntity>
+// 转换方向：DTO -> Entity
+```
+
+##### 2. BaseVO 继承（参数反转）
+```java
+@AutoConverter(target = UserEntity.class)
+public class UserVO extends BaseVO<UserEntity> {
+    @FieldMapping(target = "name", source = "userName")  // Entity字段 -> VO字段
+    private String name;
+}
+
+// 生成：BaseConverter<UserEntity, UserVO>  ← 注意参数顺序反转
+// 转换方向：Entity -> VO
+```
+
+#### FieldMapping 注解使用差异
+
+| 继承类型 | 泛型参数 | 转换方向 | source 含义 | target 含义 |
+|---------|---------|---------|------------|------------|
+| BaseDTO | `<DTO, Entity>` | DTO → Entity | DTO字段名 | Entity字段名 |
+| BaseVO | `<Entity, VO>` | Entity → VO | Entity字段名 | VO字段名 |
+| 普通类 | `<源类, 目标类>` | 源 → 目标 | 源类字段名 | 目标类字段名 |
+
+#### 实际应用场景
+
+```java
+// 场景1：接收前端数据，保存到数据库
+@AutoConverter(target = UserEntity.class)
+public class UserCreateDTO extends BaseDTO<UserEntity> {
+    @FieldMapping(target = "userName", source = "name")  // DTO.name -> Entity.userName
+    private String name;
+    
+    @FieldMapping(target = "userAge", source = "age")    // DTO.age -> Entity.userAge
+    private Integer age;
+}
+
+// 场景2：从数据库查询，返回给前端
+@AutoConverter(target = UserEntity.class)
+public class UserVO extends BaseVO<UserEntity> {
+    @FieldMapping(target = "name", source = "userName")  // Entity.userName -> VO.name
+    private String name;
+    
+    @FieldMapping(target = "age", source = "userAge")    // Entity.userAge -> VO.age
+    private Integer age;
+}
+```
+
 ### 高级配置
 
 #### 自定义转换器接口

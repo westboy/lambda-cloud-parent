@@ -22,11 +22,9 @@ dubbo:
   protocol:
     name: dubbo
     port: -1
-    serialization: kryo
   protocols:
     dubbo:
       port: -1
-      serialization: kryo
   consumer:
     check: false
   registry:

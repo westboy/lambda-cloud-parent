@@ -1,6 +1,5 @@
 package com.lambda.cloud.processor;
 
-import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.annotation.AutoConverter;
 import com.lambda.cloud.core.annotation.FieldMapping;
 import com.lambda.cloud.core.annotation.FieldMappings;
@@ -93,20 +92,20 @@ public class AutoConverterProcessor extends AbstractProcessor {
             TypeMirror sourceMirror = getTypeMirror(typeElement, "converter");
 
             if (sourceMirror == null) {
-                String superclassName = getSuperclassName(typeElement);
-                if (StrUtil.endWith(superclassName, "BaseDTO")) {
-                    ParameterizedTypeName superInterface = ParameterizedTypeName.get(
+                AutoConverter anno = typeElement.getAnnotation(AutoConverter.class);
+                ParameterizedTypeName superInterface;
+                if (!anno.isReverse()) {
+                    superInterface = ParameterizedTypeName.get(
                             ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
                             ClassName.bestGuess(sourceClassName),
                             ClassName.bestGuess(targetMirror.toString()));
-                    addModifiers.addSuperinterface(superInterface);
                 } else {
-                    ParameterizedTypeName superInterface = ParameterizedTypeName.get(
+                    superInterface = ParameterizedTypeName.get(
                             ClassName.get("com.lambda.cloud.core.convert", "BaseConverter"),
                             ClassName.bestGuess(targetMirror.toString()),
                             ClassName.bestGuess(sourceClassName));
-                    addModifiers.addSuperinterface(superInterface);
                 }
+                addModifiers.addSuperinterface(superInterface);
 
             } else {
                 TypeElement typeMirror = getClassNameFromTypeMirror(sourceMirror);
@@ -336,8 +335,6 @@ public class AutoConverterProcessor extends AbstractProcessor {
             String sourceClassName,
             String targetClassName) {
 
-        String superclassName = getSuperclassName(typeElement);
-
         // 生成 @Mapping 注解列表
         List<AnnotationSpec> mappingAnnotations = fieldMappings.stream()
                 .map(fieldMapping -> generateMappingAnnotation(typeElement, fieldMapping))
@@ -345,8 +342,8 @@ public class AutoConverterProcessor extends AbstractProcessor {
 
         // 添加 convertTo 方法（源对象 -> 目标对象）
         MethodSpec.Builder convertToBuilder = MethodSpec.methodBuilder("convertTo");
-
-        if (StrUtil.endWith(superclassName, "BaseDTO")) {
+        AutoConverter anno = typeElement.getAnnotation(AutoConverter.class);
+        if (!anno.isReverse()) {
             convertToBuilder
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                     .addParameter(ClassName.bestGuess(sourceClassName), "source")

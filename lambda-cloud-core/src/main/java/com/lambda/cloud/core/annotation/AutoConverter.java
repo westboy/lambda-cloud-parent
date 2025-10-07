@@ -31,6 +31,19 @@ public @interface AutoConverter {
     Class<?> converter() default Void.class;
 
     /**
+     * 转换方向控制
+     * <p>
+     * 控制生成的转换器的泛型参数顺序和转换方向：
+     * <ul>
+     *   <li>{@code false}（默认）：生成 {@code BaseConverter<Target, Source>}，转换方法为 {@code convertTo(Target source) -> Source}</li>
+     *   <li>{@code true}：生成 {@code BaseConverter<Source, Target>}，转换方法为 {@code convertTo(Source source) -> Target}</li>
+     * </ul>
+     *
+     * @see com.lambda.cloud.processor.AutoConverterProcessor#process 第97行和第346行的实现逻辑
+     */
+    boolean isReverse() default false;
+
+    /**
      * 目标对象类型。
      * <p>
      * 用于指定 DTO、VO 转换到的目标类。
