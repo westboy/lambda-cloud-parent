@@ -5,7 +5,6 @@ import com.lambda.cloud.netty.NettyServerChannelInitializer;
 import com.lambda.cloud.netty.customizer.ChannelPipelineConfigurationCustomizer;
 import com.lambda.cloud.netty.customizer.ServerBootstrapConfigurationCustomizer;
 import com.lambda.cloud.netty.repository.ChannelRepository;
-import com.lambda.cloud.netty.repository.SerialNumberAccessor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -16,7 +15,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import java.net.InetSocketAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -25,6 +23,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+
+import java.net.InetSocketAddress;
 
 @Slf4j
 @AutoConfiguration
@@ -106,8 +106,4 @@ public class NettyAutoConfiguration {
         return new ChannelRepository();
     }
 
-    @Bean
-    public SerialNumberAccessor serialNumberAccessor() {
-        return new SerialNumberAccessor();
-    }
 }
