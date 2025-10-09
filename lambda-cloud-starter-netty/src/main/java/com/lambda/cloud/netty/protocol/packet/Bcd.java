@@ -9,8 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 压缩BCD码
- * 0x01,0x59  --->  159
+ * BCD码
  */
 @Getter
 @Setter
@@ -50,6 +49,28 @@ public class Bcd extends BaseUnit {
         BigInteger bigInteger = bigDecimal.toBigInteger().add(new BigInteger(Integer.toString(this.offset)));
 
         super.setData(bigInteger.toString());
+    }
+
+    /**
+     * 从 BCD 字节数组设置数据
+     * 例如：0x01,0x59 -> 159
+     */
+    public void setData(byte[] bcdBytes) {
+        int intValue = bcdBytesToInt(bcdBytes);
+        this.setData(intValue);
+    }
+
+    /**
+     * BCD byte[] 转 int
+     */
+    private int bcdBytesToInt(byte[] bcdBytes) {
+        int result = 0;
+        for (byte b : bcdBytes) {
+            int high = (b >> 4) & 0x0F;
+            int low = b & 0x0F;
+            result = result * 100 + high * 10 + low;
+        }
+        return result;
     }
 
     public int getIntData() {

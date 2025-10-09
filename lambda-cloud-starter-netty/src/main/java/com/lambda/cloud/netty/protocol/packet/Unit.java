@@ -8,16 +8,16 @@ import io.netty.buffer.ByteBuf;
  */
 public interface Unit {
     /**
-     * 将接收到的byteBuf内容转化成指定类型内容
+     * 将接收到的 byteBuf 内容转化成指定类型内容
      *
      * @param byteBuf 接收到的原数据
      */
     void read(ByteBuf byteBuf);
 
     /**
-     * 将数据内容写入byteBuf
+     * 将数据内容写入 byteBuf
      *
-     * @param byteBuf 要写入的byteBuf
+     * @param byteBuf 要写入的 byteBuff
      */
     void write(ByteBuf byteBuf);
 
