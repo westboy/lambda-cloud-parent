@@ -15,7 +15,7 @@ class SegmentTest {
 
     // 测试数据包
     String testData =
-            "686602020058181200000001700010c0d40100204e0000289a0100204e0000880d010050460000d0840000204e0000d8590000204e000000020202020202020202020202020202020202020203030404040404040303020201010000000001010101020202020202F108";
+            "685e0002005818120000001294003aa08601008038010068360200204e000098ab0200204e0000e09f0200204e00000000000000000000000000000000000000010101010101010102020202020202020202020203030303030303030303030380EC";
 
     String testData2 = "682A022500F018120000000001011D68747470733A2F2F686C637863782E6875613030312E6E65743F69643D819B";
 
@@ -46,7 +46,7 @@ class SegmentTest {
             log.info("桩编号: {}", frameNumberBcd.getData());
 
             // 2. 解析计费费率编码 (2字节BCD)
-            Bcd billingRateCodeBcd = new Bcd(2);
+            Hex billingRateCodeBcd = new Hex(2);
             billingRateCodeBcd.read(byteBuf);
             log.info("计费费率编码: {}", billingRateCodeBcd.getData());
 
@@ -97,6 +97,18 @@ class SegmentTest {
             valleyServiceFeeRateHex.setLittleEnd(true);
             valleyServiceFeeRateHex.read(byteBuf);
             log.info("谷服务费率: {}", valleyServiceFeeRateHex.getData());
+
+            // 9. 解析谷电费费率 (4字节BIN，精确到5位小数)
+            Hex deepElectricityFeeRateHex = new Hex(4, 5);
+            deepElectricityFeeRateHex.setLittleEnd(true);
+            deepElectricityFeeRateHex.read(byteBuf);
+            log.info("深谷服务费率: {}", deepElectricityFeeRateHex.getData());
+
+            // 10. 解析谷服务费率 (4字节BIN，精确到5位小数)
+            Hex deepServiceFeeRateHex = new Hex(4, 5);
+            deepServiceFeeRateHex.setLittleEnd(true);
+            deepServiceFeeRateHex.read(byteBuf);
+            log.info("深谷服务费率: {}", deepServiceFeeRateHex.getData());
 
             // 11. 解析计费比例 (1字节BIN)
             Hex billingRatioHex = new Hex(1);
