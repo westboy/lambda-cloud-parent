@@ -1,6 +1,5 @@
 package com.lambda.cloud.netty.message;
 
-
 import cn.hutool.core.io.checksum.CRC16;
 import com.lambda.cloud.netty.protocol.checksum.LambdaCRC16Modbus;
 import com.lambda.cloud.netty.protocol.packet.Bcd;
@@ -15,9 +14,10 @@ import org.junit.jupiter.api.Test;
 class SegmentTest {
 
     // 测试数据包
-    String testData = "686602020058181200000001700010c0d40100204e0000289a0100204e0000880d010050460000d0840000204e0000d8590000204e000000020202020202020202020202020202020202020203030404040404040303020201010000000001010101020202020202F108";
+    String testData =
+            "686602020058181200000001700010c0d40100204e0000289a0100204e0000880d010050460000d0840000204e0000d8590000204e000000020202020202020202020202020202020202020203030404040404040303020201010000000001010101020202020202F108";
 
-   String testData2 = "682A022500F018120000000001011D68747470733A2F2F686C637863782E6875613030312E6E65743F69643D819B";
+    String testData2 = "682A022500F018120000000001011D68747470733A2F2F686C637863782E6875613030312E6E65743F69643D819B";
 
     @Test
     void test0() {
@@ -25,6 +25,7 @@ class SegmentTest {
         CRC16 crc16 = new CRC16(new LambdaCRC16Modbus(true));
         crc16.update(UnitKit.hexToBytes(hexData));
         String hexValue = crc16.getHexValue(true);
+        log.info("crc16: {}", hexValue);
     }
 
     @Test
@@ -115,7 +116,5 @@ class SegmentTest {
         } finally {
             byteBuf.release();
         }
-
     }
-
 }

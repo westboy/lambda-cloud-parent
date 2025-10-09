@@ -15,11 +15,10 @@ public class LambdaCRC16Modbus extends CRC16Modbus {
 
     @Override
     public long getValue() {
-        if(reversed){
+        if (reversed) {
             long crc = super.getValue();
-            return ((crc & 0xFF) << 8) | ((crc >> 8) & 0xFF);
+            return ((crc & 0xFF) << 8) | ((crc >>> 8) & 0xFF);
         }
         return super.getValue();
     }
-
 }

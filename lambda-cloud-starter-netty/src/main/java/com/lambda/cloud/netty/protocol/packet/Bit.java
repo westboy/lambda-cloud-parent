@@ -399,7 +399,6 @@ public class Bit {
         return new Bit(length, data, site);
     }
 
-
     /**
      * 构建器模式
      */
