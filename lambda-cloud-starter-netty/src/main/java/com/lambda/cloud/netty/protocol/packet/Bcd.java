@@ -47,7 +47,6 @@ public class Bcd extends BaseUnit {
     public void setData(String data) {
         BigDecimal bigDecimal = new BigDecimal(data).multiply(new BigDecimal(10).pow(this.precision));
         BigInteger bigInteger = bigDecimal.toBigInteger().add(new BigInteger(Integer.toString(this.offset)));
-
         super.setData(bigInteger.toString());
     }
 
