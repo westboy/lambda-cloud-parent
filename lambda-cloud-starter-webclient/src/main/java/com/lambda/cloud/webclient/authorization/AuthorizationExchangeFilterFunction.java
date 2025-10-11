@@ -47,7 +47,7 @@ public class AuthorizationExchangeFilterFunction implements ExchangeFilterFuncti
                 return next.exchange(request);
             }
         } catch (Exception e) {
-            log.error("添加 Authorization Token 认证头失败！ ",e);
+            log.error("添加 Authorization Token 认证头失败！ ", e);
             return next.exchange(request);
         }
     }
