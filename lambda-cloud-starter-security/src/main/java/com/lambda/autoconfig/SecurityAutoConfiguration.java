@@ -8,6 +8,8 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
+import cn.dev33.satoken.reactor.filter.SaReactorFilter;
+import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.same.SaSameUtil;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.core.collection.CollUtil;
@@ -65,10 +67,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -323,6 +322,23 @@ public class SecurityAutoConfiguration {
                         return errorModel.toJsonString();
                     });
         }
+    }
+
+    @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+    public SaReactorFilter getSaReactorFilter(SecurityProperties securityProperties) {
+        return new SaReactorFilter()
+                .addInclude("/**")
+                .addExclude(  securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
+                .setAuth(run -> StpLogicUtils.getActiveStpLogic().checkLogin())
+                .setError(e -> {
+                    ErrorModel errorModel = new ErrorModel();
+                    errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    errorModel.setTimestamp(System.currentTimeMillis());
+                    errorModel.setMessage(e.getMessage());
+                    return errorModel.toJsonString();
+                });
     }
 
     /**
