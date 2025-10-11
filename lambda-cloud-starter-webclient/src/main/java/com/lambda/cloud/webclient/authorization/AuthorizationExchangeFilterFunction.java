@@ -13,9 +13,9 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.core.publisher.Mono;
 
 /**
- * Authorization认证过滤器
+ * Authorization 认证过滤器
  * <p>
- * 该过滤器会在请求发送前自动添加Authorization Token认证头。
+ * 该过滤器会在请求发送前自动添加 Authorization Token认证头。
  * </p>
  *
  * @author jpjoo
@@ -33,16 +33,21 @@ public class AuthorizationExchangeFilterFunction implements ExchangeFilterFuncti
     @NonNull
     @Override
     public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
-        StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
-        SaSession saSession = stpLogic.getSession();
-        if (saSession != null) {
-            ClientRequest newRequest = ClientRequest.from(request)
-                    .header(
-                            stpLogic.getTokenName(),
-                            stpLogic.getConfigOrGlobal().getTokenPrefix() + " " + saSession.getToken())
-                    .build();
-            return next.exchange(newRequest);
-        } else {
+        try {
+            StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
+            SaSession saSession = stpLogic.getSession();
+            if (saSession != null) {
+                ClientRequest newRequest = ClientRequest.from(request)
+                        .header(
+                                stpLogic.getTokenName(),
+                                stpLogic.getConfigOrGlobal().getTokenPrefix() + " " + saSession.getToken())
+                        .build();
+                return next.exchange(newRequest);
+            } else {
+                return next.exchange(request);
+            }
+        } catch (Exception e) {
+            log.error("添加 Authorization Token 认证头失败！ ",e);
             return next.exchange(request);
         }
     }
