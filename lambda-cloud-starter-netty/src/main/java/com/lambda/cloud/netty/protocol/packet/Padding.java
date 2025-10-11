@@ -36,6 +36,22 @@ public enum Padding {
         public String getRegex(String regex) {
             return String.format("(%s)*$", regex);
         }
+    },
+
+    /**
+     * 向右补0x00
+     */
+    NONE {
+        @Override
+        public String fill(String data, int length) {
+            int maxLength = length * 2;
+            return StringUtils.rightPad(data, maxLength, "0");
+        }
+
+        @Override
+        public String getRegex(String regex) {
+            return String.format("(%s)*$", regex);
+        }
     };
 
     public String empty(String data, String regex) {

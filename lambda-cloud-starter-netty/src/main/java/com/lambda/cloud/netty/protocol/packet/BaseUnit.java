@@ -2,15 +2,14 @@ package com.lambda.cloud.netty.protocol.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 /**
  * 基础单元的抽象类
@@ -25,8 +24,6 @@ import java.util.Objects;
  * </ul>
  * </p>
  *
- * @author Lambda Cloud Team
- * @since 1.0.0
  */
 @Data
 @Slf4j
@@ -151,9 +148,7 @@ public abstract class BaseUnit implements Unit {
         }
         int maxLength = this.length * 2;
         if (data.length() > maxLength) {
-            throw new IndexOutOfBoundsException(
-                String.format("定义长度为：%d；实际长度为：%d", this.length, data.length() / 2)
-            );
+            throw new IndexOutOfBoundsException(String.format("定义长度为：%d；实际长度为：%d", this.length, data.length() / 2));
         }
         fill(data);
     }
@@ -263,9 +258,6 @@ public abstract class BaseUnit implements Unit {
 
     @Override
     public String toString() {
-        return String.format(
-            "BaseUnit{length=%d, data='%s', littleEnd=%b, pad=%s}",
-            length, data, isLittleEnd, pad
-        );
+        return String.format("BaseUnit{length=%d, data='%s', littleEnd=%b, pad=%s}", length, data, isLittleEnd, pad);
     }
 }

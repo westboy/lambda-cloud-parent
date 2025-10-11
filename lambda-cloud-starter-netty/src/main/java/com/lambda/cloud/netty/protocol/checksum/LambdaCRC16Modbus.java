@@ -15,12 +15,10 @@ import lombok.Getter;
  * </ul>
  * </p>
  *
- * @author Lambda Cloud Team
- * @since 1.0.0
  */
 @Getter
 public class LambdaCRC16Modbus extends CRC16Modbus {
-    
+
     /**
      * 字节序反转标志
      */
@@ -117,17 +115,12 @@ public class LambdaCRC16Modbus extends CRC16Modbus {
 
     private void updateChecksumBytes() {
         long value = getValue();
-        checksumBytes = new byte[]{
-            (byte) ((value >>> 8) & 0xFF),
-            (byte) (value & 0xFF)
-        };
+        checksumBytes = new byte[] {(byte) ((value >>> 8) & 0xFF), (byte) (value & 0xFF)};
     }
 
     @Override
     public String toString() {
         return String.format(
-            "LambdaCRC16Modbus{value=%d, hexValue='%s', reversed=%b}",
-            getValue(), getHexValue(), reversed
-        );
+                "LambdaCRC16Modbus{value=%d, hexValue='%s', reversed=%b}", getValue(), getHexValue(), reversed);
     }
 }

@@ -23,8 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  * </ul>
  * </p>
  *
- * @author Lambda Cloud Team
- * @since 1.0.0
+ *
  */
 @Slf4j
 public class MessageSegment implements Unit {
@@ -135,14 +134,13 @@ public class MessageSegment implements Unit {
     @Override
     public void read(ByteBuf byteBuf) {
         Objects.requireNonNull(byteBuf, "ByteBuf 不能为空");
-        
+
         for (Unit unit : this.units) {
             if (unit == null) {
                 continue;
             }
             if (byteBuf.readableBytes() == 0 || byteBuf.readableBytes() < unit.getLength()) {
-                log.warn("数据长度不足，停止读取。可读字节：{}，需要字节：{}", 
-                    byteBuf.readableBytes(), unit.getLength());
+                log.warn("数据长度不足，停止读取。可读字节：{}，需要字节：{}", byteBuf.readableBytes(), unit.getLength());
                 return;
             }
             try {
@@ -157,7 +155,7 @@ public class MessageSegment implements Unit {
     @Override
     public void write(ByteBuf byteBuf) {
         Objects.requireNonNull(byteBuf, "ByteBuf 不能为空");
-        
+
         for (Unit unit : this.units) {
             if (unit == null) {
                 continue;
@@ -173,10 +171,7 @@ public class MessageSegment implements Unit {
 
     @Override
     public int getLength() {
-        return units.stream()
-            .filter(Objects::nonNull)
-            .mapToInt(Unit::getLength)
-            .sum();
+        return units.stream().filter(Objects::nonNull).mapToInt(Unit::getLength).sum();
     }
 
     @Override
@@ -214,8 +209,6 @@ public class MessageSegment implements Unit {
     @Override
     public String toString() {
         return String.format(
-            "MessageSegment{unitCount=%d, totalLength=%d, units=%s}",
-            getUnitCount(), getLength(), units
-        );
+                "MessageSegment{unitCount=%d, totalLength=%d, units=%s}", getUnitCount(), getLength(), units);
     }
 }
