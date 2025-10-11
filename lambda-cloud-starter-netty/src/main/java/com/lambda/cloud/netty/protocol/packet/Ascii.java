@@ -40,12 +40,7 @@ public class Ascii extends BaseUnit {
 
     @Override
     public String getData() {
-        try {
-            return new String(Hex.decodeHex(super.getEmptyData().toCharArray()), this.charset).trim();
-        } catch (DecoderException e) {
-            log.error("解码异常", e);
-            return "";
-        }
+        return toStringValue();
     }
 
     public String getHexData(String data) {
