@@ -3,7 +3,6 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -66,7 +65,8 @@ public class CP56Time2aConverter implements DataTypeConverter {
                         fieldMetadata.getFieldName());
             }
 
-            LocalDateTime dateTime = LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
+            LocalDateTime dateTime =
+                    LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
 
             Class<?> fieldType = fieldMetadata.getFieldType();
             if (fieldType == String.class) {
@@ -99,7 +99,8 @@ public class CP56Time2aConverter implements DataTypeConverter {
     /**
      * 序列化带可选标志位（无效 / 夏令时）
      */
-    public byte[] serialize(Object value, FieldMetadata fieldMetadata, boolean invalid, boolean summerTime) throws ProtocolException {
+    public byte[] serialize(Object value, FieldMetadata fieldMetadata, boolean invalid, boolean summerTime)
+            throws ProtocolException {
         try {
             LocalDateTime dateTime = convertToLocalDateTime(value);
             if (dateTime == null) {
@@ -154,8 +155,10 @@ public class CP56Time2aConverter implements DataTypeConverter {
             Class<?> fieldType = fieldMetadata.getFieldType();
 
             if (fieldType == LocalDateTime.class) return dateTime;
-            if (fieldType == Long.class || fieldType == long.class) return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            if (fieldType == Instant.class) return dateTime.atZone(ZoneId.systemDefault()).toInstant();
+            if (fieldType == Long.class || fieldType == long.class)
+                return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            if (fieldType == Instant.class)
+                return dateTime.atZone(ZoneId.systemDefault()).toInstant();
             return dateTime.format(DEFAULT_FORMATTER);
         } catch (Exception e) {
             throw new ProtocolException(
@@ -194,20 +197,20 @@ public class CP56Time2aConverter implements DataTypeConverter {
     }
 
     private LocalDateTime tryParseMultipleFormats(String value) throws ProtocolException {
-        DateTimeFormatter[] formats = new DateTimeFormatter[]{
-                DEFAULT_FORMATTER,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"),
-                DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+        DateTimeFormatter[] formats = new DateTimeFormatter[] {
+            DEFAULT_FORMATTER,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"),
+            DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
         };
         for (DateTimeFormatter fmt : formats) {
-            try { return LocalDateTime.parse(value, fmt); } catch (DateTimeParseException ignored) {}
+            try {
+                return LocalDateTime.parse(value, fmt);
+            } catch (DateTimeParseException ignored) {
+            }
         }
-        throw new ProtocolException(
-                ProtocolException.ErrorCode.PARSE_ERROR,
-                "无法解析时间字符串: " + value
-        );
+        throw new ProtocolException(ProtocolException.ErrorCode.PARSE_ERROR, "无法解析时间字符串: " + value);
     }
 
     private boolean isValidDateTime(int year, int month, int day, int hour, int minute, int second) {

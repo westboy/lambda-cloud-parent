@@ -44,7 +44,7 @@ public class TransactionRecordProtocolTest {
             // 将十六进制字符串转换为字节数组
             byte[] bytes = UnitKit.hexToBytes(TEST_DATA3);
             log.info("实际数据长度: {} 字节", bytes.length);
-            
+
             if (bytes.length < metadata.totalLength()) {
                 log.warn("数据长度不足！实际: {} 字节，预期: {} 字节", bytes.length, metadata.totalLength());
             }

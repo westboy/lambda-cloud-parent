@@ -83,126 +83,246 @@ public class TransactionRecord {
     /**
      * 尖单价 (4字节，5位小数)
      */
-    @ProtocolField(order = 11, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "尖单价")
-    private String peakPrice;
+    @ProtocolField(
+            order = 11,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 5,
+            description = "尖单价")
+    private Float peakPrice;
 
     /**
      * 尖电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 12, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "尖电量")
-    private String peakElectricity;
+    @ProtocolField(
+            order = 12,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "尖电量")
+    private Float peakElectricity;
 
     /**
      * 尖损电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 13, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "尖损电量")
-    private String peakLossElectricity;
+    @ProtocolField(
+            order = 13,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "尖损电量")
+    private Float peakLossElectricity;
 
     /**
      * 尖金额 (4字节，4位小数)
      */
-    @ProtocolField(order = 14, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "尖金额")
-    private String peakAmount;
+    @ProtocolField(
+            order = 14,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "尖金额")
+    private Float peakAmount;
 
     // 峰时段数据
     /**
      * 峰单价 (4字节，5位小数)
      */
-    @ProtocolField(order = 15, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "峰单价")
-    private String highPrice;
+    @ProtocolField(
+            order = 15,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 5,
+            description = "峰单价")
+    private Float highPrice;
 
     /**
      * 峰电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 16, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "峰电量")
-    private String highElectricity;
+    @ProtocolField(
+            order = 16,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "峰电量")
+    private Float highElectricity;
 
     /**
      * 峰损电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 17, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "峰损电量")
-    private String highLossElectricity;
+    @ProtocolField(
+            order = 17,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "峰损电量")
+    private Float highLossElectricity;
 
     /**
      * 峰金额 (4字节，4位小数)
      */
-    @ProtocolField(order = 18, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "峰金额")
-    private String highAmount;
+    @ProtocolField(
+            order = 18,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "峰金额")
+    private Float highAmount;
 
     // 平时段数据
     /**
      * 平单价 (4字节，5位小数)
      */
-    @ProtocolField(order = 19, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "平单价")
-    private String normalPrice;
+    @ProtocolField(
+            order = 19,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 5,
+            description = "平单价")
+    private Float normalPrice;
 
     /**
      * 平电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 20, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "平电量")
-    private String normalElectricity;
+    @ProtocolField(
+            order = 20,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "平电量")
+    private Float normalElectricity;
 
     /**
      * 平损电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 21, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "平损电量")
-    private String normalLossElectricity;
+    @ProtocolField(
+            order = 21,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "平损电量")
+    private Float normalLossElectricity;
 
     /**
      * 平金额 (4字节，4位小数)
      */
-    @ProtocolField(order = 22, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "平金额")
-    private String normalAmount;
+    @ProtocolField(
+            order = 22,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "平金额")
+    private Float normalAmount;
 
     // 谷时段数据
     /**
      * 谷单价 (4字节，5位小数)
      */
-    @ProtocolField(order = 23, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "谷单价")
-    private String valleyPrice;
+    @ProtocolField(
+            order = 23,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 5,
+            description = "谷单价")
+    private Float valleyPrice;
 
     /**
      * 谷电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 24, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "谷电量")
-    private String valleyElectricity;
+    @ProtocolField(
+            order = 24,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "谷电量")
+    private Float valleyElectricity;
 
     /**
      * 谷损电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 25, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "谷损电量")
-    private String valleyLossElectricity;
+    @ProtocolField(
+            order = 25,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "谷损电量")
+    private Float valleyLossElectricity;
 
     /**
      * 谷金额 (4字节，4位小数)
      */
-    @ProtocolField(order = 26, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "谷金额")
-    private String valleyAmount;
+    @ProtocolField(
+            order = 26,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "谷金额")
+    private Float valleyAmount;
 
     // 深谷时段数据
     /**
      * 深谷单价 (4字节，5位小数)
      */
-    @ProtocolField(order = 27, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "深谷单价")
-    private String deepValleyPrice;
+    @ProtocolField(
+            order = 27,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 5,
+            description = "深谷单价")
+    private Float deepValleyPrice;
 
     /**
      * 深谷电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 28, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "深谷电量")
-    private String deepValleyElectricity;
+    @ProtocolField(
+            order = 28,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "深谷电量")
+    private Float deepValleyElectricity;
 
     /**
      * 深谷损电量 (4字节，4位小数)
      */
-    @ProtocolField(order = 29, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "深谷损电量")
-    private String deepValleyLossElectricity;
+    @ProtocolField(
+            order = 29,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "深谷损电量")
+    private Float deepValleyLossElectricity;
 
     /**
      * 深谷金额 (4字节，4位小数)
      */
-    @ProtocolField(order =30, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "深谷金额")
-    private String deepValleyAmount;
+    @ProtocolField(
+            order = 30,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "深谷金额")
+    private Float deepValleyAmount;
 
     /**
      * 预留字段 (18字节)
@@ -213,8 +333,14 @@ public class TransactionRecord {
     /**
      * 消费金额 (4字节，4位小数)
      */
-    @ProtocolField(order = 32, length = 4, dataType = ProtocolDataType.HEX, littleEndian = true, description = "消费金额")
-    private String totalAmount;
+    @ProtocolField(
+            order = 32,
+            length = 4,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 4,
+            description = "消费金额")
+    private Float totalAmount;
 
     /**
      * 校验码 (2字节)

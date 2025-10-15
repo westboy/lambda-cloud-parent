@@ -114,6 +114,15 @@ public record FieldMetadata(Field field, ProtocolField protocolField, ProtocolVa
     }
 
     /**
+     * 获取字段的精度（小数位数）
+     *
+     * @return 小数位数
+     */
+    public int getPrecision() {
+        return protocolField.precision();
+    }
+
+    /**
      * 获取填充方向
      *
      * @return 填充方向

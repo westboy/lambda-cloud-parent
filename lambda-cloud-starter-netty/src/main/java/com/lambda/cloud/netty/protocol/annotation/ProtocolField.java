@@ -36,15 +36,14 @@ public @interface ProtocolField {
     ProtocolDataType dataType() default ProtocolDataType.HEX;
 
     /**
-     /**
+     * /**
      * 获取字段的精度（小数位数）
      *
-     * <p>用于描述数值类型字段的小数精度，
-     * 比如电压、功率等协议数据中常见的缩放精度。</p>
+     * <p>用于描述数值类型字段的小数精度</p>
      *
      * @return 小数位数
      */
-    int precision();
+    int precision() default 0;
 
     /**
      * 是否为小端字节序

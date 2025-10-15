@@ -70,7 +70,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             return instance;
         } catch (Exception e) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(),e);
+                    ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(), e);
         }
     }
 
@@ -85,7 +85,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,
-                    "序列化消息失败: " + message.getClass().getSimpleName(),e);
+                    "序列化消息失败: " + message.getClass().getSimpleName(),
+                    e);
         }
     }
 

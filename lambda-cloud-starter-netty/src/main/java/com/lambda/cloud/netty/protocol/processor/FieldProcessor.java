@@ -139,7 +139,7 @@ public class FieldProcessor {
             return converter.parse(fieldData, fieldMetadata);
         } catch (Exception e) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR, "字段数据转换失败: " + fieldMetadata.getFieldName(),e);
+                    ProtocolException.ErrorCode.PARSE_ERROR, "字段数据转换失败: " + fieldMetadata.getFieldName(), e);
         }
     }
 
@@ -156,7 +156,7 @@ public class FieldProcessor {
             fieldMetadata.setValue(instance, value);
         } catch (Exception e) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR, "设置字段值失败: " + fieldMetadata.getFieldName(),e);
+                    ProtocolException.ErrorCode.PARSE_ERROR, "设置字段值失败: " + fieldMetadata.getFieldName(), e);
         }
     }
 
@@ -173,7 +173,7 @@ public class FieldProcessor {
             return fieldMetadata.getValue(instance);
         } catch (Exception e) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.SERIALIZE_ERROR, "获取字段值失败: " + fieldMetadata.getFieldName(),e);
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR, "获取字段值失败: " + fieldMetadata.getFieldName(), e);
         }
     }
 
@@ -215,7 +215,7 @@ public class FieldProcessor {
             return converter.serialize(value, fieldMetadata);
         } catch (Exception e) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.SERIALIZE_ERROR, "字段数据序列化失败: " + fieldMetadata.getFieldName(),e);
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR, "字段数据序列化失败: " + fieldMetadata.getFieldName(), e);
         }
     }
 
@@ -246,7 +246,7 @@ public class FieldProcessor {
                 // TODO: 实现默认值设置逻辑
             } catch (Exception e) {
                 throw new ProtocolException(
-                        ProtocolException.ErrorCode.PARSE_ERROR, "设置默认值失败: " + fieldMetadata.getFieldName(),e);
+                        ProtocolException.ErrorCode.PARSE_ERROR, "设置默认值失败: " + fieldMetadata.getFieldName(), e);
             }
         }
     }
