@@ -1,4 +1,6 @@
-package com.lambda.cloud.netty.protocol.util;
+package com.lambda.cloud.netty.util;
+
+import java.util.Arrays;
 
 /**
  * 十六进制工具类
@@ -22,9 +24,7 @@ public final class HexUtils {
 
     static {
         // 初始化映射表
-        for (int i = 0; i < HEX_VALUES.length; i++) {
-            HEX_VALUES[i] = -1;
-        }
+        Arrays.fill(HEX_VALUES, -1);
         for (int i = 0; i < 10; i++) {
             HEX_VALUES['0' + i] = i;
         }

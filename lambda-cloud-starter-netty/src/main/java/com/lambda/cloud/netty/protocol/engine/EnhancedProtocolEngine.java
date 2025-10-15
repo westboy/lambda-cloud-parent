@@ -1,10 +1,10 @@
 package com.lambda.cloud.netty.protocol.engine;
 
 import com.lambda.cloud.netty.protocol.core.MessageMetadata;
-import com.lambda.cloud.netty.protocol.core.ProtocolEngine;
-import com.lambda.cloud.netty.protocol.core.ProtocolException;
+import com.lambda.cloud.netty.protocol.ProtocolEngine;
+import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.monitor.PerformanceMonitor;
-import com.lambda.cloud.netty.protocol.pool.ByteBufPool;
+import com.lambda.cloud.netty.protocol.ByteBufPool;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +27,6 @@ public class EnhancedProtocolEngine implements ProtocolEngine<Object> {
 
     /**
      * 性能监控器
-     * -- GETTER --
-     *  获取性能监控器
-     *
-     * @return 性能监控器
-     *
      */
     @Getter
     private final PerformanceMonitor performanceMonitor;

@@ -1,5 +1,7 @@
 package com.lambda.cloud.netty.protocol.annotation;
 
+import lombok.Getter;
+
 /**
  * 填充方向枚举
  * <p>
@@ -7,6 +9,7 @@ package com.lambda.cloud.netty.protocol.annotation;
  * </p>
  *
  */
+@Getter
 public enum PaddingDirection {
 
     /**
@@ -24,18 +27,13 @@ public enum PaddingDirection {
      */
     NONE("不填充");
 
+    /**
+     *  填充方向描述
+     */
     private final String description;
 
     PaddingDirection(String description) {
         this.description = description;
     }
 
-    /**
-     * 获取填充方向描述
-     *
-     * @return 填充方向描述
-     */
-    public String getDescription() {
-        return description;
-    }
 }

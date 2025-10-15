@@ -1,5 +1,6 @@
-package com.lambda.cloud.netty.protocol.core;
+package com.lambda.cloud.netty.protocol;
 
+import com.lambda.cloud.netty.protocol.core.MessageMetadata;
 import io.netty.buffer.ByteBuf;
 
 /**

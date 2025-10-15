@@ -83,10 +83,7 @@ public enum ProtocolDataType {
     CUSTOM("自定义类型");
 
     /**
-     * -- GETTER --
      *  获取数据类型描述
-     *
-     * @return 数据类型描述
      */
     private final String description;
 
@@ -100,23 +97,13 @@ public enum ProtocolDataType {
      * @return 默认长度，-1表示需要显式指定
      */
     public int getDefaultLength() {
-        switch (this) {
-            case UINT8:
-            case INT8:
-                return 1;
-            case UINT16:
-            case INT16:
-                return 2;
-            case UINT32:
-            case INT32:
-            case FLOAT:
-                return 4;
-            case DOUBLE:
-                return 8;
-            case CP56TIME2A:
-                return 7;
-            default:
-                return -1; // 需要显式指定长度
-        }
+        return switch (this) {
+            case UINT8, INT8 -> 1;
+            case UINT16, INT16 -> 2;
+            case UINT32, INT32, FLOAT -> 4;
+            case DOUBLE -> 8;
+            case CP56TIME2A -> 7;
+            default -> -1; // 需要显式指定长度
+        };
     }
 }

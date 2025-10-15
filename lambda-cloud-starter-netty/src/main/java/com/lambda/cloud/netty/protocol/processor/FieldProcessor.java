@@ -3,7 +3,7 @@ package com.lambda.cloud.netty.protocol.processor;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 import com.lambda.cloud.netty.protocol.core.MessageMetadata;
-import com.lambda.cloud.netty.protocol.core.ProtocolException;
+import com.lambda.cloud.netty.protocol.ProtocolException;
 import io.netty.buffer.ByteBuf;
 import lombok.extern.slf4j.Slf4j;
 

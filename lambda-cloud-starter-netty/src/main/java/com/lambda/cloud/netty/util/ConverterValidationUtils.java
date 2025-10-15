@@ -1,7 +1,7 @@
-package com.lambda.cloud.netty.protocol.util;
+package com.lambda.cloud.netty.util;
 
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.protocol.core.ProtocolException;
+import com.lambda.cloud.netty.protocol.ProtocolException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 

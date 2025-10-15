@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.protocol.converter;
 
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.protocol.core.ProtocolException;
+import com.lambda.cloud.netty.protocol.ProtocolException;
 
 /**
  * 数据类型转换器接口

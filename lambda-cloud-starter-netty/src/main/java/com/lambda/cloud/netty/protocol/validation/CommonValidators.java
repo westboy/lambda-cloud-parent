@@ -44,11 +44,10 @@ public class CommonValidators {
                 return ValidationResult.failure("MAC地址不能为空");
             }
 
-            if (!(value instanceof String)) {
+            if (!(value instanceof String mac)) {
                 return ValidationResult.failure("MAC地址必须为字符串类型");
             }
 
-            String mac = (String) value;
             if (ValidationUtils.isValidMac(mac)) {
                 return ValidationResult.success();
             } else {
@@ -67,11 +66,10 @@ public class CommonValidators {
                 return ValidationResult.failure("十六进制字符串不能为空");
             }
 
-            if (!(value instanceof String)) {
+            if (!(value instanceof String hex)) {
                 return ValidationResult.failure("十六进制字符串必须为字符串类型");
             }
 
-            String hex = (String) value;
             if (ValidationUtils.isHex(hex)) {
                 return ValidationResult.success();
             } else {
@@ -90,11 +88,10 @@ public class CommonValidators {
                 return ValidationResult.failure("BCD编码不能为空");
             }
 
-            if (!(value instanceof String)) {
+            if (!(value instanceof String bcd)) {
                 return ValidationResult.failure("BCD编码必须为字符串类型");
             }
 
-            String bcd = (String) value;
             if (ValidationUtils.isBcd(bcd)) {
                 return ValidationResult.success();
             } else {
@@ -135,11 +132,10 @@ public class CommonValidators {
                 return ValidationResult.failure("数值不能为空");
             }
 
-            if (!(value instanceof Number)) {
+            if (!(value instanceof Number number)) {
                 return ValidationResult.failure("必须为数值类型");
             }
 
-            Number number = (Number) value;
             if (ValidationUtils.isNonNegative(number)) {
                 return ValidationResult.success();
             } else {
@@ -158,11 +154,10 @@ public class CommonValidators {
                 return ValidationResult.failure("时间戳不能为空");
             }
 
-            if (!(value instanceof Long)) {
+            if (!(value instanceof Long timestamp)) {
                 return ValidationResult.failure("时间戳必须为Long类型");
             }
 
-            Long timestamp = (Long) value;
             if (ValidationUtils.isValidTimestamp(timestamp)) {
                 return ValidationResult.success();
             } else {
@@ -181,11 +176,10 @@ public class CommonValidators {
                 return ValidationResult.failure("字符串不能为空");
             }
 
-            if (!(value instanceof String)) {
+            if (!(value instanceof String str)) {
                 return ValidationResult.failure("必须为字符串类型");
             }
 
-            String str = (String) value;
             if (ValidationUtils.isAlphanumeric(str)) {
                 return ValidationResult.success();
             } else {
@@ -235,11 +229,10 @@ public class CommonValidators {
                 return ValidationResult.failure("数值不能为空");
             }
 
-            if (!(value instanceof Number)) {
+            if (!(value instanceof Number number)) {
                 return ValidationResult.failure("必须为数值类型");
             }
 
-            Number number = (Number) value;
             if (ValidationUtils.isInRange(number, min, max)) {
                 return ValidationResult.success();
             } else {
@@ -267,11 +260,10 @@ public class CommonValidators {
                 return ValidationResult.failure("字符串不能为空");
             }
 
-            if (!(value instanceof String)) {
+            if (!(value instanceof String str)) {
                 return ValidationResult.failure("必须为字符串类型");
             }
 
-            String str = (String) value;
             if (ValidationUtils.isLengthInRange(str, minLength, maxLength)) {
                 return ValidationResult.success();
             } else {

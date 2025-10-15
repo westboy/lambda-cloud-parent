@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.pool;
+package com.lambda.cloud.netty.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;

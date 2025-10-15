@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.core;
+package com.lambda.cloud.netty.protocol;
 
 import lombok.Getter;
 

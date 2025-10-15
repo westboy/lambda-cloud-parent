@@ -4,7 +4,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidator;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 import com.lambda.cloud.netty.protocol.core.MessageMetadata;
-import com.lambda.cloud.netty.protocol.core.ProtocolEngine;
+import com.lambda.cloud.netty.protocol.ProtocolEngine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
