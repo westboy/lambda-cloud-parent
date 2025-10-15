@@ -23,16 +23,12 @@ public class HexConverter implements DataTypeConverter {
         validateLength(data, fieldMetadata);
 
         try {
+            byte[] adjustedResult = adjustLength(data, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
             // 处理大小端字节序
-            byte[] processedData = data;
-            if (fieldMetadata.isLittleEndian()) {
-                // 小端序：需要反转字节顺序
-                processedData = reverseBytes(data);
-            }
-
+            byte[] processedData = HexUtils.convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
             String hexString = HexUtils.bytesToHex(processedData);
             // 根据字段类型返回不同的对象
-            Class<?> fieldType = fieldMetadata.getFieldType();
+
             int precision = fieldMetadata.getPrecision();
 
             BigInteger integerData = new BigInteger(hexString, 16);
@@ -40,6 +36,8 @@ public class HexConverter implements DataTypeConverter {
             BigDecimal decimalValue = (precision > 0)
                     ? new BigDecimal(integerData).divide(BigDecimal.TEN.pow(precision), precision, RoundingMode.DOWN)
                     : new BigDecimal(integerData);
+
+            Class<?> fieldType = fieldMetadata.getFieldType();
 
             if (fieldType == String.class) {
                 return (precision > 0) ? decimalValue.stripTrailingZeros().toPlainString() : hexString;
@@ -125,15 +123,10 @@ public class HexConverter implements DataTypeConverter {
             }
 
             // 调整长度
-            byte[] adjustedResult = adjustLength(result, fieldMetadata.getLength(), fieldMetadata);
+            byte[] adjustedResult = adjustLength(result, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
 
             // 处理大小端字节序
-            if (fieldMetadata.isLittleEndian()) {
-                // 小端序：需要反转字节顺序
-                adjustedResult = reverseBytes(adjustedResult);
-            }
-
-            return adjustedResult;
+            return HexUtils.convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
 
         } catch (Exception e) {
             throw new ProtocolException(
@@ -169,10 +162,10 @@ public class HexConverter implements DataTypeConverter {
      *
      * @param data          原始数据
      * @param targetLength  目标长度
-     * @param fieldMetadata 字段元数据
+     * @param isLittleEndian 字段元数据
      * @return 调整后的数据
      */
-    private byte[] adjustLength(byte[] data, int targetLength, ProtocolFieldMetadata fieldMetadata) {
+    private byte[] adjustLength(byte[] data, int targetLength, boolean isLittleEndian) {
         if (data.length == targetLength) {
             return data;
         }
@@ -181,7 +174,7 @@ public class HexConverter implements DataTypeConverter {
 
         if (data.length < targetLength) {
             // 数据不足，根据字节序填充
-            if (fieldMetadata.isLittleEndian()) {
+            if (isLittleEndian) {
                 // 小端序：数据在低位，高位填充0
                 System.arraycopy(data, 0, result, 0, data.length);
             } else {
@@ -190,7 +183,7 @@ public class HexConverter implements DataTypeConverter {
             }
         } else {
             // 数据过长，截取
-            if (fieldMetadata.isLittleEndian()) {
+            if (isLittleEndian) {
                 // 小端序：取低位数据
                 System.arraycopy(data, 0, result, 0, targetLength);
             } else {
@@ -200,15 +193,5 @@ public class HexConverter implements DataTypeConverter {
         }
 
         return result;
-    }
-
-    /**
-     * 反转字节数组（用于大小端转换）
-     *
-     * @param data 原始字节数组
-     * @return 反转后的字节数组
-     */
-    private byte[] reverseBytes(byte[] data) {
-        return HexUtils.reverseBytes(data);
     }
 }

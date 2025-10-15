@@ -69,10 +69,7 @@ public class ConverterValidationUtils {
             long value, long minValue, long maxValue, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
             throws ProtocolException {
         if (value < minValue || value > maxValue) {
-            throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR,
-                    dataTypeName + "值超出范围[" + minValue + ", " + maxValue + "]: " + value,
-                    fieldMetadata.getFieldName());
+
         }
     }
 

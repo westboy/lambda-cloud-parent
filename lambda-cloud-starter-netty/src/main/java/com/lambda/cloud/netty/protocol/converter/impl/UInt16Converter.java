@@ -3,7 +3,10 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.validation.ValidationResult;
+import com.lambda.cloud.netty.protocol.validation.impl.NumberRangeValidator;
 import com.lambda.cloud.netty.utils.ConverterValidationUtils;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -11,6 +14,7 @@ import java.nio.ByteOrder;
  * 16位无符号整数转换器
  */
 public class UInt16Converter implements DataTypeConverter {
+   private final NumberRangeValidator numberRangeValidator = new NumberRangeValidator(0, 65535);
 
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
@@ -33,6 +37,13 @@ public class UInt16Converter implements DataTypeConverter {
             // 验证范围
             ConverterValidationUtils.validateNumberRange(value, 0, 65535, fieldMetadata, "UInt16");
 
+            ValidationResult validate = numberRangeValidator.validate(value);
+            if (!validate.valid()) {
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.PARSE_ERROR,
+                        validate.message(),
+                        fieldMetadata.getFieldName());
+            }
             Class<?> fieldType = fieldMetadata.getFieldType();
             if (ConverterValidationUtils.isIntegerType(fieldType)) {
                 return value;

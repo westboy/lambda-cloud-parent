@@ -7,14 +7,7 @@ import com.lambda.cloud.netty.utils.ValidationUtils;
 /**
  * 范围验证器（可配置）
  */
-public class RangeValidator implements ProtocolValidator {
-    private final double min;
-    private final double max;
-
-    public RangeValidator(double min, double max) {
-        this.min = min;
-        this.max = max;
-    }
+public record NumberRangeValidator(double min, double max) implements ProtocolValidator {
 
     @Override
     public ValidationResult validate(Object value) {
