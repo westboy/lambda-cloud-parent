@@ -33,7 +33,7 @@ public @interface ProtocolField {
      *
      * @return 数据类型
      */
-    ProtocolDataType type() default ProtocolDataType.HEX;
+    ProtocolDataType dataType() default ProtocolDataType.HEX;
 
     /**
      * 是否为小端字节序

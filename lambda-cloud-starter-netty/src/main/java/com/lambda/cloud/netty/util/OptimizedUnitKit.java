@@ -209,12 +209,12 @@ public final class OptimizedUnitKit {
      * @return 缓存统计信息字符串
      */
     public static String getCacheStats() {
-        return "OptimizedUnitKit Cache Statistics:\n" +
-                "Numeric Cache: " + NUMERIC_CACHE.getStats() + "\n" +
-                "Integer Cache: " + INTEGER_CACHE.getStats() + "\n" +
-                "Decimal Cache: " + DECIMAL_CACHE.getStats() + "\n" +
-                "Hex Cache: " + HEX_CACHE.getStats() + "\n" +
-                "Binary Cache: " + BINARY_CACHE.getStats() + "\n";
+        return "OptimizedUnitKit Cache Statistics:\n" + "Numeric Cache: "
+                + NUMERIC_CACHE.getStats() + "\n" + "Integer Cache: "
+                + INTEGER_CACHE.getStats() + "\n" + "Decimal Cache: "
+                + DECIMAL_CACHE.getStats() + "\n" + "Hex Cache: "
+                + HEX_CACHE.getStats() + "\n" + "Binary Cache: "
+                + BINARY_CACHE.getStats() + "\n";
     }
 
     /**

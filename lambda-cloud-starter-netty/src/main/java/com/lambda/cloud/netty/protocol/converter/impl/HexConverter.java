@@ -1,9 +1,11 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolException;
+import com.lambda.cloud.netty.protocol.packet.UnitKit;
 import com.lambda.cloud.netty.util.HexUtils;
+import io.netty.buffer.ByteBufUtil;
 
 /**
  * 十六进制数据转换器
@@ -21,7 +23,6 @@ public class HexConverter implements DataTypeConverter {
 
         try {
             String hexString = HexUtils.bytesToHex(data);
-
             // 根据字段类型返回不同的对象
             Class<?> fieldType = fieldMetadata.getFieldType();
 

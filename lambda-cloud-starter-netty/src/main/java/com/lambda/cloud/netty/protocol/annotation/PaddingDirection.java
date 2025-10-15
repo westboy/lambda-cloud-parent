@@ -35,5 +35,4 @@ public enum PaddingDirection {
     PaddingDirection(String description) {
         this.description = description;
     }
-
 }

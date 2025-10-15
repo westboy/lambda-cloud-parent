@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolException;
 
 /**
  * 位数据转换器

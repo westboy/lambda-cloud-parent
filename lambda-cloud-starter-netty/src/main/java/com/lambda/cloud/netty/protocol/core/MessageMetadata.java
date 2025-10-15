@@ -55,7 +55,7 @@ public record MessageMetadata(
      * @return 消息类型
      */
     public String getMessageType() {
-        return protocolMessage.messageType();
+        return protocolMessage.frameType();
     }
 
     /**

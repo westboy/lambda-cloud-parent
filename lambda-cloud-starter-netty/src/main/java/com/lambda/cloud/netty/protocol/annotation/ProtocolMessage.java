@@ -19,7 +19,7 @@ public @interface ProtocolMessage {
      *
      * @return 消息类型
      */
-    String messageType() default "";
+    String frameType() default "";
 
     /**
      * 消息名称
@@ -45,7 +45,7 @@ public @interface ProtocolMessage {
     /**
      * 是否启用严格模式（严格按照字段顺序解析）
      *
-     * @return true表示启用严格模式
+     * @return true 表示启用严格模式
      */
     boolean strictMode() default true;
 

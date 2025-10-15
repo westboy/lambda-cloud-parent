@@ -1,7 +1,7 @@
 package com.lambda.cloud.netty.util;
 
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolException;
+import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -26,7 +26,7 @@ public class ConverterValidationUtils {
     public static void validateBasicInputs(byte[] data, FieldMetadata fieldMetadata, String dataTypeName)
             throws ProtocolException {
         if (fieldMetadata == null) {
-            throw new ProtocolException(ProtocolException.ErrorCode.PARSE_ERROR, "字段元数据不能为null", null);
+            throw new ProtocolException(ProtocolException.ErrorCode.PARSE_ERROR, "字段元数据不能为null");
         }
 
         if (data == null) {

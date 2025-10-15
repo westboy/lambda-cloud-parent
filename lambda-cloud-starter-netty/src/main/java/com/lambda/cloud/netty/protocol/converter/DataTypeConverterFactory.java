@@ -64,5 +64,6 @@ public class DataTypeConverterFactory {
         converters.put(ProtocolDataType.UINT8, new UInt8Converter());
         converters.put(ProtocolDataType.UINT16, new UInt16Converter());
         converters.put(ProtocolDataType.UINT32, new UInt32Converter());
+        converters.put(ProtocolDataType.CP56TIME2A, new CP56Time2aConverter());
     }
 }

@@ -62,18 +62,15 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     @Override
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
         MessageMetadata metadata = getMetadata(messageClass);
-
         try {
             Object instance = messageClass.getDeclaredConstructor().newInstance();
-
             for (FieldMetadata fieldMetadata : metadata.fields()) {
                 parseField(byteBuf, instance, fieldMetadata, metadata);
             }
-
             return instance;
         } catch (Exception e) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName());
+                    ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(),e);
         }
     }
 
@@ -88,7 +85,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,
-                    "序列化消息失败: " + message.getClass().getSimpleName());
+                    "序列化消息失败: " + message.getClass().getSimpleName(),e);
         }
     }
 

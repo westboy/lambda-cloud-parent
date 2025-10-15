@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.converter;
 
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolException;
+import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 
 /**
  * 数据类型转换器接口
@@ -52,7 +52,9 @@ public interface DataTypeConverter {
      * @return 是否有效
      */
     default void validateLength(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
-       Assert.isTrue(data.length == fieldMetadata.getLength(), "ASCII数据长度不匹配，期望: " + fieldMetadata.getLength() + ", 实际: " + data.length);
+        Assert.isTrue(
+                data.length == fieldMetadata.getLength(),
+                "ASCII数据长度不匹配，期望: " + fieldMetadata.getLength() + ", 实际: " + data.length);
     }
 
     /**

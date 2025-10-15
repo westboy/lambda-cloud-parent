@@ -54,7 +54,7 @@ public record FieldMetadata(Field field, ProtocolField protocolField, ProtocolVa
     public int getLength() {
         int length = protocolField.length();
         if (length == -1) {
-            length = protocolField.type().getDefaultLength();
+            length = protocolField.dataType().getDefaultLength();
         }
         return length;
     }
@@ -83,7 +83,7 @@ public record FieldMetadata(Field field, ProtocolField protocolField, ProtocolVa
      * @return 数据类型
      */
     public ProtocolDataType getDataType() {
-        return protocolField.type();
+        return protocolField.dataType();
     }
 
     /**

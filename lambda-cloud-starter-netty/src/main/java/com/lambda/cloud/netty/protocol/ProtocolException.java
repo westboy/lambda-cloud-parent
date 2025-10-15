@@ -28,6 +28,10 @@ public class ProtocolException extends Exception {
         this(errorCode, message, null, null);
     }
 
+    public ProtocolException(ErrorCode errorCode, String message, Throwable cause) {
+        this(errorCode, message, null, cause);
+    }
+
     public ProtocolException(ErrorCode errorCode, String message, String fieldName) {
         this(errorCode, message, fieldName, null);
     }

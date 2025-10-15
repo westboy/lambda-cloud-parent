@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.util.ConverterValidationUtils;
 
 /**
@@ -15,7 +15,7 @@ public class BcdConverter implements DataTypeConverter {
         // 验证输入参数
         ConverterValidationUtils.validateBasicInputs(data, fieldMetadata, "BCD");
 
-        if (data == null || data.length == 0) {
+        if (data.length == 0) {
             return "";
         }
 
