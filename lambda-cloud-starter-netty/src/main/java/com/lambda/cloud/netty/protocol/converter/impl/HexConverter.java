@@ -20,7 +20,14 @@ public class HexConverter implements DataTypeConverter {
         validateLength(data, fieldMetadata);
 
         try {
-            String hexString = HexUtils.bytesToHex(data);
+            // 处理大小端字节序
+            byte[] processedData = data;
+            if (fieldMetadata.isLittleEndian()) {
+                // 小端序：需要反转字节顺序
+                processedData = reverseBytes(data);
+            }
+
+            String hexString = HexUtils.bytesToHex(processedData);
             // 根据字段类型返回不同的对象
             Class<?> fieldType = fieldMetadata.getFieldType();
             int precision = fieldMetadata.getPrecision();
@@ -119,7 +126,15 @@ public class HexConverter implements DataTypeConverter {
             }
 
             // 调整长度
-            return adjustLength(result, fieldMetadata.getLength(), fieldMetadata);
+            byte[] adjustedResult = adjustLength(result, fieldMetadata.getLength(), fieldMetadata);
+
+            // 处理大小端字节序
+            if (fieldMetadata.isLittleEndian()) {
+                // 小端序：需要反转字节顺序
+                adjustedResult = reverseBytes(adjustedResult);
+            }
+
+            return adjustedResult;
 
         } catch (Exception e) {
             throw new ProtocolException(
@@ -186,5 +201,23 @@ public class HexConverter implements DataTypeConverter {
         }
 
         return result;
+    }
+
+    /**
+     * 反转字节数组（用于大小端转换）
+     *
+     * @param data 原始字节数组
+     * @return 反转后的字节数组
+     */
+    private byte[] reverseBytes(byte[] data) {
+        if (data == null || data.length <= 1) {
+            return data;
+        }
+
+        byte[] reversed = new byte[data.length];
+        for (int i = 0; i < data.length; i++) {
+            reversed[i] = data[data.length - 1 - i];
+        }
+        return reversed;
     }
 }

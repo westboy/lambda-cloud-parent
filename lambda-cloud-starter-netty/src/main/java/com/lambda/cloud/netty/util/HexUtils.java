@@ -164,4 +164,83 @@ public final class HexUtils {
         }
         return hex;
     }
+
+    /**
+     * 反转字节数组（大小端转换）
+     *
+     * @param bytes 原始字节数组
+     * @return 反转后的字节数组
+     */
+    public static byte[] reverseBytes(byte[] bytes) {
+        if (bytes == null || bytes.length <= 1) {
+            return bytes;
+        }
+
+        byte[] reversed = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            reversed[i] = bytes[bytes.length - 1 - i];
+        }
+        return reversed;
+    }
+
+    /**
+     * 反转十六进制字符串的字节序（每两个字符为一个字节）
+     *
+     * @param hex 十六进制字符串
+     * @return 反转字节序后的十六进制字符串
+     */
+    public static String reverseHexBytes(String hex) {
+        if (hex == null || hex.isEmpty()) {
+            return hex;
+        }
+
+        // 移除空格
+        hex = hex.replaceAll("\\s+", "");
+
+        // 确保长度为偶数
+        if (hex.length() % 2 != 0) {
+            throw new IllegalArgumentException("十六进制字符串长度必须为偶数: " + hex);
+        }
+
+        StringBuilder result = new StringBuilder(hex.length());
+
+        // 从后往前，每两个字符为一组
+        for (int i = hex.length() - 2; i >= 0; i -= 2) {
+            result.append(hex.charAt(i)).append(hex.charAt(i + 1));
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * 根据字节序转换字节数组
+     *
+     * @param bytes         原始字节数组
+     * @param littleEndian  是否为小端序
+     * @return 转换后的字节数组
+     */
+    public static byte[] convertEndianness(byte[] bytes, boolean littleEndian) {
+        if (!littleEndian) {
+            // 大端序，不需要转换
+            return bytes;
+        }
+        // 小端序，需要反转
+        return reverseBytes(bytes);
+    }
+
+    /**
+     * 根据字节序转换十六进制字符串
+     *
+     * @param hex          十六进制字符串
+     * @param littleEndian 是否为小端序
+     * @return 转换后的十六进制字符串
+     */
+    public static String convertHexEndianness(String hex, boolean littleEndian) {
+        if (!littleEndian) {
+            // 大端序，不需要转换
+            return hex;
+        }
+        // 小端序，需要反转字节序
+        return reverseHexBytes(hex);
+    }
 }

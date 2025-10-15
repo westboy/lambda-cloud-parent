@@ -173,7 +173,7 @@ class SegmentTest {
 
             // ***************************
             Hex data1 = new Hex(4, 5);
-            data1.setLittleEnd(true).read(byteBuf);
+            data1.setLittleEnd(false).read(byteBuf);
             log.info("尖单价: {}", data1.getData());
 
             data = new Hex(4, 4);
