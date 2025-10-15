@@ -21,11 +21,10 @@ public class CommonValidators {
                 return ValidationResult.failure("IP地址不能为空");
             }
 
-            if (!(value instanceof String)) {
+            if (!(value instanceof String ip)) {
                 return ValidationResult.failure("IP地址必须为字符串类型");
             }
 
-            String ip = (String) value;
             if (ValidationUtils.isValidIp(ip)) {
                 return ValidationResult.success();
             } else {

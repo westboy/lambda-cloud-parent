@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.validator;
+package com.lambda.cloud.netty.protocol.validation;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidator;
