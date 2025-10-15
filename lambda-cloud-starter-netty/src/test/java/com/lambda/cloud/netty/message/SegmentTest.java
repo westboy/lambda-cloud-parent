@@ -8,9 +8,6 @@ import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 @Slf4j
 class SegmentTest {
 
@@ -20,9 +17,10 @@ class SegmentTest {
 
     String testData2 = "682A022500F018120000000001011D68747470733A2F2F686C637863782E6875613030312E6E65743F69643D819B";
 
-
-    String testData3 = "68B217F3003B1812000000017001159733514595532818120000000170019065170A0A0A19E880060B0A0A19E022020000000000000000000000000048E80100000000000000000000000000D853010000000000000000000000000050C300007E4E01000000000030A70000F8A700001E320000000000001815000076A91E0800122A2008009C8001000000000048BC00004C4233373041444E32534A31383832383801E880060B0A0A194002607F8F42D86D1BBD5A";
-//    String testData3 = "68B220EC003B18120000000170011597535818956800181200000001700148710E0B0A0A1998B7100C0A0A19E022020000000000000000000000000048E80100000000000000000000000000D853010000000000000000000000000050C30000000000000000000000000000F8A700002E86050000000000D05F0200122A20080040B02508002E86050000000000D05F02004C565043364434433853443030383635340198B7100C0A0A194102603FD2F0E36D1B3EAE";
+    String testData3 =
+            "68B217F3003B1812000000017001159733514595532818120000000170019065170A0A0A19E880060B0A0A19E022020000000000000000000000000048E80100000000000000000000000000D853010000000000000000000000000050C300007E4E01000000000030A70000F8A700001E320000000000001815000076A91E0800122A2008009C8001000000000048BC00004C4233373041444E32534A31383832383801E880060B0A0A194002607F8F42D86D1BBD5A";
+    //    String testData3 =
+    // "68B220EC003B18120000000170011597535818956800181200000001700148710E0B0A0A1998B7100C0A0A19E022020000000000000000000000000048E80100000000000000000000000000D853010000000000000000000000000050C30000000000000000000000000000F8A700002E86050000000000D05F0200122A20080040B02508002E86050000000000D05F02004C565043364434433853443030383635340198B7100C0A0A194102603FD2F0E36D1B3EAE";
 
     @Test
     void test0() {
@@ -34,7 +32,6 @@ class SegmentTest {
         crc.setData(hexValue);
         log.info("crc16: {}", crc.getData());
     }
-
 
     @Test
     void test1() {
@@ -174,100 +171,99 @@ class SegmentTest {
             data.read(byteBuf);
             log.info("结束时间: {}", data.getHexData());
 
-            //***************************
-            Hex data1 = new Hex(4,5);
+            // ***************************
+            Hex data1 = new Hex(4, 5);
             data1.setLittleEnd(true).read(byteBuf);
             log.info("尖单价: {}", data1.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("尖电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("尖损电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("尖金额: {}", data.getData());
 
-            //***************************
+            // ***************************
 
-            data = new Hex(4,5);
+            data = new Hex(4, 5);
             data.setLittleEnd(true).read(byteBuf);
             log.info("峰单价: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("峰电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("峰损电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("峰金额: {}", data.getData());
 
-            //***************************
+            // ***************************
 
-            data = new Hex(4,5);
+            data = new Hex(4, 5);
             data.setLittleEnd(true).read(byteBuf);
             log.info("平单价: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("平电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("平损电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("平金额: {}", data.getData());
 
-            //***************************
+            // ***************************
 
-            data = new Hex(4,5);
+            data = new Hex(4, 5);
             data.setLittleEnd(true).read(byteBuf);
             log.info("谷单价: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("谷电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("谷损电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("谷金额: {}", data.getData());
 
-            //***************************
+            // ***************************
 
-            data = new Hex(4,5);
+            data = new Hex(4, 5);
             data.setLittleEnd(true).read(byteBuf);
             log.info("深谷单价: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("深谷电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("深谷损电量: {}", data.getData());
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("深谷金额: {}", data.getData());
             byteBuf.skipBytes(18);
 
-            data = new Hex(4,4);
+            data = new Hex(4, 4);
             data.setLittleEnd(true).read(byteBuf);
             log.info("消费金额: {}", data.getData());
-
 
         } finally {
             byteBuf.release();
@@ -275,16 +271,16 @@ class SegmentTest {
     }
 
     @Test
-    public void test4(){
-//        BigDecimal chargingPrice = BigDecimal.valueOf(0.34000);
-//        BigDecimal servicePrice =BigDecimal.valueOf(0.16000);
-//        BigDecimal totalPrice = chargingPrice.add(servicePrice);
-//        BigDecimal chargingPriceRatio = BigDecimal.ZERO;
-//        if (totalPrice.compareTo(BigDecimal.ZERO) != 0) {
-//            // 计算平台定义的比例，根据比例将设备的价格重新拆分成电价和服务费价
-//            chargingPriceRatio = chargingPrice.divide(totalPrice, 6, RoundingMode.HALF_UP);
-//            chargingPrice = chargeAndService.multiply(chargingPriceRatio).setScale(3, RoundingMode.HALF_UP);
-////            servicePrice = chargeAndService.subtract(chargingPrice);
-//        }
+    public void test4() {
+        //        BigDecimal chargingPrice = BigDecimal.valueOf(0.34000);
+        //        BigDecimal servicePrice =BigDecimal.valueOf(0.16000);
+        //        BigDecimal totalPrice = chargingPrice.add(servicePrice);
+        //        BigDecimal chargingPriceRatio = BigDecimal.ZERO;
+        //        if (totalPrice.compareTo(BigDecimal.ZERO) != 0) {
+        //            // 计算平台定义的比例，根据比例将设备的价格重新拆分成电价和服务费价
+        //            chargingPriceRatio = chargingPrice.divide(totalPrice, 6, RoundingMode.HALF_UP);
+        //            chargingPrice = chargeAndService.multiply(chargingPriceRatio).setScale(3, RoundingMode.HALF_UP);
+        ////            servicePrice = chargeAndService.subtract(chargingPrice);
+        //        }
     }
 }

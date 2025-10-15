@@ -16,7 +16,7 @@ public class CommonValidators {
      */
     public static class IpAddressValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("IP地址不能为空");
             }
@@ -39,7 +39,7 @@ public class CommonValidators {
      */
     public static class MacAddressValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("MAC地址不能为空");
             }
@@ -62,7 +62,7 @@ public class CommonValidators {
      */
     public static class HexStringValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("十六进制字符串不能为空");
             }
@@ -85,7 +85,7 @@ public class CommonValidators {
      */
     public static class BcdValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("BCD编码不能为空");
             }
@@ -108,16 +108,15 @@ public class CommonValidators {
      */
     public static class PositiveNumberValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("数值不能为空");
             }
 
-            if (!(value instanceof Number)) {
+            if (!(value instanceof Number number)) {
                 return ValidationResult.failure("必须为数值类型");
             }
 
-            Number number = (Number) value;
             if (ValidationUtils.isPositive(number)) {
                 return ValidationResult.success();
             } else {
@@ -131,7 +130,7 @@ public class CommonValidators {
      */
     public static class NonNegativeNumberValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("数值不能为空");
             }
@@ -154,7 +153,7 @@ public class CommonValidators {
      */
     public static class TimestampValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("时间戳不能为空");
             }
@@ -177,7 +176,7 @@ public class CommonValidators {
      */
     public static class AlphanumericValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("字符串不能为空");
             }
@@ -200,7 +199,7 @@ public class CommonValidators {
      */
     public static class NumericValidator implements ProtocolValidator {
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("字符串不能为空");
             }
@@ -231,7 +230,7 @@ public class CommonValidators {
         }
 
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("数值不能为空");
             }
@@ -263,7 +262,7 @@ public class CommonValidators {
         }
 
         @Override
-        public ValidationResult validate(Object value, FieldInfo fieldInfo) {
+        public ValidationResult validate(Object value) {
             if (value == null) {
                 return ValidationResult.failure("字符串不能为空");
             }

@@ -13,10 +13,9 @@ public interface ProtocolValidator {
      * 验证字段值
      *
      * @param value 字段值
-     * @param field 字段信息
      * @return 验证结果
      */
-    ValidationResult validate(Object value, FieldInfo field);
+    ValidationResult validate(Object value);
 
     /**
      * 验证结果
@@ -30,10 +29,4 @@ public interface ProtocolValidator {
             return new ValidationResult(false, message);
         }
     }
-
-    /**
-     * 字段信息
-     */
-    record FieldInfo(
-            String fieldName, Class<?> fieldType, ProtocolField protocolField, ProtocolValidation validation) {}
 }

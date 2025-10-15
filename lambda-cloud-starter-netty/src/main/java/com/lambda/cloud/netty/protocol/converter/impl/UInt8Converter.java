@@ -1,0 +1,73 @@
+package com.lambda.cloud.netty.protocol.converter.impl;
+
+import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
+import com.lambda.cloud.netty.protocol.core.FieldMetadata;
+import com.lambda.cloud.netty.protocol.core.ProtocolException;
+import com.lambda.cloud.netty.protocol.util.ConverterValidationUtils;
+
+/**
+ * 8位无符号整数转换器
+ */
+public class UInt8Converter implements DataTypeConverter {
+
+    @Override
+    public Object parse(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+        ConverterValidationUtils.validateBasicInputs(data, fieldMetadata, "UINT8");
+        ConverterValidationUtils.validateDataLength(data, 1, fieldMetadata, "UINT8");
+
+        int unsignedValue = Byte.toUnsignedInt(data[0]);
+
+        Class<?> fieldType = fieldMetadata.getFieldType();
+        if (ConverterValidationUtils.isIntegerType(fieldType)) {
+            return unsignedValue;
+        } else if (ConverterValidationUtils.isByteType(fieldType)) {
+            return data[0];
+        } else if (fieldType == String.class) {
+            return String.valueOf(unsignedValue);
+        }
+        return unsignedValue;
+    }
+
+    @Override
+    public byte[] serialize(Object value, FieldMetadata fieldMetadata) throws ProtocolException {
+        ConverterValidationUtils.validateSerializeValue(value, fieldMetadata, "UINT8");
+        int intValue;
+
+        if (value instanceof Number) {
+            intValue = ((Number) value).intValue();
+        } else if (value instanceof String) {
+            intValue = Integer.parseUnsignedInt((String) value);
+        } else {
+            throw ConverterValidationUtils.createSerializeException(
+                    "不支持的UINT8数据类型: " + value.getClass().getName(), fieldMetadata);
+        }
+
+        ConverterValidationUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
+
+        return new byte[] {(byte) intValue};
+    }
+
+    @Override
+    public Object parseFromString(String value, FieldMetadata fieldMetadata) throws ProtocolException {
+        if (value == null || value.trim().isEmpty()) {
+            return 0;
+        }
+        try {
+            int intValue = Integer.parseUnsignedInt(value.trim());
+            ConverterValidationUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
+
+            Class<?> fieldType = fieldMetadata.getFieldType();
+            if (ConverterValidationUtils.isByteType(fieldType)) {
+                return (byte) intValue;
+            }
+            return intValue;
+        } catch (Exception e) {
+            throw ConverterValidationUtils.createParseException("从字符串解析UINT8数据失败: " + e.getMessage(), fieldMetadata, e);
+        }
+    }
+
+    @Override
+    public int getExpectedLength(FieldMetadata fieldMetadata) {
+        return 1;
+    }
+}
