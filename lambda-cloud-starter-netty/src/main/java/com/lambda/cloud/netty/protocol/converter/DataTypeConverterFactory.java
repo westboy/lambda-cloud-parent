@@ -57,13 +57,13 @@ public class DataTypeConverterFactory {
      * 初始化转换器
      */
     private void initializeConverters() {
-        converters.put(ProtocolDataType.HEX, new HexConverter());
-        converters.put(ProtocolDataType.ASCII, new AsciiConverter());
-        converters.put(ProtocolDataType.BCD, new BcdConverter());
-        converters.put(ProtocolDataType.BIT, new BitConverter());
-        converters.put(ProtocolDataType.UINT8, new UInt8Converter());
-        converters.put(ProtocolDataType.UINT16, new UInt16Converter());
-        converters.put(ProtocolDataType.UINT32, new UInt32Converter());
-        converters.put(ProtocolDataType.CP56TIME2A, new CP56Time2aConverter());
+        registerConverter(ProtocolDataType.HEX, new HexConverter());
+        registerConverter(ProtocolDataType.ASCII, new AsciiConverter());
+        registerConverter(ProtocolDataType.BCD, new BcdConverter());
+        registerConverter(ProtocolDataType.BIT, new BitConverter());
+        registerConverter(ProtocolDataType.UINT8, new UInt8Converter());
+        registerConverter(ProtocolDataType.UINT16, new UInt16Converter());
+        registerConverter(ProtocolDataType.UINT32, new UInt32Converter());
+        registerConverter(ProtocolDataType.CP56TIME2A, new CP56Time2aConverter());
     }
 }

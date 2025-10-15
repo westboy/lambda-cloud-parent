@@ -5,6 +5,10 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 import com.lambda.cloud.netty.util.HexUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+
 /**
  * 十六进制数据转换器
  * <p>
@@ -32,36 +36,33 @@ public class HexConverter implements DataTypeConverter {
             Class<?> fieldType = fieldMetadata.getFieldType();
             int precision = fieldMetadata.getPrecision();
 
+            BigInteger integerData = new BigInteger(hexString, 16);
+
+            BigDecimal decimalValue = (precision > 0)
+                    ? new BigDecimal(integerData).divide(BigDecimal.TEN.pow(precision), precision, RoundingMode.DOWN)
+                    : new BigDecimal(integerData);
+
             if (fieldType == String.class) {
-                return hexString;
+                return (precision > 0) ? decimalValue.stripTrailingZeros().toPlainString() : hexString;
+
             } else if (fieldType == Integer.class || fieldType == int.class) {
-                long value = Long.parseLong(hexString, 16);
-                if (precision > 0) {
-                    return (int) (value / Math.pow(10, precision));
-                }
-                return (int) value;
+                return decimalValue.intValue();
+
             } else if (fieldType == Long.class || fieldType == long.class) {
-                long value = Long.parseLong(hexString, 16);
-                if (precision > 0) {
-                    return (long) (value / Math.pow(10, precision));
-                }
-                return value;
+                return decimalValue.longValue();
+
             } else if (fieldType == Double.class || fieldType == double.class) {
-                long value = Long.parseLong(hexString, 16);
-                if (precision > 0) {
-                    return value / Math.pow(10, precision);
-                }
-                return (double) value;
+                return decimalValue.doubleValue();
+
             } else if (fieldType == Float.class || fieldType == float.class) {
-                long value = Long.parseLong(hexString, 16);
-                if (precision > 0) {
-                    return (float) (value / Math.pow(10, precision));
-                }
-                return (float) value;
+                return decimalValue.floatValue();
+
+            } else if (fieldType == BigDecimal.class) {
+                return decimalValue;
             } else if (fieldType == byte[].class) {
                 return data;
             } else {
-                return hexString; // 默认返回字符串
+                return decimalValue.stripTrailingZeros().toPlainString();
             }
         } catch (Exception e) {
             throw new ProtocolException(
@@ -85,9 +86,8 @@ public class HexConverter implements DataTypeConverter {
                     result = HexUtils.hexToBytes(hexString);
                 }
                 case Integer i -> {
-                    long actualValue = precision > 0 ? (long) (i * Math.pow(10, precision)) : i;
-                    String hexString = Long.toHexString(actualValue);
-                    // 确保长度为偶数
+                    int actualValue = precision > 0 ? (int) (i * Math.pow(10, precision)) : i;
+                    String hexString = Integer.toHexString(actualValue);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
@@ -102,16 +102,16 @@ public class HexConverter implements DataTypeConverter {
                     result = HexUtils.hexToBytes(hexString);
                 }
                 case Double d -> {
-                    long actualValue = precision > 0 ? (long) (d * Math.pow(10, precision)) : d.longValue();
-                    String hexString = Long.toHexString(actualValue);
+                    double actualValue = precision > 0 ? (d * Math.pow(10, precision)) : d.longValue();
+                    String hexString = Double.toHexString(actualValue);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
                     result = HexUtils.hexToBytes(hexString);
                 }
                 case Float f -> {
-                    long actualValue = precision > 0 ? (long) (f * Math.pow(10, precision)) : f.longValue();
-                    String hexString = Long.toHexString(actualValue);
+                    float actualValue = precision > 0 ? (float) (f * Math.pow(10, precision)) : f.longValue();
+                    String hexString = Float.toHexString(actualValue);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
@@ -210,14 +210,6 @@ public class HexConverter implements DataTypeConverter {
      * @return 反转后的字节数组
      */
     private byte[] reverseBytes(byte[] data) {
-        if (data == null || data.length <= 1) {
-            return data;
-        }
-
-        byte[] reversed = new byte[data.length];
-        for (int i = 0; i < data.length; i++) {
-            reversed[i] = data[data.length - 1 - i];
-        }
-        return reversed;
+        return HexUtils.reverseBytes(data);
     }
 }

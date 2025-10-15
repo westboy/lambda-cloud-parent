@@ -118,7 +118,8 @@ public class TransactionRecordProtocolTest {
 
         log.info("=== 总计信息 ===");
         log.info("消费金额: {}", record.getTotalAmount());
-        log.info("校验码: {}", record.getChecksum());
+        log.info("VIN: {}", record.getVIN());
+        log.info("交易标识: {}", record.getChecksum());
     }
 
     @Test

@@ -37,7 +37,7 @@ public class UInt16Converter implements DataTypeConverter {
             if (ConverterValidationUtils.isIntegerType(fieldType)) {
                 return value;
             } else if (ConverterValidationUtils.isShortType(fieldType)) {
-                // 处理Java的有符号short类型
+                // 处理 Java 的有符号short类型
                 return value > Short.MAX_VALUE ? (short) (value - 65536) : (short) value;
             } else if (fieldType == String.class) {
                 return String.valueOf(value);

@@ -3,6 +3,8 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -28,45 +30,7 @@ public class CP56Time2aConverter implements DataTypeConverter {
         validateLength(data, fieldMetadata);
 
         try {
-            int milliseconds = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
-            if (milliseconds >= 60000) {
-                throw new ProtocolException(
-                        ProtocolException.ErrorCode.PARSE_ERROR,
-                        "CP56TIME2A 毫秒字段无效: " + milliseconds,
-                        fieldMetadata.getFieldName());
-            }
-
-            // 分钟和无效标志
-            boolean invalid = (data[2] & 0x80) != 0;
-            int minutes = data[2] & 0x3F;
-
-            // 小时和夏令时标志
-            boolean summerTime = (data[3] & 0x80) != 0;
-            int hours = data[3] & 0x1F;
-
-            // 日期和星期
-            int dayOfWeek = (data[4] & 0xE0) >> 5;
-            if (dayOfWeek == 0) dayOfWeek = 7;
-            int dayOfMonth = data[4] & 0x1F;
-
-            // 月份
-            int month = data[5] & 0x0F;
-
-            // 年份 (固定2000-2099)
-            int year = 2000 + (data[6] & 0x7F);
-
-            int seconds = milliseconds / 1000;
-            int millis = milliseconds % 1000;
-
-            if (invalid || !isValidDateTime(year, month, dayOfMonth, hours, minutes, seconds)) {
-                throw new ProtocolException(
-                        ProtocolException.ErrorCode.PARSE_ERROR,
-                        "CP56TIME2A时间数据无效或标记为无效",
-                        fieldMetadata.getFieldName());
-            }
-
-            LocalDateTime dateTime =
-                    LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
+            LocalDateTime dateTime = getLocalDateTime(data, fieldMetadata);
 
             Class<?> fieldType = fieldMetadata.getFieldType();
             if (fieldType == String.class) {
@@ -89,6 +53,49 @@ public class CP56Time2aConverter implements DataTypeConverter {
                     fieldMetadata.getFieldName(),
                     e);
         }
+    }
+
+    private @NonNull LocalDateTime getLocalDateTime(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+        int milliseconds = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
+        if (milliseconds >= 60000) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "CP56TIME2A 毫秒字段无效: " + milliseconds,
+                    fieldMetadata.getFieldName());
+        }
+
+        // 分钟和无效标志
+        boolean invalid = (data[2] & 0x80) != 0;
+        int minutes = data[2] & 0x3F;
+
+        // 小时和夏令时标志
+        boolean summerTime = (data[3] & 0x80) != 0;
+        int hours = data[3] & 0x1F;
+
+        // 日期和星期
+        int dayOfWeek = (data[4] & 0xE0) >> 5;
+        if (dayOfWeek == 0) dayOfWeek = 7;
+        int dayOfMonth = data[4] & 0x1F;
+
+        // 月份
+        int month = data[5] & 0x0F;
+
+        // 年份 (固定2000-2099)
+        int year = 2000 + (data[6] & 0x7F);
+
+        int seconds = milliseconds / 1000;
+        int millis = milliseconds % 1000;
+
+        if (invalid || !isValidDateTime(year, month, dayOfMonth, hours, minutes, seconds)) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "CP56TIME2A时间数据无效或标记为无效",
+                    fieldMetadata.getFieldName());
+        }
+
+        LocalDateTime dateTime =
+                LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
+        return dateTime;
     }
 
     @Override

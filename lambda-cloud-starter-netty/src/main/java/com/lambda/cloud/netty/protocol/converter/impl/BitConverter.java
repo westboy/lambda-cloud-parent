@@ -3,6 +3,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * 位数据转换器
@@ -22,18 +23,7 @@ public class BitConverter implements DataTypeConverter {
 
             String bitString = result.toString();
             Class<?> fieldType = fieldMetadata.getFieldType();
-
-            if (fieldType == String.class) {
-                return bitString;
-            } else if (fieldType == Boolean.class || fieldType == boolean.class) {
-                // 对于布尔类型，检查是否有任何位为1
-                return bitString.contains("1");
-            } else if (fieldType == Integer.class || fieldType == int.class) {
-                return Integer.parseInt(bitString, 2);
-            } else if (fieldType == Long.class || fieldType == long.class) {
-                return Long.parseLong(bitString, 2);
-            }
-            return bitString;
+            return getObject(fieldType, bitString);
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
@@ -47,23 +37,23 @@ public class BitConverter implements DataTypeConverter {
     public byte[] serialize(Object value, FieldMetadata fieldMetadata) throws ProtocolException {
         try {
             String bitString;
-
-            if (value instanceof String) {
-                bitString = (String) value;
-                // 验证是否为有效的二进制字符串
-                if (!bitString.matches("[01]+")) {
-                    throw new ProtocolException(
-                            ProtocolException.ErrorCode.SERIALIZE_ERROR,
-                            "位数据必须为二进制字符串: " + bitString,
-                            fieldMetadata.getFieldName());
+            switch (value) {
+                case String string -> {
+                    bitString = string;
+                    // 验证是否为有效的二进制字符串
+                    if (!bitString.matches("[01]+")) {
+                        throw new ProtocolException(
+                                ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                                "位数据必须为二进制字符串: " + bitString,
+                                fieldMetadata.getFieldName());
+                    }
                 }
-            } else if (value instanceof Boolean) {
-                bitString = (Boolean) value ? "1" : "0";
-            } else if (value instanceof Number) {
-                long longValue = ((Number) value).longValue();
-                bitString = Long.toBinaryString(longValue);
-            } else {
-                throw new ProtocolException(
+                case Boolean b -> bitString = b ? "1" : "0";
+                case Number number -> {
+                    long longValue = number.longValue();
+                    bitString = Long.toBinaryString(longValue);
+                }
+                default -> throw new ProtocolException(
                         ProtocolException.ErrorCode.SERIALIZE_ERROR,
                         "不支持的位数据类型: " + value.getClass().getName(),
                         fieldMetadata.getFieldName());
@@ -115,7 +105,13 @@ public class BitConverter implements DataTypeConverter {
         }
 
         Class<?> fieldType = fieldMetadata.getFieldType();
-        if (fieldType == Boolean.class || fieldType == boolean.class) {
+        return getObject(fieldType, trimmed);
+    }
+
+    private static @Nullable Object getObject(Class<?> fieldType, String trimmed) {
+        if (fieldType == String.class) {
+            return trimmed;
+        } else if (fieldType == Boolean.class || fieldType == boolean.class) {
             return trimmed.contains("1");
         } else if (fieldType == Integer.class || fieldType == int.class) {
             return Integer.parseInt(trimmed, 2);

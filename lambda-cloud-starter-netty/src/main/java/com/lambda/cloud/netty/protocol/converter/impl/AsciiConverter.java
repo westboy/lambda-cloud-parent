@@ -1,6 +1,7 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.ProtocolException;
+import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.core.FieldMetadata;
 import com.lambda.cloud.netty.util.ConverterValidationUtils;
@@ -9,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
- * ASCII字符串转换器
+ * ASCII 字符串转换器
  */
 public class AsciiConverter implements DataTypeConverter {
 
@@ -134,9 +135,9 @@ public class AsciiConverter implements DataTypeConverter {
         }
 
         // 根据填充方向移除填充字符
-        com.lambda.cloud.netty.protocol.annotation.PaddingDirection paddingDirection =
+        PaddingDirection paddingDirection =
                 fieldMetadata.getPaddingDirection();
-        if (paddingDirection == com.lambda.cloud.netty.protocol.annotation.PaddingDirection.LEFT) {
+        if (paddingDirection == PaddingDirection.LEFT) {
             // 左填充，从左边移除
             int start = 0;
             while (start < str.length() && str.charAt(start) == paddingChar) {
