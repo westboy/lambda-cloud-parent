@@ -70,7 +70,7 @@ public record FieldMetadata(Field field, ProtocolField protocolField, ProtocolVa
     /**
      * 是否有验证注解
      *
-     * @return true表示有验证注解
+     * @return true 表示有验证注解
      */
     public boolean hasValidation() {
         return validation != null;
@@ -88,7 +88,7 @@ public record FieldMetadata(Field field, ProtocolField protocolField, ProtocolVa
     /**
      * 是否为小端字节序
      *
-     * @return true表示小端
+     * @return true 表示小端
      */
     public boolean isLittleEndian() {
         return protocolField.littleEndian();
