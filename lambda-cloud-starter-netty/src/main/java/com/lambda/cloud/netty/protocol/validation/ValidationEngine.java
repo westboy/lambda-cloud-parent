@@ -1,14 +1,14 @@
 package com.lambda.cloud.netty.protocol.validation;
 
-import com.lambda.cloud.netty.protocol.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolValidator;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.protocol.core.MessageMetadata;
+import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -40,24 +40,24 @@ public class ValidationEngine {
      * @param metadata 消息元数据
      * @return 验证结果
      */
-    public ProtocolEngine.ValidationResult validate(Object message, MessageMetadata metadata) {
+    public ValidationResult validate(Object message, ProtocolFrameMetadata metadata) {
         List<String> errors = new ArrayList<>();
 
         try {
-            for (FieldMetadata fieldMetadata : metadata.fields()) {
+            for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 if (fieldMetadata.hasValidation()) {
                     validateField(message, fieldMetadata, errors);
                 }
             }
 
             if (errors.isEmpty()) {
-                return ProtocolEngine.ValidationResult.success();
+                return ValidationResult.success();
             } else {
-                return ProtocolEngine.ValidationResult.failure(String.join("; ", errors));
+                return ValidationResult.failure(String.join("; ", errors));
             }
         } catch (Exception e) {
             log.error("验证过程中发生异常", e);
-            return ProtocolEngine.ValidationResult.failure("验证过程中发生异常: " + e.getMessage());
+            return ValidationResult.failure("验证过程中发生异常: " + e.getMessage());
         }
     }
 
@@ -68,7 +68,7 @@ public class ValidationEngine {
      * @param fieldMetadata 字段元数据
      * @param errors        错误列表
      */
-    private void validateField(Object message, FieldMetadata fieldMetadata, List<String> errors) {
+    private void validateField(Object message, ProtocolFieldMetadata fieldMetadata, List<String> errors) {
         try {
             Object value = fieldMetadata.getValue(message);
             ProtocolValidation validation = fieldMetadata.validation();
@@ -190,7 +190,7 @@ public class ValidationEngine {
                     throw new RuntimeException("创建验证器实例失败", e);
                 }
             });
-            ProtocolValidator.ValidationResult validate = validator.validate(value);
+            ValidationResult validate = validator.validate(value);
             if (!validate.valid()) {
                 errors.add("字段 " + fieldName + " 未通过自定义验证器 " + validatorClass.getSimpleName() + " 的验证");
             }

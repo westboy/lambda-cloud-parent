@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
-import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class BitConverter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         try {
             StringBuilder result = new StringBuilder();
 
@@ -34,7 +34,7 @@ public class BitConverter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         try {
             String bitString;
             switch (value) {
@@ -53,10 +53,11 @@ public class BitConverter implements DataTypeConverter {
                     long longValue = number.longValue();
                     bitString = Long.toBinaryString(longValue);
                 }
-                default -> throw new ProtocolException(
-                        ProtocolException.ErrorCode.SERIALIZE_ERROR,
-                        "不支持的位数据类型: " + value.getClass().getName(),
-                        fieldMetadata.getFieldName());
+                default ->
+                    throw new ProtocolException(
+                            ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                            "不支持的位数据类型: " + value.getClass().getName(),
+                            fieldMetadata.getFieldName());
             }
 
             // 调整长度到字节边界
@@ -93,7 +94,7 @@ public class BitConverter implements DataTypeConverter {
     }
 
     @Override
-    public Object parseFromString(String value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null || value.trim().isEmpty()) {
             return "0";
         }

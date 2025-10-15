@@ -1,9 +1,9 @@
 package com.lambda.cloud.netty.protocol.processor;
 
-import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.protocol.core.MessageMetadata;
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
 import io.netty.buffer.ByteBuf;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,8 +31,8 @@ public class FieldProcessor {
     public void parseField(
             ByteBuf byteBuf,
             Object instance,
-            FieldMetadata fieldMetadata,
-            MessageMetadata msgMetadata,
+            ProtocolFieldMetadata fieldMetadata,
+            ProtocolFrameMetadata msgMetadata,
             DataTypeConverter converter)
             throws ProtocolException {
 
@@ -63,8 +63,8 @@ public class FieldProcessor {
     public void serializeField(
             Object instance,
             ByteBuf byteBuf,
-            FieldMetadata fieldMetadata,
-            MessageMetadata msgMetadata,
+            ProtocolFieldMetadata fieldMetadata,
+            ProtocolFrameMetadata msgMetadata,
             DataTypeConverter converter)
             throws ProtocolException {
 
@@ -88,7 +88,7 @@ public class FieldProcessor {
      * @param fieldMetadata 字段元数据
      * @return 是否有足够数据
      */
-    private boolean validateBufferData(ByteBuf byteBuf, FieldMetadata fieldMetadata) {
+    private boolean validateBufferData(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
         return byteBuf.readableBytes() >= fieldMetadata.getLength();
     }
 
@@ -99,7 +99,7 @@ public class FieldProcessor {
      * @param fieldMetadata 字段元数据
      * @throws ProtocolException 解析异常
      */
-    private void handleInsufficientData(Object instance, FieldMetadata fieldMetadata) throws ProtocolException {
+    private void handleInsufficientData(Object instance, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (fieldMetadata.isOptional()) {
             // 可选字段，使用默认值
             setDefaultValue(instance, fieldMetadata);
@@ -118,7 +118,7 @@ public class FieldProcessor {
      * @param fieldMetadata 字段元数据
      * @return 字段数据
      */
-    private byte[] readFieldData(ByteBuf byteBuf, FieldMetadata fieldMetadata) {
+    private byte[] readFieldData(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
         byte[] fieldData = new byte[fieldMetadata.getLength()];
         byteBuf.readBytes(fieldData);
         return fieldData;
@@ -133,7 +133,7 @@ public class FieldProcessor {
      * @return 转换后的值
      * @throws ProtocolException 转换异常
      */
-    private Object convertFieldData(byte[] fieldData, FieldMetadata fieldMetadata, DataTypeConverter converter)
+    private Object convertFieldData(byte[] fieldData, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
             throws ProtocolException {
         try {
             return converter.parse(fieldData, fieldMetadata);
@@ -151,7 +151,7 @@ public class FieldProcessor {
      * @param value         字段值
      * @throws ProtocolException 设置异常
      */
-    private void setFieldValue(Object instance, FieldMetadata fieldMetadata, Object value) throws ProtocolException {
+    private void setFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata, Object value) throws ProtocolException {
         try {
             fieldMetadata.setValue(instance, value);
         } catch (Exception e) {
@@ -168,7 +168,7 @@ public class FieldProcessor {
      * @return 字段值
      * @throws ProtocolException 获取异常
      */
-    private Object getFieldValue(Object instance, FieldMetadata fieldMetadata) throws ProtocolException {
+    private Object getFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         try {
             return fieldMetadata.getValue(instance);
         } catch (Exception e) {
@@ -185,7 +185,7 @@ public class FieldProcessor {
      * @return 是否继续处理
      * @throws ProtocolException 验证异常
      */
-    private boolean handleNullValue(Object value, FieldMetadata fieldMetadata) throws ProtocolException {
+    private boolean handleNullValue(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
             if (fieldMetadata.isOptional()) {
                 // 可选字段为空，跳过
@@ -209,7 +209,7 @@ public class FieldProcessor {
      * @return 字节数组
      * @throws ProtocolException 转换异常
      */
-    private byte[] convertToBytes(Object value, FieldMetadata fieldMetadata, DataTypeConverter converter)
+    private byte[] convertToBytes(Object value, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
             throws ProtocolException {
         try {
             return converter.serialize(value, fieldMetadata);
@@ -236,7 +236,7 @@ public class FieldProcessor {
      * @param fieldMetadata 字段元数据
      * @throws ProtocolException 设置异常
      */
-    private void setDefaultValue(Object instance, FieldMetadata fieldMetadata) throws ProtocolException {
+    private void setDefaultValue(Object instance, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         String defaultValue = fieldMetadata.getDefaultValue();
         if (defaultValue != null && !defaultValue.isEmpty()) {
             try {

@@ -1,10 +1,8 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
-import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import org.checkerframework.checker.nullness.qual.NonNull;
-
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -12,6 +10,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * CP56TIME2A时间格式转换器（增强版）
@@ -26,7 +25,7 @@ public class CP56Time2aConverter implements DataTypeConverter {
     private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     @Override
-    public Object parse(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         validateLength(data, fieldMetadata);
 
         try {
@@ -55,7 +54,7 @@ public class CP56Time2aConverter implements DataTypeConverter {
         }
     }
 
-    private @NonNull LocalDateTime getLocalDateTime(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    private @NonNull LocalDateTime getLocalDateTime(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         int milliseconds = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
         if (milliseconds >= 60000) {
             throw new ProtocolException(
@@ -88,25 +87,22 @@ public class CP56Time2aConverter implements DataTypeConverter {
 
         if (invalid || !isValidDateTime(year, month, dayOfMonth, hours, minutes, seconds)) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR,
-                    "CP56TIME2A时间数据无效或标记为无效",
-                    fieldMetadata.getFieldName());
+                    ProtocolException.ErrorCode.PARSE_ERROR, "CP56TIME2A时间数据无效或标记为无效", fieldMetadata.getFieldName());
         }
 
-        LocalDateTime dateTime =
-                LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
+        LocalDateTime dateTime = LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
         return dateTime;
     }
 
     @Override
-    public byte[] serialize(Object value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         return serialize(value, fieldMetadata, false, false);
     }
 
     /**
      * 序列化带可选标志位（无效 / 夏令时）
      */
-    public byte[] serialize(Object value, FieldMetadata fieldMetadata, boolean invalid, boolean summerTime)
+    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata, boolean invalid, boolean summerTime)
             throws ProtocolException {
         try {
             LocalDateTime dateTime = convertToLocalDateTime(value);
@@ -156,7 +152,7 @@ public class CP56Time2aConverter implements DataTypeConverter {
     }
 
     @Override
-    public Object parseFromString(String value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         try {
             LocalDateTime dateTime = tryParseMultipleFormats(value);
             Class<?> fieldType = fieldMetadata.getFieldType();
@@ -177,7 +173,7 @@ public class CP56Time2aConverter implements DataTypeConverter {
     }
 
     @Override
-    public void validateLength(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (data.length != EXPECTED_LENGTH) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
@@ -187,7 +183,7 @@ public class CP56Time2aConverter implements DataTypeConverter {
     }
 
     @Override
-    public int getExpectedLength(FieldMetadata fieldMetadata) {
+    public int getExpectedLength(ProtocolFieldMetadata fieldMetadata) {
         return EXPECTED_LENGTH;
     }
 

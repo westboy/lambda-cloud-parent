@@ -1,9 +1,9 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
-import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.util.ConverterValidationUtils;
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.utils.ConverterValidationUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -18,7 +18,7 @@ import java.nio.ByteOrder;
 public class UInt32Converter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (data.length != 4) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
@@ -55,7 +55,7 @@ public class UInt32Converter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         ConverterValidationUtils.validateSerializeValue(value, fieldMetadata, "UINT32");
 
         try {
@@ -87,7 +87,7 @@ public class UInt32Converter implements DataTypeConverter {
     }
 
     @Override
-    public Object parseFromString(String value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null || value.trim().isEmpty()) {
             return 0L;
         }
@@ -114,7 +114,7 @@ public class UInt32Converter implements DataTypeConverter {
     }
 
     @Override
-    public int getExpectedLength(FieldMetadata fieldMetadata) {
+    public int getExpectedLength(ProtocolFieldMetadata fieldMetadata) {
         return 4;
     }
 }

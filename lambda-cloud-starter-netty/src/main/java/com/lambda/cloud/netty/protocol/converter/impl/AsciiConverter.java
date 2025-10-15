@@ -1,10 +1,10 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
-import com.lambda.cloud.netty.protocol.ProtocolException;
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
-import com.lambda.cloud.netty.util.ConverterValidationUtils;
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.utils.ConverterValidationUtils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class AsciiConverter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         // 验证输入参数
         ConverterValidationUtils.validateBasicInputs(data, fieldMetadata, "ASCII");
 
@@ -43,7 +43,7 @@ public class AsciiConverter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
             value = "";
         }
@@ -66,7 +66,7 @@ public class AsciiConverter implements DataTypeConverter {
     }
 
     @Override
-    public Object parseFromString(String value, FieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
             return "";
         }
@@ -81,7 +81,7 @@ public class AsciiConverter implements DataTypeConverter {
      * @return
      * @throws ProtocolException 验证失败时抛出
      */
-    public void validateLength(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         int expectedLength = fieldMetadata.getLength();
         if (expectedLength != -1 && data.length != expectedLength) {
             throw ConverterValidationUtils.createParseException(
@@ -95,7 +95,7 @@ public class AsciiConverter implements DataTypeConverter {
      * @param fieldMetadata 字段元数据
      * @return 字符集
      */
-    private Charset getCharset(FieldMetadata fieldMetadata) {
+    private Charset getCharset(ProtocolFieldMetadata fieldMetadata) {
         String charsetName = fieldMetadata.getCharset();
         if (charsetName != null && !charsetName.isEmpty()) {
             try {
@@ -113,7 +113,7 @@ public class AsciiConverter implements DataTypeConverter {
      * @param fieldMetadata 字段元数据
      * @return 填充字符
      */
-    private char getPaddingChar(FieldMetadata fieldMetadata) {
+    private char getPaddingChar(ProtocolFieldMetadata fieldMetadata) {
         String paddingChar = fieldMetadata.getPaddingChar();
         if (paddingChar != null && !paddingChar.isEmpty()) {
             return paddingChar.charAt(0);
@@ -129,14 +129,13 @@ public class AsciiConverter implements DataTypeConverter {
      * @param fieldMetadata 字段元数据
      * @return 移除填充后的字符串
      */
-    private String removePadding(String str, char paddingChar, FieldMetadata fieldMetadata) {
+    private String removePadding(String str, char paddingChar, ProtocolFieldMetadata fieldMetadata) {
         if (str == null || str.isEmpty()) {
             return str;
         }
 
         // 根据填充方向移除填充字符
-        PaddingDirection paddingDirection =
-                fieldMetadata.getPaddingDirection();
+        PaddingDirection paddingDirection = fieldMetadata.getPaddingDirection();
         if (paddingDirection == PaddingDirection.LEFT) {
             // 左填充，从左边移除
             int start = 0;
@@ -162,7 +161,7 @@ public class AsciiConverter implements DataTypeConverter {
      * @param fieldMetadata 字段元数据
      * @return 调整后的数据
      */
-    private byte[] adjustLength(byte[] data, int targetLength, FieldMetadata fieldMetadata) {
+    private byte[] adjustLength(byte[] data, int targetLength, ProtocolFieldMetadata fieldMetadata) {
         if (data.length == targetLength) {
             return data;
         }

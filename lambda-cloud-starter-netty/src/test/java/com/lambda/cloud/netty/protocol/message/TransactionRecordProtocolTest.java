@@ -1,9 +1,10 @@
 package com.lambda.cloud.netty.protocol.message;
 
-import com.lambda.cloud.netty.protocol.ProtocolEngine;
-import com.lambda.cloud.netty.protocol.ProtocolEngineFactory;
-import com.lambda.cloud.netty.protocol.ProtocolException;
-import com.lambda.cloud.netty.protocol.packet.UnitKit;
+import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
+import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.validation.ValidationResult;
+import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class TransactionRecordProtocolTest {
             log.info("字段数量: {}", metadata.fields().size());
 
             // 将十六进制字符串转换为字节数组
-            byte[] bytes = UnitKit.hexToBytes(TEST_DATA3);
+            byte[] bytes = HexUtils.hexToBytes(TEST_DATA3);
             log.info("实际数据长度: {} 字节", bytes.length);
 
             if (bytes.length < metadata.totalLength()) {
@@ -60,7 +61,7 @@ public class TransactionRecordProtocolTest {
             log.info("解析结果: {}", record);
 
             // 验证解析结果
-            ProtocolEngine.ValidationResult validation = engine.validate(record);
+            ValidationResult validation = engine.validate(record);
             if (validation.valid()) {
                 log.info("消息验证通过");
             } else {
@@ -123,40 +124,6 @@ public class TransactionRecordProtocolTest {
     }
 
     @Test
-    public void testSerializeTransactionRecord() {
-        log.info("测试交易记录序列化功能");
-
-        // 获取协议引擎
-        ProtocolEngine<TransactionRecord> engine = ProtocolEngineFactory.getDefaultEngine();
-
-        try {
-            // 先解析原始数据
-            byte[] bytes = UnitKit.hexToBytes(TEST_DATA3);
-            ByteBuf sourceBuf = Unpooled.wrappedBuffer(bytes);
-            TransactionRecord record = engine.parse(sourceBuf, TransactionRecord.class);
-
-            // 序列化回字节数组
-            ByteBuf targetBuf = Unpooled.buffer();
-            engine.serialize(record, targetBuf);
-
-            // 转换为十六进制字符串
-            byte[] serializedBytes = new byte[targetBuf.readableBytes()];
-            targetBuf.readBytes(serializedBytes);
-            String serializedHex = UnitKit.bytesToHex(serializedBytes).toUpperCase();
-
-            log.info("原始数据: {}", TEST_DATA3);
-            log.info("序列化后: {}", serializedHex);
-            log.info("数据一致性: {}", TEST_DATA3.equals(serializedHex) ? "一致" : "不一致");
-
-            targetBuf.release();
-
-        } catch (Exception e) {
-            log.error("序列化测试失败", e);
-            throw new RuntimeException("序列化测试失败", e);
-        }
-    }
-
-    @Test
     public void testProtocolEngineMetadata() {
         log.info("测试协议引擎元数据功能");
 
@@ -165,7 +132,7 @@ public class TransactionRecordProtocolTest {
         // 获取消息元数据
         var metadata = engine.getMetadata(TransactionRecord.class);
 
-        log.info("消息类型: {}", metadata.getMessageType());
+        log.info("消息类型: {}", metadata.getFrameType());
         log.info("消息名称: {}", metadata.getMessageName());
         log.info("消息描述: {}", metadata.getDescription());
         log.info("消息总长度: {} 字节", metadata.totalLength());

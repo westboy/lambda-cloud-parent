@@ -167,15 +167,6 @@ public class CacheManager<K, V> {
     }
 
     /**
-     * 获取缓存统计信息
-     *
-     * @return 缓存统计
-     */
-    public CacheStats getStats() {
-        return new CacheStats(cache.size(), maxSize, hitCount.get(), missCount.get(), getHitRate());
-    }
-
-    /**
      * LRU淘汰策略
      */
     private void evictLRU() {
@@ -200,33 +191,4 @@ public class CacheManager<K, V> {
         }
     }
 
-    /**
-     * 缓存条目
-     */
-    @Getter
-    private static class CacheEntry<V> {
-        private final V value;
-        private volatile long accessTime;
-
-        public CacheEntry(V value, long accessTime) {
-            this.value = value;
-            this.accessTime = accessTime;
-        }
-
-        public void updateAccessTime(long accessTime) {
-            this.accessTime = accessTime;
-        }
-    }
-
-    /**
-     * 缓存统计信息
-     */
-    public record CacheStats(int currentSize, int maxSize, long hitCount, long missCount, double hitRate) {
-        @Override
-        public String toString() {
-            return String.format(
-                    "CacheStats{size=%d/%d, hits=%d, misses=%d, hitRate=%.2f%%}",
-                    currentSize, maxSize, hitCount, missCount, hitRate * 100);
-        }
-    }
 }

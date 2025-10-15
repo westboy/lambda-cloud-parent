@@ -2,11 +2,10 @@ package com.lambda.cloud.netty.protocol.message;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolMessage;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import java.math.BigDecimal;
 import lombok.Data;
 import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
  * 交易记录消息
@@ -18,7 +17,7 @@ import java.math.BigDecimal;
  */
 @Data
 @ToString
-@ProtocolMessage(frameType = "0x3B", name = "交易记录", description = "充电交易记录信息", version = "1.0")
+@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "充电交易记录信息", version = "1.0")
 public class TransactionRecord {
 
     /**
@@ -356,9 +355,10 @@ public class TransactionRecord {
     @ProtocolField(order = 34, length = 1, dataType = ProtocolDataType.HEX, littleEndian = true, description = "校验码")
     private String checksum;
 
-//    /**
-//     * 校验码 (2字节)
-//     */
-//    @ProtocolField(order = 34, length = 2, dataType = ProtocolDataType.HEX, littleEndian = true, description = "校验码")
-//    private String checksum;
+    //    /**
+    //     * 校验码 (2字节)
+    //     */
+    //    @ProtocolField(order = 34, length = 2, dataType = ProtocolDataType.HEX, littleEndian = true, description =
+    // "校验码")
+    //    private String checksum;
 }

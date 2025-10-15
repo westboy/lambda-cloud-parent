@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.converter;
 
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.cloud.netty.protocol.ProtocolException;
-import com.lambda.cloud.netty.protocol.core.FieldMetadata;
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
 
 /**
  * 数据类型转换器接口
@@ -22,7 +22,7 @@ public interface DataTypeConverter {
      * @return 解析后的对象
      * @throws ProtocolException 解析异常
      */
-    Object parse(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException;
+    Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
 
     /**
      * 序列化对象为字节数据
@@ -32,7 +32,7 @@ public interface DataTypeConverter {
      * @return 字节数据
      * @throws ProtocolException 序列化异常
      */
-    byte[] serialize(Object value, FieldMetadata fieldMetadata) throws ProtocolException;
+    byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
 
     /**
      * 从字符串解析对象（用于默认值）
@@ -42,16 +42,15 @@ public interface DataTypeConverter {
      * @return 解析后的对象
      * @throws ProtocolException 解析异常
      */
-    Object parseFromString(String value, FieldMetadata fieldMetadata) throws ProtocolException;
+    Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
 
     /**
      * 验证数据长度
      *
      * @param data          字节数据
      * @param fieldMetadata 字段元数据
-     * @return 是否有效
      */
-    default void validateLength(byte[] data, FieldMetadata fieldMetadata) throws ProtocolException {
+    default void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         Assert.isTrue(
                 data.length == fieldMetadata.getLength(),
                 "ASCII数据长度不匹配，期望: " + fieldMetadata.getLength() + ", 实际: " + data.length);
@@ -63,7 +62,7 @@ public interface DataTypeConverter {
      * @param fieldMetadata 字段元数据
      * @return 数据长度
      */
-    default int getExpectedLength(FieldMetadata fieldMetadata) {
+    default int getExpectedLength(ProtocolFieldMetadata fieldMetadata) {
         return fieldMetadata.getLength();
     }
 }

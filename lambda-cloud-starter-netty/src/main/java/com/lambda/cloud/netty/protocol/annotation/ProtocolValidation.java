@@ -1,5 +1,7 @@
 package com.lambda.cloud.netty.protocol.annotation;
 
+import com.lambda.cloud.netty.protocol.validation.ProtocolValidator;
+
 import java.lang.annotation.*;
 
 /**
