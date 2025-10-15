@@ -9,7 +9,6 @@ import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
-import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.same.SaSameUtil;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.core.collection.CollUtil;
@@ -329,7 +328,7 @@ public class SecurityAutoConfiguration {
     public SaReactorFilter getSaReactorFilter(SecurityProperties securityProperties) {
         return new SaReactorFilter()
                 .addInclude("/**")
-                .addExclude(  securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
+                .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
                 .setAuth(run -> StpLogicUtils.getActiveStpLogic().checkLogin())
                 .setError(e -> {
                     ErrorModel errorModel = new ErrorModel();
