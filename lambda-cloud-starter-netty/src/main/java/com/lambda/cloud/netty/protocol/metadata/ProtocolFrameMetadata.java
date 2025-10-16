@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.meta;
+package com.lambda.cloud.netty.protocol.metadata;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import java.util.List;

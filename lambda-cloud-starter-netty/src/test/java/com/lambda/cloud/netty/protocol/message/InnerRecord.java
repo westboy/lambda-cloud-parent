@@ -2,9 +2,8 @@ package com.lambda.cloud.netty.protocol.message;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import java.math.BigDecimal;
-
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import java.math.BigDecimal;
 import lombok.Data;
 
 @Data

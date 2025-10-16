@@ -1,5 +1,9 @@
 package com.lambda.cloud.netty.utils;
 
+import static com.lambda.cloud.netty.utils.ExceptionUtils.createSerializeException;
+
+import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import java.util.regex.Pattern;
 
 /**
@@ -113,38 +117,6 @@ public class ValidationUtils {
     }
 
     /**
-     * 验证字符串是否匹配指定模式
-     *
-     * @param value 字符串
-     * @param pattern 正则表达式模式
-     * @return true 表示匹配
-     */
-    public static boolean matches(String value, String pattern) {
-        if (value == null || pattern == null) {
-            return false;
-        }
-        try {
-            return Pattern.matches(pattern, value);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * 验证字符串是否匹配指定模式（预编译）
-     *
-     * @param value 字符串
-     * @param pattern 预编译的模式
-     * @return true 表示匹配
-     */
-    public static boolean matches(String value, Pattern pattern) {
-        if (value == null || pattern == null) {
-            return false;
-        }
-        return pattern.matcher(value).matches();
-    }
-
-    /**
      * 验证整数是否为正数
      *
      * @param value 整数
@@ -241,5 +213,82 @@ public class ValidationUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * 验证数据和字段元数据的基本有效性
+     *
+     * @param data          数据
+     * @param fieldMetadata 字段元数据
+     * @param dataTypeName  数据类型名称（用于错误消息）
+     * @throws ProtocolException 验证失败时抛出
+     */
+    public static void validateBasicInputs(byte[] data, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
+            throws ProtocolException {
+        if (fieldMetadata == null) {
+            throw new ProtocolException(ProtocolException.ErrorCode.PARSE_ERROR, "字段元数据不能为null");
+        }
+
+        if (data == null) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR, dataTypeName + "数据不能为null", fieldMetadata.getFieldName());
+        }
+    }
+
+    /**
+     * 验证数据长度
+     *
+     * @param data           数据
+     * @param expectedLength 期望长度
+     * @param fieldMetadata  字段元数据
+     * @param dataTypeName   数据类型名称（用于错误消息）
+     * @throws ProtocolException 验证失败时抛出
+     */
+    public static void validateDataLength(
+            byte[] data, int expectedLength, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
+            throws ProtocolException {
+        if (data.length != expectedLength) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    dataTypeName + "数据长度必须为" + expectedLength + "字节，实际: " + data.length,
+                    fieldMetadata.getFieldName());
+        }
+    }
+
+    /**
+     * 验证数值范围
+     *
+     * @param value         数值
+     * @param minValue      最小值
+     * @param maxValue      最大值
+     * @param fieldMetadata 字段元数据
+     * @param dataTypeName  数据类型名称（用于错误消息）
+     * @throws ProtocolException 验证失败时抛出
+     */
+    public static void validateNumberRange(
+            long value, long minValue, long maxValue, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
+            throws ProtocolException {
+        if (value < minValue || value > maxValue) {
+            throw createSerializeException(dataTypeName + "序列化值不能为null", fieldMetadata);
+        }
+    }
+
+    /**
+     * 验证序列化值的基本有效性
+     *
+     * @param value         要序列化的值
+     * @param fieldMetadata 字段元数据
+     * @param dataTypeName  数据类型名称（用于错误消息）
+     * @throws ProtocolException 验证失败时抛出
+     */
+    public static void validateSerializeValue(Object value, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
+            throws ProtocolException {
+        if (fieldMetadata == null) {
+            throw createSerializeException("字段元数据不能为null", null);
+        }
+
+        if (value == null) {
+            throw createSerializeException(dataTypeName + "序列化值不能为null", fieldMetadata);
+        }
     }
 }

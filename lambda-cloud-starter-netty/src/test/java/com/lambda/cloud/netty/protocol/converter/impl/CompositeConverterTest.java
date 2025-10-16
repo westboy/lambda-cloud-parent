@@ -7,7 +7,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import java.lang.reflect.Field;
 import lombok.Data;
 import org.junit.jupiter.api.BeforeEach;

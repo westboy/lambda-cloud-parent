@@ -1,17 +1,18 @@
 package com.lambda.cloud.netty.protocol.engine.impl;
 
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.cache.impl.LRUCache;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import com.lambda.cloud.netty.protocol.cache.CacheManager;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
@@ -50,13 +51,12 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * 字段缓存管理器
      */
-    private final CacheManager<String, List<Field>> fieldCache = new CacheManager<>(1000);
+    private final LRUCache<String, List<Field>> fieldCache = CacheUtil.newLRUCache(1000);
 
     /**
      * 转换器缓存管理器
      */
-    private final CacheManager<String, DataTypeConverter> converterCache = new CacheManager<>(100);
-
+    private final LRUCache<String, DataTypeConverter> converterCache = CacheUtil.newLRUCache(100);
     /**
      * 字段处理器
      */
@@ -65,6 +65,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     @Override
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
         ProtocolFrameMetadata metadata = getMetadata(messageClass);
+
         try {
             printLog("帧解析", metadata);
             Object instance = messageClass.getDeclaredConstructor().newInstance();
@@ -266,8 +267,9 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     }
 
     /**
-     *  打印日志
-     * @param title 标题
+     * 打印日志
+     *
+     * @param title         标题
      * @param frameMetadata 元数据
      */
     private void printLog(String title, ProtocolFrameMetadata frameMetadata) {

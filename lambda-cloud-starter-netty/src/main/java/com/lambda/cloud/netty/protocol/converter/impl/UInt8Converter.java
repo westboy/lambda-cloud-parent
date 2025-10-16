@@ -2,8 +2,10 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.utils.ConverterUtils;
+import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.utils.ExceptionUtils;
+import com.lambda.cloud.netty.utils.TypeUtils;
+import com.lambda.cloud.netty.utils.ValidationUtils;
 
 /**
  * 8位无符号整数转换器
@@ -12,15 +14,15 @@ public class UInt8Converter implements DataTypeConverter {
 
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        ConverterUtils.validateBasicInputs(data, fieldMetadata, "UINT8");
-        ConverterUtils.validateDataLength(data, 1, fieldMetadata, "UINT8");
+        ValidationUtils.validateBasicInputs(data, fieldMetadata, "UINT8");
+        ValidationUtils.validateDataLength(data, 1, fieldMetadata, "UINT8");
 
         int unsignedValue = Byte.toUnsignedInt(data[0]);
 
         Class<?> fieldType = fieldMetadata.getFieldType();
-        if (ConverterUtils.isIntegerType(fieldType)) {
+        if (TypeUtils.isIntegerType(fieldType)) {
             return unsignedValue;
-        } else if (ConverterUtils.isByteType(fieldType)) {
+        } else if (TypeUtils.isByteType(fieldType)) {
             return data[0];
         } else if (fieldType == String.class) {
             return String.valueOf(unsignedValue);
@@ -30,7 +32,7 @@ public class UInt8Converter implements DataTypeConverter {
 
     @Override
     public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        ConverterUtils.validateSerializeValue(value, fieldMetadata, "UINT8");
+        ValidationUtils.validateSerializeValue(value, fieldMetadata, "UINT8");
         int intValue;
 
         if (value instanceof Number) {
@@ -38,11 +40,11 @@ public class UInt8Converter implements DataTypeConverter {
         } else if (value instanceof String) {
             intValue = Integer.parseUnsignedInt((String) value);
         } else {
-            throw ConverterUtils.createSerializeException(
+            throw ExceptionUtils.createSerializeException(
                     "不支持的UINT8数据类型: " + value.getClass().getName(), fieldMetadata);
         }
 
-        ConverterUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
+        ValidationUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
 
         return new byte[] {(byte) intValue};
     }
@@ -54,15 +56,15 @@ public class UInt8Converter implements DataTypeConverter {
         }
         try {
             int intValue = Integer.parseUnsignedInt(value.trim());
-            ConverterUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
+            ValidationUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
 
             Class<?> fieldType = fieldMetadata.getFieldType();
-            if (ConverterUtils.isByteType(fieldType)) {
+            if (TypeUtils.isByteType(fieldType)) {
                 return (byte) intValue;
             }
             return intValue;
         } catch (Exception e) {
-            throw ConverterUtils.createParseException("从字符串解析UINT8数据失败: " + e.getMessage(), fieldMetadata, e);
+            throw ExceptionUtils.createParseException("从字符串解析UINT8数据失败: " + e.getMessage(), fieldMetadata, e);
         }
     }
 

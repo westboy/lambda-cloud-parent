@@ -71,8 +71,7 @@ public class TransactionRecordProtocolTest {
             logKeyFields(record);
 
             ByteBuf buffer = Unpooled.buffer();
-            engine.serialize(record,buffer);
-
+            engine.serialize(record, buffer);
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);
