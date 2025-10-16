@@ -15,6 +15,13 @@ import java.lang.annotation.*;
 public @interface ProtocolFrame {
 
     /**
+     * 消息头对象
+     *
+     * @return 消息头
+     */
+    Class<?> header() default void.class;
+
+    /**
      * 消息类型标识
      *
      * @return 消息类型
@@ -49,12 +56,6 @@ public @interface ProtocolFrame {
      */
     boolean strictMode() default true;
 
-    /**
-     * 默认字节序（可被字段级别的设置覆盖）
-     *
-     * @return true表示小端，false表示大端
-     */
-    boolean defaultLittleEndian() default false;
 
     /**
      * 默认字符编码（可被字段级别的设置覆盖）

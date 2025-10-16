@@ -123,15 +123,6 @@ public record ProtocolFrameMetadata(
     }
 
     /**
-     * 获取默认字节序
-     *
-     * @return true表示小端，false表示大端
-     */
-    public boolean getDefaultLittleEndian() {
-        return protocolMessage.defaultLittleEndian();
-    }
-
-    /**
      * 获取默认字符编码
      *
      * @return 默认字符编码

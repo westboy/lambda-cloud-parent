@@ -24,7 +24,7 @@ public class FieldProcessor {
      * @param byteBuf       字节缓冲区
      * @param instance      目标实例
      * @param fieldMetadata 字段元数据
-     * @param msgMetadata   消息元数据
+     * @param frameMetadata   消息元数据
      * @param converter     数据类型转换器
      * @throws ProtocolException 解析异常
      */
@@ -32,9 +32,10 @@ public class FieldProcessor {
             ByteBuf byteBuf,
             Object instance,
             ProtocolFieldMetadata fieldMetadata,
-            ProtocolFrameMetadata msgMetadata,
+            ProtocolFrameMetadata frameMetadata,
             DataTypeConverter converter)
             throws ProtocolException {
+        printLog("帧解析", frameMetadata);
 
         // 验证缓冲区数据
         if (!validateBufferData(byteBuf, fieldMetadata)) {
@@ -56,7 +57,7 @@ public class FieldProcessor {
      * @param instance      源实例
      * @param byteBuf       字节缓冲区
      * @param fieldMetadata 字段元数据
-     * @param msgMetadata   消息元数据
+     * @param frameMetadata   消息元数据
      * @param converter     数据类型转换器
      * @throws ProtocolException 序列化异常
      */
@@ -64,9 +65,11 @@ public class FieldProcessor {
             Object instance,
             ByteBuf byteBuf,
             ProtocolFieldMetadata fieldMetadata,
-            ProtocolFrameMetadata msgMetadata,
+            ProtocolFrameMetadata frameMetadata,
             DataTypeConverter converter)
             throws ProtocolException {
+
+        printLog("序列化",frameMetadata);
 
         // 获取字段值
         Object value = getFieldValue(instance, fieldMetadata);
@@ -248,6 +251,39 @@ public class FieldProcessor {
                 throw new ProtocolException(
                         ProtocolException.ErrorCode.PARSE_ERROR, "设置默认值失败: " + fieldMetadata.getFieldName(), e);
             }
+        }
+    }
+
+    /**
+     *  打印日志
+     * @param title 标题
+     * @param frameMetadata 元数据
+     */
+    private void printLog(String title, ProtocolFrameMetadata frameMetadata) {
+        if(log.isDebugEnabled()) {
+            log.info("""
+                            ┏━━━━━━━━━━━━━━━━━━━━━ {} ━━━━━━━━━━━━━━━━━━━━━┓
+                            ┃ 消息类型: {}
+                            ┃ 消息名称: {}
+                            ┃ 消息描述: {}
+                            ┃ 消息总长度: {} 字节
+                            ┃ 字段数量: {}
+                            ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                            """,
+                    title,
+                    frameMetadata.getFrameType(),
+                    frameMetadata.getMessageName(),
+                    frameMetadata.getDescription(),
+                    frameMetadata.totalLength(),
+                    frameMetadata.fields().size());
+        }else {
+            log.info("{} => 类型: {} | 名称: {} | 描述: {} | 长度: {}B | 字段数: {}",
+                    title,
+                    frameMetadata.getFrameType(),
+                    frameMetadata.getMessageName(),
+                    frameMetadata.getDescription(),
+                    frameMetadata.totalLength(),
+                    frameMetadata.fields().size());
         }
     }
 }
