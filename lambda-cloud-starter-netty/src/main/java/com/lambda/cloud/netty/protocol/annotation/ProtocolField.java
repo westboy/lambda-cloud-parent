@@ -22,6 +22,22 @@ public @interface ProtocolField {
     int order();
 
     /**
+     * 是否符合字段
+     * <p/>
+     * 则表示该字段为一个类， 需要收集该类字段并从中取 @ProtocolField 注解 ，还有种情况就是 该字段的为加密字段 需要解密后才能解析
+     *
+     * @return 是否符合
+     */
+    boolean composite() default false;
+
+    /**
+     * 是否加密字段
+     *
+     * @return 是否加密
+     */
+    boolean encrypted() default false;
+
+    /**
      * 字段长度（字节数）
      *
      * @return 字段长度

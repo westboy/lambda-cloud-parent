@@ -11,7 +11,7 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
-import com.lambda.cloud.netty.protocol.processor.FieldProcessor;
+import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
@@ -59,7 +59,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * 字段处理器
      */
-    private final FieldProcessor fieldProcessor = new FieldProcessor();
+    private final ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor();
 
     @Override
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
@@ -130,7 +130,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
         // 使用字段处理器处理解析逻辑
         DataTypeConverter converter = getConverterFromCache(fieldMetadata.getDataType());
-        fieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter);
+        protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter);
     }
 
     /**
@@ -148,7 +148,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
         // 使用字段处理器处理序列化逻辑
         DataTypeConverter converter = getConverterFromCache(fieldMetadata.getDataType());
-        fieldProcessor.serializeField(instance, byteBuf, fieldMetadata, msgMetadata, converter);
+        protocolFieldProcessor.serializeField(instance, byteBuf, fieldMetadata, msgMetadata, converter);
     }
 
     /**

@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
-public class FieldProcessor {
+public class ProtocolFieldProcessor {
 
     /**
      * 解析字段
