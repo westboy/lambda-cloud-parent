@@ -78,6 +78,15 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
     }
 
     /**
+     * 是否为复合字段
+     *
+     * @return true 表示复合字段
+     */
+    public boolean isComposite() {
+        return protocolField.composite();
+    }
+
+    /**
      * 获取数据类型
      *
      * @return 数据类型

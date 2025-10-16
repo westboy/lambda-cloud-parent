@@ -7,6 +7,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.cache.CacheManager;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
+import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
@@ -54,7 +55,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * 转换器缓存管理器
      */
-    private final CacheManager<ProtocolDataType, DataTypeConverter> converterCache = new CacheManager<>(100);
+    private final CacheManager<String, DataTypeConverter> converterCache = new CacheManager<>(100);
 
     /**
      * 字段处理器
@@ -128,8 +129,9 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
             throws ProtocolException {
 
-        // 使用字段处理器处理解析逻辑
-        DataTypeConverter converter = getConverterFromCache(fieldMetadata.getDataType());
+        // 获取合适的转换器（支持复合字段）
+        DataTypeConverter converter = getConverter(fieldMetadata);
+        //此处设置复合转换器解析
         protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter);
     }
 
@@ -146,8 +148,9 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             Object instance, ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
             throws ProtocolException {
 
-        // 使用字段处理器处理序列化逻辑
-        DataTypeConverter converter = getConverterFromCache(fieldMetadata.getDataType());
+        // 获取合适的转换器（支持复合字段）
+        DataTypeConverter converter = getConverter(fieldMetadata);
+        //此处设置复合转换器序列化
         protocolFieldProcessor.serializeField(instance, byteBuf, fieldMetadata, msgMetadata, converter);
     }
 
@@ -211,16 +214,46 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     }
 
     /**
+     * 获取转换器（支持复合字段）
+     *
+     * @param fieldMetadata 字段元数据
+     * @return 转换器
+     */
+    private DataTypeConverter getConverter(ProtocolFieldMetadata fieldMetadata) {
+        // 检查是否为复合字段
+        if (fieldMetadata.isComposite()) {
+            return getCompositeConverter();
+        }
+
+        // 普通字段使用数据类型转换器
+        return getConverterFromCache(fieldMetadata.getDataType());
+    }
+
+    /**
      * 从缓存获取转换器
      *
      * @param dataType 数据类型
      * @return 转换器
      */
     private DataTypeConverter getConverterFromCache(ProtocolDataType dataType) {
-        DataTypeConverter converter = converterCache.get(dataType);
+        DataTypeConverter converter = converterCache.get(dataType.name());
         if (converter == null) {
             converter = converterFactory.getConverter(dataType);
-            converterCache.put(dataType, converter);
+            converterCache.put(dataType.name(), converter);
+        }
+        return converter;
+    }
+
+    /**
+     * 获取复合字段转换器
+     *
+     * @return 复合字段转换器
+     */
+    private DataTypeConverter getCompositeConverter() {
+        DataTypeConverter converter = converterCache.get("COMPOSITE_KEY");
+        if (converter == null) {
+            converter = new CompositeConverter(this);
+            converterCache.put("COMPOSITE_KEY", converter);
         }
         return converter;
     }
@@ -233,7 +266,6 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         converterCache.clear();
     }
 
-
     /**
      *  打印日志
      * @param title 标题
@@ -243,7 +275,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         if (!log.isDebugEnabled()) {
             log.info(
                     """
-                            
+
                             ┏━━━━━━━━━━━━━━━━━━━━━ {} ━━━━━━━━━━━━━━━━━━━━━┓
                             ┃ 消息类型: {}
                             ┃ 消息名称: {}

@@ -86,40 +86,40 @@ public class TransactionRecordProtocolTest {
     private void logKeyFields(TransactionRecord record) {
         log.info("=== 关键字段信息 ===");
         log.info("帧类型: {}", record.getFrameType());
-        log.info("订单编号: {}", record.getOrderNumber());
-        log.info("桩编号: {}", record.getStationNumber());
-        log.info("枪号: {}", record.getGunNumber());
-        log.info("开始时间: {}", record.getStartTime());
-        log.info("结束时间: {}", record.getEndTime());
+        log.info("订单编号: {}", record.getInnerRecord().getOrderNumber());
+        log.info("桩编号: {}", record.getInnerRecord().getStationNumber());
+        log.info("枪号: {}", record.getInnerRecord().getGunNumber());
+        log.info("开始时间: {}", record.getInnerRecord().getStartTime());
+        log.info("结束时间: {}", record.getInnerRecord().getEndTime());
 
         log.info("=== 尖时段数据 ===");
-        log.info("尖单价: {}", record.getPeakPrice());
-        log.info("尖电量: {}", record.getPeakElectricity());
-        log.info("尖金额: {}", record.getPeakAmount());
+        log.info("尖单价: {}", record.getInnerRecord().getPeakPrice());
+        log.info("尖电量: {}", record.getInnerRecord().getPeakElectricity());
+        log.info("尖金额: {}", record.getInnerRecord().getPeakAmount());
 
         log.info("=== 峰时段数据 ===");
-        log.info("峰单价: {}", record.getHighPrice());
-        log.info("峰电量: {}", record.getHighElectricity());
-        log.info("峰金额: {}", record.getHighAmount());
+        log.info("峰单价: {}", record.getInnerRecord().getHighPrice());
+        log.info("峰电量: {}", record.getInnerRecord().getHighElectricity());
+        log.info("峰金额: {}", record.getInnerRecord().getHighAmount());
 
         log.info("=== 平时段数据 ===");
-        log.info("平单价: {}", record.getNormalPrice());
-        log.info("平电量: {}", record.getNormalElectricity());
-        log.info("平金额: {}", record.getNormalAmount());
+        log.info("平单价: {}", record.getInnerRecord().getNormalPrice());
+        log.info("平电量: {}", record.getInnerRecord().getNormalElectricity());
+        log.info("平金额: {}", record.getInnerRecord().getNormalAmount());
 
         log.info("=== 谷时段数据 ===");
-        log.info("谷单价: {}", record.getValleyPrice());
-        log.info("谷电量: {}", record.getValleyElectricity());
-        log.info("谷金额: {}", record.getValleyAmount());
+        log.info("谷单价: {}", record.getInnerRecord().getValleyPrice());
+        log.info("谷电量: {}", record.getInnerRecord().getValleyElectricity());
+        log.info("谷金额: {}", record.getInnerRecord().getValleyAmount());
 
         log.info("=== 深谷时段数据 ===");
-        log.info("深谷单价: {}", record.getDeepValleyPrice());
-        log.info("深谷电量: {}", record.getDeepValleyElectricity());
-        log.info("深谷金额: {}", record.getDeepValleyAmount());
+        log.info("深谷单价: {}", record.getInnerRecord().getDeepValleyPrice());
+        log.info("深谷电量: {}", record.getInnerRecord().getDeepValleyElectricity());
+        log.info("深谷金额: {}", record.getInnerRecord().getDeepValleyAmount());
 
         log.info("=== 总计信息 ===");
-        log.info("消费金额: {}", record.getTotalAmount());
-        log.info("VIN: {}", record.getVIN());
+        log.info("消费金额: {}", record.getInnerRecord().getTotalAmount());
+        log.info("VIN: {}", record.getInnerRecord().getVIN());
         log.info("交易标识: {}", record.getChecksum());
     }
 

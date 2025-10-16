@@ -15,13 +15,6 @@ import java.lang.annotation.*;
 public @interface ProtocolFrame {
 
     /**
-     * 消息头对象
-     *
-     * @return 消息头
-     */
-    Class<?> header() default void.class;
-
-    /**
      * 消息类型标识
      *
      * @return 消息类型
