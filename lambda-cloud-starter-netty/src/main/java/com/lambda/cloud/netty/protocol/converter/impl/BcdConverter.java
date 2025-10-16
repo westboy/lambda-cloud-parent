@@ -3,7 +3,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.utils.ConverterValidationUtils;
+import com.lambda.cloud.netty.utils.ConverterUtils;
 
 /**
  * BCD数据转换器
@@ -13,7 +13,7 @@ public class BcdConverter implements DataTypeConverter {
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         // 验证输入参数
-        ConverterValidationUtils.validateBasicInputs(data, fieldMetadata, "BCD");
+        ConverterUtils.validateBasicInputs(data, fieldMetadata, "BCD");
 
         if (data.length == 0) {
             return "";
@@ -26,7 +26,7 @@ public class BcdConverter implements DataTypeConverter {
 
             // 验证BCD数字有效性
             if (high > 9 || low > 9) {
-                throw ConverterValidationUtils.createParseException(
+                throw ConverterUtils.createParseException(
                         "无效的BCD数字: " + String.format("0x%02X", b), fieldMetadata);
             }
 
@@ -40,19 +40,19 @@ public class BcdConverter implements DataTypeConverter {
 
         Class<?> fieldType = fieldMetadata.getFieldType();
         try {
-            if (ConverterValidationUtils.isLongType(fieldType)) {
+            if (ConverterUtils.isLongType(fieldType)) {
                 long value = Long.parseLong(result);
                 // 验证长整型范围
-                ConverterValidationUtils.validateNumberRange(value, 0, Long.MAX_VALUE, fieldMetadata, "BCD长整型");
+                ConverterUtils.validateNumberRange(value, 0, Long.MAX_VALUE, fieldMetadata, "BCD长整型");
                 return value;
-            } else if (ConverterValidationUtils.isIntegerType(fieldType)) {
+            } else if (ConverterUtils.isIntegerType(fieldType)) {
                 int value = Integer.parseInt(result);
                 // 验证整型范围
-                ConverterValidationUtils.validateNumberRange(value, 0, Integer.MAX_VALUE, fieldMetadata, "BCD整型");
+                ConverterUtils.validateNumberRange(value, 0, Integer.MAX_VALUE, fieldMetadata, "BCD整型");
                 return value;
             }
         } catch (NumberFormatException e) {
-            throw ConverterValidationUtils.createParseException("BCD字符串转换为数字失败: " + result, fieldMetadata, e);
+            throw ConverterUtils.createParseException("BCD字符串转换为数字失败: " + result, fieldMetadata, e);
         }
         return result;
     }

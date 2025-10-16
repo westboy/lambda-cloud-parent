@@ -168,7 +168,6 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
         List<ProtocolFieldMetadata> fields = new ArrayList<>();
 
-        // 收集所有标注了 @ProtocolField 的字段
         for (Field field : getAllFields(messageClass)) {
             ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
             if (protocolField != null) {

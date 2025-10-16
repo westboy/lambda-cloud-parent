@@ -3,7 +3,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.utils.ConverterValidationUtils;
+import com.lambda.cloud.netty.utils.ConverterUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -36,9 +36,9 @@ public class UInt32Converter implements DataTypeConverter {
             // 根据字段类型返回不同的对象
             Class<?> fieldType = fieldMetadata.getFieldType();
 
-            if (ConverterValidationUtils.isLongType(fieldType)) {
+            if (ConverterUtils.isLongType(fieldType)) {
                 return unsignedValue;
-            } else if (ConverterValidationUtils.isIntegerType(fieldType)) {
+            } else if (ConverterUtils.isIntegerType(fieldType)) {
                 return value;
             } else if (fieldType == String.class) {
                 return String.valueOf(unsignedValue);
@@ -56,7 +56,7 @@ public class UInt32Converter implements DataTypeConverter {
 
     @Override
     public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        ConverterValidationUtils.validateSerializeValue(value, fieldMetadata, "UINT32");
+        ConverterUtils.validateSerializeValue(value, fieldMetadata, "UINT32");
 
         try {
             long longValue;
@@ -66,14 +66,14 @@ public class UInt32Converter implements DataTypeConverter {
             } else if (value instanceof String) {
                 longValue = Long.parseUnsignedLong((String) value);
             } else {
-                throw ConverterValidationUtils.createSerializeException(
+                throw ConverterUtils.createSerializeException(
                         "不支持的UINT32数据类型: " + value.getClass().getName(), fieldMetadata);
             }
 
             // 检查范围
-            ConverterValidationUtils.validateNumberRange(longValue, 0L, 0xFFFFFFFFL, fieldMetadata, "UINT32");
+            ConverterUtils.validateNumberRange(longValue, 0L, 0xFFFFFFFFL, fieldMetadata, "UINT32");
 
-            ByteBuffer buffer = ConverterValidationUtils.createByteBuffer(4, fieldMetadata);
+            ByteBuffer buffer = ConverterUtils.createByteBuffer(4, fieldMetadata);
             buffer.putInt((int) longValue);
 
             return buffer.array();
@@ -81,7 +81,7 @@ public class UInt32Converter implements DataTypeConverter {
         } catch (ProtocolException e) {
             throw e;
         } catch (Exception e) {
-            throw ConverterValidationUtils.createSerializeException(
+            throw ConverterUtils.createSerializeException(
                     "序列化UINT32数据失败: " + e.getMessage(), fieldMetadata, e);
         }
     }
@@ -96,11 +96,11 @@ public class UInt32Converter implements DataTypeConverter {
             long longValue = Long.parseUnsignedLong(value.trim());
 
             // 检查范围
-            ConverterValidationUtils.validateNumberRange(longValue, 0L, 0xFFFFFFFFL, fieldMetadata, "UINT32");
+            ConverterUtils.validateNumberRange(longValue, 0L, 0xFFFFFFFFL, fieldMetadata, "UINT32");
 
             // 根据字段类型返回
             Class<?> fieldType = fieldMetadata.getFieldType();
-            if (ConverterValidationUtils.isIntegerType(fieldType)) {
+            if (ConverterUtils.isIntegerType(fieldType)) {
                 return (int) longValue;
             } else {
                 return longValue;
@@ -108,7 +108,7 @@ public class UInt32Converter implements DataTypeConverter {
         } catch (ProtocolException e) {
             throw e;
         } catch (Exception e) {
-            throw ConverterValidationUtils.createParseException(
+            throw ConverterUtils.createParseException(
                     "从字符串解析UINT32数据失败: " + e.getMessage(), fieldMetadata, e);
         }
     }

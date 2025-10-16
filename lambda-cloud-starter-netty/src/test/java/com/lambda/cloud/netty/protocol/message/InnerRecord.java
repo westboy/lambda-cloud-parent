@@ -8,7 +8,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import lombok.Data;
 
 @Data
-@ProtocolFrame
+@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "消息体", version = "1.0")
 public class InnerRecord {
 
     /**

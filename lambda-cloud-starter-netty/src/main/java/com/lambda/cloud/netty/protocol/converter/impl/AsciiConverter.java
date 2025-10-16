@@ -4,7 +4,7 @@ import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.utils.ConverterValidationUtils;
+import com.lambda.cloud.netty.utils.ConverterUtils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -17,7 +17,7 @@ public class AsciiConverter implements DataTypeConverter {
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         // 验证输入参数
-        ConverterValidationUtils.validateBasicInputs(data, fieldMetadata, "ASCII");
+        ConverterUtils.validateBasicInputs(data, fieldMetadata, "ASCII");
 
         // 验证数据长度
         validateLength(data, fieldMetadata);
@@ -84,7 +84,7 @@ public class AsciiConverter implements DataTypeConverter {
     public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         int expectedLength = fieldMetadata.getLength();
         if (expectedLength != -1 && data.length != expectedLength) {
-            throw ConverterValidationUtils.createParseException(
+            throw ConverterUtils.createParseException(
                     "ASCII数据长度不匹配，期望: " + expectedLength + ", 实际: " + data.length, fieldMetadata);
         }
     }
@@ -173,9 +173,8 @@ public class AsciiConverter implements DataTypeConverter {
             char paddingChar = getPaddingChar(fieldMetadata);
             byte paddingByte = paddingChar == '\0' ? 0 : (byte) paddingChar;
 
-            com.lambda.cloud.netty.protocol.annotation.PaddingDirection paddingDirection =
-                    fieldMetadata.getPaddingDirection();
-            if (paddingDirection == com.lambda.cloud.netty.protocol.annotation.PaddingDirection.LEFT) {
+            PaddingDirection paddingDirection = fieldMetadata.getPaddingDirection();
+            if (paddingDirection == PaddingDirection.LEFT) {
                 // 左填充
                 Arrays.fill(result, 0, targetLength - data.length, paddingByte);
                 System.arraycopy(data, 0, result, targetLength - data.length, data.length);

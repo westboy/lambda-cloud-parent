@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.meta;
 
+import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
@@ -136,7 +137,7 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      *
      * @return 填充方向
      */
-    public com.lambda.cloud.netty.protocol.annotation.PaddingDirection getPaddingDirection() {
+    public PaddingDirection getPaddingDirection() {
         return protocolField.padding();
     }
 

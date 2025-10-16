@@ -36,6 +36,13 @@ public @interface ProtocolFrame {
     String description() default "";
 
     /**
+     * 是否加密字段
+     *
+     * @return 是否加密
+     */
+    boolean encrypted() default false;
+
+    /**
      * 消息版本
      *
      * @return 消息版本

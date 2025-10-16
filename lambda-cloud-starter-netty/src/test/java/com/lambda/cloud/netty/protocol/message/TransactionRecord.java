@@ -16,7 +16,7 @@ import lombok.ToString;
  */
 @Data
 @ToString
-@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "充电交易记录信息", version = "1.0")
+@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "充电交易记录信息")
 public class TransactionRecord {
 
     /**
@@ -49,7 +49,7 @@ public class TransactionRecord {
     @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.HEX, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, length = 157)
+    @ProtocolField(order = 5, composite = true)
     private InnerRecord innerRecord;
     /**
      * 校验码 (2字节)

@@ -42,7 +42,7 @@ public @interface ProtocolField {
      *
      * @return 字段长度
      */
-    int length();
+    int length() default 0;
 
     /**
      * 数据类型

@@ -57,7 +57,6 @@ public class TransactionRecordProtocolTest {
             // 使用协议引擎解析消息
             TransactionRecord record = engine.parse(byteBuf, TransactionRecord.class);
 
-            log.info("解析成功！");
             log.info("解析结果: {}", record);
 
             // 验证解析结果
@@ -70,6 +69,10 @@ public class TransactionRecordProtocolTest {
 
             // 输出关键字段
             logKeyFields(record);
+
+            ByteBuf buffer = Unpooled.buffer();
+            engine.serialize(record,buffer);
+
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);
