@@ -65,6 +65,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
         ProtocolFrameMetadata metadata = getMetadata(messageClass);
         try {
+            printLog("帧解析", metadata);
             Object instance = messageClass.getDeclaredConstructor().newInstance();
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 parseField(byteBuf, instance, fieldMetadata, metadata);
@@ -79,8 +80,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     @Override
     public void serialize(Object message, ByteBuf byteBuf) throws ProtocolException {
         ProtocolFrameMetadata metadata = getMetadata(message.getClass());
-
         try {
+            printLog("序列化", metadata);
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 serializeField(message, byteBuf, fieldMetadata, metadata);
             }
@@ -230,5 +231,42 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     public void clearCache() {
         fieldCache.clear();
         converterCache.clear();
+    }
+
+
+    /**
+     *  打印日志
+     * @param title 标题
+     * @param frameMetadata 元数据
+     */
+    private void printLog(String title, ProtocolFrameMetadata frameMetadata) {
+        if (!log.isDebugEnabled()) {
+            log.info(
+                    """
+                            
+                            ┏━━━━━━━━━━━━━━━━━━━━━ {} ━━━━━━━━━━━━━━━━━━━━━┓
+                            ┃ 消息类型: {}
+                            ┃ 消息名称: {}
+                            ┃ 消息描述: {}
+                            ┃ 消息总长度: {} 字节
+                            ┃ 字段数量: {}
+                            ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                            """,
+                    title,
+                    frameMetadata.getFrameType(),
+                    frameMetadata.getMessageName(),
+                    frameMetadata.getDescription(),
+                    frameMetadata.totalLength(),
+                    frameMetadata.fields().size());
+        } else {
+            log.info(
+                    "{} => 类型: {} | 名称: {} | 描述: {} | 长度: {}B | 字段数: {}",
+                    title,
+                    frameMetadata.getFrameType(),
+                    frameMetadata.getMessageName(),
+                    frameMetadata.getDescription(),
+                    frameMetadata.totalLength(),
+                    frameMetadata.fields().size());
+        }
     }
 }
