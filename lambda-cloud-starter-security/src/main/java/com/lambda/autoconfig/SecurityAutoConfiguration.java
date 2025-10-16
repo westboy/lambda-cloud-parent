@@ -58,9 +58,6 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +75,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Lambda Cloud 安全模块自动配置类
@@ -128,9 +129,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * }</pre>
  *
  * @author jpjoo
- * @since 1.0.0
  * @see SecurityProperties
  * @see cn.dev33.satoken.SaManager
+ * @since 1.0.0
  */
 @Slf4j
 @AutoConfiguration(after = WebMvcAutoConfiguration.class)
@@ -305,10 +306,8 @@ public class SecurityAutoConfiguration {
                     .setAuth(e -> {
                         HttpServletRequest currentRequest = WebHttpUtils.getCurrentRequest();
                         boolean hmacRequest = WebHttpUtils.isHmacRequest(currentRequest);
-                        if (!hmacRequest) {
-                            if(securityProperties.getSaToken().getCheckSameToken()) {
-                                SaSameUtil.checkCurrentRequestToken();
-                            }
+                        if (!hmacRequest && securityProperties.getSaToken().getCheckSameToken()) {
+                            SaSameUtil.checkCurrentRequestToken();
                         }
                     })
                     .setError(exception -> {
@@ -400,7 +399,7 @@ public class SecurityAutoConfiguration {
          * 验证码内容会存储到Redis中，用于后续验证。
          * </p>
          *
-         * @param objectMapper JSON序列化工具
+         * @param objectMapper      JSON序列化工具
          * @param redisCaptchaStore 验证码存储器
          * @return 验证码生成服务
          */
@@ -440,7 +439,7 @@ public class SecurityAutoConfiguration {
          * </ul>
          *
          * @param verifyCodeServices 验证码服务列表
-         * @param objectMapper JSON序列化工具
+         * @param objectMapper       JSON序列化工具
          * @return 过滤器注册Bean
          */
         @Bean
@@ -508,7 +507,7 @@ public class SecurityAutoConfiguration {
          *   <li>执行登录成功或失败处理</li>
          * </ol>
          *
-         * @param objectMapper JSON序列化工具
+         * @param objectMapper      JSON序列化工具
          * @param userDetailService 用户详情服务
          * @return 短信认证过滤器注册Bean
          */
@@ -560,11 +559,11 @@ public class SecurityAutoConfiguration {
          *   <li>发送频率控制</li>
          * </ul>
          *
-         * @param objectMapper JSON序列化工具
+         * @param objectMapper       JSON序列化工具
          * @param smsVerifyCodeStore 短信验证码存储器
-         * @param smsMessageSender 短信发送服务
-         * @param redisCaptchaStore 图形验证码存储器
-         * @param userDetailService 用户详情服务
+         * @param smsMessageSender   短信发送服务
+         * @param redisCaptchaStore  图形验证码存储器
+         * @param userDetailService  用户详情服务
          * @return 短信验证码生成服务
          */
         @Bean
@@ -684,7 +683,7 @@ public class SecurityAutoConfiguration {
          *   <li>验证时间戳防止重放攻击</li>
          * </ol>
          *
-         * @param objectMapper JSON序列化工具
+         * @param objectMapper      JSON序列化工具
          * @param hmacClientService HMAC客户端服务
          * @return HMAC认证过滤器注册Bean
          */
@@ -812,9 +811,9 @@ public class SecurityAutoConfiguration {
          * </ol>
          *
          * @param formLockingStrategy 表单锁定策略
-         * @param objectMapper JSON序列化工具
-         * @param passwordEncoder 密码编码器
-         * @param userDetailService 用户详情服务
+         * @param objectMapper        JSON序列化工具
+         * @param passwordEncoder     密码编码器
+         * @param userDetailService   用户详情服务
          * @return 表单认证过滤器注册Bean
          */
         @Bean
@@ -882,7 +881,7 @@ public class SecurityAutoConfiguration {
          *   <li>调用登出成功处理器</li>
          * </ol>
          *
-         * @param formLogoutHandler 登出处理器
+         * @param formLogoutHandler        登出处理器
          * @param formLogoutSuccessHandler 登出成功处理器
          * @return 表单登出过滤器注册Bean
          */
@@ -1014,8 +1013,8 @@ public class SecurityAutoConfiguration {
              * </ol>
              *
              * @param thirdPartyLoginService 第三方登录服务
-             * @param wxMaService 微信小程序服务
-             * @param wxMaLoginHandler 微信小程序登录处理器
+             * @param wxMaService            微信小程序服务
+             * @param wxMaLoginHandler       微信小程序登录处理器
              * @return 微信小程序登录提供者
              */
             @Bean
@@ -1047,7 +1046,8 @@ public class SecurityAutoConfiguration {
             @Bean
             @ConditionalOnMissingBean
             public WxMaLoginHandler wxMaLoginHandler() {
-                return new WxMaLoginHandler() {};
+                return new WxMaLoginHandler() {
+                };
             }
         }
 
@@ -1067,7 +1067,7 @@ public class SecurityAutoConfiguration {
          * </ul>
          *
          * @param thirdPartLoginProviders 第三方登录提供者列表
-         * @param objectMapper JSON序列化工具
+         * @param objectMapper            JSON序列化工具
          * @return 第三方认证过滤器注册Bean
          * @throws IllegalStateException 当没有配置任何第三方登录提供者时
          */
@@ -1096,7 +1096,7 @@ public class SecurityAutoConfiguration {
          * </p>
          *
          * @param thirdPartLoginProviders 第三方登录提供者列表
-         * @param objectMapper JSON序列化工具
+         * @param objectMapper            JSON序列化工具
          * @return 配置完成的第三方认证处理过滤器
          */
         private ThirdPartAuthenticationProcessingFilter getThirdPartAuthenticationProcessingFilter(
