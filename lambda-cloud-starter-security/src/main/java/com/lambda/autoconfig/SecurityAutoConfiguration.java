@@ -58,6 +58,9 @@ import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import com.lambda.security.web.xss.XSSDefendFilter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,10 +78,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Lambda Cloud 安全模块自动配置类
@@ -1049,8 +1048,7 @@ public class SecurityAutoConfiguration {
             @Bean
             @ConditionalOnMissingBean
             public WxMaLoginHandler wxMaLoginHandler() {
-                return new WxMaLoginHandler() {
-                };
+                return new WxMaLoginHandler() {};
             }
         }
 
