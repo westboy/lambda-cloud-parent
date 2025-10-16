@@ -16,6 +16,4 @@ public interface ProtocolValidator {
      * @return 验证结果
      */
     ValidationResult validate(Object value);
-
-
 }

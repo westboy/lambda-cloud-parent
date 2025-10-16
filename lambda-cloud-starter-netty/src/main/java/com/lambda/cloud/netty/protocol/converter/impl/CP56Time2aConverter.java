@@ -54,7 +54,8 @@ public class CP56Time2aConverter implements DataTypeConverter {
         }
     }
 
-    private @NonNull LocalDateTime getLocalDateTime(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    private @NonNull LocalDateTime getLocalDateTime(byte[] data, ProtocolFieldMetadata fieldMetadata)
+            throws ProtocolException {
         int milliseconds = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
         if (milliseconds >= 60000) {
             throw new ProtocolException(

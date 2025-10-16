@@ -69,7 +69,7 @@ public class FieldProcessor {
             DataTypeConverter converter)
             throws ProtocolException {
 
-        printLog("序列化",frameMetadata);
+        printLog("序列化", frameMetadata);
 
         // 获取字段值
         Object value = getFieldValue(instance, fieldMetadata);
@@ -154,7 +154,8 @@ public class FieldProcessor {
      * @param value         字段值
      * @throws ProtocolException 设置异常
      */
-    private void setFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata, Object value) throws ProtocolException {
+    private void setFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata, Object value)
+            throws ProtocolException {
         try {
             fieldMetadata.setValue(instance, value);
         } catch (Exception e) {
@@ -260,8 +261,9 @@ public class FieldProcessor {
      * @param frameMetadata 元数据
      */
     private void printLog(String title, ProtocolFrameMetadata frameMetadata) {
-        if(log.isDebugEnabled()) {
-            log.info("""
+        if (log.isDebugEnabled()) {
+            log.info(
+                    """
                             ┏━━━━━━━━━━━━━━━━━━━━━ {} ━━━━━━━━━━━━━━━━━━━━━┓
                             ┃ 消息类型: {}
                             ┃ 消息名称: {}
@@ -276,8 +278,9 @@ public class FieldProcessor {
                     frameMetadata.getDescription(),
                     frameMetadata.totalLength(),
                     frameMetadata.fields().size());
-        }else {
-            log.info("{} => 类型: {} | 名称: {} | 描述: {} | 长度: {}B | 字段数: {}",
+        } else {
+            log.info(
+                    "{} => 类型: {} | 名称: {} | 描述: {} | 长度: {}B | 字段数: {}",
                     title,
                     frameMetadata.getFrameType(),
                     frameMetadata.getMessageName(),

@@ -56,7 +56,6 @@ public @interface ProtocolFrame {
      */
     boolean strictMode() default true;
 
-
     /**
      * 默认字符编码（可被字段级别的设置覆盖）
      *

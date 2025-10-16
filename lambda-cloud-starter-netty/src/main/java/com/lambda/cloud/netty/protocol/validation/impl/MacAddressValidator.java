@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.protocol.validation.impl;
 
 import com.lambda.cloud.netty.protocol.validation.ProtocolValidator;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
-import com.lambda.cloud.netty.utils.ValidationUtils;;
+import com.lambda.cloud.netty.utils.ValidationUtils;
 
 /**
  * MAC地址验证器

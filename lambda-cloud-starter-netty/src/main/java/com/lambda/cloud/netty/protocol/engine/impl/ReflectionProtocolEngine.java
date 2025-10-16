@@ -1,18 +1,18 @@
 package com.lambda.cloud.netty.protocol.engine.impl;
 
-import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
-import com.lambda.cloud.netty.protocol.cache.CacheManager;
-import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
+import com.lambda.cloud.netty.protocol.cache.CacheManager;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.processor.FieldProcessor;
+import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 import java.lang.reflect.Field;
@@ -123,7 +123,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @param msgMetadata   消息元数据
      * @throws ProtocolException 解析异常
      */
-    private void parseField(ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
+    private void parseField(
+            ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
             throws ProtocolException {
 
         // 使用字段处理器处理解析逻辑

@@ -1,14 +1,12 @@
 package com.lambda.cloud.netty.protocol.validation;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**

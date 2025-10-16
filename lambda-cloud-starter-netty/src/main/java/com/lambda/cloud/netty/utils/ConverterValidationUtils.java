@@ -68,9 +68,7 @@ public class ConverterValidationUtils {
     public static void validateNumberRange(
             long value, long minValue, long maxValue, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
             throws ProtocolException {
-        if (value < minValue || value > maxValue) {
-
-        }
+        if (value < minValue || value > maxValue) {}
     }
 
     /**
@@ -81,7 +79,8 @@ public class ConverterValidationUtils {
      * @param cause         原因异常
      * @return ProtocolException实例
      */
-    public static ProtocolException createParseException(String message, ProtocolFieldMetadata fieldMetadata, Throwable cause) {
+    public static ProtocolException createParseException(
+            String message, ProtocolFieldMetadata fieldMetadata, Throwable cause) {
         return new ProtocolException(
                 ProtocolException.ErrorCode.PARSE_ERROR,
                 message,

@@ -3,7 +3,6 @@ package com.lambda.cloud.netty.protocol.cache;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import lombok.Getter;
 
 /**
  * 高性能缓存管理器
@@ -190,5 +189,4 @@ public class CacheManager<K, V> {
             cache.remove(lruKey);
         }
     }
-
 }
