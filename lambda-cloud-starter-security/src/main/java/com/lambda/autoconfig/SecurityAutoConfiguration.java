@@ -336,6 +336,9 @@ public class SecurityAutoConfiguration {
                     ErrorModel errorModel = new ErrorModel();
                     errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
                     errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    if (e instanceof SaTokenException saTokenException) {
+                        errorModel.setError(String.valueOf(saTokenException.getCode()));
+                    }
                     errorModel.setTimestamp(System.currentTimeMillis());
                     errorModel.setMessage(e.getMessage());
                     return errorModel.toJsonString();

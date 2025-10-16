@@ -6,6 +6,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
+import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpLogic;
@@ -141,6 +142,9 @@ public class GatewayAutoConfiguration {
                     ErrorModel errorModel = new ErrorModel();
                     errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
                     errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    if (e instanceof SaTokenException saTokenException) {
+                        errorModel.setError(String.valueOf(saTokenException.getCode()));
+                    }
                     errorModel.setTimestamp(System.currentTimeMillis());
                     errorModel.setMessage(e.getMessage());
                     return errorModel.toJsonString();
