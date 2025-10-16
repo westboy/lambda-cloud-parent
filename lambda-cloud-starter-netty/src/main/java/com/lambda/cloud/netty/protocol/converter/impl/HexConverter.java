@@ -117,6 +117,24 @@ public class HexConverter implements DataTypeConverter {
                     }
                     result = HexUtils.hexToBytes(hexString);
                 }
+                case BigDecimal b -> {
+                    // 根据精度将BigDecimal转换为整数值
+                    BigDecimal scaledValue = precision > 0 ? b.multiply(BigDecimal.TEN.pow(precision)) : b;
+                    
+                    // 转换为BigInteger（去除小数部分）
+                    BigInteger integerValue = scaledValue.toBigInteger();
+                    
+                    // 转换为十六进制字符串
+                    String hexString = integerValue.toString(16);
+                    
+                    // 确保十六进制字符串长度为偶数
+                    if (hexString.length() % 2 != 0) {
+                        hexString = "0" + hexString;
+                    }
+                    
+                    // 转换为字节数组（大端序格式）
+                    result = HexUtils.hexToBytes(hexString);
+                }
                 case Byte b -> {
                     int actualValue = precision > 0 ? (int) (b * Math.pow(10, precision)) : b.intValue();
                     String hexString = Integer.toHexString(actualValue & 0xFF);
@@ -132,12 +150,11 @@ public class HexConverter implements DataTypeConverter {
                             "不支持的十六进制数据类型: " + value.getClass().getName(),
                             fieldMetadata.getFieldName());
             }
-
-            // 调整长度
-            byte[] adjustedResult = adjustLength(result, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
-
             // 处理大小端字节序
-            return HexUtils.convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
+            var reversed = HexUtils.convertEndianness(result, fieldMetadata.isLittleEndian());
+
+            // 调整长度（此时已经是正确的字节序）
+            return adjustLength(reversed, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
 
         } catch (Exception e) {
             throw new ProtocolException(
