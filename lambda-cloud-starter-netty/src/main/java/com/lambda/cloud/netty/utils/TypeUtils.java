@@ -1,6 +1,6 @@
 package com.lambda.cloud.netty.utils;
 
-public class TypeUtils {
+public final class TypeUtils {
     /**
      * 检查字段类型是否为整型（包括包装类和基本类型）
      *

@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * </p>
  *
  */
-public class ValidationUtils {
+public final class ValidationUtils {
 
     // 常用正则表达式模式
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");

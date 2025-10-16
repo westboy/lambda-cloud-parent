@@ -3,7 +3,7 @@ package com.lambda.cloud.netty.utils;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 
-public class ExceptionUtils {
+public final class ExceptionUtils {
 
     /**
      * 创建解析错误异常
