@@ -48,6 +48,9 @@ public class HexConverter implements DataTypeConverter {
             } else if (fieldType == Long.class || fieldType == long.class) {
                 return decimalValue.longValue();
 
+            } else if (fieldType == Byte.class || fieldType == byte.class) {
+                return decimalValue.byteValue();
+
             } else if (fieldType == Double.class || fieldType == double.class) {
                 return decimalValue.doubleValue();
 
@@ -109,6 +112,14 @@ public class HexConverter implements DataTypeConverter {
                 case Float f -> {
                     float actualValue = precision > 0 ? (float) (f * Math.pow(10, precision)) : f.longValue();
                     String hexString = Float.toHexString(actualValue);
+                    if (hexString.length() % 2 != 0) {
+                        hexString = "0" + hexString;
+                    }
+                    result = HexUtils.hexToBytes(hexString);
+                }
+                case Byte b -> {
+                    int actualValue = precision > 0 ? (int) (b * Math.pow(10, precision)) : b.intValue();
+                    String hexString = Integer.toHexString(actualValue & 0xFF);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }

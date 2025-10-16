@@ -3,7 +3,6 @@ package com.lambda.cloud.netty.protocol.message;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
-import java.math.BigDecimal;
 import lombok.Data;
 import lombok.ToString;
 
@@ -50,7 +49,7 @@ public class TransactionRecord {
     @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.HEX, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, length = 0)
+    @ProtocolField(order = 5, composite = true, length = 157)
     private InnerRecord innerRecord;
     /**
      * 校验码 (2字节)

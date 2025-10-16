@@ -1,10 +1,12 @@
 package com.lambda.cloud.netty.protocol.processor;
 
+import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.meta.ProtocolFrameMetadata;
 import io.netty.buffer.ByteBuf;
+import java.lang.reflect.Field;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,12 +44,17 @@ public class ProtocolFieldProcessor {
             return;
         }
 
-        // 读取并转换字段数据
-        byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
-        Object value = convertFieldData(fieldData, fieldMetadata, converter);
-
-        // 设置字段值
-        setFieldValue(instance, fieldMetadata, value);
+        // 特殊处理复合字段
+        if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
+            // 复合字段长度为0时，动态计算实际长度
+            Object value = parseCompositeFieldWithDynamicLength(byteBuf, fieldMetadata, converter);
+            setFieldValue(instance, fieldMetadata, value);
+        } else {
+            // 普通字段或长度固定的复合字段
+            byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
+            Object value = convertFieldData(fieldData, fieldMetadata, converter);
+            setFieldValue(instance, fieldMetadata, value);
+        }
     }
 
     /**
@@ -248,6 +255,69 @@ public class ProtocolFieldProcessor {
                 throw new ProtocolException(
                         ProtocolException.ErrorCode.PARSE_ERROR, "设置默认值失败: " + fieldMetadata.getFieldName(), e);
             }
+        }
+    }
+
+    /**
+     * 解析长度为0的复合字段，动态计算实际长度
+     *
+     * @param byteBuf       字节缓冲区
+     * @param fieldMetadata 字段元数据
+     * @param converter     转换器
+     * @return 解析后的复合对象
+     * @throws ProtocolException 解析异常
+     */
+    private Object parseCompositeFieldWithDynamicLength(
+            ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
+            throws ProtocolException {
+        try {
+            // 获取复合字段的目标类型
+            Class<?> targetType = fieldMetadata.getFieldType();
+
+            // 计算复合字段的实际长度
+            int actualLength = calculateCompositeFieldLength(targetType);
+
+            // 读取实际长度的数据
+            byte[] fieldData = new byte[actualLength];
+            byteBuf.readBytes(fieldData);
+
+            // 使用转换器解析数据
+            return converter.parse(fieldData, fieldMetadata);
+
+        } catch (Exception e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
+        }
+    }
+
+    /**
+     * 计算复合字段的实际长度
+     *
+     * @param compositeType 复合字段类型
+     * @return 实际长度
+     * @throws ProtocolException 计算异常
+     */
+    private int calculateCompositeFieldLength(Class<?> compositeType) throws ProtocolException {
+        try {
+            int totalLength = 0;
+            Field[] fields = compositeType.getDeclaredFields();
+
+            for (Field field : fields) {
+                ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
+                if (protocolField != null) {
+                    totalLength += protocolField.length();
+                }
+            }
+
+            log.debug("计算复合字段长度: {} = {}", compositeType.getSimpleName(), totalLength);
+            return totalLength;
+
+        } catch (Exception e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR, "计算复合字段长度失败: " + compositeType.getSimpleName(), e);
         }
     }
 }

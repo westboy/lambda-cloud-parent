@@ -2,11 +2,13 @@ package com.lambda.cloud.netty.protocol.message;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import lombok.Data;
-
 import java.math.BigDecimal;
 
+import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import lombok.Data;
+
 @Data
+@ProtocolFrame
 public class InnerRecord {
 
     /**
@@ -307,6 +309,4 @@ public class InnerRecord {
      */
     @ProtocolField(order = 28, length = 17, dataType = ProtocolDataType.ASCII, description = "帧类型")
     private String VIN;
-
-
 }

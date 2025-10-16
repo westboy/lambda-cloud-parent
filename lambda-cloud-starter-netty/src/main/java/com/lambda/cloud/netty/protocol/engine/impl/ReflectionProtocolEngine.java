@@ -131,7 +131,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
         // 获取合适的转换器（支持复合字段）
         DataTypeConverter converter = getConverter(fieldMetadata);
-        //此处设置复合转换器解析
+        // 此处设置复合转换器解析
         protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter);
     }
 
@@ -150,7 +150,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
         // 获取合适的转换器（支持复合字段）
         DataTypeConverter converter = getConverter(fieldMetadata);
-        //此处设置复合转换器序列化
+        // 此处设置复合转换器序列化
         protocolFieldProcessor.serializeField(instance, byteBuf, fieldMetadata, msgMetadata, converter);
     }
 
