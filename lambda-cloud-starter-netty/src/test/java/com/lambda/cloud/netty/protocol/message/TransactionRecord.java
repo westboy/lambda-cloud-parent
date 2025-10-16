@@ -29,13 +29,13 @@ public class TransactionRecord {
      * 报文头 - 数据长度
      */
     @ProtocolField(order = 1, length = 1, dataType = ProtocolDataType.HEX, littleEndian = true, description = "数据长度")
-    private String dataLength;
+    private Integer dataLength;
 
     /**
      * 报文头 - 数据长度
      */
     @ProtocolField(order = 2, length = 2, dataType = ProtocolDataType.HEX, littleEndian = true, description = "数据长度")
-    private String ser;
+    private Integer ser;
 
     /**
      * 报文头 - 数据长度

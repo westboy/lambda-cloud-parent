@@ -120,18 +120,18 @@ public class HexConverter implements DataTypeConverter {
                 case BigDecimal b -> {
                     // 根据精度将BigDecimal转换为整数值
                     BigDecimal scaledValue = precision > 0 ? b.multiply(BigDecimal.TEN.pow(precision)) : b;
-                    
+
                     // 转换为BigInteger（去除小数部分）
                     BigInteger integerValue = scaledValue.toBigInteger();
-                    
+
                     // 转换为十六进制字符串
                     String hexString = integerValue.toString(16);
-                    
+
                     // 确保十六进制字符串长度为偶数
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
-                    
+
                     // 转换为字节数组（大端序格式）
                     result = HexUtils.hexToBytes(hexString);
                 }

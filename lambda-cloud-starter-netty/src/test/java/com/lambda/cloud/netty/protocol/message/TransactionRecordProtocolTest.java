@@ -71,10 +71,6 @@ public class TransactionRecordProtocolTest {
 
             // 输出关键字段
             logKeyFields(record);
-
-            // 注意：当前协议引擎的序列化功能存在问题，暂时跳过序列化验证
-            log.info("=== 序列化验证 ===");
-            log.warn("当前协议引擎序列化功能存在问题（不支持BigDecimal类型），暂时跳过序列化验证");
             log.info("解析功能验证完成，数据解析正常");
 
         } catch (ProtocolException e) {

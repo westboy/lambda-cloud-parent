@@ -65,15 +65,40 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     @Override
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
         ProtocolFrameMetadata metadata = getMetadata(messageClass);
+        long startTime = System.nanoTime();
 
         try {
-            printLog("帧解析", metadata);
+            // 记录解析开始
+            logProtocolOperation("帧解析", metadata);
+
+            // 创建消息实例
             Object instance = messageClass.getDeclaredConstructor().newInstance();
+
+            // 解析各个字段
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 parseField(byteBuf, instance, fieldMetadata, metadata);
             }
+
+            // 记录解析成功和性能指标
+            if (log.isDebugEnabled()) {
+                long duration = System.nanoTime() - startTime;
+                log.debug(
+                        "协议帧解析完成 - 类型: {}, 耗时: {}μs, 剩余字节: {}",
+                        messageClass.getSimpleName(),
+                        duration / 1000,
+                        byteBuf.readableBytes());
+            }
+
             return instance;
         } catch (Exception e) {
+            // 记录解析失败和性能指标
+            long duration = System.nanoTime() - startTime;
+            log.error(
+                    "协议帧解析失败 - 类型: {}, 耗时: {}μs, 错误: {}",
+                    messageClass.getSimpleName(),
+                    duration / 1000,
+                    e.getMessage());
+
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(), e);
         }
@@ -82,12 +107,41 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     @Override
     public void serialize(Object message, ByteBuf byteBuf) throws ProtocolException {
         ProtocolFrameMetadata metadata = getMetadata(message.getClass());
+        long startTime = System.nanoTime();
+        int initialWriterIndex = byteBuf.writerIndex();
+
         try {
-            printLog("序列化", metadata);
+            // 记录序列化开始
+            logProtocolOperation("序列化", metadata);
+
+            // 序列化各个字段
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 serializeField(message, byteBuf, fieldMetadata, metadata);
             }
+
+            // 记录序列化成功和性能指标
+            if (log.isDebugEnabled()) {
+                long duration = System.nanoTime() - startTime;
+                int bytesWritten = byteBuf.writerIndex() - initialWriterIndex;
+                log.debug(
+                        "协议帧序列化完成 - 类型: {}, 耗时: {}μs, 写入字节: {}, 缓冲区容量: {}",
+                        message.getClass().getSimpleName(),
+                        duration / 1000,
+                        bytesWritten,
+                        byteBuf.capacity());
+            }
+
         } catch (Exception e) {
+            // 记录序列化失败和性能指标
+            long duration = System.nanoTime() - startTime;
+            int bytesWritten = byteBuf.writerIndex() - initialWriterIndex;
+            log.error(
+                    "协议帧序列化失败 - 类型: {}, 耗时: {}μs, 已写入字节: {}, 错误: {}",
+                    message.getClass().getSimpleName(),
+                    duration / 1000,
+                    bytesWritten,
+                    e.getMessage());
+
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,
                     "序列化消息失败: " + message.getClass().getSimpleName(),
@@ -267,39 +321,51 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     }
 
     /**
-     * 打印日志
+     * 打印协议操作日志
+     * <p>
+     * 根据日志级别输出不同详细程度的信息：
+     * - INFO级别：输出简洁的操作摘要
+     * - DEBUG级别：输出详细的协议信息
+     * </p>
      *
-     * @param title         标题
-     * @param frameMetadata 元数据
+     * @param operation     操作类型（如"帧解析"、"序列化"）
+     * @param frameMetadata 协议帧元数据
      */
-    private void printLog(String title, ProtocolFrameMetadata frameMetadata) {
-        if (!log.isDebugEnabled()) {
+    private void logProtocolOperation(String operation, ProtocolFrameMetadata frameMetadata) {
+        // INFO级别：输出简洁的操作摘要，适用于生产环境
+        if (log.isInfoEnabled()) {
             log.info(
+                    "协议{} - 类型: {}, 名称: {}, 长度: {}B, 字段数: {}",
+                    operation,
+                    frameMetadata.getFrameType(),
+                    frameMetadata.getMessageName(),
+                    frameMetadata.totalLength(),
+                    frameMetadata.fields().size());
+        }
+
+        // DEBUG级别：输出详细的协议信息，适用于开发和调试
+        if (log.isDebugEnabled()) {
+            log.debug(
                     """
 
-                            ┏━━━━━━━━━━━━━━━━━━━━━ {} ━━━━━━━━━━━━━━━━━━━━━┓
+                            ┏━━━━━━━━━━━━━━━━━━━━━ 协议{} ━━━━━━━━━━━━━━━━━━━━━┓
                             ┃ 消息类型: {}
                             ┃ 消息名称: {}
                             ┃ 消息描述: {}
                             ┃ 消息总长度: {} 字节
                             ┃ 字段数量: {}
+                            ┃ 线程: {}
+                            ┃ 时间戳: {}
                             ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
                             """,
-                    title,
+                    operation,
                     frameMetadata.getFrameType(),
                     frameMetadata.getMessageName(),
                     frameMetadata.getDescription(),
                     frameMetadata.totalLength(),
-                    frameMetadata.fields().size());
-        } else {
-            log.info(
-                    "{} => 类型: {} | 名称: {} | 描述: {} | 长度: {}B | 字段数: {}",
-                    title,
-                    frameMetadata.getFrameType(),
-                    frameMetadata.getMessageName(),
-                    frameMetadata.getDescription(),
-                    frameMetadata.totalLength(),
-                    frameMetadata.fields().size());
+                    frameMetadata.fields().size(),
+                    Thread.currentThread().getName(),
+                    System.currentTimeMillis());
         }
     }
 }
