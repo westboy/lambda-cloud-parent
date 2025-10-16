@@ -264,6 +264,7 @@ public class SecurityAutoConfiguration {
          */
         @Bean
         @ConditionalOnBean(SaInterceptor.class)
+        @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
         public WebMvcConfigurer saTokenWebMvcConfigurer(SaInterceptor saInterceptor) {
             return new WebMvcConfigurer() {
                 @SuppressWarnings("all")
@@ -295,7 +296,7 @@ public class SecurityAutoConfiguration {
          * @return Sa-Token Servlet过滤器
          */
         @Bean
-        @ConditionalOnProperty(prefix = "lambda.security.sa-token", name = "check-same-token")
+        @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
         public SaServletFilter getSaServletFilter() {
             return new SaServletFilter()
                     .addInclude("/**")
@@ -305,7 +306,9 @@ public class SecurityAutoConfiguration {
                         HttpServletRequest currentRequest = WebHttpUtils.getCurrentRequest();
                         boolean hmacRequest = WebHttpUtils.isHmacRequest(currentRequest);
                         if (!hmacRequest) {
-                            SaSameUtil.checkCurrentRequestToken();
+                            if(securityProperties.getSaToken().getCheckSameToken()) {
+                                SaSameUtil.checkCurrentRequestToken();
+                            }
                         }
                     })
                     .setError(exception -> {

@@ -114,7 +114,7 @@ public record SaTokenInterceptor(SecureInterceptor secureInterceptor) implements
      * <ul>
      *   <li>通过{@link StpLogicUtils#getActiveStpLogic()}获取当前StpLogic</li>
      *   <li>通过{@link OperatorUtils#getLoginUser(StpLogic)}获取登录用户</li>
-     *   <li>将完整的安全上下文传递给SecureInterceptor</li>
+     *   <li>将完整的安全上下文传递给 SecureInterceptor</li>
      * </ul>
      *
      * @param handler 请求处理器对象，可能是HandlerMethod或ResourceHttpRequestHandler等
@@ -138,10 +138,10 @@ public record SaTokenInterceptor(SecureInterceptor secureInterceptor) implements
 
         // ========== 安全拦截处理 ==========
 
-        // 获取当前活跃的StpLogic实例
+        // 获取当前活跃的 StpLogic 实例
         StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
 
-        // 委托给SecureInterceptor进行具体的安全处理
+        // 委托给 SecureInterceptor 进行具体的安全处理
         if (secureInterceptor != null) {
             secureInterceptor.handle(handler, stpLogic, OperatorUtils.getLoginUser(stpLogic));
         }
