@@ -1,6 +1,7 @@
-package com.lambda.cloud.websocket.event;
+package com.lambda.cloud.websocket;
 
-import com.lambda.cloud.websocket.WsSessionInfo;
+import com.lambda.cloud.websocket.event.WebSocketSubscribeEvent;
+import com.lambda.cloud.websocket.service.WebSocketConnectEventService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,21 +18,22 @@ import org.springframework.web.socket.messaging.*;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "WsEventHandler")
 @Slf4j
-public class WsEventHandler {
+public class WebSocketEventHandler {
 
-    private final List<WsConnectEventService> connectEventServices;
+    private final List<WebSocketConnectEventService> connectEventServices;
 
-    private final Map<String, List<WsSubscribeEvent>> subscribeListMap;
+    private final Map<String, List<WebSocketSubscribeEvent>> subscribeListMap;
 
-    public WsEventHandler(List<WsConnectEventService> connectEventServices, List<WsSubscribeEvent> subscribeEvents) {
+    public WebSocketEventHandler(
+            List<WebSocketConnectEventService> connectEventServices, List<WebSocketSubscribeEvent> subscribeEvents) {
         this.connectEventServices = connectEventServices;
         this.subscribeListMap = new HashMap<>(6);
-        for (WsSubscribeEvent s : subscribeEvents) {
+        for (WebSocketSubscribeEvent s : subscribeEvents) {
             if (s.topics() == null) {
                 continue;
             }
             for (String topic : s.topics()) {
-                List<WsSubscribeEvent> events;
+                List<WebSocketSubscribeEvent> events;
                 if (this.subscribeListMap.containsKey(topic)) {
                     events = this.subscribeListMap.get(topic);
                 } else {
@@ -50,7 +52,7 @@ public class WsEventHandler {
      */
     @EventListener
     public void connectEvent(SessionConnectEvent event) {
-        WsSessionInfo<SessionConnectEvent> info = new WsSessionInfo<>(event);
+        WebSocketSession<SessionConnectEvent> info = new WebSocketSession<>(event);
         this.connectEventServices.forEach(i -> i.connectEvent(info));
     }
 
@@ -61,7 +63,7 @@ public class WsEventHandler {
      */
     @EventListener
     public void connectedEvent(SessionConnectedEvent event) {
-        WsSessionInfo<SessionConnectedEvent> info = new WsSessionInfo<>(event);
+        WebSocketSession<SessionConnectedEvent> info = new WebSocketSession<>(event);
         this.connectEventServices.forEach(i -> i.connectedEvent(info));
     }
 
@@ -72,7 +74,7 @@ public class WsEventHandler {
      */
     @EventListener
     public void disconnectEvent(SessionDisconnectEvent event) {
-        WsSessionInfo<SessionDisconnectEvent> info = new WsSessionInfo<>(event);
+        WebSocketSession<SessionDisconnectEvent> info = new WebSocketSession<>(event);
         this.connectEventServices.forEach(i -> i.disconnectEvent(info));
     }
 
@@ -83,7 +85,7 @@ public class WsEventHandler {
      */
     @EventListener
     public void subscribeEvent(SessionSubscribeEvent event) {
-        WsSessionInfo<SessionSubscribeEvent> info = new WsSessionInfo<>(event);
+        WebSocketSession<SessionSubscribeEvent> info = new WebSocketSession<>(event);
         if (this.subscribeListMap.containsKey(info.getTopic())) {
             this.subscribeListMap.get(info.getTopic()).forEach(i -> i.subscribeEvent(info));
         }
@@ -96,7 +98,7 @@ public class WsEventHandler {
      */
     @EventListener
     public void unsubscribeEvent(SessionUnsubscribeEvent event) {
-        WsSessionInfo<SessionUnsubscribeEvent> info = new WsSessionInfo<>(event);
+        WebSocketSession<SessionUnsubscribeEvent> info = new WebSocketSession<>(event);
         if (this.subscribeListMap.containsKey(info.getTopic())) {
             this.subscribeListMap.get(info.getTopic()).forEach(i -> i.unsubscribeEvent(info));
         }

@@ -1,8 +1,9 @@
-package com.lambda.cloud.websocket.event;
+package com.lambda.cloud.websocket.service.impl;
 
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.websocket.WsSessionInfo;
+import com.lambda.cloud.websocket.WebSocketSession;
 import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
+import com.lambda.cloud.websocket.service.WebSocketConnectEventService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
@@ -15,10 +16,11 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "DefaultConnectEventServiceImpl")
 @Slf4j
-public record DefaultConnectEventServiceImpl(WebSocketChannelRepository repository) implements WsConnectEventService {
+public record DefaultWebSocketConnectEventServiceImpl(WebSocketChannelRepository repository)
+        implements WebSocketConnectEventService {
 
     @Override
-    public void connectedEvent(WsSessionInfo<SessionConnectedEvent> info) {
+    public void connectedEvent(WebSocketSession<SessionConnectedEvent> info) {
         LoginUser user = (LoginUser) info.getUser();
         String sid = info.getSessionId();
         String framework = info.getFramework();
@@ -30,7 +32,7 @@ public record DefaultConnectEventServiceImpl(WebSocketChannelRepository reposito
     }
 
     @Override
-    public void disconnectEvent(WsSessionInfo<SessionDisconnectEvent> info) {
+    public void disconnectEvent(WebSocketSession<SessionDisconnectEvent> info) {
         LoginUser user = (LoginUser) info.getUser();
         String sid = info.getSessionId();
         String framework = info.getFramework();

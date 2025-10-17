@@ -1,6 +1,6 @@
 package com.lambda.cloud.websocket.event;
 
-import com.lambda.cloud.websocket.WsSessionInfo;
+import com.lambda.cloud.websocket.WebSocketSession;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
@@ -8,7 +8,7 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
  * 处理订阅相关事件
  * @author jpjoo
  */
-public interface WsSubscribeEvent {
+public interface WebSocketSubscribeEvent {
 
     /**
      * 获取要处理的订阅主题
@@ -22,12 +22,12 @@ public interface WsSubscribeEvent {
      *
      * @param info:
      */
-    default void subscribeEvent(WsSessionInfo<SessionSubscribeEvent> info) {}
+    default void subscribeEvent(WebSocketSession<SessionSubscribeEvent> info) {}
 
     /**
      * 取消订阅事件
      *
      * @param info:
      */
-    default void unsubscribeEvent(WsSessionInfo<SessionUnsubscribeEvent> info) {}
+    default void unsubscribeEvent(WebSocketSession<SessionUnsubscribeEvent> info) {}
 }

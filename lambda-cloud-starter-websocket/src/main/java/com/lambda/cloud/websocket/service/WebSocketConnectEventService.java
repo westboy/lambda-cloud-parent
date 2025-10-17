@@ -1,6 +1,6 @@
-package com.lambda.cloud.websocket.event;
+package com.lambda.cloud.websocket.service;
 
-import com.lambda.cloud.websocket.WsSessionInfo;
+import com.lambda.cloud.websocket.WebSocketSession;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -10,26 +10,26 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
  *
  * @author jpjoo
  */
-public interface WsConnectEventService {
+public interface WebSocketConnectEventService {
 
     /**
      * 正在建立连接
      *
      * @param info:
      */
-    default void connectEvent(WsSessionInfo<SessionConnectEvent> info) {}
+    default void connectEvent(WebSocketSession<SessionConnectEvent> info) {}
 
     /**
      * 建立连接完成
      *
      * @param info:
      */
-    default void connectedEvent(WsSessionInfo<SessionConnectedEvent> info) {}
+    default void connectedEvent(WebSocketSession<SessionConnectedEvent> info) {}
 
     /**
      * 关闭连接（包括浏览器关闭当前tab页、刷新等）
      *
      * @param info:
      */
-    default void disconnectEvent(WsSessionInfo<SessionDisconnectEvent> info) {}
+    default void disconnectEvent(WebSocketSession<SessionDisconnectEvent> info) {}
 }

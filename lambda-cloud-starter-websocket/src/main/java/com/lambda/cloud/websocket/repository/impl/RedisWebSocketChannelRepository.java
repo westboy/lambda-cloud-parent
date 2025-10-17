@@ -1,10 +1,9 @@
-package com.lambda.cloud.websocket.repository;
-
-import static com.lambda.cloud.websocket.Constants.COLON;
-import static com.lambda.cloud.websocket.Constants.SYSTEM;
+package com.lambda.cloud.websocket.repository.impl;
 
 import com.google.common.collect.Lists;
+import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.web.TenantHolder;
+import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Optional;
@@ -83,16 +82,16 @@ public record RedisWebSocketChannelRepository(StringRedisTemplate template) impl
     private String getUserKey(String uid) {
         String tenantId = TenantHolder.getTenantId();
         if (StringUtils.isBlank(tenantId)) {
-            tenantId = SYSTEM;
+            tenantId = Constants.SYSTEM;
         }
-        return KEY + tenantId + COLON + uid;
+        return KEY + tenantId + Constants.COLON + uid;
     }
 
     private String getOnlineKey() {
         String tenantId = TenantHolder.getTenantId();
         if (StringUtils.isBlank(tenantId)) {
-            tenantId = SYSTEM;
+            tenantId = Constants.SYSTEM;
         }
-        return ONLINE_KEY + COLON + tenantId;
+        return ONLINE_KEY + Constants.COLON + tenantId;
     }
 }

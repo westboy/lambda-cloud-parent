@@ -2,15 +2,15 @@ package com.lambda.autoconfig;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.cloud.websocket.ChannelStoreMode;
-import com.lambda.cloud.websocket.event.DefaultConnectEventServiceImpl;
-import com.lambda.cloud.websocket.event.WsConnectEventService;
-import com.lambda.cloud.websocket.event.WsEventHandler;
-import com.lambda.cloud.websocket.event.WsSubscribeEvent;
+import com.lambda.cloud.websocket.WebSocketEventHandler;
+import com.lambda.cloud.websocket.event.WebSocketSubscribeEvent;
 import com.lambda.cloud.websocket.interceptor.DefaultAuthenticationChannelInterceptor;
 import com.lambda.cloud.websocket.interceptor.IpHandshakeInterceptor;
-import com.lambda.cloud.websocket.repository.DefaultWebSocketChannelRepository;
-import com.lambda.cloud.websocket.repository.RedisWebSocketChannelRepository;
 import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
+import com.lambda.cloud.websocket.repository.impl.DefaultWebSocketChannelRepository;
+import com.lambda.cloud.websocket.repository.impl.RedisWebSocketChannelRepository;
+import com.lambda.cloud.websocket.service.WebSocketConnectEventService;
+import com.lambda.cloud.websocket.service.impl.DefaultWebSocketConnectEventServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
@@ -60,8 +60,8 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     }
 
     @Bean
-    public WsConnectEventService wsConnectEventService(WebSocketChannelRepository wsChannelRepository) {
-        return new DefaultConnectEventServiceImpl(wsChannelRepository);
+    public WebSocketConnectEventService wsConnectEventService(WebSocketChannelRepository wsChannelRepository) {
+        return new DefaultWebSocketConnectEventServiceImpl(wsChannelRepository);
     }
 
     @Override
@@ -104,8 +104,8 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     }
 
     @Bean
-    public WsEventHandler wsEventHandler(
-            List<WsConnectEventService> connectEventServices, List<WsSubscribeEvent> subscribeEvents) {
-        return new WsEventHandler(connectEventServices, subscribeEvents);
+    public WebSocketEventHandler wsEventHandler(
+            List<WebSocketConnectEventService> connectEventServices, List<WebSocketSubscribeEvent> subscribeEvents) {
+        return new WebSocketEventHandler(connectEventServices, subscribeEvents);
     }
 }

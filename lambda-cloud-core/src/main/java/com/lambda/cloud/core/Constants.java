@@ -134,4 +134,11 @@ public final class Constants {
     public static final String MSG_PAGE_NUM_NOT_NULL = "pageNum不能为空";
     /** 页面大小不能为空的错误消息 */
     public static final String MSG_PAGE_SIZE_NOT_NULL = "pageSize不能为空";
+
+    // ========== Websocket 相关常量 ==========
+    public static final String SYSTEM = "system";
+    public static final String IP_ADDRESS = "ip";
+    public static final String SIMPE_CONNECT_MESSAGE = "simpConnectMessage";
+    public static final String X_WEBSOCKET_FRAMEWORK = "X-Websocket-Framework";
+    public static final String COLON = ":";
 }
