@@ -1,6 +1,5 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.websocket.ChannelStoreMode;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -47,4 +46,15 @@ public class WebsocketProperties {
      * 跨域配置
      */
     private String origins = "*";
+
+    public enum ChannelStoreMode {
+        /**
+         * 基于JVM
+         */
+        DEFAULT,
+        /**
+         * 存储到Redis
+         */
+        REDIS
+    }
 }
