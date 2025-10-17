@@ -83,14 +83,18 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint(websocketProperties.getEndpoint())
-                .setAllowedOrigins(websocketProperties.getOrigins())
+        registry.addEndpoint(websocketProperties.getStompEndpoint())
+                .setAllowedOriginPatterns(websocketProperties.getOrigins())
                 .addInterceptors(new IpHandshakeInterceptor())
                 .withSockJS()
                 .setStreamBytesLimit(524288)
                 .setHttpMessageCacheSize(1000)
                 .setDisconnectDelay(30000)
                 .setSessionCookieNeeded(false);
+
+        registry.addEndpoint(websocketProperties.getOriginEndpoint())
+                .setAllowedOriginPatterns(websocketProperties.getOrigins())
+                .addInterceptors(new IpHandshakeInterceptor());
     }
 
     @Bean

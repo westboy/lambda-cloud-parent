@@ -18,7 +18,7 @@ public class WebsocketProperties {
      */
     private ChannelStoreMode channelStoreMode = ChannelStoreMode.DEFAULT;
     /**
-     * 是否开启WebSocket
+     * 是否 开启 WebSocket
      */
     private boolean enabled = false;
     /**
@@ -34,9 +34,15 @@ public class WebsocketProperties {
      */
     private String topicPrefix = "/topic/";
     /**
-     * *websocket端点
+     * stomp websocket端点
      */
-    private String endpoint = "/ws";
+    private String stompEndpoint = "/ws/stomp";
+
+    /**
+     * 原生 websocket 端点
+     */
+    private String originEndpoint = "/ws/native";
+
     /**
      * 跨域配置
      */
