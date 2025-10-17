@@ -56,7 +56,9 @@ public class ProtocolException extends Exception {
         LENGTH_MISMATCH("长度不匹配"),
         BUFFER_UNDERFLOW("缓冲区数据不足"),
         ANNOTATION_MISSING("注解缺失"),
-        REFLECTION_ERROR("反射错误");
+        REFLECTION_ERROR("反射错误"),
+        CRC_ERROR("CRC处理错误"),
+        CRC_VALIDATION_ERROR("CRC校验失败");
 
         private final String description;
 

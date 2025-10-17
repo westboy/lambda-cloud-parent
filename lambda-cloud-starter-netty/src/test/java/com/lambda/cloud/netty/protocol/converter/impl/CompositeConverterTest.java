@@ -33,18 +33,14 @@ class CompositeConverterTest {
      */
     @Test
     void testCompositeFieldParsing() throws Exception {
-        // 准备测试数据
-        byte[] testData = {0x01, 0x02, 0x03, 0x04}; // 简单的测试数据
+        byte[] testData = {0x01, 0x02, 0x03, 0x04};
 
-        // 创建字段元数据
         Field compositeField = TestMessage.class.getDeclaredField("compositeField");
         ProtocolField protocolField = compositeField.getAnnotation(ProtocolField.class);
         ProtocolFieldMetadata fieldMetadata = new ProtocolFieldMetadata(compositeField, protocolField, null);
 
-        // 执行解析
         Object result = compositeConverter.parse(testData, fieldMetadata);
 
-        // 验证结果
         assertNotNull(result);
         assertInstanceOf(CompositeData.class, result);
     }
@@ -54,20 +50,16 @@ class CompositeConverterTest {
      */
     @Test
     void testCompositeFieldSerialization() throws Exception {
-        // 创建复合对象
         CompositeData compositeData = new CompositeData();
         compositeData.setField1((byte) 0x01);
         compositeData.setField2((byte) 0x02);
 
-        // 创建字段元数据
         Field compositeField = TestMessage.class.getDeclaredField("compositeField");
         ProtocolField protocolField = compositeField.getAnnotation(ProtocolField.class);
         ProtocolFieldMetadata fieldMetadata = new ProtocolFieldMetadata(compositeField, protocolField, null);
 
-        // 执行序列化
         byte[] result = compositeConverter.serialize(compositeData, fieldMetadata);
 
-        // 验证结果
         assertNotNull(result);
         assertTrue(result.length > 0);
     }
@@ -77,12 +69,10 @@ class CompositeConverterTest {
      */
     @Test
     void testParseFromStringThrowsException() throws Exception {
-        // 创建字段元数据
         Field compositeField = TestMessage.class.getDeclaredField("compositeField");
         ProtocolField protocolField = compositeField.getAnnotation(ProtocolField.class);
         ProtocolFieldMetadata fieldMetadata = new ProtocolFieldMetadata(compositeField, protocolField, null);
 
-        // 验证抛出异常
         assertThrows(ProtocolException.class, () -> {
             compositeConverter.parseFromString("test", fieldMetadata);
         });

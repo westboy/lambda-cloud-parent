@@ -38,6 +38,13 @@ public @interface ProtocolField {
     boolean encrypted() default false;
 
     /**
+     * CRCChecksum 校验
+     *
+     * @return 校验
+     */
+    boolean CRCChecksum() default false;
+
+    /**
      * 字段长度（字节数）
      *
      * @return 字段长度

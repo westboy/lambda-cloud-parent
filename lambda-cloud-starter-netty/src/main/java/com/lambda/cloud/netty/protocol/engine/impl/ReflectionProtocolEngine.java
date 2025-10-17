@@ -13,6 +13,7 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.processor.CrcProcessor;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
@@ -62,6 +63,11 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      */
     private final ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor();
 
+    /**
+     * CRC处理器
+     */
+    private final CrcProcessor crcProcessor = new CrcProcessor();
+
     @Override
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
         ProtocolFrameMetadata metadata = getMetadata(messageClass);
@@ -78,6 +84,9 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 parseField(byteBuf, instance, fieldMetadata, metadata);
             }
+
+            // 验证CRC校验和
+            crcProcessor.validateCrc(instance, metadata);
 
             // 记录解析成功和性能指标
             if (log.isDebugEnabled()) {
@@ -118,6 +127,9 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 serializeField(message, byteBuf, fieldMetadata, metadata);
             }
+
+            // 计算并设置CRC校验和
+            crcProcessor.calculateAndSetCrc(message, metadata);
 
             // 记录序列化成功和性能指标
             if (log.isDebugEnabled()) {

@@ -77,22 +77,18 @@ public class CompositeFieldLengthTest {
 
         message.setTail((byte) 0x04);
 
-        // 序列化
         ByteBuf serialized = Unpooled.buffer();
         protocolEngine.serialize(message, serialized);
         assertNotNull(serialized);
 
-        // 打印序列化后的数据
         byte[] bytes = new byte[serialized.readableBytes()];
         serialized.getBytes(0, bytes);
         System.out.println("序列化数据: " + bytesToHex(bytes));
         System.out.println("数据长度: " + bytes.length);
 
-        // 解析
         TestMessage2 parsed = (TestMessage2) protocolEngine.parse(serialized, TestMessage2.class);
         assertNotNull(parsed);
 
-        // 验证所有字段
         assertEquals(message.getHeader(), parsed.getHeader());
         assertEquals(message.getTail(), parsed.getTail());
         assertNotNull(parsed.getData(), "复合字段不应该为null");

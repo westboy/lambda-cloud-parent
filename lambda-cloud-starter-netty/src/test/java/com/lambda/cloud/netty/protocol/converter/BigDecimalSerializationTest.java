@@ -27,7 +27,6 @@ public class BigDecimalSerializationTest {
         ProtocolField protocolField = testField.getAnnotation(ProtocolField.class);
         ProtocolFieldMetadata fieldMetadata = new ProtocolFieldMetadata(testField, protocolField, null);
 
-        // 测试值：4.8200
         BigDecimal testValue = new BigDecimal("4.8200");
 
         // 序列化
@@ -35,7 +34,7 @@ public class BigDecimalSerializationTest {
 
         // 验证结果
         assertNotNull(result);
-        assertEquals(4, result.length); // 应该是4字节
+        assertEquals(4, result.length);
 
         // 期望的字节序列（小端序）：4.8200 * 10000 = 48200 = 0xBC48
         // 小端序：48 BC 00 00
@@ -65,7 +64,7 @@ public class BigDecimalSerializationTest {
 
         // 验证结果
         assertNotNull(result);
-        assertEquals(4, result.length); // 应该是4字节
+        assertEquals(4, result.length);
 
         // 期望的字节序列（小端序）：1.23456 * 100000 = 123456 = 0x1E240
         // 小端序：40 E2 01 00
