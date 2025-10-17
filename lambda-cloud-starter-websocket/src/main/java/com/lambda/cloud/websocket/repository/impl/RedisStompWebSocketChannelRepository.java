@@ -3,7 +3,7 @@ package com.lambda.cloud.websocket.repository.impl;
 import com.google.common.collect.Lists;
 import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.web.TenantHolder;
-import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
+import com.lambda.cloud.websocket.repository.StompWebSocketChannelRepository;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +21,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "RedisWebSocketChannelRepository")
 @Slf4j
-public record RedisWebSocketChannelRepository(StringRedisTemplate template) implements WebSocketChannelRepository {
+public record RedisStompWebSocketChannelRepository(StringRedisTemplate template) implements StompWebSocketChannelRepository {
 
     private static final String KEY = "lambda:websocket:online_user:";
     private static final String ONLINE_KEY = "lambda:websocket:online_users";

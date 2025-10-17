@@ -2,19 +2,18 @@ package com.lambda.autoconfig;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.cloud.websocket.ChannelStoreMode;
-import com.lambda.cloud.websocket.WebSocketEventHandler;
-import com.lambda.cloud.websocket.event.WebSocketSubscribeEvent;
+import com.lambda.cloud.websocket.StompWebSocketEventHandler;
+import com.lambda.cloud.websocket.event.StompWebSocketSubscribeEvent;
 import com.lambda.cloud.websocket.interceptor.DefaultAuthenticationChannelInterceptor;
 import com.lambda.cloud.websocket.interceptor.IpHandshakeInterceptor;
-import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
-import com.lambda.cloud.websocket.repository.impl.DefaultWebSocketChannelRepository;
-import com.lambda.cloud.websocket.repository.impl.RedisWebSocketChannelRepository;
-import com.lambda.cloud.websocket.service.WebSocketConnectEventService;
-import com.lambda.cloud.websocket.service.impl.DefaultWebSocketConnectEventServiceImpl;
+import com.lambda.cloud.websocket.repository.StompWebSocketChannelRepository;
+import com.lambda.cloud.websocket.repository.impl.DefaultStompWebSocketChannelRepository;
+import com.lambda.cloud.websocket.repository.impl.RedisStompWebSocketChannelRepository;
+import com.lambda.cloud.websocket.service.StompWebSocketConnectEventService;
+import com.lambda.cloud.websocket.service.impl.DefaultStompWebSocketConnectEventServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,6 +29,8 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+import java.util.List;
 
 /**
  * WebSocketAutoConfiguration
@@ -51,17 +52,17 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
 
     @Bean
     @ConditionalOnMissingBean
-    public WebSocketChannelRepository webSocketChannelRepository() {
+    public StompWebSocketChannelRepository webSocketChannelRepository() {
         if (ChannelStoreMode.REDIS.equals(websocketProperties.getChannelStoreMode())) {
             StringRedisTemplate template = SpringUtil.getBean(StringRedisTemplate.class);
-            return new RedisWebSocketChannelRepository(template);
+            return new RedisStompWebSocketChannelRepository(template);
         }
-        return new DefaultWebSocketChannelRepository(7 * 24 * 60 * 60);
+        return new DefaultStompWebSocketChannelRepository(7 * 24 * 60 * 60);
     }
 
     @Bean
-    public WebSocketConnectEventService wsConnectEventService(WebSocketChannelRepository wsChannelRepository) {
-        return new DefaultWebSocketConnectEventServiceImpl(wsChannelRepository);
+    public StompWebSocketConnectEventService wsConnectEventService(StompWebSocketChannelRepository wsChannelRepository) {
+        return new DefaultStompWebSocketConnectEventServiceImpl(wsChannelRepository);
     }
 
     @Override
@@ -91,10 +92,6 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
                 .setHttpMessageCacheSize(1000)
                 .setDisconnectDelay(30000)
                 .setSessionCookieNeeded(false);
-
-        registry.addEndpoint(websocketProperties.getOriginEndpoint())
-                .setAllowedOriginPatterns(websocketProperties.getOrigins())
-                .addInterceptors(new IpHandshakeInterceptor());
     }
 
     @Bean
@@ -108,8 +105,8 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     }
 
     @Bean
-    public WebSocketEventHandler wsEventHandler(
-            List<WebSocketConnectEventService> connectEventServices, List<WebSocketSubscribeEvent> subscribeEvents) {
-        return new WebSocketEventHandler(connectEventServices, subscribeEvents);
+    public StompWebSocketEventHandler wsEventHandler(
+            List<StompWebSocketConnectEventService> connectEventServices, List<StompWebSocketSubscribeEvent> subscribeEvents) {
+        return new StompWebSocketEventHandler(connectEventServices, subscribeEvents);
     }
 }

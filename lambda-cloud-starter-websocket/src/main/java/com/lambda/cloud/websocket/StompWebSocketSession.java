@@ -15,7 +15,7 @@ import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
  * @author jpjoo
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "WsSessionInfo")
-public class WebSocketSession<T extends AbstractSubProtocolEvent> {
+public class StompWebSocketSession<T extends AbstractSubProtocolEvent> {
 
     private final Principal principal;
     private final T event;
@@ -35,7 +35,7 @@ public class WebSocketSession<T extends AbstractSubProtocolEvent> {
     @Getter
     private final StompHeaderAccessor messageAccessor;
 
-    public WebSocketSession(T event) {
+    public StompWebSocketSession(T event) {
         this.event = event;
         principal = event.getUser();
         this.messageAccessor = StompHeaderAccessor.wrap(event.getMessage());

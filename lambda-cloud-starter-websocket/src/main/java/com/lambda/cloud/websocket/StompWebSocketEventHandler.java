@@ -1,7 +1,7 @@
 package com.lambda.cloud.websocket;
 
-import com.lambda.cloud.websocket.event.WebSocketSubscribeEvent;
-import com.lambda.cloud.websocket.service.WebSocketConnectEventService;
+import com.lambda.cloud.websocket.event.StompWebSocketSubscribeEvent;
+import com.lambda.cloud.websocket.service.StompWebSocketConnectEventService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,22 +18,22 @@ import org.springframework.web.socket.messaging.*;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "WsEventHandler")
 @Slf4j
-public class WebSocketEventHandler {
+public class StompWebSocketEventHandler {
 
-    private final List<WebSocketConnectEventService> connectEventServices;
+    private final List<StompWebSocketConnectEventService> connectEventServices;
 
-    private final Map<String, List<WebSocketSubscribeEvent>> subscribeListMap;
+    private final Map<String, List<StompWebSocketSubscribeEvent>> subscribeListMap;
 
-    public WebSocketEventHandler(
-            List<WebSocketConnectEventService> connectEventServices, List<WebSocketSubscribeEvent> subscribeEvents) {
+    public StompWebSocketEventHandler(
+            List<StompWebSocketConnectEventService> connectEventServices, List<StompWebSocketSubscribeEvent> subscribeEvents) {
         this.connectEventServices = connectEventServices;
         this.subscribeListMap = new HashMap<>(6);
-        for (WebSocketSubscribeEvent s : subscribeEvents) {
+        for (StompWebSocketSubscribeEvent s : subscribeEvents) {
             if (s.topics() == null) {
                 continue;
             }
             for (String topic : s.topics()) {
-                List<WebSocketSubscribeEvent> events;
+                List<StompWebSocketSubscribeEvent> events;
                 if (this.subscribeListMap.containsKey(topic)) {
                     events = this.subscribeListMap.get(topic);
                 } else {
@@ -52,7 +52,7 @@ public class WebSocketEventHandler {
      */
     @EventListener
     public void connectEvent(SessionConnectEvent event) {
-        WebSocketSession<SessionConnectEvent> info = new WebSocketSession<>(event);
+        StompWebSocketSession<SessionConnectEvent> info = new StompWebSocketSession<>(event);
         this.connectEventServices.forEach(i -> i.connectEvent(info));
     }
 
@@ -63,7 +63,7 @@ public class WebSocketEventHandler {
      */
     @EventListener
     public void connectedEvent(SessionConnectedEvent event) {
-        WebSocketSession<SessionConnectedEvent> info = new WebSocketSession<>(event);
+        StompWebSocketSession<SessionConnectedEvent> info = new StompWebSocketSession<>(event);
         this.connectEventServices.forEach(i -> i.connectedEvent(info));
     }
 
@@ -74,7 +74,7 @@ public class WebSocketEventHandler {
      */
     @EventListener
     public void disconnectEvent(SessionDisconnectEvent event) {
-        WebSocketSession<SessionDisconnectEvent> info = new WebSocketSession<>(event);
+        StompWebSocketSession<SessionDisconnectEvent> info = new StompWebSocketSession<>(event);
         this.connectEventServices.forEach(i -> i.disconnectEvent(info));
     }
 
@@ -85,7 +85,7 @@ public class WebSocketEventHandler {
      */
     @EventListener
     public void subscribeEvent(SessionSubscribeEvent event) {
-        WebSocketSession<SessionSubscribeEvent> info = new WebSocketSession<>(event);
+        StompWebSocketSession<SessionSubscribeEvent> info = new StompWebSocketSession<>(event);
         if (this.subscribeListMap.containsKey(info.getTopic())) {
             this.subscribeListMap.get(info.getTopic()).forEach(i -> i.subscribeEvent(info));
         }
@@ -98,7 +98,7 @@ public class WebSocketEventHandler {
      */
     @EventListener
     public void unsubscribeEvent(SessionUnsubscribeEvent event) {
-        WebSocketSession<SessionUnsubscribeEvent> info = new WebSocketSession<>(event);
+        StompWebSocketSession<SessionUnsubscribeEvent> info = new StompWebSocketSession<>(event);
         if (this.subscribeListMap.containsKey(info.getTopic())) {
             this.subscribeListMap.get(info.getTopic()).forEach(i -> i.unsubscribeEvent(info));
         }

@@ -7,7 +7,7 @@ import java.util.Set;
  *
  * @author jpjoo
  */
-public interface WebSocketChannelRepository {
+public interface StompWebSocketChannelRepository {
 
     /**
      * 增加用户

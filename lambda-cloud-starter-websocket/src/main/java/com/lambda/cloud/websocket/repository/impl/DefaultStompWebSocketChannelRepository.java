@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Sets;
-import com.lambda.cloud.websocket.repository.WebSocketChannelRepository;
+import com.lambda.cloud.websocket.repository.StompWebSocketChannelRepository;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -20,11 +20,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @author jpjoo
  */
 @Slf4j
-public class DefaultWebSocketChannelRepository implements WebSocketChannelRepository {
+public class DefaultStompWebSocketChannelRepository implements StompWebSocketChannelRepository {
 
     private final Cache<String, Set<String>> localCache;
 
-    public DefaultWebSocketChannelRepository(long timeout) {
+    public DefaultStompWebSocketChannelRepository(long timeout) {
         this.localCache = Caffeine.newBuilder()
                 .refreshAfterWrite(timeout / 2, TimeUnit.SECONDS)
                 .expireAfterWrite(timeout, TimeUnit.SECONDS)
