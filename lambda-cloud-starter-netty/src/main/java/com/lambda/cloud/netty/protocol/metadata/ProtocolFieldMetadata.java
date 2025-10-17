@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.metadata;
 
+import cn.hutool.core.util.ReflectUtil;
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -168,9 +169,8 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      */
     public void setValue(Object target, Object value) throws ProtocolException {
         try {
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (IllegalAccessException e) {
+            ReflectUtil.setFieldValue(target, field, value);
+        } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.REFLECTION_ERROR, "无法设置字段值: " + getFieldName(), getFieldName(), e);
         }
@@ -185,9 +185,8 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      */
     public Object getValue(Object target) throws ProtocolException {
         try {
-            field.setAccessible(true);
-            return field.get(target);
-        } catch (IllegalAccessException e) {
+            return ReflectUtil.getFieldValue(target, field);
+        } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.REFLECTION_ERROR, "无法获取字段值: " + getFieldName(), getFieldName(), e);
         }
