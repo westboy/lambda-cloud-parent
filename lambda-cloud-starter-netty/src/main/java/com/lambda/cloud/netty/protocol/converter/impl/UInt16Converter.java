@@ -1,13 +1,13 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.protocol.validation.impl.NumberRangeValidator;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
-import com.lambda.cloud.netty.utils.NioUtils;
-import com.lambda.cloud.netty.utils.TypeUtils;
+import com.lambda.cloud.netty.utils.ByteBufferUtils;
+import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -43,9 +43,9 @@ public class UInt16Converter implements DataTypeConverter {
                         ProtocolException.ErrorCode.PARSE_ERROR, validate.message(), fieldMetadata.getFieldName());
             }
             Class<?> fieldType = fieldMetadata.getFieldType();
-            if (TypeUtils.isIntegerType(fieldType)) {
+            if (PrimitiveTypeUtils.isIntegerType(fieldType)) {
                 return value;
-            } else if (TypeUtils.isShortType(fieldType)) {
+            } else if (PrimitiveTypeUtils.isShortType(fieldType)) {
                 // 处理 Java 的有符号short类型
                 return value > Short.MAX_VALUE ? (short) (value - 65536) : (short) value;
             } else if (fieldType == String.class) {
@@ -75,7 +75,7 @@ public class UInt16Converter implements DataTypeConverter {
 
         ValidationUtils.validateNumberRange(intValue, 0, 0xFFFF, fieldMetadata, "UINT16");
 
-        ByteBuffer buffer = NioUtils.createByteBuffer(2, fieldMetadata);
+        ByteBuffer buffer = ByteBufferUtils.createByteBuffer(2, fieldMetadata);
         buffer.putShort((short) intValue);
 
         return buffer.array();
@@ -91,7 +91,7 @@ public class UInt16Converter implements DataTypeConverter {
         ValidationUtils.validateNumberRange(intValue, 0, 0xFFFF, fieldMetadata, "UINT16");
 
         Class<?> fieldType = fieldMetadata.getFieldType();
-        if (TypeUtils.isShortType(fieldType)) {
+        if (PrimitiveTypeUtils.isShortType(fieldType)) {
             return (short) intValue;
         }
         return intValue;

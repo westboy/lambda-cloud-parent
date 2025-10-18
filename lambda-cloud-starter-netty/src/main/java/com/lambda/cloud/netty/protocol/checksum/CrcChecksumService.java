@@ -1,7 +1,7 @@
 package com.lambda.cloud.netty.protocol.checksum;
 
 import com.lambda.cloud.netty.protocol.checksum.impl.Crc16Algorithm;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;

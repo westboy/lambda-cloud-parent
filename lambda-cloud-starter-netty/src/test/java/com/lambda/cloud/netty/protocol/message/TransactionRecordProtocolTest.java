@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.protocol.message;
 
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;

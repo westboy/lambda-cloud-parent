@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.lambda.cloud.netty.protocol.checksum.impl.Crc16Algorithm;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.BeforeEach;

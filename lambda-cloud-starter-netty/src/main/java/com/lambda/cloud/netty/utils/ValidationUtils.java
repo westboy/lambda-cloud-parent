@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.utils;
 
 import static com.lambda.cloud.netty.utils.ExceptionUtils.createSerializeException;
 
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import java.util.regex.Pattern;
 
@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
  * 提供常用的数据验证方法
  * </p>
  *
+ * @author Jin
  */
 public final class ValidationUtils {
 

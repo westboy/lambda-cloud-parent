@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

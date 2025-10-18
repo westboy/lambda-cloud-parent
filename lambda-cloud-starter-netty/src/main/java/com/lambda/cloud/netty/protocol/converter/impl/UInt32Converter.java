@@ -1,11 +1,11 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
-import com.lambda.cloud.netty.utils.NioUtils;
-import com.lambda.cloud.netty.utils.TypeUtils;
+import com.lambda.cloud.netty.utils.ByteBufferUtils;
+import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -39,9 +39,9 @@ public class UInt32Converter implements DataTypeConverter {
             // 根据字段类型返回不同的对象
             Class<?> fieldType = fieldMetadata.getFieldType();
 
-            if (TypeUtils.isLongType(fieldType)) {
+            if (PrimitiveTypeUtils.isLongType(fieldType)) {
                 return unsignedValue;
-            } else if (TypeUtils.isIntegerType(fieldType)) {
+            } else if (PrimitiveTypeUtils.isIntegerType(fieldType)) {
                 return value;
             } else if (fieldType == String.class) {
                 return String.valueOf(unsignedValue);
@@ -76,7 +76,7 @@ public class UInt32Converter implements DataTypeConverter {
             // 检查范围
             ValidationUtils.validateNumberRange(longValue, 0L, 0xFFFFFFFFL, fieldMetadata, "UINT32");
 
-            ByteBuffer buffer = NioUtils.createByteBuffer(4, fieldMetadata);
+            ByteBuffer buffer = ByteBufferUtils.createByteBuffer(4, fieldMetadata);
             buffer.putInt((int) longValue);
 
             return buffer.array();
@@ -102,7 +102,7 @@ public class UInt32Converter implements DataTypeConverter {
 
             // 根据字段类型返回
             Class<?> fieldType = fieldMetadata.getFieldType();
-            if (TypeUtils.isIntegerType(fieldType)) {
+            if (PrimitiveTypeUtils.isIntegerType(fieldType)) {
                 return (int) longValue;
             } else {
                 return longValue;

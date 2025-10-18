@@ -1,10 +1,10 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
-import com.lambda.cloud.netty.utils.TypeUtils;
+import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 
 /**
@@ -20,9 +20,9 @@ public class UInt8Converter implements DataTypeConverter {
         int unsignedValue = Byte.toUnsignedInt(data[0]);
 
         Class<?> fieldType = fieldMetadata.getFieldType();
-        if (TypeUtils.isIntegerType(fieldType)) {
+        if (PrimitiveTypeUtils.isIntegerType(fieldType)) {
             return unsignedValue;
-        } else if (TypeUtils.isByteType(fieldType)) {
+        } else if (PrimitiveTypeUtils.isByteType(fieldType)) {
             return data[0];
         } else if (fieldType == String.class) {
             return String.valueOf(unsignedValue);
@@ -59,7 +59,7 @@ public class UInt8Converter implements DataTypeConverter {
             ValidationUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
 
             Class<?> fieldType = fieldMetadata.getFieldType();
-            if (TypeUtils.isByteType(fieldType)) {
+            if (PrimitiveTypeUtils.isByteType(fieldType)) {
                 return (byte) intValue;
             }
             return intValue;

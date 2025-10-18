@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
@@ -12,6 +12,11 @@ import java.util.Arrays;
 
 /**
  * ASCII 字符串转换器
+ * <p>
+ * 提供ASCII字符串的解析和序列化功能
+ * </p>
+ * 
+ * @author Jin
  */
 public class AsciiConverter implements DataTypeConverter {
 

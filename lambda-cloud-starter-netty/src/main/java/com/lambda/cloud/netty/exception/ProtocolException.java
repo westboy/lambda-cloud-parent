@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.exception;
+package com.lambda.cloud.netty.exception;
 
 import lombok.Getter;
 

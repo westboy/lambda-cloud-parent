@@ -1,8 +1,16 @@
 package com.lambda.cloud.netty.utils;
 
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 
+/**
+ * 异常工具类
+ * <p>
+ * 提供通用的异常创建方法，消除重复的异常逻辑
+ * </p>
+ *
+ * @author Jin
+ */
 public final class ExceptionUtils {
 
     /**

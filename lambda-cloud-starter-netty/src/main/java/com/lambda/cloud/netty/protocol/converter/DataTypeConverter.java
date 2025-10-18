@@ -1,7 +1,7 @@
 package com.lambda.cloud.netty.protocol.converter;
 
 import com.lambda.cloud.core.utils.Assert;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 
 /**

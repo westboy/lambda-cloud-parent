@@ -12,7 +12,7 @@ import java.nio.ByteOrder;
  *
  * @author Jin
  */
-public final class NioUtils {
+public final class ByteBufferUtils {
 
     /**
      * 创建配置了字节序的ByteBuffer

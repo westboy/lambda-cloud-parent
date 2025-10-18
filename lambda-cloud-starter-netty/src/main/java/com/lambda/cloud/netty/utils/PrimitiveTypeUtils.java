@@ -1,6 +1,14 @@
 package com.lambda.cloud.netty.utils;
 
-public final class TypeUtils {
+/**
+ * 基本类型工具类
+ * <p>
+ * 提供通用的基本类型判断方法，消除重复的判断逻辑
+ * </p>
+ * 
+ * @author Jin
+ */
+public final class PrimitiveTypeUtils {
     /**
      * 检查字段类型是否为整型（包括包装类和基本类型）
      *

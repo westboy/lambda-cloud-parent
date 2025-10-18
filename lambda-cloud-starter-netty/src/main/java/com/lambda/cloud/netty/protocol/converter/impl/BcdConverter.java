@@ -1,10 +1,10 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.exception.ProtocolException;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
-import com.lambda.cloud.netty.utils.TypeUtils;
+import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 
 /**
@@ -41,12 +41,12 @@ public class BcdConverter implements DataTypeConverter {
 
         Class<?> fieldType = fieldMetadata.getFieldType();
         try {
-            if (TypeUtils.isLongType(fieldType)) {
+            if (PrimitiveTypeUtils.isLongType(fieldType)) {
                 long value = Long.parseLong(result);
                 // 验证长整型范围
                 ValidationUtils.validateNumberRange(value, 0, Long.MAX_VALUE, fieldMetadata, "BCD长整型");
                 return value;
-            } else if (TypeUtils.isIntegerType(fieldType)) {
+            } else if (PrimitiveTypeUtils.isIntegerType(fieldType)) {
                 int value = Integer.parseInt(result);
                 // 验证整型范围
                 ValidationUtils.validateNumberRange(value, 0, Integer.MAX_VALUE, fieldMetadata, "BCD整型");
