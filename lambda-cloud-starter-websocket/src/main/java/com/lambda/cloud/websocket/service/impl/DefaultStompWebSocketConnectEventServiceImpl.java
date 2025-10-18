@@ -1,7 +1,7 @@
 package com.lambda.cloud.websocket.service.impl;
 
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.websocket.StompWebSocketSession;
+import com.lambda.cloud.websocket.session.StompWebSocketSession;
 import com.lambda.cloud.websocket.repository.StompWebSocketChannelRepository;
 import com.lambda.cloud.websocket.service.StompWebSocketConnectEventService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

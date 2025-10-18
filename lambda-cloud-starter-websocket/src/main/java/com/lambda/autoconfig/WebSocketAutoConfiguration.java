@@ -1,7 +1,7 @@
 package com.lambda.autoconfig;
 
 import cn.hutool.extra.spring.SpringUtil;
-import com.lambda.cloud.websocket.StompWebSocketEventHandler;
+import com.lambda.cloud.websocket.handler.StompWebSocketEventHandler;
 import com.lambda.cloud.websocket.event.StompWebSocketSubscribeEvent;
 import com.lambda.cloud.websocket.interceptor.DefaultAuthenticationChannelInterceptor;
 import com.lambda.cloud.websocket.interceptor.IpHandshakeInterceptor;

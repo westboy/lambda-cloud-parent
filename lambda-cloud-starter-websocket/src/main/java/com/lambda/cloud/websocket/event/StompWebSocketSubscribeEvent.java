@@ -1,6 +1,6 @@
 package com.lambda.cloud.websocket.event;
 
-import com.lambda.cloud.websocket.StompWebSocketSession;
+import com.lambda.cloud.websocket.session.StompWebSocketSession;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 

@@ -1,4 +1,4 @@
-package com.lambda.cloud.websocket;
+package com.lambda.cloud.websocket.session;
 
 import com.lambda.cloud.core.Constants;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

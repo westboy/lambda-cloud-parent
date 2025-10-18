@@ -1,7 +1,8 @@
-package com.lambda.cloud.websocket;
+package com.lambda.cloud.websocket.handler;
 
 import com.lambda.cloud.websocket.event.StompWebSocketSubscribeEvent;
 import com.lambda.cloud.websocket.service.StompWebSocketConnectEventService;
+import com.lambda.cloud.websocket.session.StompWebSocketSession;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
