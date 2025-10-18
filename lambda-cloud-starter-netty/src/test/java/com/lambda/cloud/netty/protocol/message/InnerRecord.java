@@ -4,9 +4,11 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import java.math.BigDecimal;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "消息体", version = "1.0")
 public class InnerRecord {
 
@@ -252,58 +254,58 @@ public class InnerRecord {
             description = "谷金额")
     private BigDecimal valleyAmount;
 
-    // 深谷时段数据
-    /**
-     * 深谷单价 (4字节，5位小数)
-     */
-    @ProtocolField(
-            order = 22,
-            length = 4,
-            checksum = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            precision = 5,
-            description = "深谷单价")
-    private BigDecimal deepValleyPrice;
-
-    /**
-     * 深谷电量 (4字节，4位小数)
-     */
-    @ProtocolField(
-            order = 23,
-            length = 4,
-            checksum = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            precision = 4,
-            description = "深谷电量")
-    private BigDecimal deepValleyElectricity;
-
-    /**
-     * 深谷损电量 (4字节，4位小数)
-     */
-    @ProtocolField(
-            order = 24,
-            length = 4,
-            checksum = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            precision = 4,
-            description = "深谷损电量")
-    private BigDecimal deepValleyLossElectricity;
-
-    /**
-     * 深谷金额 (4字节，4位小数)
-     */
-    @ProtocolField(
-            order = 25,
-            length = 4,
-            checksum = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            precision = 4,
-            description = "深谷金额")
-    private BigDecimal deepValleyAmount;
+    //    // 深谷时段数据
+    //    /**
+    //     * 深谷单价 (4字节，5位小数)
+    //     */
+    //    @ProtocolField(
+    //            order = 22,
+    //            length = 4,
+    //            checksum = true,
+    //            dataType = ProtocolDataType.HEX,
+    //            littleEndian = true,
+    //            precision = 5,
+    //            description = "深谷单价")
+    //    private BigDecimal deepValleyPrice;
+    //
+    //    /**
+    //     * 深谷电量 (4字节，4位小数)
+    //     */
+    //    @ProtocolField(
+    //            order = 23,
+    //            length = 4,
+    //            checksum = true,
+    //            dataType = ProtocolDataType.HEX,
+    //            littleEndian = true,
+    //            precision = 4,
+    //            description = "深谷电量")
+    //    private BigDecimal deepValleyElectricity;
+    //
+    //    /**
+    //     * 深谷损电量 (4字节，4位小数)
+    //     */
+    //    @ProtocolField(
+    //            order = 24,
+    //            length = 4,
+    //            checksum = true,
+    //            dataType = ProtocolDataType.HEX,
+    //            littleEndian = true,
+    //            precision = 4,
+    //            description = "深谷损电量")
+    //    private BigDecimal deepValleyLossElectricity;
+    //
+    //    /**
+    //     * 深谷金额 (4字节，4位小数)
+    //     */
+    //    @ProtocolField(
+    //            order = 25,
+    //            length = 4,
+    //            checksum = true,
+    //            dataType = ProtocolDataType.HEX,
+    //            littleEndian = true,
+    //            precision = 4,
+    //            description = "深谷金额")
+    //    private BigDecimal deepValleyAmount;
 
     /**
      * 预留字段 (18字节)

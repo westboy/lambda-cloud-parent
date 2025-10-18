@@ -1,9 +1,10 @@
 package com.lambda.cloud.netty.protocol.processor;
 
-import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.CrcChecksumService;
+import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
+import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
@@ -29,19 +30,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public record CrcProcessor(CrcChecksumService crcService) {
 
+    private static final DataTypeConverterFactory converterFactory = new DataTypeConverterFactory();
+
     /**
      * 构造函数
      */
     public CrcProcessor() {
         this(new CrcChecksumService());
     }
-
-    /**
-     * 构造函数
-     *
-     * @param crcService CRC校验服务
-     */
-    public CrcProcessor {}
 
     /**
      * 在序列化时计算并设置CRC值
@@ -184,14 +180,15 @@ public record CrcProcessor(CrcChecksumService crcService) {
             // 序列化参与CRC计算的字段，按字段顺序拼接原始hex报文数据
             for (ProtocolFieldMetadata fieldMetadata : checksumFields) {
                 // 获取字段值
-                Object fieldValue = CrcProcessorHelper.getFieldValue(message, fieldMetadata);
+
+                Object fieldValue = fieldMetadata.getValue(message);
 
                 // 检查是否为复合字段
                 if (fieldMetadata.isComposite()) {
-                    serializeCompositeFieldForCrc(tempBuf, fieldValue, fieldMetadata);
+                    this.serializeCompositeFieldForCrc(tempBuf, fieldValue, fieldMetadata);
                 } else {
                     // 普通字段直接序列化
-                    CrcProcessorHelper.serializeFieldValue(tempBuf, fieldValue, fieldMetadata);
+                    this.serializeFieldValue(tempBuf, fieldValue, fieldMetadata);
                 }
                 log.debug("字段 {} 参与CRC计算，值: {}", fieldMetadata.getFieldName(), fieldValue);
             }
@@ -200,7 +197,7 @@ public record CrcProcessor(CrcChecksumService crcService) {
             tempBuf.release();
 
             // 使用CRC算法计算校验值
-            String algorithmName = determineCrcAlgorithm(frameMetadata);
+            String algorithmName = this.determineCrcAlgorithm(frameMetadata);
             long crcValue = crcService.getAlgorithm(algorithmName).calculate(dataForCrc);
 
             log.debug("CRC计算完成，数据长度: {} bytes, CRC值: 0x{:04X}", dataForCrc.length, crcValue);
@@ -209,21 +206,6 @@ public record CrcProcessor(CrcChecksumService crcService) {
         } catch (Exception e) {
             throw new RuntimeException("计算CRC失败", e);
         }
-    }
-
-    /**
-     * 计算消息的CRC值（兼容旧方法，委托给新方法）
-     *
-     * @param message         消息实例
-     * @param frameMetadata   消息元数据
-     * @param excludeCrcField 要排除的CRC字段（此参数已不使用）
-     * @return CRC值
-     * @deprecated 使用 {@link #calculateCrcForAllChecksumFields(Object, ProtocolFrameMetadata)} 替代
-     */
-    @Deprecated
-    private long calculateCrcForMessage(
-            Object message, ProtocolFrameMetadata frameMetadata, ProtocolFieldMetadata excludeCrcField) {
-        return calculateCrcForAllChecksumFields(message, frameMetadata);
     }
 
     /**
@@ -236,7 +218,7 @@ public record CrcProcessor(CrcChecksumService crcService) {
      */
     private long getCrcValueFromInstance(Object instance, ProtocolFieldMetadata crcField) throws ProtocolException {
 
-        Object value = CrcProcessorHelper.getFieldValue(instance, crcField);
+        Object value = crcField.getValue(instance);
 
         switch (value) {
             case null -> {
@@ -285,53 +267,7 @@ public record CrcProcessor(CrcChecksumService crcService) {
             // 默认转换为十六进制字符串
             value = String.format("%0" + (crcField.getLength() * 2) + "X", crcValue);
         }
-
-        CrcProcessorHelper.setFieldValue(instance, crcField, value);
-    }
-
-    /**
-     * 更新ByteBuf中的CRC字段数据
-     *
-     * @param byteBuf       字节缓冲区
-     * @param frameMetadata 消息元数据
-     * @param crcField      CRC字段元数据
-     * @param crcValue      CRC值
-     */
-    private void updateCrcInByteBuf(
-            ByteBuf byteBuf, ProtocolFrameMetadata frameMetadata, ProtocolFieldMetadata crcField, long crcValue)
-            throws ProtocolException {
-
-        // 计算CRC字段在ByteBuf中的偏移量
-        int offset = calculateFieldOffset(frameMetadata, crcField);
-
-        // 确定CRC算法
-        String algorithmName = determineCrcAlgorithm(crcField);
-
-        // 将CRC值转换为字节数组
-        byte[] crcBytes = crcService.crcToBytes(crcValue, crcField, algorithmName);
-
-        // 更新ByteBuf中的数据
-        byteBuf.setBytes(offset, crcBytes);
-    }
-
-    /**
-     * 计算字段在消息中的偏移量
-     *
-     * @param frameMetadata 消息元数据
-     * @param targetField   目标字段
-     * @return 偏移量
-     */
-    private int calculateFieldOffset(ProtocolFrameMetadata frameMetadata, ProtocolFieldMetadata targetField) {
-        int offset = 0;
-
-        for (ProtocolFieldMetadata fieldMetadata : frameMetadata.fields()) {
-            if (fieldMetadata.equals(targetField)) {
-                break;
-            }
-            offset += fieldMetadata.getLength();
-        }
-
-        return offset;
+        crcField.setValue(instance, value);
     }
 
     /**
@@ -343,19 +279,14 @@ public record CrcProcessor(CrcChecksumService crcService) {
     private String determineCrcAlgorithm(ProtocolFrameMetadata frameMetadata) {
         List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
         if (!crcFields.isEmpty()) {
-            return CrcProcessorHelper.determineCrcAlgorithm(crcFields.getFirst());
+            int length = crcFields.getFirst().getLength();
+            if (length == 2) {
+                return "CRC16-MODBUS";
+            } else if (length == 4) {
+                return "CRC32";
+            }
         }
-        return "CRC16-CCITT"; // 默认算法
-    }
-
-    /**
-     * 确定CRC算法名称（基于CRC字段）
-     *
-     * @param crcField CRC字段元数据
-     * @return 算法名称
-     */
-    private String determineCrcAlgorithm(ProtocolFieldMetadata crcField) {
-        return CrcProcessorHelper.determineCrcAlgorithm(crcField);
+        return "CRC16-CCITT";
     }
 
     /**
@@ -402,14 +333,11 @@ public record CrcProcessor(CrcChecksumService crcService) {
                     // 递归处理子字段
                     if (subFieldMetadata.isComposite()) {
                         // 如果子字段也是复合字段，继续递归
-                        serializeCompositeFieldForCrc(tempBuf, subFieldValue, subFieldMetadata);
+                        this.serializeCompositeFieldForCrc(tempBuf, subFieldValue, subFieldMetadata);
                     } else {
                         // 普通子字段直接序列化
-                        CrcProcessorHelper.serializeFieldValue(tempBuf, subFieldValue, subFieldMetadata);
+                        this.serializeFieldValue(tempBuf, subFieldValue, subFieldMetadata);
                     }
-
-                    System.err.println(
-                            HexUtil.encodeHexStr(ByteBufUtil.getBytes(tempBuf)).toUpperCase());
 
                     log.debug(
                             "复合字段 {} 的子字段 {} 参与CRC计算，值: {}",
@@ -423,6 +351,29 @@ public record CrcProcessor(CrcChecksumService crcService) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,
                     "复合字段CRC计算失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
+        }
+    }
+
+    /**
+     * 序列化字段值到ByteBuf
+     *
+     * @param byteBuf       字节缓冲区
+     * @param fieldValue    字段值
+     * @param fieldMetadata 字段元数据
+     * @throws ProtocolException 序列化失败
+     */
+    public void serializeFieldValue(ByteBuf byteBuf, Object fieldValue, ProtocolFieldMetadata fieldMetadata)
+            throws ProtocolException {
+        try {
+            DataTypeConverter converter = converterFactory.getConverter(fieldMetadata.getDataType());
+            byte[] serializedData = converter.serialize(fieldValue, fieldMetadata);
+            byteBuf.writeBytes(serializedData);
+        } catch (Exception e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    "序列化字段失败: " + fieldMetadata.getFieldName(),
                     fieldMetadata.getFieldName(),
                     e);
         }

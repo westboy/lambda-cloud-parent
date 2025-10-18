@@ -3,8 +3,8 @@ package com.lambda.cloud.netty.protocol.message;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
-import lombok.Data;
-import lombok.ToString;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 交易记录消息
@@ -14,9 +14,9 @@ import lombok.ToString;
  *
  * @author Jin
  */
-@Data
-@ToString
-@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "充电交易记录信息")
+@Getter
+@Setter
+@ProtocolFrame
 public class TransactionRecord {
 
     /**

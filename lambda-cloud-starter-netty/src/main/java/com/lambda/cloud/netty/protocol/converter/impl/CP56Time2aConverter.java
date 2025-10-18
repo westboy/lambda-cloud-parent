@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -19,6 +20,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * 支持标志位设置、固定年份范围、Instant类型返回
  * </p>
  */
+@Slf4j
 public class CP56Time2aConverter implements DataTypeConverter {
 
     private static final int EXPECTED_LENGTH = 7;
@@ -91,21 +93,18 @@ public class CP56Time2aConverter implements DataTypeConverter {
                     ProtocolException.ErrorCode.PARSE_ERROR, "CP56TIME2A时间数据无效或标记为无效", fieldMetadata.getFieldName());
         }
 
-        // 创建LocalDateTime，它会自动计算正确的星期几
         LocalDateTime dateTime = LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
 
-        // 验证原始数据中的星期几是否正确（仅记录警告，不抛出异常）
         int actualDayOfWeek = dateTime.getDayOfWeek().getValue();
         if (actualDayOfWeek != originalDayOfWeek) {
-            // 可以选择记录警告日志，但不影响解析结果
-            // log.warn("CP56TIME2A原始数据中的星期几({})与实际日期计算的星期几({})不符", originalDayOfWeek, actualDayOfWeek);
+            log.warn("CP56TIME2A原始数据中的星期({})与实际日期计算的星期({})不符", originalDayOfWeek, actualDayOfWeek);
         }
         return dateTime;
     }
 
     @Override
     public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        return serialize(value, fieldMetadata, true, true);
+        return serialize(value, fieldMetadata, false, false);
     }
 
     /**
@@ -139,9 +138,9 @@ public class CP56Time2aConverter implements DataTypeConverter {
             if (summerTime) result[3] |= (byte) 0x80;
 
             // 日期和星期
-//            int dayOfWeek = dateTime.getDayOfWeek().getValue();
-            int dayOfWeek = 0;
-            result[4] = (byte) (((dayOfWeek & 0x07) << 5) | (dateTime.getDayOfMonth() & 0x1F));
+            int dayOfWeek = dateTime.getDayOfWeek().getValue();
+            //            result[4] = (byte) (((dayOfWeek & 0x07) << 5) | (dateTime.getDayOfMonth() & 0x1F));
+            result[4] = (byte) ((dateTime.getDayOfMonth() & 0x1F));
 
             // 月份
             result[5] = (byte) (dateTime.getMonthValue() & 0x0F);

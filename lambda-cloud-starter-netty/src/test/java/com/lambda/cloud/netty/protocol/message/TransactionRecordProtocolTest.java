@@ -29,11 +29,14 @@ public class TransactionRecordProtocolTest {
     private static final String TEST_DATA3 =
             "68B217F3003B1812000000017001159733514595532818120000000170019065170A0A0A19E880060B0A0A19E022020000000000000000000000000048E80100000000000000000000000000D853010000000000000000000000000050C300007E4E01000000000030A70000F8A700001E320000000000001815000076A91E0800122A2008009C8001000000000048BC00004C4233373041444E32534A31383832383801E880060B0A0A194002607F8F42D86D1BBD5A";
 
+    private static final String TEST_DATA4 =
+            "68A2077A003B181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B4733";
+
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
         log.info("开始使用新协议框架解析交易记录报文");
-        log.info("测试数据: {}", TEST_DATA3);
-        log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA3.length(), TEST_DATA3.length() / 2);
+        log.info("测试数据: {}", TEST_DATA4);
+        log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         // 获取协议引擎
         ProtocolEngine<TransactionRecord> engine = ProtocolEngineFactory.getDefaultEngine();
@@ -45,7 +48,7 @@ public class TransactionRecordProtocolTest {
             log.info("字段数量: {}", metadata.fields().size());
 
             // 将十六进制字符串转换为字节数组
-            byte[] bytes = HexUtils.hexToBytes(TEST_DATA3);
+            byte[] bytes = HexUtils.hexToBytes(TEST_DATA4);
             log.info("实际数据长度: {} 字节", bytes.length);
 
             if (bytes.length < metadata.totalLength()) {
@@ -113,11 +116,11 @@ public class TransactionRecordProtocolTest {
         log.info("谷单价: {}", record.getInnerRecord().getValleyPrice());
         log.info("谷电量: {}", record.getInnerRecord().getValleyElectricity());
         log.info("谷金额: {}", record.getInnerRecord().getValleyAmount());
-
-        log.info("=== 深谷时段数据 ===");
-        log.info("深谷单价: {}", record.getInnerRecord().getDeepValleyPrice());
-        log.info("深谷电量: {}", record.getInnerRecord().getDeepValleyElectricity());
-        log.info("深谷金额: {}", record.getInnerRecord().getDeepValleyAmount());
+        //
+        //        log.info("=== 深谷时段数据 ===");
+        //        log.info("深谷单价: {}", record.getInnerRecord().getDeepValleyPrice());
+        //        log.info("深谷电量: {}", record.getInnerRecord().getDeepValleyElectricity());
+        //        log.info("深谷金额: {}", record.getInnerRecord().getDeepValleyAmount());
 
         log.info("=== 总计信息 ===");
         log.info("消费金额: {}", record.getInnerRecord().getTotalAmount());
@@ -135,10 +138,10 @@ public class TransactionRecordProtocolTest {
     public void testProtocolEngineMetadata() {
         log.info("测试协议引擎元数据功能");
 
-        ProtocolEngine<TransactionRecord> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<InnerRecord> engine = ProtocolEngineFactory.getDefaultEngine();
 
         // 获取消息元数据
-        var metadata = engine.getMetadata(TransactionRecord.class);
+        var metadata = engine.getMetadata(InnerRecord.class);
 
         log.info("消息类型: {}", metadata.getFrameType());
         log.info("消息名称: {}", metadata.getMessageName());
