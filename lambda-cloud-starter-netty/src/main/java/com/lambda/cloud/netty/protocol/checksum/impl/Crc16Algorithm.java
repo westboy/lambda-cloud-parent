@@ -28,8 +28,7 @@ public record Crc16Algorithm(CRC16Checksum crc16Checksum, String algorithmName) 
      * @param crc16Checksum CRC16校验器
      * @param algorithmName 算法名称
      */
-    public Crc16Algorithm {
-    }
+    public Crc16Algorithm {}
 
     @Override
     public long calculate(byte[] data) {

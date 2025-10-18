@@ -38,7 +38,11 @@ public @interface ProtocolField {
     boolean encrypted() default false;
 
     /**
-     * CRCChecksum 校验
+     *  CRCChecksum 校验
+     *
+     * <p>
+     * 表示该字段为校验字段，参与CRC校验值的计算
+     * </p>
      *
      * @return 校验
      */
@@ -46,8 +50,14 @@ public @interface ProtocolField {
 
     /**
      * CRCFiled
+     * <p>
+     * 表示该字段为CRC校验字段，存储校验值，需要根据其他字段计算CRC校验值
+     * ---
+     * 解析的时候需要取该值参与CRC校验
+     * 序列化的时候需要将计算出的CRC校验值写入该字段
+     * </p>
      *
-     * @return 校验CRC字段
+     * @return CRC字段
      */
     boolean CRCFiled() default false;
 

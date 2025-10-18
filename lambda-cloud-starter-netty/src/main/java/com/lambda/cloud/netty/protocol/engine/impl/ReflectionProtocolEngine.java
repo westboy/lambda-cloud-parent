@@ -123,13 +123,13 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             // 记录序列化开始
             logProtocolOperation("序列化", metadata);
 
+            // 先计算并设置CRC校验和（在序列化前）
+            crcProcessor.calculateAndSetCrc(message, metadata);
+
             // 序列化各个字段
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
                 serializeField(message, byteBuf, fieldMetadata, metadata);
             }
-
-            // 计算并设置CRC校验和
-            crcProcessor.calculateAndSetCrc(message, metadata);
 
             // 记录序列化成功和性能指标
             if (log.isDebugEnabled()) {

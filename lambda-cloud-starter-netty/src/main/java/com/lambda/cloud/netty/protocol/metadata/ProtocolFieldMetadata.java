@@ -161,12 +161,30 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
     }
 
     /**
-     * 是否为CRC校验字段
+     * 是否为CRC校验字段（参与CRC计算的字段）
      *
      * @return true 表示CRC校验字段
      */
     public boolean isCrcChecksum() {
         return protocolField.checksum();
+    }
+
+    /**
+     * 是否为CRC字段（存储CRC值的字段）
+     *
+     * @return true 表示CRC字段
+     */
+    public boolean isCrcField() {
+        return protocolField.CRCFiled();
+    }
+
+    /**
+     * 是否为加密字段
+     *
+     * @return true 表示加密字段
+     */
+    public boolean isEncrypted() {
+        return protocolField.encrypted();
     }
 
     /**

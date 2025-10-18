@@ -23,7 +23,6 @@ public class SimpleCrcTest {
         System.out.println("所有CRC16算法实例化成功");
     }
 
-
     @Test
     public void testCrcCalculation() {
         // 测试基本的CRC计算

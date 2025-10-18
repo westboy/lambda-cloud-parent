@@ -8,7 +8,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -37,8 +36,7 @@ public record CrcProcessor(CrcChecksumService crcService) {
      *
      * @param crcService CRC校验服务
      */
-    public CrcProcessor {
-    }
+    public CrcProcessor {}
 
     /**
      * 在序列化时计算并设置CRC值
@@ -127,19 +125,31 @@ public record CrcProcessor(CrcChecksumService crcService) {
     }
 
     /**
-     * 获取消息中的所有CRC字段
+     * 获取消息中的所有CRC字段（存储CRC值的字段）
      *
      * @param frameMetadata 消息元数据
      * @return CRC字段列表
      */
     private List<ProtocolFieldMetadata> getCrcFields(ProtocolFrameMetadata frameMetadata) {
         return frameMetadata.fields().stream()
+                .filter(ProtocolFieldMetadata::isCrcField)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 获取消息中参与CRC计算的字段
+     *
+     * @param frameMetadata 消息元数据
+     * @return 参与CRC计算的字段列表
+     */
+    private List<ProtocolFieldMetadata> getCrcChecksumFields(ProtocolFrameMetadata frameMetadata) {
+        return frameMetadata.fields().stream()
                 .filter(ProtocolFieldMetadata::isCrcChecksum)
                 .collect(Collectors.toList());
     }
 
     /**
-     * 计算消息的CRC值（排除指定的CRC字段）
+     * 计算消息的CRC值（只对标记为checksum=true的字段进行计算）
      *
      * @param message         消息实例
      * @param frameMetadata   消息元数据
@@ -153,12 +163,11 @@ public record CrcProcessor(CrcChecksumService crcService) {
             // 序列化消息到字节数组（用于CRC计算）
             ByteBuf tempBuf = Unpooled.buffer();
 
-            // 序列化除 CRC 字段外的所有字段
-            for (ProtocolFieldMetadata fieldMetadata : frameMetadata.fields()) {
-                if (fieldMetadata.equals(excludeCrcField)) {
-                    continue;
-                }
+            // 获取参与CRC计算的字段
+            List<ProtocolFieldMetadata> checksumFields = getCrcChecksumFields(frameMetadata);
 
+            // 序列化参与CRC计算的字段
+            for (ProtocolFieldMetadata fieldMetadata : checksumFields) {
                 // 获取字段值并序列化
                 Object fieldValue = CrcProcessorHelper.getFieldValue(message, fieldMetadata);
                 CrcProcessorHelper.serializeFieldValue(tempBuf, fieldValue, fieldMetadata);
@@ -203,12 +212,12 @@ public record CrcProcessor(CrcChecksumService crcService) {
                 }
                 return Long.parseLong(hexString, 16);
             }
-            default -> throw new ProtocolException(
-                    ProtocolException.ErrorCode.CRC_ERROR,
-                    "不支持的CRC值类型: " + value.getClass().getSimpleName(),
-                    crcField.getFieldName());
+            default ->
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.CRC_ERROR,
+                        "不支持的CRC值类型: " + value.getClass().getSimpleName(),
+                        crcField.getFieldName());
         }
-
     }
 
     /**
@@ -294,5 +303,4 @@ public record CrcProcessor(CrcChecksumService crcService) {
     private String determineCrcAlgorithm(ProtocolFieldMetadata crcField) {
         return CrcProcessorHelper.determineCrcAlgorithm(crcField);
     }
-
 }

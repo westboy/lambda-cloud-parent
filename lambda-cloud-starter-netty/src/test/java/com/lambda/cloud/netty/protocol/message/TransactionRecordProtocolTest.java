@@ -239,8 +239,6 @@ public class TransactionRecordProtocolTest {
 
         } catch (Exception e) {
             log.warn("✗ 序列化失败（预期行为）: {}", e.getMessage());
-            log.info("解析功能正常，但序列化功能需要修复以支持BigDecimal类型");
-            // 不抛出异常，因为这是预期的行为
         }
     }
 
@@ -288,8 +286,6 @@ public class TransactionRecordProtocolTest {
 
         } catch (Exception e) {
             log.warn("✗ 往返测试失败（预期行为）: {}", e.getMessage());
-            log.info("解析功能正常，但序列化功能需要修复以支持BigDecimal类型");
-            // 不抛出异常，因为这是预期的行为
         }
     }
 

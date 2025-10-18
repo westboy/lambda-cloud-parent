@@ -5,10 +5,6 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import io.netty.buffer.ByteBuf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Field;
 
 /**
  * CRC处理器辅助类
@@ -29,8 +25,7 @@ public class CrcProcessorHelper {
      * @return 字段值
      * @throws ProtocolException 获取失败
      */
-    public static Object getFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata) 
-            throws ProtocolException {
+    public static Object getFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         return fieldMetadata.getValue(instance);
     }
 
@@ -42,7 +37,7 @@ public class CrcProcessorHelper {
      * @param value         字段值
      * @throws ProtocolException 设置失败
      */
-    public static void setFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata, Object value) 
+    public static void setFieldValue(Object instance, ProtocolFieldMetadata fieldMetadata, Object value)
             throws ProtocolException {
         fieldMetadata.setValue(instance, value);
     }
@@ -55,8 +50,8 @@ public class CrcProcessorHelper {
      * @param fieldMetadata 字段元数据
      * @throws ProtocolException 序列化失败
      */
-    public static void serializeFieldValue(ByteBuf byteBuf, Object fieldValue, 
-                                         ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public static void serializeFieldValue(ByteBuf byteBuf, Object fieldValue, ProtocolFieldMetadata fieldMetadata)
+            throws ProtocolException {
         try {
             DataTypeConverter converter = converterFactory.getConverter(fieldMetadata.getDataType());
             byte[] serializedData = converter.serialize(fieldValue, fieldMetadata);
@@ -80,11 +75,11 @@ public class CrcProcessorHelper {
         // 根据字段长度确定默认算法
         int length = crcField.getLength();
         if (length == 2) {
-            return "CRC16";
+            return "CRC16-CCITT"; // 使用注册的算法名称
         } else if (length == 4) {
             return "CRC32";
         } else {
-            return "CRC16"; // 默认使用CRC16
+            return "CRC16-CCITT"; // 默认使用CRC16-CCITT
         }
     }
 }

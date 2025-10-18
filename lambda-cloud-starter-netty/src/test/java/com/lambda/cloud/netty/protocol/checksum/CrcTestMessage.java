@@ -44,7 +44,7 @@ public class CrcTestMessage {
     /**
      * CRC16校验和
      */
-//    @ProtocolField(order = 5, dataType = ProtocolDataType.CRC, length = 2, CRCChecksum = true)
+    //    @ProtocolField(order = 5, dataType = ProtocolDataType.CRC, length = 2, CRCChecksum = true)
     private int crc;
 
     public void setHeader(String header) {

@@ -135,7 +135,7 @@ public class CrcChecksumService {
     /**
      * 提取用于CRC计算的数据
      * <p>
-     * CRC计算范围：除CRC字段外的所有字段数据
+     * CRC计算范围：只包含标记为checksum=true的字段数据
      * </p>
      *
      * @param messageData   完整消息数据
@@ -152,19 +152,15 @@ public class CrcChecksumService {
         try {
             int currentOffset = 0;
 
-            // 遍历所有字段，排除CRC字段
+            // 遍历所有字段，只提取标记为checksum=true的字段
             for (ProtocolFieldMetadata field : fields) {
-                if (field.equals(crcField)) {
-                    // 跳过CRC字段
-                    currentOffset += field.getLength();
-                    continue;
-                }
-
-                // 添加非CRC字段的数据
                 int fieldLength = field.getLength();
-                if (currentOffset + fieldLength <= messageData.length) {
+
+                // 只添加标记为checksum=true的字段数据
+                if (field.isCrcChecksum() && currentOffset + fieldLength <= messageData.length) {
                     buffer.writeBytes(messageData, currentOffset, fieldLength);
                 }
+
                 currentOffset += fieldLength;
             }
 
