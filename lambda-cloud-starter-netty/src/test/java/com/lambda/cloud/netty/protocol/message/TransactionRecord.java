@@ -34,26 +34,44 @@ public class TransactionRecord {
     /**
      * 报文头 - 数据长度
      */
-    @ProtocolField(order = 2, length = 2, dataType = ProtocolDataType.HEX, checksum = true, littleEndian = true, description = "数据长度")
+    @ProtocolField(
+            order = 2,
+            length = 2,
+            dataType = ProtocolDataType.HEX,
+            checksum = true,
+            littleEndian = true,
+            description = "数据长度")
     private Integer ser;
 
     /**
      * 报文头 - 数据长度
      */
-    @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.HEX,checksum = true,  littleEndian = true, description = "数据长度")
+    @ProtocolField(
+            order = 3,
+            length = 1,
+            dataType = ProtocolDataType.HEX,
+            checksum = true,
+            littleEndian = true,
+            description = "数据长度")
     private String sec;
 
     /**
      * 报文头 - 帧类型 (0x3B)
      */
-    @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.HEX, checksum = true,  description = "帧类型")
+    @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.HEX, checksum = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true)
+    @ProtocolField(order = 5, composite = true, checksum = true)
     private InnerRecord innerRecord;
     /**
      * 校验码 (2字节)
      */
-    @ProtocolField(order = 6, length = 1, dataType = ProtocolDataType.HEX, littleEndian = true,CRCFiled = true, description = "校验码")
+    @ProtocolField(
+            order = 6,
+            length = 2,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            CRCFiled = true,
+            description = "校验码")
     private String checksum;
 }

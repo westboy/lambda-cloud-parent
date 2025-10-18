@@ -6,8 +6,7 @@ import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 复合字段转换器
@@ -17,20 +16,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jin
  */
-public class CompositeConverter implements DataTypeConverter {
-
-    private static final Logger log = LoggerFactory.getLogger(CompositeConverter.class);
-
-    private final ReflectionProtocolEngine protocolEngine;
+@Slf4j
+public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implements DataTypeConverter {
 
     /**
      * 构造函数
      *
      * @param protocolEngine 协议解析引擎
      */
-    public CompositeConverter(ReflectionProtocolEngine protocolEngine) {
-        this.protocolEngine = protocolEngine;
-    }
+    public CompositeConverter {}
 
     /**
      * 解析字节数据为复合对象
@@ -118,7 +112,7 @@ public class CompositeConverter implements DataTypeConverter {
     /**
      * 从字符串解析复合对象（暂不支持）
      *
-     * @param value         字符串值
+     * @param data         字符串值
      * @param fieldMetadata 字段元数据
      * @return 解析后的对象
      * @throws ProtocolException 解析异常

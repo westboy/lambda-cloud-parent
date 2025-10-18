@@ -1,11 +1,16 @@
 package com.lambda.cloud.netty.protocol.processor;
 
+import cn.hutool.core.util.HexUtil;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.CrcChecksumService;
 import com.lambda.cloud.netty.protocol.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +45,10 @@ public record CrcProcessor(CrcChecksumService crcService) {
 
     /**
      * 在序列化时计算并设置CRC值
+     * <p>
+     * 对所有标记为checksum=true的字段的原始hex报文数据进行CRC计算，
+     * 然后将计算结果设置到所有CRCFiled=true的字段中
+     * </p>
      *
      * @param message      消息实例
      * @param frameMetadata 消息元数据
@@ -47,7 +56,7 @@ public record CrcProcessor(CrcChecksumService crcService) {
      */
     public void calculateAndSetCrc(Object message, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
-        // 获取所有CRC字段
+        // 获取所有CRC字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
 
         if (crcFields.isEmpty()) {
@@ -55,28 +64,30 @@ public record CrcProcessor(CrcChecksumService crcService) {
             return;
         }
 
-        for (ProtocolFieldMetadata crcField : crcFields) {
-            try {
-                // 计算CRC值（排除当前CRC字段）
-                long crcValue = calculateCrcForMessage(message, frameMetadata, crcField);
+        try {
+            // 计算所有checksum=true字段的CRC值（只计算一次）
+            long crcValue = calculateCrcForAllChecksumFields(message, frameMetadata);
 
-                // 设置CRC值到实例
+            // 将计算出的CRC值设置到所有CRC字段中
+            for (ProtocolFieldMetadata crcField : crcFields) {
                 setCrcValueToInstance(message, crcField, crcValue);
-
-                log.debug("计算并设置CRC字段: {} = 0x{:04X}", crcField.getFieldName(), crcValue);
-
-            } catch (Exception e) {
-                throw new ProtocolException(
-                        ProtocolException.ErrorCode.CRC_ERROR,
-                        "计算CRC失败: " + crcField.getFieldName() + ", 原因: " + e.getMessage(),
-                        crcField.getFieldName(),
-                        e);
+                log.debug("设置CRC字段: {} = 0x{:04X}", crcField.getFieldName(), crcValue);
             }
+
+            log.debug("CRC计算和设置完成，共设置 {} 个CRC字段", crcFields.size());
+
+        } catch (Exception e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.CRC_ERROR, "计算和设置CRC失败: " + e.getMessage(), "CRC处理", e);
         }
     }
 
     /**
      * 在解析时验证CRC值
+     * <p>
+     * 对所有标记为checksum=true的字段的原始hex报文数据进行CRC计算，
+     * 然后与CRCFiled=true字段中存储的值进行比较
+     * </p>
      *
      * @param instance      消息实例
      * @param frameMetadata 消息元数据
@@ -84,7 +95,7 @@ public record CrcProcessor(CrcChecksumService crcService) {
      */
     public void validateCrc(Object instance, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
-        // 获取所有 CRC 字段
+        // 获取所有 CRC 字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
 
         if (crcFields.isEmpty()) {
@@ -92,25 +103,26 @@ public record CrcProcessor(CrcChecksumService crcService) {
             return;
         }
 
+        // 计算所有checksum=true字段的CRC值（只计算一次）
+        long calculatedCrc = calculateCrcForAllChecksumFields(instance, frameMetadata);
+
+        // 验证每个CRC字段
         for (ProtocolFieldMetadata crcField : crcFields) {
             try {
-                // 获取实例中的CRC值
+                // 获取实例中存储的CRC值
                 long expectedCrc = getCrcValueFromInstance(instance, crcField);
 
-                // 计算实际的CRC值（排除当前CRC字段）
-                long actualCrc = calculateCrcForMessage(instance, frameMetadata, crcField);
-
                 // 验证CRC值
-                if (expectedCrc != actualCrc) {
+                if (expectedCrc != calculatedCrc) {
                     throw new ProtocolException(
                             ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,
                             String.format(
                                     "CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
-                                    crcField.getFieldName(), expectedCrc, actualCrc),
+                                    crcField.getFieldName(), expectedCrc, calculatedCrc),
                             crcField.getFieldName());
                 }
 
-                log.debug("CRC校验通过: {} = {}", crcField.getFieldName(), expectedCrc);
+                log.debug("CRC校验通过: {} = 0x{:04X}", crcField.getFieldName(), expectedCrc);
 
             } catch (ProtocolException e) {
                 throw e;
@@ -149,16 +161,17 @@ public record CrcProcessor(CrcChecksumService crcService) {
     }
 
     /**
-     * 计算消息的CRC值（只对标记为checksum=true的字段进行计算）
+     * 计算所有checksum=true字段的CRC值
+     * <p>
+     * 将所有标记为checksum=true的字段的原始hex报文数据按顺序拼接，
+     * 然后对拼接后的完整数据进行一次CRC计算
+     * </p>
      *
-     * @param message         消息实例
-     * @param frameMetadata   消息元数据
-     * @param excludeCrcField 要排除的CRC字段
+     * @param message       消息实例
+     * @param frameMetadata 消息元数据
      * @return CRC值
      */
-    private long calculateCrcForMessage(
-            Object message, ProtocolFrameMetadata frameMetadata, ProtocolFieldMetadata excludeCrcField) {
-
+    private long calculateCrcForAllChecksumFields(Object message, ProtocolFrameMetadata frameMetadata) {
         try {
             // 序列化消息到字节数组（用于CRC计算）
             ByteBuf tempBuf = Unpooled.buffer();
@@ -166,24 +179,51 @@ public record CrcProcessor(CrcChecksumService crcService) {
             // 获取参与CRC计算的字段
             List<ProtocolFieldMetadata> checksumFields = getCrcChecksumFields(frameMetadata);
 
-            // 序列化参与CRC计算的字段
+            log.debug("开始计算CRC，参与计算的字段数: {}", checksumFields.size());
+
+            // 序列化参与CRC计算的字段，按字段顺序拼接原始hex报文数据
             for (ProtocolFieldMetadata fieldMetadata : checksumFields) {
-                // 获取字段值并序列化
+                // 获取字段值
                 Object fieldValue = CrcProcessorHelper.getFieldValue(message, fieldMetadata);
-                CrcProcessorHelper.serializeFieldValue(tempBuf, fieldValue, fieldMetadata);
+
+                // 检查是否为复合字段
+                if (fieldMetadata.isComposite()) {
+                    serializeCompositeFieldForCrc(tempBuf, fieldValue, fieldMetadata);
+                } else {
+                    // 普通字段直接序列化
+                    CrcProcessorHelper.serializeFieldValue(tempBuf, fieldValue, fieldMetadata);
+                }
+                log.debug("字段 {} 参与CRC计算，值: {}", fieldMetadata.getFieldName(), fieldValue);
             }
 
-            // 将ByteBuf转换为字节数组
-            byte[] dataForCrc = new byte[tempBuf.readableBytes()];
-            tempBuf.readBytes(dataForCrc);
+            byte[] dataForCrc = ByteBufUtil.getBytes(tempBuf);
             tempBuf.release();
 
-            // 计算CRC
-            return crcService.calculateMessageCrc(dataForCrc, frameMetadata, excludeCrcField);
+            // 使用CRC算法计算校验值
+            String algorithmName = determineCrcAlgorithm(frameMetadata);
+            long crcValue = crcService.getAlgorithm(algorithmName).calculate(dataForCrc);
+
+            log.debug("CRC计算完成，数据长度: {} bytes, CRC值: 0x{:04X}", dataForCrc.length, crcValue);
+            return crcValue;
 
         } catch (Exception e) {
             throw new RuntimeException("计算CRC失败", e);
         }
+    }
+
+    /**
+     * 计算消息的CRC值（兼容旧方法，委托给新方法）
+     *
+     * @param message         消息实例
+     * @param frameMetadata   消息元数据
+     * @param excludeCrcField 要排除的CRC字段（此参数已不使用）
+     * @return CRC值
+     * @deprecated 使用 {@link #calculateCrcForAllChecksumFields(Object, ProtocolFrameMetadata)} 替代
+     */
+    @Deprecated
+    private long calculateCrcForMessage(
+            Object message, ProtocolFrameMetadata frameMetadata, ProtocolFieldMetadata excludeCrcField) {
+        return calculateCrcForAllChecksumFields(message, frameMetadata);
     }
 
     /**
@@ -295,12 +335,96 @@ public record CrcProcessor(CrcChecksumService crcService) {
     }
 
     /**
-     * 确定CRC算法名称
+     * 确定CRC算法名称（基于消息元数据）
+     *
+     * @param frameMetadata 消息元数据
+     * @return 算法名称
+     */
+    private String determineCrcAlgorithm(ProtocolFrameMetadata frameMetadata) {
+        List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
+        if (!crcFields.isEmpty()) {
+            return CrcProcessorHelper.determineCrcAlgorithm(crcFields.getFirst());
+        }
+        return "CRC16-CCITT"; // 默认算法
+    }
+
+    /**
+     * 确定CRC算法名称（基于CRC字段）
      *
      * @param crcField CRC字段元数据
      * @return 算法名称
      */
     private String determineCrcAlgorithm(ProtocolFieldMetadata crcField) {
         return CrcProcessorHelper.determineCrcAlgorithm(crcField);
+    }
+
+    /**
+     * 递归序列化复合字段中参与CRC计算的子字段
+     * <p>
+     * 对于复合字段，需要递归处理其内部所有标记为checksum=true的子字段，
+     * 而不是简单地序列化整个复合对象
+     * </p>
+     *
+     * @param tempBuf       临时缓冲区
+     * @param compositeValue 复合字段值
+     * @param fieldMetadata  复合字段元数据
+     * @throws ProtocolException 处理异常
+     */
+    private void serializeCompositeFieldForCrc(
+            ByteBuf tempBuf, Object compositeValue, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        if (compositeValue == null) {
+            log.debug("复合字段 {} 值为null，跳过CRC计算", fieldMetadata.getFieldName());
+            return;
+        }
+
+        try {
+            // 获取复合字段的类型
+            Class<?> compositeType = compositeValue.getClass();
+
+            // 获取复合字段内部的所有字段
+            Field[] fields = compositeType.getDeclaredFields();
+
+            log.debug("开始处理复合字段 {} 的子字段，共 {} 个字段", fieldMetadata.getFieldName(), fields.length);
+
+            for (Field field : fields) {
+                ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
+
+                // 只处理有ProtocolField注解且checksum=true的字段
+                if (protocolField != null && protocolField.checksum()) {
+                    field.setAccessible(true);
+                    Object subFieldValue = field.get(compositeValue);
+
+                    // 创建子字段的元数据
+                    ProtocolValidation subValidation = field.getAnnotation(ProtocolValidation.class);
+                    ProtocolFieldMetadata subFieldMetadata =
+                            new ProtocolFieldMetadata(field, protocolField, subValidation);
+
+                    // 递归处理子字段
+                    if (subFieldMetadata.isComposite()) {
+                        // 如果子字段也是复合字段，继续递归
+                        serializeCompositeFieldForCrc(tempBuf, subFieldValue, subFieldMetadata);
+                    } else {
+                        // 普通子字段直接序列化
+                        CrcProcessorHelper.serializeFieldValue(tempBuf, subFieldValue, subFieldMetadata);
+                    }
+
+                    System.err.println(
+                            HexUtil.encodeHexStr(ByteBufUtil.getBytes(tempBuf)).toUpperCase());
+
+                    log.debug(
+                            "复合字段 {} 的子字段 {} 参与CRC计算，值: {}",
+                            fieldMetadata.getFieldName(),
+                            field.getName(),
+                            subFieldValue);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    "复合字段CRC计算失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
+        }
     }
 }

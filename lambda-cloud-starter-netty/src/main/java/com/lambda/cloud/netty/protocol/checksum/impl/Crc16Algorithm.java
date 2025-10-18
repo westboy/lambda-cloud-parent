@@ -40,7 +40,7 @@ public record Crc16Algorithm(CRC16Checksum crc16Checksum, String algorithmName) 
         crc16Checksum.reset();
 
         // 更新数据
-        crc16Checksum.update(data, 0, data.length);
+        crc16Checksum.update(data);
 
         // 获取校验值
         return crc16Checksum.getValue();
@@ -104,5 +104,14 @@ public record Crc16Algorithm(CRC16Checksum crc16Checksum, String algorithmName) 
      */
     public static Crc16Algorithm xmodem() {
         return new Crc16Algorithm(new CRC16XModem(), "CRC16-XMODEM");
+    }
+
+    /**
+     * 创建CRC16-XMODEM算法实例
+     *
+     * @return CRC16-XMODEM算法实例
+     */
+    public static Crc16Algorithm modbus() {
+        return new Crc16Algorithm(new CRC16Modbus(), "CRC16-MODBUS");
     }
 }

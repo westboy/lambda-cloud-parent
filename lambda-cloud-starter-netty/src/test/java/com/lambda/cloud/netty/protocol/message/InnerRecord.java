@@ -46,7 +46,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 6,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
@@ -58,7 +59,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 7,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -70,7 +72,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 8,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -82,7 +85,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 9,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -95,7 +99,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 10,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
@@ -107,7 +112,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 11,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -119,7 +125,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 12,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -131,7 +138,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 13,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -144,7 +152,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 14,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
@@ -156,7 +165,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 15,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -168,7 +178,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 16,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -180,7 +191,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 17,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -193,7 +205,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 18,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
@@ -205,7 +218,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 19,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -217,7 +231,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 20,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -229,7 +244,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 21,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -242,7 +258,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 22,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
@@ -254,7 +271,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 23,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -266,7 +284,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 24,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -278,7 +297,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 25,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -288,7 +308,7 @@ public class InnerRecord {
     /**
      * 预留字段 (18字节)
      */
-    @ProtocolField(order = 26, length = 18,checksum = true,  dataType = ProtocolDataType.HEX, description = "预留字段")
+    @ProtocolField(order = 26, length = 18, checksum = true, dataType = ProtocolDataType.HEX, description = "预留字段")
     private String reserved;
 
     /**
@@ -296,7 +316,8 @@ public class InnerRecord {
      */
     @ProtocolField(
             order = 27,
-            length = 4,checksum = true,
+            length = 4,
+            checksum = true,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 4,
@@ -306,6 +327,29 @@ public class InnerRecord {
     /**
      * 报文头 - 帧类型 (0x3B)
      */
-    @ProtocolField(order = 28, length = 17,checksum = true,  dataType = ProtocolDataType.ASCII, description = "帧类型")
+    @ProtocolField(order = 28, length = 17, checksum = true, dataType = ProtocolDataType.ASCII, description = "帧类型")
     private String VIN;
+
+    /**
+     * 报文头 - 帧类型 (0x3B)
+     */
+    @ProtocolField(order = 29, length = 1, checksum = true, dataType = ProtocolDataType.HEX, description = "帧类型")
+    private String tag;
+
+    /**
+     * 报文头 - 帧类型 (0x3B)
+     */
+    @ProtocolField(order = 30, length = 7, checksum = true, dataType = ProtocolDataType.CP56TIME2A, description = "帧类型")
+    private String TIME;
+
+    /**
+     * 报文头 - 帧类型 (0x3B)
+     */
+    @ProtocolField(order = 31, length = 1, checksum = true, dataType = ProtocolDataType.HEX, description = "帧类型")
+    private String desc;
+    /**
+     * 报文头 - 帧类型 (0x3B)
+     */
+    @ProtocolField(order = 32, length = 8, checksum = true, dataType = ProtocolDataType.HEX, description = "帧类型")
+    private String card;
 }

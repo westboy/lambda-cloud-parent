@@ -38,6 +38,7 @@ public class CrcChecksumService {
         registerAlgorithm("CRC16-USB", Crc16Algorithm.usb());
         registerAlgorithm("CRC16-X25", Crc16Algorithm.x25());
         registerAlgorithm("CRC16-XMODEM", Crc16Algorithm.xmodem());
+        registerAlgorithm("CRC16-MODBUS", Crc16Algorithm.modbus());
     }
 
     /**

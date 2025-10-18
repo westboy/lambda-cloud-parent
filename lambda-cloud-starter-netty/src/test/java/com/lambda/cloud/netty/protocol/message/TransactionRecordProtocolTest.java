@@ -122,7 +122,13 @@ public class TransactionRecordProtocolTest {
         log.info("=== 总计信息 ===");
         log.info("消费金额: {}", record.getInnerRecord().getTotalAmount());
         log.info("VIN: {}", record.getInnerRecord().getVIN());
-        log.info("交易标识: {}", record.getChecksum());
+        log.info("交易标识: {}", record.getInnerRecord().getTag());
+        log.info("交易日期、时间: {}", record.getInnerRecord().getTotalAmount());
+        log.info("停止原因: {}", record.getInnerRecord().getDesc());
+        log.info("物理卡号: {}", record.getInnerRecord().getCard());
+
+        log.info("=== 总计信息 ===");
+        log.info("CRC: {}", record.getChecksum());
     }
 
     @Test

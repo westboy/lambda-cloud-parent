@@ -73,8 +73,8 @@ public class CP56Time2aConverter implements DataTypeConverter {
         int hours = data[3] & 0x1F;
 
         // 日期和星期
-        int dayOfWeek = (data[4] & 0xE0) >> 5;
-        if (dayOfWeek == 0) dayOfWeek = 7;
+        int originalDayOfWeek = (data[4] & 0xE0) >> 5;
+        if (originalDayOfWeek == 0) originalDayOfWeek = 7;
         int dayOfMonth = data[4] & 0x1F;
 
         // 月份
@@ -91,13 +91,21 @@ public class CP56Time2aConverter implements DataTypeConverter {
                     ProtocolException.ErrorCode.PARSE_ERROR, "CP56TIME2A时间数据无效或标记为无效", fieldMetadata.getFieldName());
         }
 
+        // 创建LocalDateTime，它会自动计算正确的星期几
         LocalDateTime dateTime = LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
+
+        // 验证原始数据中的星期几是否正确（仅记录警告，不抛出异常）
+        int actualDayOfWeek = dateTime.getDayOfWeek().getValue();
+        if (actualDayOfWeek != originalDayOfWeek) {
+            // 可以选择记录警告日志，但不影响解析结果
+            // log.warn("CP56TIME2A原始数据中的星期几({})与实际日期计算的星期几({})不符", originalDayOfWeek, actualDayOfWeek);
+        }
         return dateTime;
     }
 
     @Override
     public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        return serialize(value, fieldMetadata, false, false);
+        return serialize(value, fieldMetadata, true, true);
     }
 
     /**
@@ -114,7 +122,7 @@ public class CP56Time2aConverter implements DataTypeConverter {
                         fieldMetadata.getFieldName());
             }
 
-            byte[] result = new byte[EXPECTED_LENGTH];
+            byte[] result = new byte[fieldMetadata.getLength()];
 
             int totalMilliseconds = dateTime.getSecond() * 1000 + dateTime.getNano() / 1_000_000;
 
@@ -124,14 +132,15 @@ public class CP56Time2aConverter implements DataTypeConverter {
 
             // 分钟 + 无效标志
             result[2] = (byte) (dateTime.getMinute() & 0x3F);
-            if (invalid) result[2] |= 0x80;
+            if (invalid) result[2] |= (byte) 0x80;
 
             // 小时 + 夏令时
             result[3] = (byte) (dateTime.getHour() & 0x1F);
-            if (summerTime) result[3] |= 0x80;
+            if (summerTime) result[3] |= (byte) 0x80;
 
             // 日期和星期
-            int dayOfWeek = dateTime.getDayOfWeek().getValue(); // 1-7
+//            int dayOfWeek = dateTime.getDayOfWeek().getValue();
+            int dayOfWeek = 0;
             result[4] = (byte) (((dayOfWeek & 0x07) << 5) | (dateTime.getDayOfMonth() & 0x1F));
 
             // 月份

@@ -75,7 +75,7 @@ public class CrcProcessorHelper {
         // 根据字段长度确定默认算法
         int length = crcField.getLength();
         if (length == 2) {
-            return "CRC16-CCITT"; // 使用注册的算法名称
+            return "CRC16-MODBUS"; // 使用注册的算法名称
         } else if (length == 4) {
             return "CRC32";
         } else {
