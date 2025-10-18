@@ -26,7 +26,8 @@ public class StompWebSocketEventHandler {
     private final Map<String, List<StompWebSocketSubscribeEvent>> subscribeListMap;
 
     public StompWebSocketEventHandler(
-            List<StompWebSocketConnectEventService> connectEventServices, List<StompWebSocketSubscribeEvent> subscribeEvents) {
+            List<StompWebSocketConnectEventService> connectEventServices,
+            List<StompWebSocketSubscribeEvent> subscribeEvents) {
         this.connectEventServices = connectEventServices;
         this.subscribeListMap = new HashMap<>(6);
         for (StompWebSocketSubscribeEvent s : subscribeEvents) {

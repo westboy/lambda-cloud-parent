@@ -1,8 +1,8 @@
 package com.lambda.autoconfig;
 
 import cn.hutool.extra.spring.SpringUtil;
-import com.lambda.cloud.websocket.handler.StompWebSocketEventHandler;
 import com.lambda.cloud.websocket.event.StompWebSocketSubscribeEvent;
+import com.lambda.cloud.websocket.handler.StompWebSocketEventHandler;
 import com.lambda.cloud.websocket.interceptor.DefaultAuthenticationChannelInterceptor;
 import com.lambda.cloud.websocket.interceptor.IpHandshakeInterceptor;
 import com.lambda.cloud.websocket.repository.StompWebSocketChannelRepository;
@@ -13,6 +13,7 @@ import com.lambda.cloud.websocket.service.impl.DefaultStompWebSocketConnectEvent
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,8 +29,6 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-
-import java.util.List;
 
 /**
  * WebSocketAutoConfiguration
@@ -60,7 +59,8 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     }
 
     @Bean
-    public StompWebSocketConnectEventService wsConnectEventService(StompWebSocketChannelRepository wsChannelRepository) {
+    public StompWebSocketConnectEventService wsConnectEventService(
+            StompWebSocketChannelRepository wsChannelRepository) {
         return new DefaultStompWebSocketConnectEventServiceImpl(wsChannelRepository);
     }
 
@@ -105,7 +105,8 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
 
     @Bean
     public StompWebSocketEventHandler wsEventHandler(
-            List<StompWebSocketConnectEventService> connectEventServices, List<StompWebSocketSubscribeEvent> subscribeEvents) {
+            List<StompWebSocketConnectEventService> connectEventServices,
+            List<StompWebSocketSubscribeEvent> subscribeEvents) {
         return new StompWebSocketEventHandler(connectEventServices, subscribeEvents);
     }
 }

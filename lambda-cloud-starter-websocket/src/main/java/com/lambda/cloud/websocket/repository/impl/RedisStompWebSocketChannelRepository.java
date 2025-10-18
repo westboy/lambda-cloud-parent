@@ -21,7 +21,8 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "RedisWebSocketChannelRepository")
 @Slf4j
-public record RedisStompWebSocketChannelRepository(StringRedisTemplate template) implements StompWebSocketChannelRepository {
+public record RedisStompWebSocketChannelRepository(StringRedisTemplate template)
+        implements StompWebSocketChannelRepository {
 
     private static final String KEY = "lambda:websocket:online_user:";
     private static final String ONLINE_KEY = "lambda:websocket:online_users";
