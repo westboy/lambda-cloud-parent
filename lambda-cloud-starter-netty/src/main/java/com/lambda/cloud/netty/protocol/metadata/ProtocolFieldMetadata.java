@@ -166,7 +166,7 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      * @return true 表示CRC校验字段
      */
     public boolean isCrcChecksum() {
-        return protocolField.CRCChecksum();
+        return protocolField.checksum();
     }
 
     /**

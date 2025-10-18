@@ -86,7 +86,7 @@ public record CrcProcessor(CrcChecksumService crcService) {
      */
     public void validateCrc(Object instance, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
-        // 获取所有CRC字段
+        // 获取所有 CRC 字段
         List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
 
         if (crcFields.isEmpty()) {
@@ -153,10 +153,9 @@ public record CrcProcessor(CrcChecksumService crcService) {
             // 序列化消息到字节数组（用于CRC计算）
             ByteBuf tempBuf = Unpooled.buffer();
 
-            // 序列化除CRC字段外的所有字段
+            // 序列化除 CRC 字段外的所有字段
             for (ProtocolFieldMetadata fieldMetadata : frameMetadata.fields()) {
                 if (fieldMetadata.equals(excludeCrcField)) {
-                    // 跳过CRC字段
                     continue;
                 }
 

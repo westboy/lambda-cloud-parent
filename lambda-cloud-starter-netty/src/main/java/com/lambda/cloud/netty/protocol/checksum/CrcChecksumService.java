@@ -32,8 +32,6 @@ public class CrcChecksumService {
      * 默认构造函数
      */
     public CrcChecksumService() {
-        // 注册默认的CRC算法
-        registerAlgorithm("CRC16", new Crc16Algorithm());
         registerAlgorithm("CRC16-CCITT", Crc16Algorithm.ccitt());
         registerAlgorithm("CRC16-IBM", Crc16Algorithm.ibm());
         registerAlgorithm("CRC16-MAXIM", Crc16Algorithm.maxim());

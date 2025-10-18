@@ -42,7 +42,14 @@ public @interface ProtocolField {
      *
      * @return 校验
      */
-    boolean CRCChecksum() default false;
+    boolean checksum() default false;
+
+    /**
+     * CRCFiled
+     *
+     * @return 校验CRC字段
+     */
+    boolean CRCFiled() default false;
 
     /**
      * 字段长度（字节数）

@@ -19,7 +19,7 @@ public record Crc16Algorithm(CRC16Checksum crc16Checksum, String algorithmName) 
      * 默认构造函数，使用标准CRC16算法
      */
     public Crc16Algorithm() {
-        this(Crc16Algorithm.ccitt().crc16Checksum, "CRC16-CCITT");
+        this(ccitt().crc16Checksum(), "CRC16-CCITT");
     }
 
     /**

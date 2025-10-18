@@ -43,6 +43,13 @@ public @interface ProtocolFrame {
     boolean encrypted() default false;
 
     /**
+     * CRC校验
+     *
+     * @return 校验
+     */
+    boolean checksum() default false;
+
+    /**
      * 消息版本
      *
      * @return 消息版本
