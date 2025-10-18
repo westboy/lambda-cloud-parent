@@ -5,6 +5,7 @@ import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
 
@@ -80,22 +81,17 @@ public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implem
         if (value == null) {
             return new byte[0];
         }
-
+        // 创建ByteBuf用于序列化
+        ByteBuf byteBuf = Unpooled.buffer();
         try {
             // 验证对象类型
             validateObjectType(value, fieldMetadata);
-
-            // 创建ByteBuf用于序列化
-            ByteBuf byteBuf = Unpooled.buffer();
 
             // 使用协议引擎递归序列化复合对象
             protocolEngine.serialize(value, byteBuf);
 
             // 提取字节数据
-            byte[] result = new byte[byteBuf.readableBytes()];
-            byteBuf.readBytes(result);
-            byteBuf.release();
-
+            byte[] result = ByteBufUtil.getBytes(byteBuf);
             log.debug("成功序列化复合字段: {}, 长度: {}", fieldMetadata.getFieldName(), result.length);
 
             return result;
@@ -106,6 +102,8 @@ public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implem
                     "复合字段序列化失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
                     fieldMetadata.getFieldName(),
                     e);
+        }finally {
+            byteBuf.release();
         }
     }
 

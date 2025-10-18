@@ -18,6 +18,10 @@ public class ByteBufPool {
 
     private static final PooledByteBufAllocator ALLOCATOR = PooledByteBufAllocator.DEFAULT;
 
+    public static ByteBuf buffer() {
+        return ALLOCATOR.buffer();
+    }
+
     public static ByteBuf acquire(int capacity) {
         return ALLOCATOR.buffer(capacity);
     }
@@ -25,6 +29,9 @@ public class ByteBufPool {
     public static void release(ByteBuf buf) {
         if (buf != null && buf.refCnt() > 0) {
             buf.release();
+            log.debug("Released ByteBuf with reference count: {}", buf.refCnt());
+        } else {
+            log.warn("Attempted to release ByteBuf that was already released or null.");
         }
     }
 

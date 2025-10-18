@@ -10,11 +10,11 @@ import io.netty.channel.socket.SocketChannel;
  *
  * @author Jin
  */
-public class NettyServerChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer;
 
-    public NettyServerChannelInitializer(
+    public NettyChannelInitializer(
             ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer) {
         this.channelPipelineConfigurationCustomizer = channelPipelineConfigurationCustomizer;
     }

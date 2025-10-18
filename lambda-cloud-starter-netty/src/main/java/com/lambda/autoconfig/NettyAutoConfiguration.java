@@ -1,7 +1,7 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.netty.NettyServer;
-import com.lambda.cloud.netty.NettyServerChannelInitializer;
+import com.lambda.cloud.netty.NettyChannelInitializer;
 import com.lambda.cloud.netty.customizer.ChannelPipelineConfigurationCustomizer;
 import com.lambda.cloud.netty.customizer.ServerBootstrapConfigurationCustomizer;
 import com.lambda.cloud.netty.repository.ChannelRepository;
@@ -47,7 +47,7 @@ public class NettyAutoConfiguration {
     @ConditionalOnMissingBean
     public ServerBootstrap bootstrap(
             NettyExtendProperties nettyProperties,
-            NettyServerChannelInitializer channelInitializer,
+            NettyChannelInitializer channelInitializer,
             ServerBootstrapConfigurationCustomizer serverBootstrapConfigurationCustomizer,
             @Qualifier("bossGroup") EventLoopGroup bossGroup,
             @Qualifier("workerGroup") EventLoopGroup workerGroup,
@@ -89,9 +89,9 @@ public class NettyAutoConfiguration {
 
     @Bean("channelInitializer")
     @ConditionalOnMissingBean
-    public NettyServerChannelInitializer nettyServerChannelInitializer(
+    public NettyChannelInitializer nettyServerChannelInitializer(
             ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer) {
-        return new NettyServerChannelInitializer(channelPipelineConfigurationCustomizer);
+        return new NettyChannelInitializer(channelPipelineConfigurationCustomizer);
     }
 
     @Bean

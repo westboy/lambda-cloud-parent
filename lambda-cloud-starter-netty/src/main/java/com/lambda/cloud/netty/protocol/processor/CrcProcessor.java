@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.processor;
 
+import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.CrcChecksumService;
@@ -168,10 +169,9 @@ public record CrcProcessor(CrcChecksumService crcService) {
      * @return CRC值
      */
     private long calculateCrcForAllChecksumFields(Object message, ProtocolFrameMetadata frameMetadata) {
+        // 序列化消息到字节数组（用于CRC计算）
+        ByteBuf byteBuf = ByteBufPool.buffer();
         try {
-            // 序列化消息到字节数组（用于CRC计算）
-            ByteBuf tempBuf = Unpooled.buffer();
-
             // 获取参与CRC计算的字段
             List<ProtocolFieldMetadata> checksumFields = getCrcChecksumFields(frameMetadata);
 
@@ -185,16 +185,15 @@ public record CrcProcessor(CrcChecksumService crcService) {
 
                 // 检查是否为复合字段
                 if (fieldMetadata.isComposite()) {
-                    this.serializeCompositeFieldForCrc(tempBuf, fieldValue, fieldMetadata);
+                    this.serializeCompositeFieldForCrc(byteBuf, fieldValue, fieldMetadata);
                 } else {
                     // 普通字段直接序列化
-                    this.serializeFieldValue(tempBuf, fieldValue, fieldMetadata);
+                    this.serializeFieldValue(byteBuf, fieldValue, fieldMetadata);
                 }
                 log.debug("字段 {} 参与CRC计算，值: {}", fieldMetadata.getFieldName(), fieldValue);
             }
 
-            byte[] dataForCrc = ByteBufUtil.getBytes(tempBuf);
-            tempBuf.release();
+            byte[] dataForCrc = ByteBufUtil.getBytes(byteBuf);
 
             // 使用CRC算法计算校验值
             String algorithmName = this.determineCrcAlgorithm(frameMetadata);
@@ -205,6 +204,8 @@ public record CrcProcessor(CrcChecksumService crcService) {
 
         } catch (Exception e) {
             throw new RuntimeException("计算CRC失败", e);
+        }finally {
+            byteBuf.release();
         }
     }
 
