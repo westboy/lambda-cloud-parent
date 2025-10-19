@@ -1,6 +1,10 @@
 package com.lambda.cloud.netty.repository;
 
 import io.netty.channel.Channel;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,11 +20,11 @@ public class ChannelRepository {
         channelCache.put(key, value);
     }
 
-    public Channel get(String key) {
+    public Optional<Channel> get(String key) {
         if (key == null) {
             throw new IllegalArgumentException("Key cannot be null");
         }
-        return channelCache.get(key);
+        return Optional.ofNullable(channelCache.get(key));
     }
 
     public void remove(String key) {
@@ -30,11 +34,11 @@ public class ChannelRepository {
         channelCache.remove(key);
     }
 
-    public int size() {
+    public synchronized int size() {
         return channelCache.size();
     }
 
-    public void clear() {
+    public synchronized void clear() {
         channelCache.clear();
     }
 
@@ -43,5 +47,9 @@ public class ChannelRepository {
             throw new IllegalArgumentException("Key cannot be null");
         }
         return channelCache.containsKey(key);
+    }
+
+    public Map<String, Channel> getChannels() {
+        return Collections.unmodifiableMap(channelCache);
     }
 }
