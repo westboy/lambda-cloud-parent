@@ -138,9 +138,9 @@ public class CP56Time2aConverter implements DataTypeConverter {
             if (summerTime) result[3] |= (byte) 0x80;
 
             // 日期和星期
-            int dayOfWeek = dateTime.getDayOfWeek().getValue();
-            //            result[4] = (byte) (((dayOfWeek & 0x07) << 5) | (dateTime.getDayOfMonth() & 0x1F));
-            result[4] = (byte) ((dateTime.getDayOfMonth() & 0x1F));
+            // int dayOfWeek = dateTime.getDayOfWeek().getValue();
+            // result[4] = (byte) (((dayOfWeek & 0x07) << 5) | (dateTime.getDayOfMonth() & 0x1F));
+            result[4] = (byte) ((0) | (dateTime.getDayOfMonth() & 0x1F));
 
             // 月份
             result[5] = (byte) (dateTime.getMonthValue() & 0x0F);

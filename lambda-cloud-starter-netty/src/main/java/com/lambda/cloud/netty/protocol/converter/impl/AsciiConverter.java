@@ -15,7 +15,7 @@ import java.util.Arrays;
  * <p>
  * 提供ASCII字符串的解析和序列化功能
  * </p>
- * 
+ *
  * @author Jin
  */
 public class AsciiConverter implements DataTypeConverter {

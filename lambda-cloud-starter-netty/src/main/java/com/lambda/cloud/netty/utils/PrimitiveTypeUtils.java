@@ -5,7 +5,7 @@ package com.lambda.cloud.netty.utils;
  * <p>
  * 提供通用的基本类型判断方法，消除重复的判断逻辑
  * </p>
- * 
+ *
  * @author Jin
  */
 public final class PrimitiveTypeUtils {
