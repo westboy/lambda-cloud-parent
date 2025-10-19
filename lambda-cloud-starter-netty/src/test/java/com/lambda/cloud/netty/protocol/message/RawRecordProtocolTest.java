@@ -1,14 +1,21 @@
 package com.lambda.cloud.netty.protocol.message;
 
+import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
+import com.lambda.cloud.netty.protocol.encryption.EncryptionService;
+import com.lambda.cloud.netty.protocol.encryption.impl.DefaultEncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
+import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
+import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.math.BigDecimal;
 import java.util.Objects;
+import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +28,7 @@ import org.junit.jupiter.api.Test;
  * @author Jin
  */
 @Slf4j
-public class TransactionRecordProtocolTest {
+public class RawRecordProtocolTest {
 
     /**
      * testData3 - 0x3B帧类型的交易记录报文
@@ -39,11 +46,11 @@ public class TransactionRecordProtocolTest {
         log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         // 获取协议引擎
-        ProtocolEngine<BaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<RawBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
 
         try {
             // 先获取消息元数据，检查预期长度
-            var metadata = engine.getMetadata(BaseMessage.class);
+            var metadata = engine.getMetadata(RawBaseMessage.class);
             log.info("消息预期总长度: {} 字节", metadata.totalLength());
             log.info("字段数量: {}", metadata.fields().size());
 
@@ -60,7 +67,7 @@ public class TransactionRecordProtocolTest {
             log.info("开始解析报文...");
 
             // 使用协议引擎解析消息
-            BaseMessage record = engine.parse(byteBuf, BaseMessage.class);
+            RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
 
             log.info("解析结果: {}", record);
 
@@ -88,7 +95,7 @@ public class TransactionRecordProtocolTest {
     /**
      * 输出关键字段信息
      */
-    private void logKeyFields(BaseMessage record) {
+    private void logKeyFields(RawBaseMessage record) {
         log.info("=== 关键字段信息 ===");
         log.info("帧类型: {}", record.getFrameType());
         log.info("订单编号: {}", record.getInnerRecord().getOrderNumber());
@@ -138,10 +145,10 @@ public class TransactionRecordProtocolTest {
     public void testProtocolEngineMetadata() {
         log.info("测试协议引擎元数据功能");
 
-        ProtocolEngine<InnerRecord> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<RawInnerRecord> engine = ProtocolEngineFactory.getDefaultEngine();
 
         // 获取消息元数据
-        var metadata = engine.getMetadata(InnerRecord.class);
+        var metadata = engine.getMetadata(RawInnerRecord.class);
 
         log.info("消息类型: {}", metadata.getFrameType());
         log.info("消息名称: {}", metadata.getMessageName());
@@ -215,13 +222,13 @@ public class TransactionRecordProtocolTest {
         log.info("=== 独立序列化测试 ===");
         log.warn("注意：当前协议引擎序列化功能存在问题（不支持BigDecimal类型）");
 
-        ProtocolEngine<BaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<RawBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
 
         try {
             // 首先解析原始数据得到对象
             byte[] originalBytes = HexUtils.hexToBytes(TEST_DATA3);
             ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
-            BaseMessage record = engine.parse(originalByteBuf, BaseMessage.class);
+            RawBaseMessage record = engine.parse(originalByteBuf, RawBaseMessage.class);
 
             log.info("✓ 解析功能正常，得到对象: {}", record);
 
@@ -260,13 +267,13 @@ public class TransactionRecordProtocolTest {
         log.info("=== 序列化-反序列化往返测试 ===");
         log.warn("注意：当前协议引擎序列化功能存在问题（不支持BigDecimal类型）");
 
-        ProtocolEngine<BaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<RawBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
 
         try {
             // 第一步：解析原始数据
             byte[] originalBytes = HexUtils.hexToBytes(TEST_DATA3);
             ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
-            BaseMessage originalRecord = engine.parse(originalByteBuf, BaseMessage.class);
+            RawBaseMessage originalRecord = engine.parse(originalByteBuf, RawBaseMessage.class);
 
             log.info("✓ 原始解析成功: {}", originalRecord);
 
@@ -281,7 +288,7 @@ public class TransactionRecordProtocolTest {
 
             // 第三步：重新解析序列化后的数据
             ByteBuf deserializeByteBuf = Unpooled.wrappedBuffer(serializedBytes);
-            BaseMessage deserializedRecord = engine.parse(deserializeByteBuf, BaseMessage.class);
+            RawBaseMessage deserializedRecord = engine.parse(deserializeByteBuf, RawBaseMessage.class);
 
             log.info("✓ 重新解析成功: {}", deserializedRecord);
 
@@ -301,7 +308,7 @@ public class TransactionRecordProtocolTest {
     /**
      * 比较两个TransactionRecord对象是否相等
      */
-    private boolean compareTransactionRecords(BaseMessage record1, BaseMessage record2) {
+    private boolean compareTransactionRecords(RawBaseMessage record1, RawBaseMessage record2) {
         if (record1 == null && record2 == null) {
             return true;
         }
@@ -333,7 +340,7 @@ public class TransactionRecordProtocolTest {
     /**
      * 比较两个InnerRecord对象是否相等
      */
-    private boolean compareInnerRecords(InnerRecord record1, InnerRecord record2) {
+    private boolean compareInnerRecords(RawInnerRecord record1, RawInnerRecord record2) {
         if (record1 == null && record2 == null) {
             return true;
         }
@@ -396,5 +403,177 @@ public class TransactionRecordProtocolTest {
         }
 
         return true;
+    }
+
+    /**
+     * 测试加密服务的基本功能
+     */
+    @Test
+    public void testEncryptionServiceBasicFunctionality() {
+        log.info("=== 测试加密服务基本功能 ===");
+
+        try {
+            // 生成AES密钥
+            SecretKey key = SecureUtil.generateKey("AES", 128);
+            EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
+
+            // 测试数据
+            String testData = "Hello, Encryption World!";
+            byte[] originalData = testData.getBytes();
+
+            // 创建模拟的字段元数据
+            var fieldMetadata = createMockEncryptedFieldMetadata();
+
+            // 加密
+            byte[] encryptedData = encryptionService.encrypt(originalData, fieldMetadata);
+            log.info("加密成功，原始长度: {}, 加密后长度: {}", originalData.length, encryptedData.length);
+
+            // 解密
+            byte[] decryptedData = encryptionService.decrypt(encryptedData, fieldMetadata);
+            String decryptedString = new String(decryptedData);
+
+            log.info("解密成功: {}", decryptedString);
+
+            // 验证
+            boolean isEqual = testData.equals(decryptedString);
+            log.info("加密解密测试结果: {}", isEqual ? "✓ 通过" : "✗ 失败");
+
+            if (!isEqual) {
+                throw new RuntimeException("加密解密测试失败");
+            }
+
+        } catch (Exception e) {
+            log.error("加密服务测试失败", e);
+            throw new RuntimeException("加密服务测试失败", e);
+        }
+    }
+
+    /**
+     * 测试配置了加密服务的协议引擎
+     */
+    @Test
+    public void testProtocolEngineWithEncryption() {
+        log.info("=== 测试配置了加密服务的协议引擎 ===");
+
+        try {
+            // 生成AES密钥
+            SecretKey key = SecureUtil.generateKey("AES", 128);
+            EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
+
+            // 创建配置了加密服务的协议引擎
+            ReflectionProtocolEngine reflectionEngine = new ReflectionProtocolEngine();
+            reflectionEngine.setConverterFactory(new DataTypeConverterFactory(encryptionService));
+
+            ProtocolFieldProcessor fieldProcessor = new ProtocolFieldProcessor(encryptionService);
+            reflectionEngine.setProtocolFieldProcessor(fieldProcessor);
+
+            log.info("加密协议引擎创建成功，算法: {}", encryptionService.getAlgorithmName());
+
+            // 测试基本功能
+            var metadata = reflectionEngine.getMetadata(RawBaseMessage.class);
+            log.info("消息元数据获取成功，字段数量: {}", metadata.fields().size());
+
+            log.info("加密协议引擎测试通过 ✓");
+
+        } catch (Exception e) {
+            log.error("加密协议引擎测试失败", e);
+            throw new RuntimeException("加密协议引擎测试失败", e);
+        }
+    }
+
+    /**
+     * 创建模拟的加密字段元数据
+     */
+    private com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata createMockEncryptedFieldMetadata() {
+        try {
+            java.lang.reflect.Field testField = String.class.getDeclaredField("value");
+
+            com.lambda.cloud.netty.protocol.annotation.ProtocolField protocolField =
+                    new com.lambda.cloud.netty.protocol.annotation.ProtocolField() {
+                        @Override
+                        public Class<? extends java.lang.annotation.Annotation> annotationType() {
+                            return com.lambda.cloud.netty.protocol.annotation.ProtocolField.class;
+                        }
+
+                        @Override
+                        public int order() {
+                            return 1;
+                        }
+
+                        @Override
+                        public boolean composite() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean encrypted() {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean checksum() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean CRCFiled() {
+                            return false;
+                        }
+
+                        @Override
+                        public int length() {
+                            return 100;
+                        }
+
+                        @Override
+                        public com.lambda.cloud.netty.protocol.annotation.ProtocolDataType dataType() {
+                            return com.lambda.cloud.netty.protocol.annotation.ProtocolDataType.HEX;
+                        }
+
+                        @Override
+                        public int precision() {
+                            return 0;
+                        }
+
+                        @Override
+                        public boolean littleEndian() {
+                            return false;
+                        }
+
+                        @Override
+                        public String defaultValue() {
+                            return "";
+                        }
+
+                        @Override
+                        public String description() {
+                            return "test-encrypted-field";
+                        }
+
+                        @Override
+                        public String charset() {
+                            return "UTF-8";
+                        }
+
+                        @Override
+                        public com.lambda.cloud.netty.protocol.annotation.PaddingDirection padding() {
+                            return com.lambda.cloud.netty.protocol.annotation.PaddingDirection.LEFT;
+                        }
+
+                        @Override
+                        public String paddingChar() {
+                            return "0";
+                        }
+
+                        @Override
+                        public boolean optional() {
+                            return false;
+                        }
+                    };
+
+            return new com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata(testField, protocolField, null);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create mock field metadata", e);
+        }
     }
 }

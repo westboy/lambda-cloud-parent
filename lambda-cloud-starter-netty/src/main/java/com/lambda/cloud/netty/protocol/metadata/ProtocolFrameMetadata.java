@@ -105,6 +105,16 @@ public record ProtocolFrameMetadata(
     }
 
     /**
+     * 根据顺序获取字段（高效查找）
+     *
+     * @param order 字段顺序
+     * @return 字段元数据
+     */
+    public Integer getLastLengthByOrder(int order) {
+        return fields.stream().filter(e->e.getOrder()>order).mapToInt(ProtocolFieldMetadata::getLength).sum();
+    }
+
+    /**
      * 获取所有必填字段
      *
      * @return 必填字段列表

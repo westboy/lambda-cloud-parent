@@ -17,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @ProtocolFrame
-public class BaseMessage {
+public class RawBaseMessage {
 
     /**
      * 报文头 - 起始符 (68)
@@ -58,11 +58,11 @@ public class BaseMessage {
     /**
      * 报文头 - 帧类型 (0x3B)
      */
-    @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.HEX, checksum = true, description = "帧类型")
+    @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, checksum = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, checksum = true,encrypted = true)
-    private InnerRecord innerRecord;
+    @ProtocolField(order = 5, composite = true, checksum = true, encrypted = true)
+    private RawInnerRecord innerRecord;
     /**
      * 校验码 (2字节)
      */

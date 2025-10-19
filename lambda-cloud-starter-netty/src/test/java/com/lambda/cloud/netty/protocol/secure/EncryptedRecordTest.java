@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.secure;
 
+import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
@@ -10,14 +11,11 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
-import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 
 /**
  * 交易记录协议解析测试
@@ -30,13 +28,12 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class EncryptedRecordTest {
 
-    private static final String RAW = "181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B";
+    private static final String RAW =
+            "181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B";
     private static final String TEST_DATA4 =
             "68A2077A003B181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B4733";
 
-    private static final String TEST_DATA5 =
-            "68A2077A003B%s4733";
-
+    private static final String TEST_DATA5 = "68A2077A003B%s4733";
 
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
@@ -45,30 +42,31 @@ public class EncryptedRecordTest {
         log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         SecretKey key = SecureUtil.generateKey("AES", 128);
-        String encryptHex = SecureUtil.aes(key.getEncoded()).encryptHex("181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B");
+        String encryptHex = SecureUtil.aes(key.getEncoded())
+                .encryptHex(
+                        "181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B");
+
+        System.out.println("encryptHex: "+encryptHex);
 
         String format = String.format(TEST_DATA5, encryptHex);
 
         EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
 
-
-
         ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine();
         reflectionProtocolEngine.setConverterFactory(new DataTypeConverterFactory(encryptionService));
         ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
         reflectionProtocolEngine.setProtocolFieldProcessor(protocolFieldProcessor);
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION,reflectionProtocolEngine);
+        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
         // 获取协议引擎
-        ProtocolEngine<BaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
-
+        ProtocolEngine<EncryptedBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
 
         try {
-            byte[] bytes = HexUtils.hexToBytes(format);
+            byte[] bytes = HexUtil.decodeHex(format);
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
             log.info("开始解析报文...");
 
-            BaseMessage record = engine.parse(byteBuf, BaseMessage.class);
+            EncryptedBaseMessage record = engine.parse(byteBuf, EncryptedBaseMessage.class);
 
             log.info("解析结果: {}", record);
 
@@ -94,7 +92,7 @@ public class EncryptedRecordTest {
     /**
      * 输出关键字段信息
      */
-    private void logKeyFields(BaseMessage record) {
+    private void logKeyFields(EncryptedBaseMessage record) {
         log.info("=== 关键字段信息 ===");
         log.info("帧类型: {}", record.getFrameType());
         log.info("订单编号: {}", record.getInnerRecord().getOrderNumber());
@@ -134,6 +132,4 @@ public class EncryptedRecordTest {
         log.info("=== 总计信息 ===");
         log.info("CRC: {}", record.getChecksum());
     }
-
-
 }

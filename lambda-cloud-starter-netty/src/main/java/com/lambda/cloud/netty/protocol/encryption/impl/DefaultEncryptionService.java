@@ -1,10 +1,14 @@
 package com.lambda.cloud.netty.protocol.encryption.impl;
 
+import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.encryption.EncryptionService;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.utils.HexUtils;
 import lombok.extern.slf4j.Slf4j;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * 默认AES加密服务实现
@@ -58,17 +62,10 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
         }
 
         try {
-            byte[] result = SecureUtil.aes(defaultKeyBytes).decrypt(encryptedData);
+            String result = SecureUtil.aes(defaultKeyBytes).decryptStr(encryptedData);
 
-            if (log.isDebugEnabled()) {
-                log.debug(
-                        "字段解密成功: {}, 加密长度: {}, 解密后长度: {}",
-                        fieldMetadata.getFieldName(),
-                        encryptedData.length,
-                        result.length);
-            }
-
-            return result;
+            System.out.println("解析后字符串："+result);
+            return HexUtil.decodeHex(result);
 
         } catch (Exception e) {
             throw new ProtocolException(
