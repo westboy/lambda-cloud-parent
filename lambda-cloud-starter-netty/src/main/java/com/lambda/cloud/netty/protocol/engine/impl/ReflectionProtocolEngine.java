@@ -336,7 +336,6 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @return 加密字段转换器
      */
     private DataTypeConverter getEncryptedConverter(ProtocolFieldMetadata fieldMetadata) {
-        // 使用转换器工厂的加密支持
         return converterFactory.getConverter(fieldMetadata);
     }
 

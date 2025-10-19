@@ -17,21 +17,17 @@ import lombok.extern.slf4j.Slf4j;
  * 负责处理协议字段的解析和序列化逻辑，将复杂的字段处理逻辑从引擎中分离出来
  * </p>
  *
+ * @param encryptionService 加密服务（可选）
  * @author Jin
  */
 @Slf4j
-public class ProtocolFieldProcessor {
-
-    /**
-     * 加密服务（可选）
-     */
-    private final EncryptionService encryptionService;
+public record ProtocolFieldProcessor(EncryptionService encryptionService) {
 
     /**
      * 默认构造函数（不支持加密）
      */
     public ProtocolFieldProcessor() {
-        this.encryptionService = null;
+        this(null);
     }
 
     /**
@@ -52,7 +48,7 @@ public class ProtocolFieldProcessor {
      * @param byteBuf       字节缓冲区
      * @param instance      目标实例
      * @param fieldMetadata 字段元数据
-     * @param frameMetadata   消息元数据
+     * @param frameMetadata 消息元数据
      * @param converter     数据类型转换器
      * @throws ProtocolException 解析异常
      */
@@ -89,7 +85,7 @@ public class ProtocolFieldProcessor {
      * @param instance      源实例
      * @param byteBuf       字节缓冲区
      * @param fieldMetadata 字段元数据
-     * @param frameMetadata   消息元数据
+     * @param frameMetadata 消息元数据
      * @param converter     数据类型转换器
      * @throws ProtocolException 序列化异常
      */

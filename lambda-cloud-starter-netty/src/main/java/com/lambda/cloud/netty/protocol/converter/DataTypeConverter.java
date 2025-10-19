@@ -118,13 +118,4 @@ public interface DataTypeConverter {
             return serializedData;
         }
     }
-
-    /**
-     * 检查是否支持加密字段处理
-     *
-     * @return true表示支持，false表示不支持
-     */
-    default boolean supportsEncryption() {
-        return false;
-    }
 }

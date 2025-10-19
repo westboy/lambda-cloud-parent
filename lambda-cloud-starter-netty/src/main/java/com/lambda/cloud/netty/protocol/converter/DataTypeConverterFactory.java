@@ -90,33 +90,6 @@ public class DataTypeConverterFactory {
     }
 
     /**
-     * 设置加密服务
-     *
-     * @param encryptionService 加密服务
-     */
-    public void setEncryptionService(EncryptionService encryptionService) {
-        this.encryptionService = encryptionService;
-    }
-
-    /**
-     * 获取加密服务
-     *
-     * @return 加密服务
-     */
-    public EncryptionService getEncryptionService() {
-        return encryptionService;
-    }
-
-    /**
-     * 检查是否支持加密
-     *
-     * @return true表示支持，false表示不支持
-     */
-    public boolean supportsEncryption() {
-        return encryptionService != null;
-    }
-
-    /**
      * 初始化转换器
      */
     private void initializeConverters() {

@@ -84,7 +84,6 @@ public class AsciiConverter implements DataTypeConverter {
      *
      * @param data          数据
      * @param fieldMetadata 字段元数据
-     * @return
      * @throws ProtocolException 验证失败时抛出
      */
     public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {

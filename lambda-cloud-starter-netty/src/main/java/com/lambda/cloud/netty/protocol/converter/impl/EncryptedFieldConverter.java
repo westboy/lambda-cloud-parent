@@ -13,44 +13,45 @@ import lombok.extern.slf4j.Slf4j;
  * </p>
  *
  * @param encryptionService 加密服务
- *                          -- GETTER --
- *                          获取加密服务
- * @param delegateConverter 委托转换器（用于实际的数据类型转换）
- *                          -- GETTER --
- *                          获取委托转换器
+ *
+ * @param nextConverter 下游类型转换器（用于实际的数据类型转换）
+ *
  * @author Jin
  */
 @Slf4j
-public record EncryptedFieldConverter(EncryptionService encryptionService,
-                                      DataTypeConverter delegateConverter) implements DataTypeConverter {
+public record EncryptedFieldConverter(
+        EncryptionService encryptionService,
+        // 下游类型转换器
+        DataTypeConverter nextConverter)
+        implements DataTypeConverter {
 
     /**
      * 构造函数
      *
      * @param encryptionService 加密服务
-     * @param delegateConverter 委托转换器
+     * @param nextConverter 委托转换器
      */
-    public EncryptedFieldConverter(EncryptionService encryptionService, DataTypeConverter delegateConverter) {
+    public EncryptedFieldConverter(EncryptionService encryptionService, DataTypeConverter nextConverter) {
         this.encryptionService = encryptionService;
-        this.delegateConverter = delegateConverter;
+        this.nextConverter = nextConverter;
 
         if (encryptionService == null) {
             throw new IllegalArgumentException("加密服务不能为空");
         }
-        if (delegateConverter == null) {
+        if (nextConverter == null) {
             throw new IllegalArgumentException("委托转换器不能为空");
         }
 
         log.debug(
                 "创建加密字段转换器，算法: {}, 委托转换器: {}",
                 encryptionService.getAlgorithmName(),
-                delegateConverter.getClass().getSimpleName());
+                nextConverter.getClass().getSimpleName());
     }
 
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (data == null || data.length == 0) {
-            return delegateConverter.parse(data, fieldMetadata);
+            return nextConverter.parse(data, fieldMetadata);
         }
 
         try {
@@ -68,10 +69,10 @@ public record EncryptedFieldConverter(EncryptionService encryptionService,
                 }
 
                 // 再解析
-                return delegateConverter.parse(decryptedData, fieldMetadata);
+                return nextConverter.parse(decryptedData, fieldMetadata);
             } else {
                 // 非加密字段，直接解析
-                return delegateConverter.parse(data, fieldMetadata);
+                return nextConverter.parse(data, fieldMetadata);
             }
         } catch (Exception e) {
             throw new ProtocolException(
@@ -85,12 +86,12 @@ public record EncryptedFieldConverter(EncryptionService encryptionService,
     @Override
     public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
-            return delegateConverter.serialize(value, fieldMetadata);
+            return nextConverter.serialize(null, fieldMetadata);
         }
 
         try {
             // 先序列化
-            byte[] serializedData = delegateConverter.serialize(value, fieldMetadata);
+            byte[] serializedData = nextConverter.serialize(value, fieldMetadata);
 
             // 检查是否为加密字段
             if (fieldMetadata.isEncrypted()) {
@@ -121,40 +122,15 @@ public record EncryptedFieldConverter(EncryptionService encryptionService,
 
     @Override
     public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        // 字符串解析不涉及加密，直接委托
-        return delegateConverter.parseFromString(value, fieldMetadata);
-    }
-
-    @Override
-    public boolean supportsEncryption() {
-        return true;
+        return nextConverter.parseFromString(value, fieldMetadata);
     }
 
     @Override
     public int getExpectedLength(ProtocolFieldMetadata fieldMetadata) {
         if (fieldMetadata.isEncrypted()) {
-            // 加密字段的长度可能会变化，返回配置的长度
             return fieldMetadata.getLength();
         } else {
-            return delegateConverter.getExpectedLength(fieldMetadata);
+            return nextConverter.getExpectedLength(fieldMetadata);
         }
-    }
-
-    /**
-     * 检查是否支持指定字段的加密
-     *
-     * @param fieldMetadata 字段元数据
-     * @return true表示支持，false表示不支持
-     */
-    public boolean supportsField(ProtocolFieldMetadata fieldMetadata) {
-        return fieldMetadata.isEncrypted() && encryptionService.supportsEncryption(fieldMetadata);
-    }
-
-    @Override
-    public String toString() {
-        return String.format(
-                "EncryptedFieldConverter{algorithm=%s, delegate=%s}",
-                encryptionService.getAlgorithmName(),
-                delegateConverter.getClass().getSimpleName());
     }
 }

@@ -5,9 +5,6 @@ import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 
 /**
  * 加密服务接口
- * <p>
- * 定义协议字段加密解密的统一标准，支持多种加密算法和密钥管理策略
- * </p>
  *
  * @author Jin
  */
@@ -47,26 +44,4 @@ public interface EncryptionService {
      * @return 加密算法名称
      */
     String getAlgorithmName();
-
-    /**
-     * 获取密钥长度（位）
-     *
-     * @return 密钥长度
-     */
-    int getKeyLength();
-
-    /**
-     * 验证加密配置
-     *
-     * @param fieldMetadata 字段元数据
-     * @throws ProtocolException 配置验证异常
-     */
-    default void validateConfiguration(ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        if (!supportsEncryption(fieldMetadata)) {
-            throw new ProtocolException(
-                    ProtocolException.ErrorCode.VALIDATION_ERROR,
-                    "不支持的加密配置: " + fieldMetadata.getFieldName(),
-                    fieldMetadata.getFieldName());
-        }
-    }
 }
