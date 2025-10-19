@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.message;
 
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
-import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
@@ -39,11 +39,11 @@ public class TransactionRecordProtocolTest {
         log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         // 获取协议引擎
-        ProtocolEngine<TransactionRecord> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<BaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
 
         try {
             // 先获取消息元数据，检查预期长度
-            var metadata = engine.getMetadata(TransactionRecord.class);
+            var metadata = engine.getMetadata(BaseMessage.class);
             log.info("消息预期总长度: {} 字节", metadata.totalLength());
             log.info("字段数量: {}", metadata.fields().size());
 
@@ -60,7 +60,7 @@ public class TransactionRecordProtocolTest {
             log.info("开始解析报文...");
 
             // 使用协议引擎解析消息
-            TransactionRecord record = engine.parse(byteBuf, TransactionRecord.class);
+            BaseMessage record = engine.parse(byteBuf, BaseMessage.class);
 
             log.info("解析结果: {}", record);
 
@@ -88,7 +88,7 @@ public class TransactionRecordProtocolTest {
     /**
      * 输出关键字段信息
      */
-    private void logKeyFields(TransactionRecord record) {
+    private void logKeyFields(BaseMessage record) {
         log.info("=== 关键字段信息 ===");
         log.info("帧类型: {}", record.getFrameType());
         log.info("订单编号: {}", record.getInnerRecord().getOrderNumber());
@@ -215,13 +215,13 @@ public class TransactionRecordProtocolTest {
         log.info("=== 独立序列化测试 ===");
         log.warn("注意：当前协议引擎序列化功能存在问题（不支持BigDecimal类型）");
 
-        ProtocolEngine<TransactionRecord> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<BaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
 
         try {
             // 首先解析原始数据得到对象
             byte[] originalBytes = HexUtils.hexToBytes(TEST_DATA3);
             ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
-            TransactionRecord record = engine.parse(originalByteBuf, TransactionRecord.class);
+            BaseMessage record = engine.parse(originalByteBuf, BaseMessage.class);
 
             log.info("✓ 解析功能正常，得到对象: {}", record);
 
@@ -260,13 +260,13 @@ public class TransactionRecordProtocolTest {
         log.info("=== 序列化-反序列化往返测试 ===");
         log.warn("注意：当前协议引擎序列化功能存在问题（不支持BigDecimal类型）");
 
-        ProtocolEngine<TransactionRecord> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<BaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
 
         try {
             // 第一步：解析原始数据
             byte[] originalBytes = HexUtils.hexToBytes(TEST_DATA3);
             ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
-            TransactionRecord originalRecord = engine.parse(originalByteBuf, TransactionRecord.class);
+            BaseMessage originalRecord = engine.parse(originalByteBuf, BaseMessage.class);
 
             log.info("✓ 原始解析成功: {}", originalRecord);
 
@@ -281,7 +281,7 @@ public class TransactionRecordProtocolTest {
 
             // 第三步：重新解析序列化后的数据
             ByteBuf deserializeByteBuf = Unpooled.wrappedBuffer(serializedBytes);
-            TransactionRecord deserializedRecord = engine.parse(deserializeByteBuf, TransactionRecord.class);
+            BaseMessage deserializedRecord = engine.parse(deserializeByteBuf, BaseMessage.class);
 
             log.info("✓ 重新解析成功: {}", deserializedRecord);
 
@@ -301,7 +301,7 @@ public class TransactionRecordProtocolTest {
     /**
      * 比较两个TransactionRecord对象是否相等
      */
-    private boolean compareTransactionRecords(TransactionRecord record1, TransactionRecord record2) {
+    private boolean compareTransactionRecords(BaseMessage record1, BaseMessage record2) {
         if (record1 == null && record2 == null) {
             return true;
         }

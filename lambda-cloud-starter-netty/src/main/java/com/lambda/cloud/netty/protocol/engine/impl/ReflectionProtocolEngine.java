@@ -2,6 +2,7 @@ package com.lambda.cloud.netty.protocol.engine.impl;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
@@ -10,7 +11,6 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
-import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.processor.CrcProcessor;
@@ -344,7 +344,6 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @param frameMetadata 协议帧元数据
      */
     private void logProtocolOperation(String operation, ProtocolFrameMetadata frameMetadata) {
-        // INFO级别：输出简洁的操作摘要，适用于生产环境
         if (log.isInfoEnabled()) {
             log.info(
                     "协议{} - 类型: {}, 名称: {}, 长度: {}B, 字段数: {}",
@@ -355,7 +354,6 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                     frameMetadata.fields().size());
         }
 
-        // DEBUG级别：输出详细的协议信息，适用于开发和调试
         if (log.isDebugEnabled()) {
             log.debug(
                     """

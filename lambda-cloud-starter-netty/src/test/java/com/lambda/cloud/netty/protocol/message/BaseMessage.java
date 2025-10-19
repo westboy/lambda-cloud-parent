@@ -17,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @ProtocolFrame
-public class TransactionRecord {
+public class BaseMessage {
 
     /**
      * 报文头 - 起始符 (68)
