@@ -1,7 +1,7 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.netty.NettyServer;
 import com.lambda.cloud.netty.NettyChannelInitializer;
+import com.lambda.cloud.netty.NettyServer;
 import com.lambda.cloud.netty.customizer.ChannelPipelineConfigurationCustomizer;
 import com.lambda.cloud.netty.customizer.ServerBootstrapConfigurationCustomizer;
 import com.lambda.cloud.netty.repository.ChannelRepository;

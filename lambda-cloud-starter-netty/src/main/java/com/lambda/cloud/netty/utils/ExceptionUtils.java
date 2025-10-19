@@ -68,4 +68,61 @@ public final class ExceptionUtils {
     public static ProtocolException createSerializeException(String message, ProtocolFieldMetadata fieldMetadata) {
         return createSerializeException(message, fieldMetadata, null);
     }
+
+    /**
+     * 创建缓冲区下溢异常
+     *
+     * @param message       错误消息
+     * @param fieldMetadata 字段元数据
+     * @param cause         原因异常
+     * @return ProtocolException实例
+     */
+    public static ProtocolException createBufferUnderflowException(
+            String message, ProtocolFieldMetadata fieldMetadata, Throwable cause) {
+        return new ProtocolException(
+                ProtocolException.ErrorCode.BUFFER_UNDERFLOW,
+                message,
+                fieldMetadata != null ? fieldMetadata.getFieldName() : null,
+                cause);
+    }
+
+    /**
+     * 创建缓冲区下溢异常
+     *
+     * @param message       错误消息
+     * @param fieldMetadata 字段元数据
+     * @return ProtocolException实例
+     */
+    public static ProtocolException createBufferUnderflowException(
+            String message, ProtocolFieldMetadata fieldMetadata) {
+        return createBufferUnderflowException(message, fieldMetadata, null);
+    }
+
+    /**
+     * 创建验证错误异常
+     *
+     * @param message       错误消息
+     * @param fieldMetadata 字段元数据
+     * @param cause         原因异常
+     * @return ProtocolException实例
+     */
+    public static ProtocolException createValidationException(
+            String message, ProtocolFieldMetadata fieldMetadata, Throwable cause) {
+        return new ProtocolException(
+                ProtocolException.ErrorCode.VALIDATION_ERROR,
+                message,
+                fieldMetadata != null ? fieldMetadata.getFieldName() : null,
+                cause);
+    }
+
+    /**
+     * 创建验证错误异常
+     *
+     * @param message       错误消息
+     * @param fieldMetadata 字段元数据
+     * @return ProtocolException实例
+     */
+    public static ProtocolException createValidationException(String message, ProtocolFieldMetadata fieldMetadata) {
+        return createValidationException(message, fieldMetadata, null);
+    }
 }

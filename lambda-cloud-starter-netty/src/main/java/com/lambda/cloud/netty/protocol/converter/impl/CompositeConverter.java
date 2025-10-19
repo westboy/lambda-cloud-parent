@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
-import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -102,7 +102,7 @@ public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implem
                     "复合字段序列化失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
                     fieldMetadata.getFieldName(),
                     e);
-        }finally {
+        } finally {
             byteBuf.release();
         }
     }

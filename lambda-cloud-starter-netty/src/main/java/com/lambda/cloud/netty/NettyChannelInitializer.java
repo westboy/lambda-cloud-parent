@@ -14,8 +14,7 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer;
 
-    public NettyChannelInitializer(
-            ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer) {
+    public NettyChannelInitializer(ChannelPipelineConfigurationCustomizer channelPipelineConfigurationCustomizer) {
         this.channelPipelineConfigurationCustomizer = channelPipelineConfigurationCustomizer;
     }
 
