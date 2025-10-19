@@ -38,13 +38,10 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
         }
 
         try {
-            byte[] result = SecureUtil.aes(defaultKeyBytes).encrypt(data);
-
-            if (log.isDebugEnabled()) {
-                log.debug("字段加密成功: {}, 原始长度: {}, 加密后长度: {}", fieldMetadata.getFieldName(), data.length, result.length);
-            }
-
-            return result;
+            System.out.println("加密前字符串："+ HexUtil.encodeHexStr(data).toUpperCase());
+            String result = SecureUtil.aes(defaultKeyBytes).encryptHex(HexUtil.encodeHexStr(data).toUpperCase());
+            System.out.println("加密后字符串："+result.toUpperCase());
+            return HexUtil.decodeHex(result);
 
         } catch (Exception e) {
             throw new ProtocolException(

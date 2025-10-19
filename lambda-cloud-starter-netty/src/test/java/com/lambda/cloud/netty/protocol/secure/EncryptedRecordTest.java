@@ -11,6 +11,7 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
+import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import javax.crypto.SecretKey;
@@ -42,13 +43,15 @@ public class EncryptedRecordTest {
         log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         SecretKey key = SecureUtil.generateKey("AES", 128);
-        String encryptHex = SecureUtil.aes(key.getEncoded())
-                .encryptHex(
-                        "181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B");
+        String encryptHex = HexUtil.encodeHexStr(SecureUtil.aes(key.getEncoded())
+                .encrypt(RAW),false) ;
+        System.out.println("rawHex: "+RAW);
 
         System.out.println("encryptHex: "+encryptHex);
 
         String format = String.format(TEST_DATA5, encryptHex);
+
+        System.out.println("加密报文: "+format);
 
         EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
 
@@ -79,6 +82,17 @@ public class EncryptedRecordTest {
 
             logKeyFields(record);
             log.info("解析功能验证完成，数据解析正常");
+
+            ByteBuf serializeBuffer = Unpooled.buffer();
+            engine.serialize(record, serializeBuffer);
+
+            // 如果到达这里，说明序列化成功了
+            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+            serializeBuffer.readBytes(serializedBytes);
+
+            String userNameById = HexUtil.encodeHexStr(serializedBytes,false);
+            System.out.println(userNameById);
+
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

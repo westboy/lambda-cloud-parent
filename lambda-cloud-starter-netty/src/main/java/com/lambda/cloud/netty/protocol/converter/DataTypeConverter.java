@@ -111,14 +111,12 @@ public interface DataTypeConverter {
             Object value, ProtocolFieldMetadata fieldMetadata, EncryptionService encryptionService)
             throws ProtocolException {
         // 先序列化
-        byte[] serializedData = serialize(value, fieldMetadata);
-
         if (fieldMetadata.isEncrypted() && encryptionService != null) {
-            // 再加密
+            byte[] serializedData = serialize(value, fieldMetadata);
             return encryptionService.encrypt(serializedData, fieldMetadata);
         } else {
             // 直接返回序列化结果
-            return serializedData;
+            return serialize(value, fieldMetadata);
         }
     }
 }

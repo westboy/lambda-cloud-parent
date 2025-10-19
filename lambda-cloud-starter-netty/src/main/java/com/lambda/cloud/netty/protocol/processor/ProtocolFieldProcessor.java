@@ -243,8 +243,12 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      */
     private byte[] convertToBytes(Object value, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
             throws ProtocolException {
+
         try {
-            return converter.serialize(value, fieldMetadata);
+            if (fieldMetadata.isEncrypted() && encryptionService != null) {
+                return converter.serializeWithEncryption(value, fieldMetadata, encryptionService);
+            } else
+                return converter.serialize(value, fieldMetadata);
         } catch (Exception e) {
             throw ExceptionUtils.createSerializeException(
                     "字段数据序列化失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
