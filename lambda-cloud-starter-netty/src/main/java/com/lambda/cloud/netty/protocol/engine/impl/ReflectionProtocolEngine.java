@@ -291,6 +291,11 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             return getCompositeConverter();
         }
 
+        // 检查是否为加密字段
+        if (fieldMetadata.isEncrypted()) {
+            return getEncryptedConverter(fieldMetadata);
+        }
+
         // 普通字段使用数据类型转换器
         return getConverterFromCache(fieldMetadata.getDataType());
     }
@@ -322,6 +327,17 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             converterCache.put("COMPOSITE_KEY", converter);
         }
         return converter;
+    }
+
+    /**
+     * 获取加密字段转换器
+     *
+     * @param fieldMetadata 字段元数据
+     * @return 加密字段转换器
+     */
+    private DataTypeConverter getEncryptedConverter(ProtocolFieldMetadata fieldMetadata) {
+        // 使用转换器工厂的加密支持
+        return converterFactory.getConverter(fieldMetadata);
     }
 
     /**

@@ -3,6 +3,7 @@ package com.lambda.cloud.netty.protocol.processor;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
+import com.lambda.cloud.netty.protocol.encryption.EncryptionService;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
@@ -20,6 +21,30 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ProtocolFieldProcessor {
+
+    /**
+     * 加密服务（可选）
+     */
+    private final EncryptionService encryptionService;
+
+    /**
+     * 默认构造函数（不支持加密）
+     */
+    public ProtocolFieldProcessor() {
+        this.encryptionService = null;
+    }
+
+    /**
+     * 构造函数（支持加密）
+     *
+     * @param encryptionService 加密服务
+     */
+    public ProtocolFieldProcessor(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
+        if (encryptionService != null) {
+            log.info("字段处理器已启用加密支持，算法: {}", encryptionService.getAlgorithmName());
+        }
+    }
 
     /**
      * 解析字段
@@ -141,7 +166,15 @@ public class ProtocolFieldProcessor {
     private Object convertFieldData(byte[] fieldData, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
             throws ProtocolException {
         try {
-            return converter.parse(fieldData, fieldMetadata);
+            // 检查是否需要解密
+            if (fieldMetadata.isEncrypted() && encryptionService != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("解密字段数据: {}, 原始长度: {}", fieldMetadata.getFieldName(), fieldData.length);
+                }
+                return converter.parseWithEncryption(fieldData, fieldMetadata, encryptionService);
+            } else {
+                return converter.parse(fieldData, fieldMetadata);
+            }
         } catch (Exception e) {
             throw ExceptionUtils.createParseException("字段数据转换失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
         }
@@ -213,7 +246,15 @@ public class ProtocolFieldProcessor {
     private byte[] convertToBytes(Object value, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
             throws ProtocolException {
         try {
-            return converter.serialize(value, fieldMetadata);
+            // 检查是否需要加密
+            if (fieldMetadata.isEncrypted() && encryptionService != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("加密字段数据: {}", fieldMetadata.getFieldName());
+                }
+                return converter.serializeWithEncryption(value, fieldMetadata, encryptionService);
+            } else {
+                return converter.serialize(value, fieldMetadata);
+            }
         } catch (Exception e) {
             throw ExceptionUtils.createSerializeException(
                     "字段数据序列化失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);

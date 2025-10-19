@@ -2,6 +2,8 @@ package com.lambda.cloud.netty.protocol.converter;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.converter.impl.*;
+import com.lambda.cloud.netty.protocol.encryption.EncryptionService;
+import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -21,10 +23,26 @@ public class DataTypeConverterFactory {
     private final Map<ProtocolDataType, DataTypeConverter> converters;
 
     /**
+     * 加密服务（可选）
+     */
+    private EncryptionService encryptionService;
+
+    /**
      * 构造函数
      */
     public DataTypeConverterFactory() {
         this.converters = new EnumMap<>(ProtocolDataType.class);
+        initializeConverters();
+    }
+
+    /**
+     * 构造函数（支持加密）
+     *
+     * @param encryptionService 加密服务
+     */
+    public DataTypeConverterFactory(EncryptionService encryptionService) {
+        this.converters = new EnumMap<>(ProtocolDataType.class);
+        this.encryptionService = encryptionService;
         initializeConverters();
     }
 
@@ -44,6 +62,24 @@ public class DataTypeConverterFactory {
     }
 
     /**
+     * 获取转换器（支持加密字段）
+     *
+     * @param fieldMetadata 字段元数据
+     * @return 转换器
+     * @throws IllegalArgumentException 不支持的数据类型
+     */
+    public DataTypeConverter getConverter(ProtocolFieldMetadata fieldMetadata) {
+        DataTypeConverter baseConverter = getConverter(fieldMetadata.getDataType());
+
+        // 如果字段需要加密且有加密服务，返回加密转换器
+        if (fieldMetadata.isEncrypted() && encryptionService != null) {
+            return new EncryptedFieldConverter(encryptionService, baseConverter);
+        }
+
+        return baseConverter;
+    }
+
+    /**
      * 注册转换器
      *
      * @param dataType  数据类型
@@ -51,6 +87,33 @@ public class DataTypeConverterFactory {
      */
     public void registerConverter(ProtocolDataType dataType, DataTypeConverter converter) {
         converters.put(dataType, converter);
+    }
+
+    /**
+     * 设置加密服务
+     *
+     * @param encryptionService 加密服务
+     */
+    public void setEncryptionService(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
+    }
+
+    /**
+     * 获取加密服务
+     *
+     * @return 加密服务
+     */
+    public EncryptionService getEncryptionService() {
+        return encryptionService;
+    }
+
+    /**
+     * 检查是否支持加密
+     *
+     * @return true表示支持，false表示不支持
+     */
+    public boolean supportsEncryption() {
+        return encryptionService != null;
     }
 
     /**
