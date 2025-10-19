@@ -1,6 +1,7 @@
 package com.lambda.cloud.netty.protocol.engine;
 
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,6 +37,10 @@ public class ProtocolEngineFactory {
      */
     public static <T> ProtocolEngine<T> getDefaultEngine() {
         return getEngine(EngineType.REFLECTION);
+    }
+
+    public static void addEngine(EngineType type, ProtocolEngine<?> engine) {
+        ENGINE_CACHE.put(type, engine);
     }
 
     /**

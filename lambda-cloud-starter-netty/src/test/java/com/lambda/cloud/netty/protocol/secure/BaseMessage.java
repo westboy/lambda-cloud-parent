@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.message;
+package com.lambda.cloud.netty.protocol.secure;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -61,8 +61,8 @@ public class BaseMessage {
     @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.HEX, checksum = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, checksum = true,encrypted = true)
-    private InnerRecord innerRecord;
+    @ProtocolField(order = 5, composite = true, checksum = true, encrypted = true)
+    private EncryptedInnerRecord innerRecord;
     /**
      * 校验码 (2字节)
      */

@@ -21,7 +21,12 @@ import io.netty.buffer.ByteBuf;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.N;
 
 /**
  * 反射协议引擎
@@ -31,42 +36,53 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author Jin
  */
+@Data
 @Slf4j
 public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
     /**
      * 元数据缓存
      */
-    private final Map<Class<?>, ProtocolFrameMetadata> metadataCache = new ConcurrentHashMap<>();
+    private Map<Class<?>, ProtocolFrameMetadata> metadataCache;
 
     /**
      * 数据类型转换器工厂
      */
-    private final DataTypeConverterFactory converterFactory = new DataTypeConverterFactory();
+    private DataTypeConverterFactory converterFactory;
 
     /**
      * 验证引擎
      */
-    private final ValidationEngine validationEngine = new ValidationEngine();
+    private ValidationEngine validationEngine;
 
     /**
      * 字段缓存管理器
      */
-    private final LRUCache<String, List<Field>> fieldCache = CacheUtil.newLRUCache(1000);
+    private LRUCache<String, List<Field>> fieldCache;
 
     /**
      * 转换器缓存管理器
      */
-    private final LRUCache<String, DataTypeConverter> converterCache = CacheUtil.newLRUCache(100);
+    private LRUCache<String, DataTypeConverter> converterCache;
     /**
      * 字段处理器
      */
-    private final ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor();
+    private ProtocolFieldProcessor protocolFieldProcessor;
 
     /**
      * CRC处理器
      */
-    private final CrcProcessor crcProcessor = new CrcProcessor();
+    private CrcProcessor crcProcessor;
+
+    public ReflectionProtocolEngine() {
+        this.metadataCache = new ConcurrentHashMap<>();
+        this.converterFactory = new DataTypeConverterFactory();
+        this.validationEngine = new ValidationEngine();
+        this.fieldCache = CacheUtil.newLRUCache(1000);
+        this.converterCache = CacheUtil.newLRUCache(100);
+        this.protocolFieldProcessor = new ProtocolFieldProcessor();
+        this.crcProcessor = new CrcProcessor();
+    }
 
     @Override
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
