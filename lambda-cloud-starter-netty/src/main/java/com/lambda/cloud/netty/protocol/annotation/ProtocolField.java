@@ -32,11 +32,19 @@ public @interface ProtocolField {
     boolean composite() default false;
 
     /**
+     * 加密标识
+     * 在encryptedKey字段值为 0x01时 encryptedField 字段生效
+     *
+     * @return 加密标识
+     */
+    boolean encryptedKey() default false;
+    /**
      * 是否加密字段
      *
      * @return 是否加密
      */
-    boolean encrypted() default false;
+    boolean encryptedField() default false;
+
 
     /**
      *  CRCChecksum 校验

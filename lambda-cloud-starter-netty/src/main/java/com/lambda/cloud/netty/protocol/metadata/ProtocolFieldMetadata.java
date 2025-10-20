@@ -184,7 +184,7 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      * @return true 表示加密字段
      */
     public boolean isEncrypted() {
-        return protocolField.encrypted();
+        return protocolField.encryptedField();
     }
 
     /**

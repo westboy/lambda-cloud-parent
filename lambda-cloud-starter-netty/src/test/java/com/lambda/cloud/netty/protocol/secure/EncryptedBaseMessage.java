@@ -22,7 +22,7 @@ public class EncryptedBaseMessage {
     /**
      * 报文头 - 起始符 (68)
      */
-    @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
+    @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始标")
     private String startFlag;
 
     /**
@@ -40,7 +40,7 @@ public class EncryptedBaseMessage {
             dataType = ProtocolDataType.HEX,
             checksum = true,
             littleEndian = true,
-            description = "数据长度")
+            description = "序列号域")
     private Integer ser;
 
     /**
@@ -61,7 +61,7 @@ public class EncryptedBaseMessage {
             description = "数据长度")
     private String sec;
 
-    @ProtocolField(order = 5, composite = true, checksum = true, encrypted = true)
+    @ProtocolField(order = 5, composite = true, checksum = true, encryptedField = true)
     private EncryptedInnerRecord innerRecord;
 
     /**

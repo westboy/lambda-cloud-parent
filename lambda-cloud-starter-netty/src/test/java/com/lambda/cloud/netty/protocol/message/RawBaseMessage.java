@@ -61,7 +61,7 @@ public class RawBaseMessage {
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, checksum = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, checksum = true, encrypted = true)
+    @ProtocolField(order = 5, composite = true, checksum = true, encryptedField = true)
     private RawInnerRecord innerRecord;
     /**
      * 校验码 (2字节)

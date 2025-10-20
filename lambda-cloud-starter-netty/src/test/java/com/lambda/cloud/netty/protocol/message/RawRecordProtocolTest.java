@@ -506,7 +506,7 @@ public class RawRecordProtocolTest {
                         }
 
                         @Override
-                        public boolean encrypted() {
+                        public boolean encryptedField() {
                             return true;
                         }
 
