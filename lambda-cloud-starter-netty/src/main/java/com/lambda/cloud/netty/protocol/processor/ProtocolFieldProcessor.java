@@ -2,15 +2,16 @@ package com.lambda.cloud.netty.protocol.processor;
 
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
-import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
 import io.netty.buffer.ByteBuf;
-import java.lang.reflect.Field;
 import lombok.extern.slf4j.Slf4j;
+
+import java.lang.reflect.Field;
 
 /**
  * 字段处理器
@@ -23,13 +24,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public record ProtocolFieldProcessor(EncryptionService encryptionService) {
-
-    /**
-     * 默认构造函数（不支持加密）
-     */
-    public ProtocolFieldProcessor() {
-        this(null);
-    }
 
     /**
      * 构造函数（支持加密）

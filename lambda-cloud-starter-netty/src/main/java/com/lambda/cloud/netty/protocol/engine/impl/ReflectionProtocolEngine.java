@@ -3,27 +3,30 @@ package com.lambda.cloud.netty.protocol.engine.impl;
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
 import com.lambda.cloud.netty.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
-import com.lambda.cloud.netty.utils.EncryptionUtils;
+import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
-import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.processor.ChecksumProcessor;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
+import com.lambda.cloud.netty.utils.EncryptionUtils;
 import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 反射协议引擎
@@ -71,17 +74,14 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      */
     private ChecksumProcessor checksumProcessor;
 
-    private EncryptionUtils encryptionUtils;
-
-    public ReflectionProtocolEngine() {
+    public ReflectionProtocolEngine(EncryptionService encryptionService, ChecksumService checksumService) {
+        this.fieldCache = CacheUtil.newLRUCache(1000);
+        this.converterCache = CacheUtil.newLRUCache(100);
         this.metadataCache = new ConcurrentHashMap<>();
         this.converterFactory = new DataTypeConverterFactory();
         this.validationEngine = new ValidationEngine();
-        this.fieldCache = CacheUtil.newLRUCache(1000);
-        this.converterCache = CacheUtil.newLRUCache(100);
-        this.protocolFieldProcessor = new ProtocolFieldProcessor();
-        this.checksumProcessor = new ChecksumProcessor();
-        this.encryptionUtils = new EncryptionUtils();
+        this.protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
+        this.checksumProcessor = new ChecksumProcessor(checksumService, encryptionService);
     }
 
     @Override
@@ -213,7 +213,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             throws ProtocolException {
 
         // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
-        boolean encryptionEnabled = encryptionUtils.isEncryptionEnabled(instance, msgMetadata);
+        boolean encryptionEnabled = EncryptionUtils.isEncryptionEnabled(instance, msgMetadata);
 
         // 获取合适的转换器（支持复合字段与加密控制）
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
@@ -235,7 +235,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             throws ProtocolException {
 
         // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
-        boolean encryptionEnabled = encryptionUtils.isEncryptionEnabled(instance, msgMetadata);
+        boolean encryptionEnabled = EncryptionUtils.isEncryptionEnabled(instance, msgMetadata);
 
         // 获取合适的转换器（支持复合字段与加密控制）
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
@@ -304,27 +304,6 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         fieldCache.put(className, fields);
 
         return fields;
-    }
-
-    /**
-     * 获取转换器（支持复合字段）
-     *
-     * @param fieldMetadata 字段元数据
-     * @return 转换器
-     */
-    private DataTypeConverter getConverter(ProtocolFieldMetadata fieldMetadata) {
-        // 检查是否为复合字段
-        if (fieldMetadata.isComposite()) {
-            return getCompositeConverter();
-        }
-
-        // 检查是否为加密字段（默认按字段标记）
-        if (fieldMetadata.isEncryptedField()) {
-            return getEncryptedConverter(fieldMetadata);
-        }
-
-        // 普通字段使用数据类型转换器
-        return getConverterFromCache(fieldMetadata.getDataType());
     }
 
     /**

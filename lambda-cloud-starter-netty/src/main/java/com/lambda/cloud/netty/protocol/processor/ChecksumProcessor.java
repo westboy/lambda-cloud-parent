@@ -7,6 +7,8 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
+import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
 import com.lambda.cloud.netty.utils.EncryptionUtils;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
@@ -29,16 +31,9 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
-public record ChecksumProcessor(ChecksumService crcService, EncryptionUtils encryptionUtils) {
+public record ChecksumProcessor(ChecksumService crcService, EncryptionService encryptionService) {
 
     private static final DataTypeConverterFactory converterFactory = new DataTypeConverterFactory();
-
-    /**
-     * 构造函数
-     */
-    public ChecksumProcessor() {
-        this(new ChecksumService(),new EncryptionUtils());
-    }
 
     /**
      * 在序列化时计算并设置CRC值
