@@ -3,6 +3,7 @@ package com.lambda.cloud.netty.protocol.secure;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
@@ -54,7 +55,7 @@ public class EncryptedRecordTest {
 
         EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
 
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine();
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(encryptionService,new ChecksumService());
         reflectionProtocolEngine.setConverterFactory(new DataTypeConverterFactory(encryptionService));
         ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
         reflectionProtocolEngine.setProtocolFieldProcessor(protocolFieldProcessor);

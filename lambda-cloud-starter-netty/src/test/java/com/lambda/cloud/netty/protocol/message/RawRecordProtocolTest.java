@@ -404,37 +404,4 @@ public class RawRecordProtocolTest {
 
         return true;
     }
-
-    /**
-     * 测试配置了加密服务的协议引擎
-     */
-    @Test
-    public void testProtocolEngineWithEncryption() {
-        log.info("=== 测试配置了加密服务的协议引擎 ===");
-
-        try {
-            // 生成AES密钥
-            SecretKey key = SecureUtil.generateKey("AES", 128);
-            EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
-
-            // 创建配置了加密服务的协议引擎
-            ReflectionProtocolEngine reflectionEngine = new ReflectionProtocolEngine();
-            reflectionEngine.setConverterFactory(new DataTypeConverterFactory(encryptionService));
-
-            ProtocolFieldProcessor fieldProcessor = new ProtocolFieldProcessor(encryptionService);
-            reflectionEngine.setProtocolFieldProcessor(fieldProcessor);
-
-            log.info("加密协议引擎创建成功，算法: {}", encryptionService.getAlgorithmName());
-
-            // 测试基本功能
-            var metadata = reflectionEngine.getMetadata(RawBaseMessage.class);
-            log.info("消息元数据获取成功，字段数量: {}", metadata.fields().size());
-
-            log.info("加密协议引擎测试通过 ✓");
-
-        } catch (Exception e) {
-            log.error("加密协议引擎测试失败", e);
-            throw new RuntimeException("加密协议引擎测试失败", e);
-        }
-    }
 }
