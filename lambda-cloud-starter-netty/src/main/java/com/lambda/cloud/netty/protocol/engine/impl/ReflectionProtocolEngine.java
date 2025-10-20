@@ -2,6 +2,7 @@ package com.lambda.cloud.netty.protocol.engine.impl;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
+import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -18,11 +19,12 @@ import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 import static cn.hutool.core.util.ReflectUtil.getFieldValue;
 
@@ -411,11 +413,11 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * 判断控制值是否为启用状态（0x01）
      */
     private boolean isValueEnableEncryption(Object value) {
-        if (value == null) return false;
-        if (value instanceof Number num) {
-            return num.intValue() == 0;
-        }
-        return false;
+        return switch (value) {
+            case Number num -> num.intValue() == 0;
+            case String num -> StrUtil.equals(num, "00");
+            case null, default -> false;
+        };
     }
 
     /**
@@ -443,7 +445,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         if (log.isDebugEnabled()) {
             log.debug(
                     """
-
+                            
                             ┏━━━━━━━━━━━━━━━━━━━━━ 协议{} ━━━━━━━━━━━━━━━━━━━━━┓
                             ┃ 消息类型: {}
                             ┃ 消息名称: {}
