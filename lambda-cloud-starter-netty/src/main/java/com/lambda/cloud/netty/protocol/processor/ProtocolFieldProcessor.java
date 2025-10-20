@@ -9,9 +9,8 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
 import io.netty.buffer.ByteBuf;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 字段处理器
@@ -310,7 +309,8 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             Class<?> targetType = fieldMetadata.getFieldType();
             if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 // 加密字段的长度
-                int remaining = byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
+                int remaining =
+                        byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
                 Assert.isTrue(
                         remaining > 0,
                         "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + "计算字段长度异常，使用可读字节长度:"

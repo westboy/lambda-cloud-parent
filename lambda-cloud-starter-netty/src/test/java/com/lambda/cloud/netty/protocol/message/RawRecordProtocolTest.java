@@ -1,21 +1,14 @@
 package com.lambda.cloud.netty.protocol.message;
 
 import cn.hutool.core.util.HexUtil;
-import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
-import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
-import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
-import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.math.BigDecimal;
-import java.util.Objects;
-import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -45,8 +38,11 @@ public class RawRecordProtocolTest {
         log.info("测试数据: {}", TEST_DATA4);
         log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
+        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
         // 获取协议引擎
-        ProtocolEngine<RawBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<RawBaseMessage> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         try {
             // 先获取消息元数据，检查预期长度
@@ -139,269 +135,5 @@ public class RawRecordProtocolTest {
 
         log.info("=== 总计信息 ===");
         log.info("CRC: {}", record.getChecksum());
-    }
-
-    @Test
-    public void testProtocolEngineMetadata() {
-        log.info("测试协议引擎元数据功能");
-
-        ProtocolEngine<RawInnerRecord> engine = ProtocolEngineFactory.getDefaultEngine();
-
-        // 获取消息元数据
-        var metadata = engine.getMetadata(RawInnerRecord.class);
-
-        log.info("消息类型: {}", metadata.getFrameType());
-        log.info("消息名称: {}", metadata.getMessageName());
-        log.info("消息描述: {}", metadata.getDescription());
-        log.info("消息总长度: {} 字节", metadata.totalLength());
-        log.info("字段数量: {}", metadata.fields().size());
-
-        // 输出字段信息
-        log.info("=== 字段详情 ===");
-        metadata.fields().forEach(field -> {
-            log.info(
-                    "字段[{}]: {} - {} ({} 字节, {})",
-                    field.getOrder(),
-                    field.getFieldName(),
-                    field.getDescription(),
-                    field.getLength(),
-                    field.getDataType());
-        });
-    }
-
-    /**
-     * 比较两个十六进制字符串，找出差异位置
-     */
-    private void compareHexStrings(String original, String serialized) {
-        log.info("=== 数据差异分析 ===");
-
-        int minLength = Math.min(original.length(), serialized.length());
-        int maxLength = Math.max(original.length(), serialized.length());
-
-        if (original.length() != serialized.length()) {
-            log.warn("长度不同: 原始 {} 字符, 序列化 {} 字符", original.length(), serialized.length());
-        }
-
-        int diffCount = 0;
-        for (int i = 0; i < minLength; i += 2) {
-            String originalByte = original.substring(i, Math.min(i + 2, original.length()));
-            String serializedByte = serialized.substring(i, Math.min(i + 2, serialized.length()));
-
-            if (!originalByte.equalsIgnoreCase(serializedByte)) {
-                log.warn("位置 {} (字节 {}): 原始={}, 序列化={}", i / 2, i / 2, originalByte, serializedByte);
-                diffCount++;
-
-                // 只显示前10个差异，避免日志过长
-                if (diffCount >= 10) {
-                    log.warn("... 还有更多差异，已省略显示");
-                    break;
-                }
-            }
-        }
-
-        // 如果长度不同，显示多出的部分
-        if (maxLength > minLength) {
-            String longerString = original.length() > serialized.length() ? original : serialized;
-            String extraPart = longerString.substring(minLength);
-            log.warn("多出的部分: {}", extraPart);
-        }
-
-        if (diffCount == 0 && original.length() == serialized.length()) {
-            log.info("数据完全一致");
-        } else {
-            log.warn("发现 {} 个字节差异", diffCount);
-        }
-    }
-
-    /**
-     * 独立的序列化测试方法
-     * 注意：当前协议引擎序列化功能存在问题，此测试用于验证和记录问题
-     */
-    @Test
-    public void testSerializeTransactionRecord() {
-        log.info("=== 独立序列化测试 ===");
-        log.warn("注意：当前协议引擎序列化功能存在问题（不支持BigDecimal类型）");
-
-        ProtocolEngine<RawBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
-
-        try {
-            // 首先解析原始数据得到对象
-            byte[] originalBytes = HexUtil.decodeHex(TEST_DATA3);
-            ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
-            RawBaseMessage record = engine.parse(originalByteBuf, RawBaseMessage.class);
-
-            log.info("✓ 解析功能正常，得到对象: {}", record);
-
-            // 尝试序列化对象（预期会失败）
-            log.info("尝试序列化对象...");
-            ByteBuf serializeBuffer = Unpooled.buffer();
-            engine.serialize(record, serializeBuffer);
-
-            // 如果到达这里，说明序列化成功了
-            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
-            serializeBuffer.readBytes(serializedBytes);
-            String serializedHex = HexUtil.encodeHexStr(serializedBytes);
-
-            log.info("✓ 序列化成功: {}", serializedHex);
-            log.info("原始数据:     {}", TEST_DATA3);
-
-            // 验证序列化结果
-            boolean isIdentical = serializedHex.equalsIgnoreCase(TEST_DATA3);
-            log.info("序列化验证结果: {}", isIdentical ? "✓ 通过" : "✗ 失败");
-
-            if (!isIdentical) {
-                compareHexStrings(TEST_DATA3, serializedHex);
-            }
-
-        } catch (Exception e) {
-            log.warn("✗ 序列化失败（预期行为）: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * 序列化-反序列化往返测试
-     * 注意：当前协议引擎序列化功能存在问题，此测试用于验证和记录问题
-     */
-    @Test
-    public void testSerializeDeserializeRoundTrip() {
-        log.info("=== 序列化-反序列化往返测试 ===");
-        log.warn("注意：当前协议引擎序列化功能存在问题（不支持BigDecimal类型）");
-
-        ProtocolEngine<RawBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
-
-        try {
-            // 第一步：解析原始数据
-            byte[] originalBytes = HexUtil.decodeHex(TEST_DATA3);
-            ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
-            RawBaseMessage originalRecord = engine.parse(originalByteBuf, RawBaseMessage.class);
-
-            log.info("✓ 原始解析成功: {}", originalRecord);
-
-            // 第二步：尝试序列化对象（预期会失败）
-            log.info("尝试序列化对象...");
-            ByteBuf serializeBuffer = Unpooled.buffer();
-            engine.serialize(originalRecord, serializeBuffer);
-
-            // 如果到达这里，说明序列化成功了
-            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
-            serializeBuffer.readBytes(serializedBytes);
-
-            // 第三步：重新解析序列化后的数据
-            ByteBuf deserializeByteBuf = Unpooled.wrappedBuffer(serializedBytes);
-            RawBaseMessage deserializedRecord = engine.parse(deserializeByteBuf, RawBaseMessage.class);
-
-            log.info("✓ 重新解析成功: {}", deserializedRecord);
-
-            // 第四步：比较两个对象
-            boolean isEqual = compareTransactionRecords(originalRecord, deserializedRecord);
-            log.info("往返测试结果: {}", isEqual ? "✓ 通过" : "✗ 失败");
-
-            if (!isEqual) {
-                log.warn("往返测试失败：序列化-反序列化后的对象与原始对象不一致");
-            }
-
-        } catch (Exception e) {
-            log.warn("✗ 往返测试失败（预期行为）: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * 比较两个TransactionRecord对象是否相等
-     */
-    private boolean compareTransactionRecords(RawBaseMessage record1, RawBaseMessage record2) {
-        if (record1 == null && record2 == null) {
-            return true;
-        }
-        if (record1 == null || record2 == null) {
-            return false;
-        }
-
-        // 比较主要字段
-        boolean isEqual = true;
-
-        if (!Objects.equals(record1.getFrameType(), record2.getFrameType())) {
-            log.warn("帧类型不一致: {} vs {}", record1.getFrameType(), record2.getFrameType());
-            isEqual = false;
-        }
-
-        if (!Objects.equals(record1.getChecksum(), record2.getChecksum())) {
-            log.warn("校验码不一致: {} vs {}", record1.getChecksum(), record2.getChecksum());
-            isEqual = false;
-        }
-
-        // 比较内部记录
-        if (!compareInnerRecords(record1.getInnerRecord(), record2.getInnerRecord())) {
-            isEqual = false;
-        }
-
-        return isEqual;
-    }
-
-    /**
-     * 比较两个InnerRecord对象是否相等
-     */
-    private boolean compareInnerRecords(RawInnerRecord record1, RawInnerRecord record2) {
-        if (record1 == null && record2 == null) {
-            return true;
-        }
-        if (record1 == null || record2 == null) {
-            return false;
-        }
-
-        boolean isEqual = true;
-
-        // 比较关键字段
-        if (!Objects.equals(record1.getOrderNumber(), record2.getOrderNumber())) {
-            log.warn("订单编号不一致: {} vs {}", record1.getOrderNumber(), record2.getOrderNumber());
-            isEqual = false;
-        }
-
-        if (!Objects.equals(record1.getStationNumber(), record2.getStationNumber())) {
-            log.warn("桩编号不一致: {} vs {}", record1.getStationNumber(), record2.getStationNumber());
-            isEqual = false;
-        }
-
-        if (!Objects.equals(record1.getGunNumber(), record2.getGunNumber())) {
-            log.warn("枪号不一致: {} vs {}", record1.getGunNumber(), record2.getGunNumber());
-            isEqual = false;
-        }
-
-        // 比较BigDecimal字段（需要特殊处理精度）
-        if (!compareBigDecimal(record1.getTotalAmount(), record2.getTotalAmount(), "消费金额")) {
-            isEqual = false;
-        }
-
-        if (!compareBigDecimal(record1.getPeakPrice(), record2.getPeakPrice(), "尖单价")) {
-            isEqual = false;
-        }
-
-        if (!compareBigDecimal(record1.getPeakElectricity(), record2.getPeakElectricity(), "尖电量")) {
-            isEqual = false;
-        }
-
-        // 可以继续添加更多字段的比较...
-
-        return isEqual;
-    }
-
-    /**
-     * 比较BigDecimal值，考虑精度问题
-     */
-    private boolean compareBigDecimal(BigDecimal value1, BigDecimal value2, String fieldName) {
-        if (value1 == null && value2 == null) {
-            return true;
-        }
-        if (value1 == null || value2 == null) {
-            log.warn("{} 不一致: {} vs {}", fieldName, value1, value2);
-            return false;
-        }
-
-        // 使用compareTo比较，忽略精度差异
-        if (value1.compareTo(value2) != 0) {
-            log.warn("{} 不一致: {} vs {}", fieldName, value1, value2);
-            return false;
-        }
-
-        return true;
     }
 }

@@ -25,35 +25,16 @@ public class ProtocolEngineFactory {
      */
     @SuppressWarnings("unchecked")
     public static <T> ProtocolEngine<T> getEngine(EngineType type) {
-        return (ProtocolEngine<T>) ENGINE_CACHE.computeIfAbsent(type, ProtocolEngineFactory::createEngine);
+        return (ProtocolEngine<T>) ENGINE_CACHE.get(type);
     }
 
     /**
-     * 获取默认的协议引擎（增强版，带性能监控）
-     *
-     * @param <T> 消息类型
-     * @return 增强协议引擎实例
+     * 添加引起
+     * @param type 引擎类型
+     * @param engine 引擎
      */
-    public static <T> ProtocolEngine<T> getDefaultEngine() {
-        return getEngine(EngineType.REFLECTION);
-    }
-
     public static void addEngine(EngineType type, ProtocolEngine<?> engine) {
         ENGINE_CACHE.put(type, engine);
-    }
-
-    /**
-     * 创建协议引擎实例
-     *
-     * @param type 引擎类型
-     * @return 协议引擎实例
-     */
-    private static ProtocolEngine<?> createEngine(EngineType type) {
-        return switch (type) {
-            case REFLECTION -> new ReflectionProtocolEngine();
-            case BYTECODE -> throw new UnsupportedOperationException("字节码引擎暂未实现");
-            case ANNOTATION_PROCESSOR -> throw new UnsupportedOperationException("注解处理器引擎暂未实现");
-        };
     }
 
     /**

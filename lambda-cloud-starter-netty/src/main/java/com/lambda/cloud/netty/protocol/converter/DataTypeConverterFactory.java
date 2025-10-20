@@ -1,9 +1,9 @@
 package com.lambda.cloud.netty.protocol.converter;
 
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.converter.impl.*;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
-import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import java.util.EnumMap;
 import java.util.Map;
 

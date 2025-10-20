@@ -55,13 +55,15 @@ public class EncryptedRecordTest {
 
         EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
 
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(encryptionService,new ChecksumService());
+        ReflectionProtocolEngine reflectionProtocolEngine =
+                new ReflectionProtocolEngine(encryptionService, new ChecksumService());
         reflectionProtocolEngine.setConverterFactory(new DataTypeConverterFactory(encryptionService));
         ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
         reflectionProtocolEngine.setProtocolFieldProcessor(protocolFieldProcessor);
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
         // 获取协议引擎
-        ProtocolEngine<EncryptedBaseMessage> engine = ProtocolEngineFactory.getDefaultEngine();
+        ProtocolEngine<EncryptedBaseMessage> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         try {
             byte[] bytes = HexUtil.decodeHex(format);
