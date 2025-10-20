@@ -105,12 +105,12 @@ public record ProtocolFrameMetadata(
     }
 
     /**
-     * 根据顺序获取字段（高效查找）
+     * 计算指定字段顺序之后的数据偏移量。
      *
-     * @param order 字段顺序
-     * @return 字段元数据
+     * @param order 当前字段顺序
+     * @return 从该字段之后到末尾的字节偏移总长度
      */
-    public Integer getLastLengthByOrder(int order) {
+    public Integer getRemainingLengthAfter(int order) {
         return fields.stream()
                 .filter(e -> e.getOrder() > order)
                 .mapToInt(ProtocolFieldMetadata::getLength)

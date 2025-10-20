@@ -21,12 +21,12 @@ import org.junit.jupiter.api.Test;
 public class CrcChecksumTest {
 
     private ProtocolEngine protocolEngine;
-    private CrcChecksumService crcService;
+    private ChecksumService crcService;
 
     @BeforeEach
     void setUp() {
         protocolEngine = new ReflectionProtocolEngine();
-        crcService = new CrcChecksumService();
+        crcService = new ChecksumService();
     }
 
     @Test

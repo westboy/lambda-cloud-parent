@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
-public class CrcChecksumService {
+public class ChecksumService {
 
     /**
      * CRC算法缓存
@@ -25,7 +25,7 @@ public class CrcChecksumService {
     /**
      * 默认构造函数
      */
-    public CrcChecksumService() {
+    public ChecksumService() {
         registerAlgorithm("CRC16-CCITT", Crc16Algorithm.ccitt());
         registerAlgorithm("CRC16-IBM", Crc16Algorithm.ibm());
         registerAlgorithm("CRC16-MAXIM", Crc16Algorithm.maxim());

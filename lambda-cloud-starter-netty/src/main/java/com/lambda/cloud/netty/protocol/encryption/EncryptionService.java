@@ -31,14 +31,6 @@ public interface EncryptionService {
     byte[] decrypt(byte[] encryptedData, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
 
     /**
-     * 检查是否支持指定字段的加密
-     *
-     * @param fieldMetadata 字段元数据
-     * @return true表示支持，false表示不支持
-     */
-    boolean supportsEncryption(ProtocolFieldMetadata fieldMetadata);
-
-    /**
      * 获取加密算法名称
      *
      * @return 加密算法名称

@@ -316,7 +316,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             Class<?> targetType = fieldMetadata.getFieldType();
             if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 // 加密字段的长度
-                int remaining = byteBuf.readableBytes() - frameMetadata.getLastLengthByOrder(fieldMetadata.getOrder());
+                int remaining = byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
                 Assert.isTrue(
                         remaining > 0,
                         "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + "计算字段长度异常，使用可读字节长度:"

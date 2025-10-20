@@ -4,9 +4,10 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import com.lambda.cloud.netty.protocol.checksum.CrcChecksumService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
+import com.lambda.cloud.netty.utils.EncryptionUtils;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
 import io.netty.buffer.ByteBuf;
@@ -28,15 +29,15 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
-public record CrcProcessor(CrcChecksumService crcService) {
+public record ChecksumProcessor(ChecksumService crcService, EncryptionUtils encryptionUtils) {
 
     private static final DataTypeConverterFactory converterFactory = new DataTypeConverterFactory();
 
     /**
      * 构造函数
      */
-    public CrcProcessor() {
-        this(new CrcChecksumService());
+    public ChecksumProcessor() {
+        this(new ChecksumService(),new EncryptionUtils());
     }
 
     /**

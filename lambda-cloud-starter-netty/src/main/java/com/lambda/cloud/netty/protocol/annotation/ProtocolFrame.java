@@ -37,18 +37,11 @@ public @interface ProtocolFrame {
     String description() default "";
 
     /**
-     * 是否加密字段
+     * 启用加密的值
      *
-     * @return 是否加密
+     * @return 0 不启用 1 启用
      */
-    boolean encrypted() default false;
-
-    /**
-     * CRC校验
-     *
-     * @return 校验
-     */
-    boolean checksum() default false;
+    int encryptFlag() default 0;
 
     /**
      * 消息版本

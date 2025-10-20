@@ -71,11 +71,6 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
     }
 
     @Override
-    public boolean supportsEncryption(ProtocolFieldMetadata fieldMetadata) {
-        return fieldMetadata != null && fieldMetadata.isEncryptedField();
-    }
-
-    @Override
     public String getAlgorithmName() {
         return "AES";
     }

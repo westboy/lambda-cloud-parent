@@ -10,11 +10,11 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
-import com.lambda.cloud.netty.protocol.encryption.EncryptionHelper;
+import com.lambda.cloud.netty.utils.EncryptionUtils;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
-import com.lambda.cloud.netty.protocol.processor.CrcProcessor;
+import com.lambda.cloud.netty.protocol.processor.ChecksumProcessor;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
@@ -69,9 +69,9 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * CRC处理器
      */
-    private CrcProcessor crcProcessor;
+    private ChecksumProcessor checksumProcessor;
 
-    private EncryptionHelper encryptionHelper;
+    private EncryptionUtils encryptionUtils;
 
     public ReflectionProtocolEngine() {
         this.metadataCache = new ConcurrentHashMap<>();
@@ -80,8 +80,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         this.fieldCache = CacheUtil.newLRUCache(1000);
         this.converterCache = CacheUtil.newLRUCache(100);
         this.protocolFieldProcessor = new ProtocolFieldProcessor();
-        this.crcProcessor = new CrcProcessor();
-        this.encryptionHelper = new EncryptionHelper();
+        this.checksumProcessor = new ChecksumProcessor();
+        this.encryptionUtils = new EncryptionUtils();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             }
 
             // 验证CRC校验和
-            crcProcessor.validateCrc(instance, metadata);
+            checksumProcessor.validateCrc(instance, metadata);
 
             // 记录解析成功和性能指标
             if (log.isDebugEnabled()) {
@@ -140,7 +140,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             logProtocolOperation("序列化", metadata);
 
             // 先计算并设置CRC校验和（在序列化前）
-            crcProcessor.calculateAndSetCrc(message, metadata);
+            checksumProcessor.calculateAndSetCrc(message, metadata);
 
             // 序列化各个字段
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
@@ -213,7 +213,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             throws ProtocolException {
 
         // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
-        boolean encryptionEnabled = encryptionHelper.isEncryptionEnabled(instance, msgMetadata);
+        boolean encryptionEnabled = encryptionUtils.isEncryptionEnabled(instance, msgMetadata);
 
         // 获取合适的转换器（支持复合字段与加密控制）
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
@@ -235,7 +235,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             throws ProtocolException {
 
         // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
-        boolean encryptionEnabled = encryptionHelper.isEncryptionEnabled(instance, msgMetadata);
+        boolean encryptionEnabled = encryptionUtils.isEncryptionEnabled(instance, msgMetadata);
 
         // 获取合适的转换器（支持复合字段与加密控制）
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
