@@ -11,7 +11,6 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
-import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import javax.crypto.SecretKey;
@@ -43,15 +42,15 @@ public class EncryptedRecordTest {
         log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         SecretKey key = SecureUtil.generateKey("AES", 128);
-        String encryptHex = HexUtil.encodeHexStr(SecureUtil.aes(key.getEncoded())
-                .encrypt(RAW),false) ;
-        System.out.println("rawHex: "+RAW);
+        String encryptHex =
+                HexUtil.encodeHexStr(SecureUtil.aes(key.getEncoded()).encrypt(RAW), false);
+        System.out.println("rawHex: " + RAW);
 
-        System.out.println("encryptHex: "+encryptHex);
+        System.out.println("encryptHex: " + encryptHex);
 
         String format = String.format(TEST_DATA5, encryptHex);
 
-        System.out.println("加密报文: "+format);
+        System.out.println("加密报文: " + format);
 
         EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
 
@@ -90,9 +89,8 @@ public class EncryptedRecordTest {
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
 
-            String userNameById = HexUtil.encodeHexStr(serializedBytes,false);
+            String userNameById = HexUtil.encodeHexStr(serializedBytes, false);
             System.out.println(userNameById);
-
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

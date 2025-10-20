@@ -405,7 +405,6 @@ public class RawRecordProtocolTest {
         return true;
     }
 
-
     /**
      * 测试配置了加密服务的协议引擎
      */
@@ -438,5 +437,4 @@ public class RawRecordProtocolTest {
             throw new RuntimeException("加密协议引擎测试失败", e);
         }
     }
-
 }
