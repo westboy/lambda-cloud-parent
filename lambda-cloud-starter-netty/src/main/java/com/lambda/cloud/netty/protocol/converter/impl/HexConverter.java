@@ -4,7 +4,7 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;

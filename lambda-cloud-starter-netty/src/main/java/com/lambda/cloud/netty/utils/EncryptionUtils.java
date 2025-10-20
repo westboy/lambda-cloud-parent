@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.utils;
 
 import cn.hutool.core.util.StrUtil;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 

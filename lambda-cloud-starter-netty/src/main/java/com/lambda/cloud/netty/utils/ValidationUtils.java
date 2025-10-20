@@ -3,7 +3,7 @@ package com.lambda.cloud.netty.utils;
 import static com.lambda.cloud.netty.utils.ExceptionUtils.createSerializeException;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import java.util.regex.Pattern;
 
 /**

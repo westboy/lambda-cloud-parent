@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.metadata;
+package com.lambda.cloud.netty.protocol;
 
 import cn.hutool.core.util.ReflectUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;

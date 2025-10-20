@@ -1,7 +1,7 @@
 package com.lambda.cloud.netty.utils;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 
 /**
  * 异常工具类

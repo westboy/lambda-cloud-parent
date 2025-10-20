@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.converter.impl.HexConverter;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;

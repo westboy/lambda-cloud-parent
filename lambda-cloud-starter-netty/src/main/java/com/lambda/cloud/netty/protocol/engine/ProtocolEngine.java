@@ -1,7 +1,7 @@
 package com.lambda.cloud.netty.protocol.engine;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 

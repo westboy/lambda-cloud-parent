@@ -1,8 +1,8 @@
 package com.lambda.cloud.netty.protocol.validation;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,6 +1,6 @@
 package com.lambda.cloud.netty.utils;
 
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 

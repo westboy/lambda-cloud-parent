@@ -4,7 +4,7 @@ import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.encryption.EncryptionService;
-import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import lombok.extern.slf4j.Slf4j;
 
 /**
