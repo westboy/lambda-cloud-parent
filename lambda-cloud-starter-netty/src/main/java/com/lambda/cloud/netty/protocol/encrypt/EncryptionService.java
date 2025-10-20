@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.encryption;
+package com.lambda.cloud.netty.protocol.encrypt;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
