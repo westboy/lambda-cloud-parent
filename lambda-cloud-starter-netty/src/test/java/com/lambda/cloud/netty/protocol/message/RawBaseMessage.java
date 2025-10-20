@@ -16,7 +16,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@ProtocolFrame
+@ProtocolFrame(frameType = "base", name = "云快充基础协议", description = "云快充基础协议字段")
 public class RawBaseMessage {
 
     /**
