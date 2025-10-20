@@ -3,6 +3,9 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
+import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -10,8 +13,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
-import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * CP56TIME2A时间格式转换器（增强版）
@@ -137,9 +138,11 @@ public class CP56Time2aConverter implements DataTypeConverter {
             result[3] = (byte) (dateTime.getHour() & 0x1F);
             if (summerTime) result[3] |= (byte) 0x80;
 
-            // 日期和星期
-            // int dayOfWeek = dateTime.getDayOfWeek().getValue();
-            // result[4] = (byte) (((dayOfWeek & 0x07) << 5) | (dateTime.getDayOfMonth() & 0x1F));
+            /*
+             *  日期和星期
+             *  int dayOfWeek = dateTime.getDayOfWeek().getValue();
+             *  result[4] = (byte) (((dayOfWeek & 0x07) << 5) | (dateTime.getDayOfMonth() & 0x1F));
+             */
             result[4] = (byte) ((0) | (dateTime.getDayOfMonth() & 0x1F));
 
             // 月份
@@ -209,12 +212,12 @@ public class CP56Time2aConverter implements DataTypeConverter {
     }
 
     private LocalDateTime tryParseMultipleFormats(String value) throws ProtocolException {
-        DateTimeFormatter[] formats = new DateTimeFormatter[] {
-            DEFAULT_FORMATTER,
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"),
-            DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+        DateTimeFormatter[] formats = new DateTimeFormatter[]{
+                DEFAULT_FORMATTER,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"),
+                DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
         };
         for (DateTimeFormatter fmt : formats) {
             try {
