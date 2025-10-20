@@ -19,14 +19,11 @@ import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static cn.hutool.core.util.ReflectUtil.getFieldValue;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 反射协议引擎

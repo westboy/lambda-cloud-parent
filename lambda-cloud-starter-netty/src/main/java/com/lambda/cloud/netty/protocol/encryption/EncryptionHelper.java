@@ -1,12 +1,12 @@
 package com.lambda.cloud.netty.protocol.encryption;
 
+import static cn.hutool.core.util.ReflectUtil.getFieldValue;
+
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-
-import static cn.hutool.core.util.ReflectUtil.getFieldValue;
 
 @Data
 @Slf4j
@@ -41,5 +41,4 @@ public class EncryptionHelper {
             case null, default -> false;
         };
     }
-
 }

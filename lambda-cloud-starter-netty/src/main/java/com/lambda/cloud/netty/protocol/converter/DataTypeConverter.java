@@ -85,7 +85,6 @@ public interface DataTypeConverter {
             throws ProtocolException {
         if (fieldMetadata.isEncryptedField() && encryptionService != null) {
             // 先解密再解析
-            System.out.println("encryptHex: " + HexUtil.encodeHexStr(data));
             byte[] decryptedData = encryptionService.decrypt(data, fieldMetadata);
             return parse(decryptedData, fieldMetadata);
         } else {

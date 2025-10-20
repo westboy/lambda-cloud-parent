@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.message;
 
+import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
@@ -10,7 +11,6 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
-import com.lambda.cloud.netty.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.math.BigDecimal;
@@ -55,7 +55,7 @@ public class RawRecordProtocolTest {
             log.info("字段数量: {}", metadata.fields().size());
 
             // 将十六进制字符串转换为字节数组
-            byte[] bytes = HexUtils.hexToBytes(TEST_DATA4);
+            byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
             log.info("实际数据长度: {} 字节", bytes.length);
 
             if (bytes.length < metadata.totalLength()) {
@@ -226,7 +226,7 @@ public class RawRecordProtocolTest {
 
         try {
             // 首先解析原始数据得到对象
-            byte[] originalBytes = HexUtils.hexToBytes(TEST_DATA3);
+            byte[] originalBytes = HexUtil.decodeHex(TEST_DATA3);
             ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
             RawBaseMessage record = engine.parse(originalByteBuf, RawBaseMessage.class);
 
@@ -240,7 +240,7 @@ public class RawRecordProtocolTest {
             // 如果到达这里，说明序列化成功了
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
-            String serializedHex = HexUtils.bytesToHex(serializedBytes);
+            String serializedHex = HexUtil.encodeHexStr(serializedBytes);
 
             log.info("✓ 序列化成功: {}", serializedHex);
             log.info("原始数据:     {}", TEST_DATA3);
@@ -271,7 +271,7 @@ public class RawRecordProtocolTest {
 
         try {
             // 第一步：解析原始数据
-            byte[] originalBytes = HexUtils.hexToBytes(TEST_DATA3);
+            byte[] originalBytes = HexUtil.decodeHex(TEST_DATA3);
             ByteBuf originalByteBuf = Unpooled.wrappedBuffer(originalBytes);
             RawBaseMessage originalRecord = engine.parse(originalByteBuf, RawBaseMessage.class);
 

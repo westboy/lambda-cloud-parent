@@ -1,9 +1,10 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.utils.HexUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -25,8 +26,8 @@ public class HexConverter implements DataTypeConverter {
         try {
             byte[] adjustedResult = adjustLength(data, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
             // 处理大小端字节序
-            byte[] processedData = HexUtils.convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
-            String hexString = HexUtils.bytesToHex(processedData);
+            byte[] processedData = convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
+            String hexString = HexUtil.encodeHexStr(processedData);
             // 根据字段类型返回不同的对象
 
             int precision = fieldMetadata.getPrecision();
@@ -83,7 +84,7 @@ public class HexConverter implements DataTypeConverter {
                 case String hexString -> {
                     // 移除可能的空格和0x前缀
                     hexString = hexString.replaceAll("\\s+", "").replaceAll("^0x", "");
-                    result = HexUtils.hexToBytes(hexString);
+                    result = HexUtil.decodeHex(hexString);
                 }
                 case Integer i -> {
                     int actualValue = precision > 0 ? (int) (i * Math.pow(10, precision)) : i;
@@ -91,7 +92,7 @@ public class HexConverter implements DataTypeConverter {
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
-                    result = HexUtils.hexToBytes(hexString);
+                    result = HexUtil.decodeHex(hexString);
                 }
                 case Long l -> {
                     long actualValue = precision > 0 ? (long) (l * Math.pow(10, precision)) : l;
@@ -99,7 +100,7 @@ public class HexConverter implements DataTypeConverter {
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
-                    result = HexUtils.hexToBytes(hexString);
+                    result = HexUtil.decodeHex(hexString);
                 }
                 case Double d -> {
                     double actualValue = precision > 0 ? (d * Math.pow(10, precision)) : d.longValue();
@@ -107,7 +108,7 @@ public class HexConverter implements DataTypeConverter {
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
-                    result = HexUtils.hexToBytes(hexString);
+                    result = HexUtil.decodeHex(hexString);
                 }
                 case Float f -> {
                     float actualValue = precision > 0 ? (float) (f * Math.pow(10, precision)) : f.longValue();
@@ -115,7 +116,7 @@ public class HexConverter implements DataTypeConverter {
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
-                    result = HexUtils.hexToBytes(hexString);
+                    result = HexUtil.decodeHex(hexString);
                 }
                 case BigDecimal b -> {
                     // 根据精度将BigDecimal转换为整数值
@@ -133,7 +134,7 @@ public class HexConverter implements DataTypeConverter {
                     }
 
                     // 转换为字节数组（大端序格式）
-                    result = HexUtils.hexToBytes(hexString);
+                    result = HexUtil.decodeHex(hexString);
                 }
                 case Byte b -> {
                     int actualValue = precision > 0 ? (int) (b * Math.pow(10, precision)) : b.intValue();
@@ -141,7 +142,7 @@ public class HexConverter implements DataTypeConverter {
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
-                    result = HexUtils.hexToBytes(hexString);
+                    result = HexUtil.decodeHex(hexString);
                 }
                 case byte[] bytes -> result = bytes;
                 default ->
@@ -151,7 +152,7 @@ public class HexConverter implements DataTypeConverter {
                             fieldMetadata.getFieldName());
             }
             // 处理大小端字节序
-            var reversed = HexUtils.convertEndianness(result, fieldMetadata.isLittleEndian());
+            var reversed = convertEndianness(result, fieldMetadata.isLittleEndian());
 
             // 调整长度（此时已经是正确的字节序）
             return adjustLength(reversed, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
@@ -165,6 +166,13 @@ public class HexConverter implements DataTypeConverter {
         }
     }
 
+    public static byte[] convertEndianness(byte[] bytes, boolean littleEndian) {
+        if (littleEndian) {
+            return ArrayUtil.reverse(bytes);
+        }
+        return bytes;
+    }
+
     @Override
     public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null || value.trim().isEmpty()) {
@@ -174,7 +182,7 @@ public class HexConverter implements DataTypeConverter {
         try {
             // 移除空格和0x前缀
             String hexString = value.trim().replaceAll("\\s+", "").replaceAll("^0x", "");
-            byte[] data = HexUtils.hexToBytes(hexString);
+            byte[] data = HexUtil.decodeHex(hexString);
             return parse(data, fieldMetadata);
         } catch (Exception e) {
             throw new ProtocolException(
