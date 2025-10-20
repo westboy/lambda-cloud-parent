@@ -5,10 +5,7 @@ import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.encryption.EncryptionService;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.utils.HexUtils;
 import lombok.extern.slf4j.Slf4j;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * 默认AES加密服务实现
@@ -38,9 +35,10 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
         }
 
         try {
-            System.out.println("加密前字符串："+ HexUtil.encodeHexStr(data).toUpperCase());
-            String result = SecureUtil.aes(defaultKeyBytes).encryptHex(HexUtil.encodeHexStr(data).toUpperCase());
-            System.out.println("加密后字符串："+result.toUpperCase());
+            String hexData = HexUtil.encodeHexStr(data).toUpperCase();
+            log.debug("字段 {} 加密前数据: {}", fieldMetadata.getFieldName(), hexData);
+            String result = SecureUtil.aes(defaultKeyBytes).encryptHex(hexData);
+            log.debug("字段 {} 加密后数据: {}", fieldMetadata.getFieldName(), result.toUpperCase());
             return HexUtil.decodeHex(result);
 
         } catch (Exception e) {
@@ -60,8 +58,7 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
 
         try {
             String result = SecureUtil.aes(defaultKeyBytes).decryptStr(encryptedData);
-
-            System.out.println("解析后字符串："+result);
+            log.debug("字段 {} 解密后数据: {}", fieldMetadata.getFieldName(), result);
             return HexUtil.decodeHex(result);
 
         } catch (Exception e) {

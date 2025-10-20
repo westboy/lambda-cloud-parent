@@ -9,9 +9,8 @@ import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
 import io.netty.buffer.ByteBuf;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 字段处理器
@@ -247,8 +246,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
         try {
             if (fieldMetadata.isEncrypted() && encryptionService != null) {
                 return converter.serializeWithEncryption(value, fieldMetadata, encryptionService);
-            } else
-                return converter.serialize(value, fieldMetadata);
+            } else return converter.serialize(value, fieldMetadata);
         } catch (Exception e) {
             throw ExceptionUtils.createSerializeException(
                     "字段数据序列化失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
@@ -297,15 +295,21 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      * @throws ProtocolException 解析异常
      */
     private Object parseCompositeFieldWithDynamicLength(
-            ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata frameMetadata, DataTypeConverter converter)
+            ByteBuf byteBuf,
+            ProtocolFieldMetadata fieldMetadata,
+            ProtocolFrameMetadata frameMetadata,
+            DataTypeConverter converter)
             throws ProtocolException {
         try {
             // 获取复合字段的目标类型
             Class<?> targetType = fieldMetadata.getFieldType();
             if (fieldMetadata.isEncrypted() && encryptionService != null) {
-                //加密字段的长度
+                // 加密字段的长度
                 int remaining = byteBuf.readableBytes() - frameMetadata.getLastLengthByOrder(fieldMetadata.getOrder());
-                Assert.isTrue(remaining > 0, "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + "计算字段长度异常，使用可读字节长度:" + byteBuf.readableBytes());
+                Assert.isTrue(
+                        remaining > 0,
+                        "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + "计算字段长度异常，使用可读字节长度:"
+                                + byteBuf.readableBytes());
                 // 读取实际长度的数据
                 byte[] fieldData = new byte[remaining];
                 byteBuf.readBytes(fieldData);

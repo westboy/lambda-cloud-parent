@@ -179,9 +179,30 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
     }
 
     /**
-     * 是否为加密字段
+     * 获取加密密钥标识
      *
-     * @return true 表示加密字段
+     * @return 加密密钥标识
+     */
+    public boolean getEncryptedKey() {
+        return protocolField.encryptedKey();
+    }
+
+    /**
+     * 是否为加密控制字段
+     * 标识该字段是否用于控制加密功能的开关
+     *
+     * @return true 表示加密控制字段
+     */
+    public boolean isEncryptionKey() {
+        return protocolField.encryptedKey();
+    }
+
+    /**
+     * 是否为加密数据字段
+     * 标识该字段是否为需要加密的数据字段
+     * 注意：实际是否加密还需要检查加密控制字段的值
+     *
+     * @return true 表示加密数据字段
      */
     public boolean isEncrypted() {
         return protocolField.encryptedField();

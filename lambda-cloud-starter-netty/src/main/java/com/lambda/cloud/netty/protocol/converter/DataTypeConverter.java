@@ -5,7 +5,6 @@ import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.encryption.EncryptionService;
 import com.lambda.cloud.netty.protocol.metadata.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.utils.HexUtils;
 
 /**
  * 数据类型转换器接口
@@ -86,7 +85,7 @@ public interface DataTypeConverter {
             throws ProtocolException {
         if (fieldMetadata.isEncrypted() && encryptionService != null) {
             // 先解密再解析
-            System.out.println("encryptHex: "+ HexUtil.encodeHexStr(data));
+            System.out.println("encryptHex: " + HexUtil.encodeHexStr(data));
             byte[] decryptedData = encryptionService.decrypt(data, fieldMetadata);
             return parse(decryptedData, fieldMetadata);
         } else {

@@ -111,7 +111,10 @@ public record ProtocolFrameMetadata(
      * @return 字段元数据
      */
     public Integer getLastLengthByOrder(int order) {
-        return fields.stream().filter(e->e.getOrder()>order).mapToInt(ProtocolFieldMetadata::getLength).sum();
+        return fields.stream()
+                .filter(e -> e.getOrder() > order)
+                .mapToInt(ProtocolFieldMetadata::getLength)
+                .sum();
     }
 
     /**

@@ -45,7 +45,6 @@ public @interface ProtocolField {
      */
     boolean encryptedField() default false;
 
-
     /**
      *  CRCChecksum 校验
      *
