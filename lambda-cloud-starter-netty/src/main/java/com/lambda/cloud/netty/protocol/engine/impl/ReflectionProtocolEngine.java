@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import static cn.hutool.core.util.ReflectUtil.getFieldValue;
+
 /**
  * 反射协议引擎
  * <p>
@@ -208,10 +210,13 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
             throws ProtocolException {
 
-        // 获取合适的转换器（支持复合字段）
-        DataTypeConverter converter = getConverter(fieldMetadata);
+        // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
+        boolean encryptionEnabled = isEncryptionEnabled(instance, msgMetadata);
+
+        // 获取合适的转换器（支持复合字段与加密控制）
+        DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
         // 此处设置复合转换器解析
-        protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter);
+        protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter, encryptionEnabled);
     }
 
     /**
@@ -227,10 +232,14 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             Object instance, ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
             throws ProtocolException {
 
-        // 获取合适的转换器（支持复合字段）
-        DataTypeConverter converter = getConverter(fieldMetadata);
+        // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
+        boolean encryptionEnabled = isEncryptionEnabled(instance, msgMetadata);
+
+        // 获取合适的转换器（支持复合字段与加密控制）
+        DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
         // 此处设置复合转换器序列化
-        protocolFieldProcessor.serializeField(instance, byteBuf, fieldMetadata, msgMetadata, converter);
+        protocolFieldProcessor.serializeField(
+                instance, byteBuf, fieldMetadata, msgMetadata, converter, encryptionEnabled);
     }
 
     /**
@@ -250,6 +259,10 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         for (Field field : getAllFields(messageClass)) {
             ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
             if (protocolField != null) {
+                // 校验：同一字段不可同时标注加密控制与加密数据
+                if (protocolField.encryptedKey() && protocolField.encryptedField()) {
+                    throw new IllegalArgumentException("同一字段不可同时标注 encryptedKey 与 encryptedField: " + field.getName());
+                }
                 ProtocolValidation validation = field.getAnnotation(ProtocolValidation.class);
                 fields.add(new ProtocolFieldMetadata(field, protocolField, validation));
             }
@@ -303,12 +316,28 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             return getCompositeConverter();
         }
 
-        // 检查是否为加密字段
-        if (fieldMetadata.isEncrypted()) {
+        // 检查是否为加密字段（默认按字段标记）
+        if (fieldMetadata.isEncryptedField()) {
             return getEncryptedConverter(fieldMetadata);
         }
 
         // 普通字段使用数据类型转换器
+        return getConverterFromCache(fieldMetadata.getDataType());
+    }
+
+    /**
+     * 获取转换器（支持加密控制）
+     */
+    private DataTypeConverter getConverter(ProtocolFieldMetadata fieldMetadata, boolean encryptionEnabled) {
+        // 复合字段优先
+        if (fieldMetadata.isComposite()) {
+            return getCompositeConverter();
+        }
+        // 仅当字段标记为加密且加密控制开启时，使用加密转换器
+        if (encryptionEnabled && fieldMetadata.isEncryptedField()) {
+            return getEncryptedConverter(fieldMetadata);
+        }
+        // 否则使用基础转换器
         return getConverterFromCache(fieldMetadata.getDataType());
     }
 
@@ -357,6 +386,36 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     public void clearCache() {
         fieldCache.clear();
         converterCache.clear();
+    }
+
+    /**
+     * 判断是否启用加密控制
+     * 仅当存在加密控制字段且其值为 0x01（数值 1）时启用
+     */
+    private boolean isEncryptionEnabled(Object instance, ProtocolFrameMetadata msgMetadata) {
+        try {
+            for (ProtocolFieldMetadata meta : msgMetadata.fields()) {
+                if (meta.isEncryptionKey()) {
+                    Object value = getFieldValue(instance, meta.field());
+                    return isValueEnableEncryption(value);
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            log.debug("判断加密控制失败，视为未启用: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 判断控制值是否为启用状态（0x01）
+     */
+    private boolean isValueEnableEncryption(Object value) {
+        if (value == null) return false;
+        if (value instanceof Number num) {
+            return num.intValue() == 0;
+        }
+        return false;
     }
 
     /**

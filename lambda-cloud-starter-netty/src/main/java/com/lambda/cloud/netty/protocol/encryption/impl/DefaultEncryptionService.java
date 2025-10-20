@@ -72,7 +72,7 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
 
     @Override
     public boolean supportsEncryption(ProtocolFieldMetadata fieldMetadata) {
-        return fieldMetadata != null && fieldMetadata.isEncrypted();
+        return fieldMetadata != null && fieldMetadata.isEncryptedField();
     }
 
     @Override

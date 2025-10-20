@@ -58,7 +58,8 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             Object instance,
             ProtocolFieldMetadata fieldMetadata,
             ProtocolFrameMetadata frameMetadata,
-            DataTypeConverter converter)
+            DataTypeConverter converter,
+            boolean isEncryptionEnabled)
             throws ProtocolException {
 
         // 验证缓冲区数据
@@ -70,12 +71,13 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
         // 特殊处理复合字段
         if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
-            Object value = parseCompositeFieldWithDynamicLength(byteBuf, fieldMetadata, frameMetadata, converter);
+            Object value = parseCompositeFieldWithDynamicLength(
+                    byteBuf, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
         } else {
             // 普通字段或长度固定的复合字段
             byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
-            Object value = convertFieldData(fieldData, fieldMetadata, converter);
+            Object value = convertFieldData(fieldData, fieldMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
         }
     }
@@ -95,7 +97,8 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             ByteBuf byteBuf,
             ProtocolFieldMetadata fieldMetadata,
             ProtocolFrameMetadata frameMetadata,
-            DataTypeConverter converter)
+            DataTypeConverter converter,
+            boolean isEncryptionEnabled)
             throws ProtocolException {
         // 获取字段值
         Object value = getFieldValue(instance, fieldMetadata);
@@ -106,7 +109,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
         }
 
         // 转换并写入数据
-        byte[] fieldData = convertToBytes(value, fieldMetadata, converter);
+        byte[] fieldData = convertToBytes(value, fieldMetadata, converter, isEncryptionEnabled);
         writeFieldData(byteBuf, fieldData);
     }
 
@@ -160,11 +163,15 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      * @return 转换后的值
      * @throws ProtocolException 转换异常
      */
-    private Object convertFieldData(byte[] fieldData, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
+    private Object convertFieldData(
+            byte[] fieldData,
+            ProtocolFieldMetadata fieldMetadata,
+            DataTypeConverter converter,
+            boolean isEncryptionEnabled)
             throws ProtocolException {
         try {
-            // 检查是否需要解密
-            if (fieldMetadata.isEncrypted() && encryptionService != null) {
+            // 检查是否需要解密（需要同时满足：字段标记为加密 + 已启用加密控制 + 存在加密服务）
+            if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("解密字段数据: {}, 原始长度: {}", fieldMetadata.getFieldName(), fieldData.length);
                 }
@@ -240,13 +247,16 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      * @return 字节数组
      * @throws ProtocolException 转换异常
      */
-    private byte[] convertToBytes(Object value, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
+    private byte[] convertToBytes(
+            Object value, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter, boolean isEncryptionEnabled)
             throws ProtocolException {
 
         try {
-            if (fieldMetadata.isEncrypted() && encryptionService != null) {
+            if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 return converter.serializeWithEncryption(value, fieldMetadata, encryptionService);
-            } else return converter.serialize(value, fieldMetadata);
+            } else {
+                return converter.serialize(value, fieldMetadata);
+            }
         } catch (Exception e) {
             throw ExceptionUtils.createSerializeException(
                     "字段数据序列化失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
@@ -298,12 +308,13 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             ByteBuf byteBuf,
             ProtocolFieldMetadata fieldMetadata,
             ProtocolFrameMetadata frameMetadata,
-            DataTypeConverter converter)
+            DataTypeConverter converter,
+            boolean isEncryptionEnabled)
             throws ProtocolException {
         try {
             // 获取复合字段的目标类型
             Class<?> targetType = fieldMetadata.getFieldType();
-            if (fieldMetadata.isEncrypted() && encryptionService != null) {
+            if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 // 加密字段的长度
                 int remaining = byteBuf.readableBytes() - frameMetadata.getLastLengthByOrder(fieldMetadata.getOrder());
                 Assert.isTrue(

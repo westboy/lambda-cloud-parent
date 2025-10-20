@@ -55,11 +55,12 @@ public class EncryptedBaseMessage {
     @ProtocolField(
             order = 3,
             length = 1,
-            dataType = ProtocolDataType.HEX,
+            dataType = ProtocolDataType.BCD,
             checksum = true,
             littleEndian = true,
+            encryptedKey = true,
             description = "数据长度")
-    private String sec;
+    private Integer sec;
 
     @ProtocolField(order = 5, composite = true, checksum = true, encryptedField = true)
     private EncryptedInnerRecord innerRecord;

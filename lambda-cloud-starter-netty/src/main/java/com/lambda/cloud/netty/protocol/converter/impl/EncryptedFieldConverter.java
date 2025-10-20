@@ -56,7 +56,7 @@ public record EncryptedFieldConverter(
 
         try {
             // 检查是否为加密字段
-            if (fieldMetadata.isEncrypted()) {
+            if (fieldMetadata.isEncryptedField()) {
                 if (log.isDebugEnabled()) {
                     log.debug("解析加密字段: {}, 加密数据长度: {}", fieldMetadata.getFieldName(), data.length);
                 }
@@ -94,7 +94,7 @@ public record EncryptedFieldConverter(
             byte[] serializedData = nextConverter.serialize(value, fieldMetadata);
 
             // 检查是否为加密字段
-            if (fieldMetadata.isEncrypted()) {
+            if (fieldMetadata.isEncryptedField()) {
                 if (log.isDebugEnabled()) {
                     log.debug("序列化加密字段: {}, 原始数据长度: {}", fieldMetadata.getFieldName(), serializedData.length);
                 }
@@ -127,7 +127,7 @@ public record EncryptedFieldConverter(
 
     @Override
     public int getExpectedLength(ProtocolFieldMetadata fieldMetadata) {
-        if (fieldMetadata.isEncrypted()) {
+        if (fieldMetadata.isEncryptedField()) {
             return fieldMetadata.getLength();
         } else {
             return nextConverter.getExpectedLength(fieldMetadata);

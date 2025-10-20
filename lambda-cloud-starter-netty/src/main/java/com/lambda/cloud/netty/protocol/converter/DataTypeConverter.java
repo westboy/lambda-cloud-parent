@@ -83,7 +83,7 @@ public interface DataTypeConverter {
     default Object parseWithEncryption(
             byte[] data, ProtocolFieldMetadata fieldMetadata, EncryptionService encryptionService)
             throws ProtocolException {
-        if (fieldMetadata.isEncrypted() && encryptionService != null) {
+        if (fieldMetadata.isEncryptedField() && encryptionService != null) {
             // 先解密再解析
             System.out.println("encryptHex: " + HexUtil.encodeHexStr(data));
             byte[] decryptedData = encryptionService.decrypt(data, fieldMetadata);
@@ -110,7 +110,7 @@ public interface DataTypeConverter {
             Object value, ProtocolFieldMetadata fieldMetadata, EncryptionService encryptionService)
             throws ProtocolException {
         // 先序列化
-        if (fieldMetadata.isEncrypted() && encryptionService != null) {
+        if (fieldMetadata.isEncryptedField() && encryptionService != null) {
             byte[] serializedData = serialize(value, fieldMetadata);
             return encryptionService.encrypt(serializedData, fieldMetadata);
         } else {

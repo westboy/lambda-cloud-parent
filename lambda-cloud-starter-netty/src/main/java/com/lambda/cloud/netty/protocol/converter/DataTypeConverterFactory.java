@@ -72,7 +72,7 @@ public class DataTypeConverterFactory {
         DataTypeConverter baseConverter = getConverter(fieldMetadata.getDataType());
 
         // 如果字段需要加密且有加密服务，返回加密转换器
-        if (fieldMetadata.isEncrypted() && encryptionService != null) {
+        if (fieldMetadata.isEncryptedField() && encryptionService != null) {
             return new EncryptedFieldConverter(encryptionService, baseConverter);
         }
 
