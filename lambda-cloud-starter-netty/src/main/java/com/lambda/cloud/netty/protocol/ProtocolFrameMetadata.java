@@ -77,12 +77,12 @@ public record ProtocolFrameMetadata(
     }
 
     /**
-     * 是否为严格模式
+     * 是否为消息主体
      *
-     * @return true表示严格模式
+     * @return true 消息主体
      */
-    public boolean isStrictMode() {
-        return protocolMessage.strictMode();
+    public boolean isBody() {
+        return protocolMessage.isBody();
     }
 
     /**

@@ -15,6 +15,7 @@ import java.lang.annotation.*;
 @Inherited
 public @interface ProtocolFrame {
 
+
     /**
      * 消息类型标识
      *
@@ -37,13 +38,6 @@ public @interface ProtocolFrame {
     String description() default "";
 
     /**
-     * 启用加密的值
-     *
-     * @return 0 不启用 1 启用
-     */
-    int encryptFlag() default 0;
-
-    /**
      * 消息版本
      *
      * @return 消息版本
@@ -51,11 +45,11 @@ public @interface ProtocolFrame {
     String version() default "1.0";
 
     /**
-     * 是否启用严格模式（严格按照字段顺序解析）
+     * 是否为消息主体
      *
-     * @return true 表示启用严格模式
+     * @return true 消息主体
      */
-    boolean strictMode() default true;
+    boolean isBody() default false;
 
     /**
      * 默认字符编码（可被字段级别的设置覆盖）

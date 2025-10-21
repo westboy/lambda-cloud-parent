@@ -15,6 +15,7 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
+import com.lambda.cloud.netty.protocol.model.ParsedData;
 import com.lambda.cloud.netty.protocol.processor.ChecksumProcessor;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
@@ -24,6 +25,8 @@ import io.netty.buffer.ByteBuf;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -94,14 +97,19 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
             // 创建消息实例
             Object instance = messageClass.getDeclaredConstructor().newInstance();
-
+            List<ParsedData> parsedRawDataList = new LinkedList<>();
             // 解析各个字段
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
-                parseField(byteBuf, instance, fieldMetadata, metadata);
+                parseField(byteBuf, instance, fieldMetadata, metadata,parsedRawDataList);
             }
 
-            // 验证CRC校验和
-            checksumProcessor.validateCrc(instance, metadata);
+            if(!metadata.isBody()) {
+                log.info("解析原始数据：{}",parsedRawDataList.stream().map(ParsedData::getRaw).collect(Collectors.joining()));
+                // 验证CRC校验和
+                checksumProcessor.validateCrc(instance,parsedRawDataList, metadata);
+            }
+
+
 
             // 记录解析成功和性能指标
             if (log.isDebugEnabled()) {
@@ -201,23 +209,23 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * 解析字段
      *
-     * @param byteBuf       字节缓冲区
-     * @param instance      目标实例
-     * @param fieldMetadata 字段元数据
-     * @param msgMetadata   消息元数据
+     * @param byteBuf           字节缓冲区
+     * @param instance          目标实例
+     * @param fieldMetadata     字段元数据
+     * @param msgMetadata       消息元数据
+     * @param parsedRawDataList 原始数据
      * @throws ProtocolException 解析异常
      */
     private void parseField(
-            ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
+            ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata, List<ParsedData> parsedRawDataList)
             throws ProtocolException {
 
         // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
         boolean encryptionEnabled = EncryptionUtils.isEncryptionEnabled(instance, msgMetadata);
-
         // 获取合适的转换器（支持复合字段与加密控制）
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
         // 此处设置复合转换器解析
-        protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter, encryptionEnabled);
+        protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter, encryptionEnabled,parsedRawDataList);
     }
 
     /**

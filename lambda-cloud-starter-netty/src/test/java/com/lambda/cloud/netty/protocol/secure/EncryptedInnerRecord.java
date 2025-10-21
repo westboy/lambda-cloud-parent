@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "消息体", version = "1.0")
+@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "消息体",isBody = true, version = "1.0")
 public class EncryptedInnerRecord {
 
     /**

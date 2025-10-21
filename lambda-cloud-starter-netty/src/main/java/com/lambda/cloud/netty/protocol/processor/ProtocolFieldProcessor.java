@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.processor;
 
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
@@ -7,10 +8,13 @@ import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import com.lambda.cloud.netty.protocol.model.ParsedData;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
 import io.netty.buffer.ByteBuf;
-import java.lang.reflect.Field;
 import lombok.extern.slf4j.Slf4j;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * 字段处理器
@@ -39,11 +43,12 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
     /**
      * 解析字段
      *
-     * @param byteBuf       字节缓冲区
-     * @param instance      目标实例
-     * @param fieldMetadata 字段元数据
-     * @param frameMetadata 消息元数据
-     * @param converter     数据类型转换器
+     * @param byteBuf           字节缓冲区
+     * @param instance          目标实例
+     * @param fieldMetadata     字段元数据
+     * @param frameMetadata     消息元数据
+     * @param converter         数据类型转换器
+     * @param parsedRawDataList 原始数据
      * @throws ProtocolException 解析异常
      */
     public void parseField(
@@ -52,7 +57,8 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             ProtocolFieldMetadata fieldMetadata,
             ProtocolFrameMetadata frameMetadata,
             DataTypeConverter converter,
-            boolean isEncryptionEnabled)
+            boolean isEncryptionEnabled,
+            List<ParsedData> parsedRawDataList)
             throws ProtocolException {
 
         // 验证缓冲区数据
@@ -65,13 +71,19 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
         if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
             Object value = parseCompositeFieldWithDynamicLength(
-                    byteBuf, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
+                    byteBuf, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, parsedRawDataList);
             setFieldValue(instance, fieldMetadata, value);
         } else {
             // 普通字段或长度固定的复合字段
             byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
             Object value = convertFieldData(fieldData, fieldMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
+            if (!frameMetadata.isBody()) {
+                ParsedData parsedRawData = new ParsedData();
+                parsedRawData.setIsComputed(fieldMetadata.isComputed());
+                parsedRawData.setRaw(HexUtil.encodeHexStr(fieldData));
+                parsedRawDataList.add(parsedRawData);
+            }
         }
     }
 
@@ -160,7 +172,8 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             byte[] fieldData,
             ProtocolFieldMetadata fieldMetadata,
             DataTypeConverter converter,
-            boolean isEncryptionEnabled)
+            boolean isEncryptionEnabled
+    )
             throws ProtocolException {
         try {
             // 检查是否需要解密（需要同时满足：字段标记为加密 + 已启用加密控制 + 存在加密服务）
@@ -292,7 +305,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      *
      * @param byteBuf       字节缓冲区
      * @param fieldMetadata 字段元数据
-     * @param frameMetadata
+     * @param frameMetadata 元数据
      * @param converter     转换器
      * @return 解析后的复合对象
      * @throws ProtocolException 解析异常
@@ -302,7 +315,9 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             ProtocolFieldMetadata fieldMetadata,
             ProtocolFrameMetadata frameMetadata,
             DataTypeConverter converter,
-            boolean isEncryptionEnabled)
+            boolean isEncryptionEnabled,
+            List<ParsedData> parsedRawDataList
+    )
             throws ProtocolException {
         try {
             // 获取复合字段的目标类型
@@ -318,6 +333,12 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 // 读取实际长度的数据
                 byte[] fieldData = new byte[remaining];
                 byteBuf.readBytes(fieldData);
+                if (!frameMetadata.isBody()) {
+                    ParsedData parsedRawData = new ParsedData();
+                    parsedRawData.setRaw(HexUtil.encodeHexStr(fieldData));
+                    parsedRawData.setIsComputed(fieldMetadata.isComputed());
+                    parsedRawDataList.add(parsedRawData);
+                }
                 return converter.parseWithEncryption(fieldData, fieldMetadata, encryptionService);
             } else {
                 int actualLength = calculateCompositeFieldLength(targetType);
@@ -325,6 +346,12 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 // 读取实际长度的数据
                 byte[] fieldData = new byte[actualLength];
                 byteBuf.readBytes(fieldData);
+                if (!frameMetadata.isBody()) {
+                    ParsedData parsedRawData = new ParsedData();
+                    parsedRawData.setRaw(HexUtil.encodeHexStr(fieldData));
+                    parsedRawData.setIsComputed(fieldMetadata.isComputed());
+                    parsedRawDataList.add(parsedRawData);
+                }
                 return converter.parse(fieldData, fieldMetadata);
             }
 

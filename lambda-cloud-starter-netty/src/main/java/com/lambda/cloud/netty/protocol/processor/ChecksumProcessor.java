@@ -10,9 +10,11 @@ import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import com.lambda.cloud.netty.protocol.model.ParsedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -77,11 +79,12 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      * 然后与CRCFiled=true字段中存储的值进行比较
      * </p>
      *
-     * @param instance      消息实例
-     * @param frameMetadata 消息元数据
+     * @param instance
+     * @param parsedDataList 原始数据列表
+     * @param frameMetadata  消息元数据
      * @throws ProtocolException CRC验证失败
      */
-    public void validateCrc(Object instance, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
+    public void validateCrc(Object instance, List<ParsedData> parsedDataList, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
@@ -92,7 +95,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
         }
 
         // 计算所有checksum=true字段的CRC值（只计算一次）
-        long calculatedCrc = calculateCrcForAllChecksumFields(instance, frameMetadata);
+        long calculatedCrc = calculateCrcByParsedDataList(parsedDataList, frameMetadata);
 
         // 验证每个CRC字段
         for (ProtocolFieldMetadata crcField : crcFields) {
@@ -124,6 +127,24 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
         }
     }
 
+    private long calculateCrcByParsedDataList(List<ParsedData> parsedDataList, ProtocolFrameMetadata frameMetadata) {
+        try {
+            // 获取参与CRC计算的字段
+            String raw = parsedDataList.stream().filter(ParsedData::getIsComputed).map(ParsedData::getRaw).collect(Collectors.joining());
+            byte[] dataForCrc = raw.getBytes(StandardCharsets.UTF_8);
+
+            // 使用CRC算法计算校验值
+            String algorithmName = this.determineCrcAlgorithm(frameMetadata);
+            long crcValue = crcService.getAlgorithm(algorithmName).calculate(dataForCrc);
+
+            log.debug("CRC计算完成，数据长度: {} bytes, CRC值: 0x{:04X}", dataForCrc.length, crcValue);
+            return crcValue;
+
+        } catch (Exception e) {
+            throw new RuntimeException("计算CRC失败", e);
+        }
+    }
+
     /**
      * 获取消息中的所有CRC字段（存储CRC值的字段）
      *
@@ -144,7 +165,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      */
     private List<ProtocolFieldMetadata> getCrcChecksumFields(ProtocolFrameMetadata frameMetadata) {
         return frameMetadata.fields().stream()
-                .filter(ProtocolFieldMetadata::isCrcChecksum)
+                .filter(ProtocolFieldMetadata::isComputed)
                 .collect(Collectors.toList());
     }
 
