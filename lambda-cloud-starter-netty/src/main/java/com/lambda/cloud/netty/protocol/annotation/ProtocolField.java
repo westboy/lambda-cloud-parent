@@ -78,7 +78,7 @@ public @interface ProtocolField {
      * 解析的时候需要取该值参与数据长度计算
      * 序列化的时候需要将计算出的数据长度写入该字段
      * </p>
-     * @return 
+     * @return
      */
     boolean LengthFiled() default false;
 
