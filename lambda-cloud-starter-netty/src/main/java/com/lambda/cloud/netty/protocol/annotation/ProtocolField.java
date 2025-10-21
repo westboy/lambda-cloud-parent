@@ -38,6 +38,7 @@ public @interface ProtocolField {
      * @return 加密标识
      */
     boolean encryptedKey() default false;
+
     /**
      * 是否加密字段
      *
@@ -46,15 +47,15 @@ public @interface ProtocolField {
     boolean encryptedField() default false;
 
     /**
-     *  CRCChecksum 校验
+     * computed 计算字段
      *
      * <p>
-     * 表示该字段为校验字段，参与CRC校验值的计算
+     * 表示该字段为校验字段，参与CRC校验值与长度计算的计算
      * </p>
      *
      * @return 校验
      */
-    boolean checksum() default false;
+    boolean computed() default false;
 
     /**
      * CRCFiled
@@ -67,7 +68,31 @@ public @interface ProtocolField {
      *
      * @return CRC字段
      */
-    boolean CRCFiled() default false;
+    boolean CrcFiled() default false;
+
+    /**
+     * 长度字段
+     * <p>
+     * 表示该字段为长度字段，存储数据长度，需要根据其他字段计算数据长度
+     * ---
+     * 解析的时候需要取该值参与数据长度计算
+     * 序列化的时候需要将计算出的数据长度写入该字段
+     * </p>
+     * @return 
+     */
+    boolean LengthFiled() default false;
+
+    /**
+     * 序号字段
+     * <p>
+     * 表示该字段为序号字段，存储消息序号，需要根据其他字段计算序号值
+     * ---
+     * 解析的时候需要取该值参与序号计算
+     * 序列化的时候需要将计算出的序号值写入该字段
+     * </p>
+     * @return
+     */
+    boolean SerialFiled() default false;
 
     /**
      * 字段长度（字节数）

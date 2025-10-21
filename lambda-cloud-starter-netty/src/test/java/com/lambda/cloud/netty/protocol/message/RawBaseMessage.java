@@ -38,7 +38,7 @@ public class RawBaseMessage {
             order = 2,
             length = 2,
             dataType = ProtocolDataType.HEX,
-            checksum = true,
+            computed = true,
             littleEndian = true,
             description = "数据长度")
     private Integer ser;
@@ -50,7 +50,7 @@ public class RawBaseMessage {
             order = 3,
             length = 1,
             dataType = ProtocolDataType.HEX,
-            checksum = true,
+            computed = true,
             littleEndian = true,
             description = "数据长度")
     private String sec;
@@ -58,10 +58,10 @@ public class RawBaseMessage {
     /**
      * 报文头 - 帧类型 (0x3B)
      */
-    @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, checksum = true, description = "帧类型")
+    @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, computed = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, checksum = true, encryptedField = true)
+    @ProtocolField(order = 5, composite = true, computed = true, encryptedField = true)
     private RawInnerRecord innerRecord;
     /**
      * 校验码 (2字节)
@@ -71,7 +71,7 @@ public class RawBaseMessage {
             length = 2,
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
-            CRCFiled = true,
+            CrcFiled = true,
             description = "校验码")
     private String checksum;
 }

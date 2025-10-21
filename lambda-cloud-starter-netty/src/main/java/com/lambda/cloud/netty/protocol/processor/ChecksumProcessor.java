@@ -24,8 +24,6 @@ import lombok.extern.slf4j.Slf4j;
  * </p>
  *
  * @param crcService CRC校验服务
- *                   -- GETTER --
- *                   获取CRC校验服务
  * @author Jin
  */
 @Slf4j
@@ -315,7 +313,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
                 ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
 
                 // 只处理有ProtocolField注解且checksum=true的字段
-                if (protocolField != null && protocolField.checksum()) {
+                if (protocolField != null && protocolField.computed()) {
                     field.setAccessible(true);
                     Object subFieldValue = field.get(compositeValue);
 
