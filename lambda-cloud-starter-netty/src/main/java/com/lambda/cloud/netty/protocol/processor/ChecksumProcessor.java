@@ -1,6 +1,7 @@
 package com.lambda.cloud.netty.protocol.processor;
 
 import cn.hutool.core.util.HexUtil;
+import cn.hutool.core.util.ReflectUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
@@ -82,11 +83,11 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      * </p>
      *
      * @param instance
-     * @param parsedDataList 原始数据列表
+     * @param raw 原始数据列表
      * @param frameMetadata  消息元数据
      * @throws ProtocolException CRC验证失败
      */
-    public void validateCrc(Object instance, List<ParsedData> parsedDataList, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
+    public void validateCrc(Object instance, String raw, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
@@ -97,7 +98,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
         }
 
         // 计算所有checksum=true字段的CRC值（只计算一次）
-        long calculatedCrc = calculateCrcByParsedDataList(parsedDataList, frameMetadata);
+        long calculatedCrc = calculateCrcByParsedDataList(raw, frameMetadata);
 
         // 验证每个CRC字段
         for (ProtocolFieldMetadata crcField : crcFields) {
@@ -129,14 +130,9 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
         }
     }
 
-    private long calculateCrcByParsedDataList(List<ParsedData> parsedDataList, ProtocolFrameMetadata frameMetadata) {
+    private long calculateCrcByParsedDataList(String raw, ProtocolFrameMetadata frameMetadata) {
         try {
             // 获取参与CRC计算的字段
-            String raw = parsedDataList.stream()
-                    .filter(ParsedData::getIsComputed)
-                    .sorted(Comparator.comparing(ParsedData::getOrder))
-                    .map(ParsedData::getRaw)
-                    .collect(Collectors.joining());
             byte[] dataForCrc = HexUtil.decodeHex(raw);
 
             // 使用CRC算法计算校验值
@@ -341,8 +337,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
 
                 // 只处理有ProtocolField注解且checksum=true的字段
                 if (protocolField != null && protocolField.computed()) {
-                    field.setAccessible(true);
-                    Object subFieldValue = field.get(compositeValue);
+                    Object subFieldValue = ReflectUtil.getFieldValue(compositeValue, field);
 
                     // 创建子字段的元数据
                     ProtocolValidation subValidation = field.getAnnotation(ProtocolValidation.class);

@@ -104,9 +104,14 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             }
 
             if(metadata.isPayload()) {
+                String parsedRawData = parsedRawDataList.stream()
+                        .filter(ParsedData::getIsComputed)
+                        .sorted(Comparator.comparing(ParsedData::getOrder))
+                        .map(ParsedData::getRaw)
+                        .collect(Collectors.joining());
                 log.info("解析原始数据：{}",parsedRawDataList.stream().sorted(Comparator.comparing(ParsedData::getOrder)).map(ParsedData::getRaw).collect(Collectors.joining()));
                 // 验证CRC校验和
-                checksumProcessor.validateCrc(instance,parsedRawDataList, metadata);
+                checksumProcessor.validateCrc(instance,parsedRawData, metadata);
             }
 
             // 记录解析成功和性能指标
