@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.message;
 
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
@@ -61,11 +62,12 @@ public class RawRecordProtocolTest {
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
             log.info("开始解析报文...");
-
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
             // 使用协议引擎解析消息
             RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
-
-            log.info("解析结果: {}", record);
+            stopWatch.stop();
+            log.info("解析结果: {} time {}", record,stopWatch.getTotalTimeSeconds());
 
             // 验证解析结果
             ValidationResult validation = engine.validate(record);
@@ -77,7 +79,14 @@ public class RawRecordProtocolTest {
 
             // 输出关键字段
             logKeyFields(record);
+            record.setChecksum(null);
             log.info("解析功能验证完成，数据解析正常");
+            ByteBuf serializeBuffer = Unpooled.buffer();
+            engine.serialize(record, serializeBuffer);
+
+            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+            serializeBuffer.readBytes(serializedBytes);
+            System.out.println(HexUtil.encodeHexStr(serializedBytes, false));
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

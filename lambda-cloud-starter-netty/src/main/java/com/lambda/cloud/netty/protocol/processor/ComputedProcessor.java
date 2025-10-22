@@ -140,8 +140,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
             byte[] dataForCrc = HexUtil.decodeHex(raw);
 
             // 使用CRC算法计算校验值
-            String algorithmName = this.determineCrcAlgorithm(frameMetadata);
-            long crcValue = crcService.getAlgorithm(algorithmName).calculate(dataForCrc);
+            long crcValue = crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
 
             log.info("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
             return crcValue;
@@ -215,8 +214,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
             byte[] dataForCrc = ByteBufUtil.getBytes(byteBuf);
 
             // 使用CRC算法计算校验值
-            String algorithmName = this.determineCrcAlgorithm(frameMetadata);
-            long crcValue = crcService.getAlgorithm(algorithmName).calculate(dataForCrc);
+            long crcValue = crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
             if (log.isDebugEnabled()) {
                 String raw = HexUtil.encodeHexStr(dataForCrc);
                 log.debug("CRC计算完成，raw：{} 数据长度: {} bytes, CRC值: {}", raw, dataForCrc.length, crcValue);
@@ -292,24 +290,6 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
         crcField.setValue(instance, value);
     }
 
-    /**
-     * 确定CRC算法名称（基于消息元数据）
-     *
-     * @param frameMetadata 消息元数据
-     * @return 算法名称
-     */
-    private String determineCrcAlgorithm(ProtocolFrameMetadata frameMetadata) {
-        List<ProtocolFieldMetadata> crcFields = getCrcAndLengthFields(frameMetadata);
-        if (!crcFields.isEmpty()) {
-            int length = crcFields.getFirst().getLength();
-            if (length == 2) {
-                return "CRC16-MODBUS";
-            } else if (length == 4) {
-                return "CRC32";
-            }
-        }
-        return "CRC16-CCITT";
-    }
 
     /**
      * 递归序列化复合字段中参与CRC计算的子字段

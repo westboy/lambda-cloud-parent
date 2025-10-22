@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.secure;
 
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
@@ -10,6 +11,7 @@ import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
+import com.lambda.cloud.netty.protocol.message.RawBaseMessage;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
@@ -74,8 +76,14 @@ public class EncryptedRecordTest {
 
             log.info("开始解析报文...");
 
-            EncryptedBaseMessage record = engine.parse(byteBuf, EncryptedBaseMessage.class);
 
+            log.info("开始解析报文...");
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+            // 使用协议引擎解析消息
+            EncryptedBaseMessage record = engine.parse(byteBuf, EncryptedBaseMessage.class);
+            stopWatch.stop();
+            log.info("解析结果: {} time {}", record,stopWatch.getTotalTimeSeconds());
             log.info("解析结果: {}", record);
 
             ValidationResult validation = engine.validate(record);

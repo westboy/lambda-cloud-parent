@@ -15,7 +15,6 @@ import java.lang.annotation.*;
 @Inherited
 public @interface ProtocolFrame {
 
-
     /**
      * 消息类型标识
      *
@@ -29,6 +28,12 @@ public @interface ProtocolFrame {
      * @return 消息名称
      */
     String name() default "";
+
+    /**
+     * crc 算法
+     * @return   crc 算法 名称
+     */
+    String crcAlgorithm() default "CRC16-MODBUS";
 
     /**
      * 消息描述

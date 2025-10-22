@@ -67,6 +67,14 @@ public record ProtocolFrameMetadata(
     public String getMessageName() {
         return protocolMessage.name();
     }
+    /**
+     * 获取消息名称
+     *
+     * @return 消息名称
+     */
+    public String getCrcAlgorithmName() {
+        return protocolMessage.crcAlgorithm();
+    }
 
     /**
      * 获取消息描述
