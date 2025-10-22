@@ -102,7 +102,7 @@ public class EncryptedRecordTest {
             // 如果到达这里，说明序列化成功了
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
-            System.out.println(HexUtil.encodeHexStr(serializedBytes, false));
+            log.info("序列化报文： {}",HexUtil.encodeHexStr(serializedBytes, false));
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

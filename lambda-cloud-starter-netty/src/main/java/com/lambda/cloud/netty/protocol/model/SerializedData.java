@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SerializedData {
     private Long crc;
-    private Integer dataLength;
+    private Integer length;
 }

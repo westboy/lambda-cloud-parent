@@ -80,13 +80,14 @@ public class RawRecordProtocolTest {
             // 输出关键字段
             logKeyFields(record);
             record.setChecksum(null);
+            record.setDataLength(null);
             log.info("解析功能验证完成，数据解析正常");
             ByteBuf serializeBuffer = Unpooled.buffer();
             engine.serialize(record, serializeBuffer);
 
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
-            System.out.println(HexUtil.encodeHexStr(serializedBytes, false));
+            log.info("序列化报文： {}",HexUtil.encodeHexStr(serializedBytes, false));
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

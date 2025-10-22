@@ -175,11 +175,11 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      * @return true 表示CRC字段
      */
     public boolean isCrcField() {
-        return protocolField.CrcFiled();
+        return protocolField.crcFiled();
     }
 
     public boolean isLengthFiled() {
-        return protocolField.LengthFiled();
+        return protocolField.lengthFiled();
     }
 
     /**

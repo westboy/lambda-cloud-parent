@@ -63,8 +63,12 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
             // 将计算出的CRC值设置到所有CRC字段中
             for (ProtocolFieldMetadata crcField : crcFields) {
                 if(crcField.isCrcField()) {
-                    setCrcValueToInstance(message, crcField, serializedData.getCrc());
+                    setValueToInstance(message, crcField, serializedData.getCrc());
                     log.debug("设置CRC字段: {} = {}", crcField.getFieldName(), serializedData.getCrc());
+                }
+                if(crcField.isLengthFiled()) {
+                    setValueToInstance(message, crcField, serializedData.getLength());
+                    log.debug("设置Length字段: {} = {}", crcField.getFieldName(), serializedData.getLength());
                 }
             }
 
@@ -83,7 +87,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
      * 然后与CRCFiled=true字段中存储的值进行比较
      * </p>
      *
-     * @param instance
+     * @param instance Object
      * @param raw 原始数据列表
      * @param frameMetadata  消息元数据
      * @throws ProtocolException CRC验证失败
@@ -120,7 +124,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
                             crcField.getFieldName());
                 }
 
-                log.debug("CRC校验通过: {} = 0x{:04X}", crcField.getFieldName(), expectedCrc);
+                log.debug("CRC校验通过: {} = {}", crcField.getFieldName(), expectedCrc);
 
             } catch (ProtocolException e) {
                 throw e;
@@ -210,7 +214,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
                 log.debug("字段 {} 参与CRC计算，值: {}", fieldMetadata.getFieldName(), fieldValue);
             }
 
-            serializedData.setDataLength(byteBuf.readableBytes());
+            serializedData.setLength(byteBuf.readableBytes());
             byte[] dataForCrc = ByteBufUtil.getBytes(byteBuf);
 
             // 使用CRC算法计算校验值
@@ -266,28 +270,28 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
      * 设置CRC值到实例
      *
      * @param instance 消息实例
-     * @param crcField CRC字段元数据
+     * @param fieldMetadata CRC字段元数据
      * @param crcValue CRC值
      * @throws ProtocolException 设置失败
      */
-    private void setCrcValueToInstance(Object instance, ProtocolFieldMetadata crcField, long crcValue)
+    private void setValueToInstance(Object instance, ProtocolFieldMetadata fieldMetadata, long crcValue)
             throws ProtocolException {
 
-        Class<?> fieldType = crcField.getFieldType();
+        Class<?> fieldType = fieldMetadata.getFieldType();
         Object value;
 
         if (fieldType == String.class) {
             // 转换为十六进制字符串
-            value = String.format("%0" + (crcField.getLength() * 2) + "X", crcValue);
+            value = String.format("%0" + (fieldMetadata.getLength() * 2) + "X", crcValue);
         } else if (fieldType == Integer.class || fieldType == int.class) {
             value = (int) crcValue;
         } else if (fieldType == Long.class || fieldType == long.class) {
             value = crcValue;
         } else {
             // 默认转换为十六进制字符串
-            value = String.format("%0" + (crcField.getLength() * 2) + "X", crcValue);
+            value = String.format("%0" + (fieldMetadata.getLength() * 2) + "X", crcValue);
         }
-        crcField.setValue(instance, value);
+        fieldMetadata.setValue(instance, value);
     }
 
 

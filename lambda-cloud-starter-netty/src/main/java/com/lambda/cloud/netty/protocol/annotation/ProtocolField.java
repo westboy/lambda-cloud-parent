@@ -68,7 +68,7 @@ public @interface ProtocolField {
      *
      * @return CRC字段
      */
-    boolean CrcFiled() default false;
+    boolean crcFiled() default false;
 
     /**
      * 长度字段
@@ -80,7 +80,7 @@ public @interface ProtocolField {
      * </p>
      * @return
      */
-    boolean LengthFiled() default false;
+    boolean lengthFiled() default false;
 
     /**
      * 序号字段
@@ -92,7 +92,7 @@ public @interface ProtocolField {
      * </p>
      * @return
      */
-    boolean SerialFiled() default false;
+    boolean serialFiled() default false;
 
     /**
      * 字段长度（字节数）
