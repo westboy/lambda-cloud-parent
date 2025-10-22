@@ -16,7 +16,7 @@ import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.model.ParsedData;
-import com.lambda.cloud.netty.protocol.processor.ChecksumProcessor;
+import com.lambda.cloud.netty.protocol.processor.ComputedProcessor;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
@@ -74,7 +74,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * CRC处理器
      */
-    private ChecksumProcessor checksumProcessor;
+    private ComputedProcessor computedProcessor;
 
     public ReflectionProtocolEngine(EncryptionService encryptionService, ChecksumService checksumService) {
         this.fieldCache = CacheUtil.newLRUCache(1000);
@@ -83,7 +83,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         this.converterFactory = new DataTypeConverterFactory();
         this.validationEngine = new ValidationEngine();
         this.protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
-        this.checksumProcessor = new ChecksumProcessor(checksumService, encryptionService);
+        this.computedProcessor = new ComputedProcessor(checksumService, encryptionService);
     }
 
     @Override
@@ -104,14 +104,20 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             }
 
             if(metadata.isPayload()) {
+                // 获取参与CRC计算的原始数据（只进行一次stream操作）
                 String parsedRawData = parsedRawDataList.stream()
                         .filter(ParsedData::getIsComputed)
                         .sorted(Comparator.comparing(ParsedData::getOrder))
                         .map(ParsedData::getRaw)
                         .collect(Collectors.joining());
-                log.info("解析原始数据：{}",parsedRawDataList.stream().sorted(Comparator.comparing(ParsedData::getOrder)).map(ParsedData::getRaw).collect(Collectors.joining()));
+                
+                // 记录解析的原始数据（调试级别）
+                if (log.isDebugEnabled()) {
+                    log.debug("解析原始数据：{}", parsedRawData);
+                }
+                
                 // 验证CRC校验和
-                checksumProcessor.validateCrc(instance,parsedRawData, metadata);
+                computedProcessor.validateCrc(instance, parsedRawData, metadata);
             }
 
             // 记录解析成功和性能指标
@@ -149,7 +155,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             logProtocolOperation("序列化", metadata);
 
             // 先计算并设置CRC校验和（在序列化前）
-            checksumProcessor.calculateAndSetCrc(message, metadata);
+            computedProcessor.calculateAndSetCrc(message, metadata);
 
             // 序列化各个字段
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
@@ -222,7 +228,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata, List<ParsedData> parsedRawDataList)
             throws ProtocolException {
 
-        // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
+        // 计算是否启用加密
         boolean encryptionEnabled = EncryptionUtils.isEncryptionEnabled(instance, msgMetadata);
         // 获取合适的转换器（支持复合字段与加密控制）
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
@@ -243,7 +249,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             Object instance, ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
             throws ProtocolException {
 
-        // 计算是否启用加密（仅当存在加密控制字段且其值为 0x01）
+        // 计算是否启用加密
         boolean encryptionEnabled = EncryptionUtils.isEncryptionEnabled(instance, msgMetadata);
 
         // 获取合适的转换器（支持复合字段与加密控制）

@@ -12,13 +12,12 @@ import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
-import com.lambda.cloud.netty.protocol.model.ParsedData;
+import com.lambda.cloud.netty.protocol.model.SerializedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +31,7 @@ import java.util.stream.Collectors;
  * @author Jin
  */
 @Slf4j
-public record ChecksumProcessor(ChecksumService crcService, EncryptionService encryptionService) {
+public record ComputedProcessor(ChecksumService crcService, EncryptionService encryptionService) {
 
     private static final DataTypeConverterFactory converterFactory = new DataTypeConverterFactory();
 
@@ -50,7 +49,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
     public void calculateAndSetCrc(Object message, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有CRC字段（存储CRC值的字段）
-        List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
+        List<ProtocolFieldMetadata> crcFields = getCrcAndLengthFields(frameMetadata);
 
         if (crcFields.isEmpty()) {
             log.debug("消息中没有CRC字段，跳过CRC计算");
@@ -59,12 +58,14 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
 
         try {
             // 计算所有checksum=true字段的CRC值（只计算一次）
-            long crcValue = calculateCrcForAllChecksumFields(message, frameMetadata);
+            SerializedData serializedData = calculateCrcAndDataLengthForAllComputedFields(message, frameMetadata);
 
             // 将计算出的CRC值设置到所有CRC字段中
             for (ProtocolFieldMetadata crcField : crcFields) {
-                setCrcValueToInstance(message, crcField, crcValue);
-                log.debug("设置CRC字段: {} = 0x{:04X}", crcField.getFieldName(), crcValue);
+                if(crcField.isCrcField()) {
+                    setCrcValueToInstance(message, crcField, serializedData.getCrc());
+                    log.debug("设置CRC字段: {} = {}", crcField.getFieldName(), serializedData.getCrc());
+                }
             }
 
             log.debug("CRC计算和设置完成，共设置 {} 个CRC字段", crcFields.size());
@@ -90,7 +91,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
     public void validateCrc(Object instance, String raw, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
-        List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
+        List<ProtocolFieldMetadata> crcFields = getCrcAndLengthFields(frameMetadata);
 
         if (crcFields.isEmpty()) {
             log.debug("消息中没有CRC字段，跳过CRC验证");
@@ -103,6 +104,9 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
         // 验证每个CRC字段
         for (ProtocolFieldMetadata crcField : crcFields) {
             try {
+                if(crcField.isLengthFiled()) {
+                    continue;
+                }
                 // 获取实例中存储的CRC值
                 long expectedCrc = getCrcValueFromInstance(instance, crcField);
 
@@ -148,14 +152,14 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
     }
 
     /**
-     * 获取消息中的所有CRC字段（存储CRC值的字段）
+     * 获取消息中的所有CRC喝LengthField字段（存储CRC值的字段）
      *
      * @param frameMetadata 消息元数据
      * @return CRC字段列表
      */
-    private List<ProtocolFieldMetadata> getCrcFields(ProtocolFrameMetadata frameMetadata) {
+    private List<ProtocolFieldMetadata> getCrcAndLengthFields(ProtocolFrameMetadata frameMetadata) {
         return frameMetadata.fields().stream()
-                .filter(ProtocolFieldMetadata::isCrcField)
+                .filter(protocolFieldMetadata -> protocolFieldMetadata.isCrcField() || protocolFieldMetadata.isLengthFiled())
                 .collect(Collectors.toList());
     }
 
@@ -182,8 +186,9 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      * @param frameMetadata 消息元数据
      * @return CRC值
      */
-    private long calculateCrcForAllChecksumFields(Object message, ProtocolFrameMetadata frameMetadata) {
+    private SerializedData calculateCrcAndDataLengthForAllComputedFields(Object message, ProtocolFrameMetadata frameMetadata) {
         // 序列化消息到字节数组（用于CRC计算）
+        SerializedData serializedData = new SerializedData();
         ByteBuf byteBuf = ByteBufPool.buffer();
         try {
             // 获取参与CRC计算的字段
@@ -206,6 +211,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
                 log.debug("字段 {} 参与CRC计算，值: {}", fieldMetadata.getFieldName(), fieldValue);
             }
 
+            serializedData.setDataLength(byteBuf.readableBytes());
             byte[] dataForCrc = ByteBufUtil.getBytes(byteBuf);
 
             // 使用CRC算法计算校验值
@@ -215,7 +221,8 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
                 String raw = HexUtil.encodeHexStr(dataForCrc);
                 log.debug("CRC计算完成，raw：{} 数据长度: {} bytes, CRC值: {}", raw, dataForCrc.length, crcValue);
             }
-            return crcValue;
+            serializedData.setCrc(crcValue);
+            return serializedData;
 
         } catch (Exception e) {
             throw new RuntimeException("计算CRC失败", e);
@@ -292,7 +299,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      * @return 算法名称
      */
     private String determineCrcAlgorithm(ProtocolFrameMetadata frameMetadata) {
-        List<ProtocolFieldMetadata> crcFields = getCrcFields(frameMetadata);
+        List<ProtocolFieldMetadata> crcFields = getCrcAndLengthFields(frameMetadata);
         if (!crcFields.isEmpty()) {
             int length = crcFields.getFirst().getLength();
             if (length == 2) {

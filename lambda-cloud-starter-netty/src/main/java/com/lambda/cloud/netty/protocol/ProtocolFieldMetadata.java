@@ -178,6 +178,10 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
         return protocolField.CrcFiled();
     }
 
+    public boolean isLengthFiled() {
+        return protocolField.LengthFiled();
+    }
+
     /**
      * 是否为加密控制字段
      * 标识该字段是否用于控制加密功能的开关
