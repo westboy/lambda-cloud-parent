@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.processor;
 
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
@@ -14,7 +15,7 @@ import com.lambda.cloud.netty.protocol.model.ParsedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -130,14 +131,18 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
     private long calculateCrcByParsedDataList(List<ParsedData> parsedDataList, ProtocolFrameMetadata frameMetadata) {
         try {
             // 获取参与CRC计算的字段
-            String raw = parsedDataList.stream().filter(ParsedData::getIsComputed).map(ParsedData::getRaw).collect(Collectors.joining());
-            byte[] dataForCrc = raw.getBytes(StandardCharsets.UTF_8);
+            String raw = parsedDataList.stream()
+                    .filter(ParsedData::getIsComputed)
+                    .sorted(Comparator.comparing(ParsedData::getOrder))
+                    .map(ParsedData::getRaw)
+                    .collect(Collectors.joining());
+            byte[] dataForCrc = HexUtil.decodeHex(raw);
 
             // 使用CRC算法计算校验值
             String algorithmName = this.determineCrcAlgorithm(frameMetadata);
             long crcValue = crcService.getAlgorithm(algorithmName).calculate(dataForCrc);
 
-            log.debug("CRC计算完成，数据长度: {} bytes, CRC值: 0x{:04X}", dataForCrc.length, crcValue);
+            log.info("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
             return crcValue;
 
         } catch (Exception e) {
@@ -163,7 +168,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      * @param frameMetadata 消息元数据
      * @return 参与CRC计算的字段列表
      */
-    private List<ProtocolFieldMetadata> getCrcChecksumFields(ProtocolFrameMetadata frameMetadata) {
+    private List<ProtocolFieldMetadata> getComputedFields(ProtocolFrameMetadata frameMetadata) {
         return frameMetadata.fields().stream()
                 .filter(ProtocolFieldMetadata::isComputed)
                 .collect(Collectors.toList());
@@ -185,14 +190,13 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
         ByteBuf byteBuf = ByteBufPool.buffer();
         try {
             // 获取参与CRC计算的字段
-            List<ProtocolFieldMetadata> checksumFields = getCrcChecksumFields(frameMetadata);
+            List<ProtocolFieldMetadata> computedFields = getComputedFields(frameMetadata);
 
-            log.debug("开始计算CRC，参与计算的字段数: {}", checksumFields.size());
+            log.debug("开始计算CRC，参与计算的字段数: {}", computedFields.size());
 
             // 序列化参与CRC计算的字段，按字段顺序拼接原始hex报文数据
-            for (ProtocolFieldMetadata fieldMetadata : checksumFields) {
+            for (ProtocolFieldMetadata fieldMetadata : computedFields) {
                 // 获取字段值
-
                 Object fieldValue = fieldMetadata.getValue(message);
 
                 // 检查是否为复合字段

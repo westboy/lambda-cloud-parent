@@ -103,13 +103,11 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                 parseField(byteBuf, instance, fieldMetadata, metadata,parsedRawDataList);
             }
 
-            if(!metadata.isBody()) {
-                log.info("解析原始数据：{}",parsedRawDataList.stream().map(ParsedData::getRaw).collect(Collectors.joining()));
+            if(metadata.isPayload()) {
+                log.info("解析原始数据：{}",parsedRawDataList.stream().sorted(Comparator.comparing(ParsedData::getOrder)).map(ParsedData::getRaw).collect(Collectors.joining()));
                 // 验证CRC校验和
                 checksumProcessor.validateCrc(instance,parsedRawDataList, metadata);
             }
-
-
 
             // 记录解析成功和性能指标
             if (log.isDebugEnabled()) {
@@ -120,7 +118,6 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                         duration / 1000,
                         byteBuf.readableBytes());
             }
-
             return instance;
         } catch (Exception e) {
             // 记录解析失败和性能指标

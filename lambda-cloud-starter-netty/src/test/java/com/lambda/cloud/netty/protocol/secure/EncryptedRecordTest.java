@@ -18,6 +18,8 @@ import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * 交易记录协议解析测试
  * <p>
@@ -34,7 +36,7 @@ public class EncryptedRecordTest {
     private static final String TEST_DATA4 =
             "68A2077A003B181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B4733";
 
-    private static final String TEST_DATA5 = "68A2077A003B%s307C";
+    private static final String TEST_DATA5 = "68A2077A003B%sE7E5";
 
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
@@ -42,7 +44,8 @@ public class EncryptedRecordTest {
         log.info("测试数据: {}", TEST_DATA4);
         log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
-        SecretKey key = SecureUtil.generateKey("AES", 128);
+        SecretKey key = SecureUtil.generateKey("AES", "0123456789abcdef".getBytes(StandardCharsets.UTF_8));
+        String keyFormat = key.getFormat();
         String encryptHex =
                 HexUtil.encodeHexStr(SecureUtil.aes(key.getEncoded()).encrypt(RAW), false);
         System.out.println("rawHex: " + RAW);
@@ -91,9 +94,7 @@ public class EncryptedRecordTest {
             // 如果到达这里，说明序列化成功了
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
-
-            String userNameById = HexUtil.encodeHexStr(serializedBytes, false);
-            System.out.println(userNameById);
+            System.out.println(HexUtil.encodeHexStr(serializedBytes, false));
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

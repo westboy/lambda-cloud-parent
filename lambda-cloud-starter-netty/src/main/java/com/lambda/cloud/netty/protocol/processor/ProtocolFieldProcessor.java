@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.processor;
 
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.exception.ProtocolException;
@@ -78,10 +79,17 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
             Object value = convertFieldData(fieldData, fieldMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
-            if (!frameMetadata.isBody()) {
+            if (frameMetadata.isPayload()) {
                 ParsedData parsedRawData = new ParsedData();
                 parsedRawData.setIsComputed(fieldMetadata.isComputed());
-                parsedRawData.setRaw(HexUtil.encodeHexStr(fieldData));
+                String rv;
+                if (fieldMetadata.isLittleEndian()) {
+                    rv = HexUtil.encodeHexStr(ArrayUtil.reverse(fieldData));
+                } else {
+                    rv = HexUtil.encodeHexStr(fieldData);
+                }
+                parsedRawData.setRaw(rv);
+                parsedRawData.setOrder(fieldMetadata.getOrder());
                 parsedRawDataList.add(parsedRawData);
             }
         }
@@ -333,12 +341,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 // 读取实际长度的数据
                 byte[] fieldData = new byte[remaining];
                 byteBuf.readBytes(fieldData);
-                if (!frameMetadata.isBody()) {
-                    ParsedData parsedRawData = new ParsedData();
-                    parsedRawData.setRaw(HexUtil.encodeHexStr(fieldData));
-                    parsedRawData.setIsComputed(fieldMetadata.isComputed());
-                    parsedRawDataList.add(parsedRawData);
-                }
+                fillParsedRawData(fieldMetadata, frameMetadata, parsedRawDataList, fieldData);
                 return converter.parseWithEncryption(fieldData, fieldMetadata, encryptionService);
             } else {
                 int actualLength = calculateCompositeFieldLength(targetType);
@@ -346,18 +349,30 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 // 读取实际长度的数据
                 byte[] fieldData = new byte[actualLength];
                 byteBuf.readBytes(fieldData);
-                if (!frameMetadata.isBody()) {
-                    ParsedData parsedRawData = new ParsedData();
-                    parsedRawData.setRaw(HexUtil.encodeHexStr(fieldData));
-                    parsedRawData.setIsComputed(fieldMetadata.isComputed());
-                    parsedRawDataList.add(parsedRawData);
-                }
+                fillParsedRawData(fieldMetadata, frameMetadata, parsedRawDataList, fieldData);
                 return converter.parse(fieldData, fieldMetadata);
             }
 
         } catch (Exception e) {
             throw ExceptionUtils.createParseException(
                     "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(), fieldMetadata, e);
+        }
+    }
+
+    private static void fillParsedRawData(ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata frameMetadata, List<ParsedData> parsedRawDataList, byte[] fieldData) {
+        if (frameMetadata.isPayload()) {
+            ParsedData parsedRawData = new ParsedData();
+            String value;
+            if (fieldMetadata.isLittleEndian()) {
+                value = HexUtil.encodeHexStr(ArrayUtil.reverse(fieldData));
+            } else {
+                value = HexUtil.encodeHexStr(fieldData);
+            }
+            parsedRawData.setRaw(value);
+
+            parsedRawData.setIsComputed(fieldMetadata.isComputed());
+            parsedRawData.setOrder(fieldMetadata.getOrder());
+            parsedRawDataList.add(parsedRawData);
         }
     }
 

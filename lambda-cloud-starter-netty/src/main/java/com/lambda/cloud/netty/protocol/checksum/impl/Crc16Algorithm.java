@@ -15,20 +15,6 @@ import com.lambda.cloud.netty.protocol.checksum.CrcAlgorithm;
  */
 public record Crc16Algorithm(CRC16Checksum crc16Checksum, String algorithmName) implements CrcAlgorithm {
 
-    /**
-     * 默认构造函数，使用标准CRC16算法
-     */
-    public Crc16Algorithm() {
-        this(ccitt().crc16Checksum(), "CRC16-CCITT");
-    }
-
-    /**
-     * 构造函数
-     *
-     * @param crc16Checksum CRC16校验器
-     * @param algorithmName 算法名称
-     */
-    public Crc16Algorithm {}
 
     @Override
     public long calculate(byte[] data) {

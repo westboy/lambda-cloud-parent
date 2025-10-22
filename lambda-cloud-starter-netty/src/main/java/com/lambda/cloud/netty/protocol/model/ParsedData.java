@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class ParsedData {
     private String raw;
     private Boolean isComputed;
+    private Integer order;
 }

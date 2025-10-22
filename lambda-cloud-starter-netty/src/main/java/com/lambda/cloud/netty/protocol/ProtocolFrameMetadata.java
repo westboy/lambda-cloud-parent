@@ -1,6 +1,8 @@
 package com.lambda.cloud.netty.protocol;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import org.jetbrains.annotations.Contract;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,8 +83,8 @@ public record ProtocolFrameMetadata(
      *
      * @return true 消息主体
      */
-    public boolean isBody() {
-        return protocolMessage.isBody();
+    public boolean isPayload() {
+        return protocolMessage.isPayload();
     }
 
     /**
