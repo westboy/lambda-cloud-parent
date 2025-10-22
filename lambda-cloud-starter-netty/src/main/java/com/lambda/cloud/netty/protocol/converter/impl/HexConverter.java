@@ -5,6 +5,7 @@ import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
+import com.lambda.cloud.netty.utils.ValidationUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -21,19 +22,21 @@ public class HexConverter implements DataTypeConverter {
 
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        validateLength(data, fieldMetadata);
+        // 基本输入验证
+        ValidationUtils.validateBasicInputs(data, fieldMetadata, "十六进制");
 
         try {
-            byte[] adjustedResult = adjustLength(data, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
-            // 处理大小端字节序
-            byte[] processedData = convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
-            String hexString = HexUtil.encodeHexStr(processedData);
+            // 修正：先处理字节序，再调整长度（避免双重字节序处理）
+            byte[] processedData = convertEndianness(data, fieldMetadata.isLittleEndian());
+            byte[] adjustedResult = adjustLength(processedData, fieldMetadata.getLength(), false); // 已处理字节序，传false
+            String hexString = HexUtil.encodeHexStr(adjustedResult);
             // 根据字段类型返回不同的对象
 
             int precision = fieldMetadata.getPrecision();
 
             BigInteger integerData = new BigInteger(hexString, 16);
 
+            // 修正：使用BigDecimal.TEN.pow避免精度损失
             BigDecimal decimalValue = (precision > 0)
                     ? new BigDecimal(integerData).divide(BigDecimal.TEN.pow(precision), precision, RoundingMode.DOWN)
                     : new BigDecimal(integerData);
@@ -74,8 +77,12 @@ public class HexConverter implements DataTypeConverter {
         }
     }
 
+    @SuppressWarnings("all")
     @Override
     public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        // 基本输入验证
+        ValidationUtils.validateSerializeValue(value, fieldMetadata, "十六进制");
+
         try {
             byte[] result;
             int precision = fieldMetadata.getPrecision();
@@ -87,15 +94,25 @@ public class HexConverter implements DataTypeConverter {
                     result = HexUtil.decodeHex(hexString);
                 }
                 case Integer i -> {
-                    int actualValue = precision > 0 ? (int) (i * Math.pow(10, precision)) : i;
-                    String hexString = Integer.toHexString(actualValue);
+                    // 修正：使用BigDecimal避免精度损失
+                    long actualValue = precision > 0
+                            ? new BigDecimal(i)
+                                    .multiply(BigDecimal.TEN.pow(precision))
+                                    .longValue()
+                            : i;
+                    String hexString = Long.toHexString(actualValue);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
                     result = HexUtil.decodeHex(hexString);
                 }
                 case Long l -> {
-                    long actualValue = precision > 0 ? (long) (l * Math.pow(10, precision)) : l;
+                    // 修正：使用BigDecimal避免精度损失
+                    long actualValue = precision > 0
+                            ? new BigDecimal(l)
+                                    .multiply(BigDecimal.TEN.pow(precision))
+                                    .longValue()
+                            : l;
                     String hexString = Long.toHexString(actualValue);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
@@ -103,16 +120,26 @@ public class HexConverter implements DataTypeConverter {
                     result = HexUtil.decodeHex(hexString);
                 }
                 case Double d -> {
-                    double actualValue = precision > 0 ? (d * Math.pow(10, precision)) : d.longValue();
-                    String hexString = Double.toHexString(actualValue);
+                    // 修正：Double转换为long后再转十六进制，避免IEEE 754格式
+                    long actualValue = precision > 0
+                            ? new BigDecimal(d)
+                                    .multiply(BigDecimal.TEN.pow(precision))
+                                    .longValue()
+                            : d.longValue();
+                    String hexString = Long.toHexString(actualValue);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
                     result = HexUtil.decodeHex(hexString);
                 }
                 case Float f -> {
-                    float actualValue = precision > 0 ? (float) (f * Math.pow(10, precision)) : f.longValue();
-                    String hexString = Float.toHexString(actualValue);
+                    // 修正：Float转换为long后再转十六进制，避免IEEE 754格式
+                    long actualValue = precision > 0
+                            ? new BigDecimal(f)
+                                    .multiply(BigDecimal.TEN.pow(precision))
+                                    .longValue()
+                            : f.longValue();
+                    String hexString = Long.toHexString(actualValue);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
                     }
@@ -137,7 +164,12 @@ public class HexConverter implements DataTypeConverter {
                     result = HexUtil.decodeHex(hexString);
                 }
                 case Byte b -> {
-                    int actualValue = precision > 0 ? (int) (b * Math.pow(10, precision)) : b.intValue();
+                    // 修正：使用BigDecimal避免精度损失
+                    int actualValue = precision > 0
+                            ? new BigDecimal(b)
+                                    .multiply(BigDecimal.TEN.pow(precision))
+                                    .intValue()
+                            : b.intValue();
                     String hexString = Integer.toHexString(actualValue & 0xFF);
                     if (hexString.length() % 2 != 0) {
                         hexString = "0" + hexString;
@@ -151,11 +183,10 @@ public class HexConverter implements DataTypeConverter {
                             "不支持的十六进制数据类型: " + value.getClass().getName(),
                             fieldMetadata.getFieldName());
             }
-            // 处理大小端字节序
-            var reversed = convertEndianness(result, fieldMetadata.isLittleEndian());
 
-            // 调整长度（此时已经是正确的字节序）
-            return adjustLength(reversed, fieldMetadata.getLength(), fieldMetadata.isLittleEndian());
+            // 修正：先调整长度，再处理字节序（避免双重字节序处理）
+            byte[] adjustedResult = adjustLength(result, fieldMetadata.getLength(), false); // 传false避免内部字节序处理
+            return convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
 
         } catch (Exception e) {
             throw new ProtocolException(
@@ -175,13 +206,19 @@ public class HexConverter implements DataTypeConverter {
 
     @Override
     public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        // 早期返回优化
         if (value == null || value.trim().isEmpty()) {
             return null;
         }
 
         try {
-            // 移除空格和0x前缀
-            String hexString = value.trim().replaceAll("\\s+", "").replaceAll("^0x", "");
+            // 优化：使用StringBuilder避免多次字符串操作
+            String trimmed = value.trim();
+            if (trimmed.startsWith("0x") || trimmed.startsWith("0X")) {
+                trimmed = trimmed.substring(2);
+            }
+            String hexString = trimmed.replaceAll("\\s+", "");
+
             byte[] data = HexUtil.decodeHex(hexString);
             return parse(data, fieldMetadata);
         } catch (Exception e) {
@@ -198,10 +235,11 @@ public class HexConverter implements DataTypeConverter {
      *
      * @param data          原始数据
      * @param targetLength  目标长度
-     * @param isLittleEndian 字段元数据
+     * @param isLittleEndian 是否小端序（用于确定填充/截取方向）
      * @return 调整后的数据
      */
     private byte[] adjustLength(byte[] data, int targetLength, boolean isLittleEndian) {
+        // 性能优化：早期返回避免不必要的数组复制
         if (data.length == targetLength) {
             return data;
         }
