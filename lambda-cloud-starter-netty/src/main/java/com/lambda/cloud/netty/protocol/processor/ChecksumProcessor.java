@@ -14,11 +14,12 @@ import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.model.ParsedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * CRC处理器
@@ -41,7 +42,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      * 然后将计算结果设置到所有CRCFiled=true的字段中
      * </p>
      *
-     * @param message      消息实例
+     * @param message       消息实例
      * @param frameMetadata 消息元数据
      * @throws ProtocolException CRC处理异常
      */
@@ -214,8 +215,10 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
             // 使用CRC算法计算校验值
             String algorithmName = this.determineCrcAlgorithm(frameMetadata);
             long crcValue = crcService.getAlgorithm(algorithmName).calculate(dataForCrc);
-
-            log.debug("CRC计算完成，数据长度: {} bytes, CRC值: 0x{:04X}", dataForCrc.length, crcValue);
+            if (log.isDebugEnabled()) {
+                String raw = HexUtil.encodeHexStr(dataForCrc);
+                log.debug("CRC计算完成，raw：{} 数据长度: {} bytes, CRC值: {}", raw, dataForCrc.length, crcValue);
+            }
             return crcValue;
 
         } catch (Exception e) {
@@ -251,11 +254,10 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
                 }
                 return Long.parseLong(hexString, 16);
             }
-            default ->
-                throw new ProtocolException(
-                        ProtocolException.ErrorCode.CRC_ERROR,
-                        "不支持的CRC值类型: " + value.getClass().getSimpleName(),
-                        crcField.getFieldName());
+            default -> throw new ProtocolException(
+                    ProtocolException.ErrorCode.CRC_ERROR,
+                    "不支持的CRC值类型: " + value.getClass().getSimpleName(),
+                    crcField.getFieldName());
         }
     }
 
@@ -313,7 +315,7 @@ public record ChecksumProcessor(ChecksumService crcService, EncryptionService en
      * 而不是简单地序列化整个复合对象
      * </p>
      *
-     * @param tempBuf       临时缓冲区
+     * @param tempBuf        临时缓冲区
      * @param compositeValue 复合字段值
      * @param fieldMetadata  复合字段元数据
      * @throws ProtocolException 处理异常
