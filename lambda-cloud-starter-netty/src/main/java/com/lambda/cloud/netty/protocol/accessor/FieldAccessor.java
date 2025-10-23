@@ -9,7 +9,7 @@ package com.lambda.cloud.netty.protocol.accessor;
  * @author Jin
  */
 public interface FieldAccessor {
-    
+
     /**
      * 设置字段值
      *
@@ -17,7 +17,7 @@ public interface FieldAccessor {
      * @param value  字段值
      */
     void setValue(Object target, Object value);
-    
+
     /**
      * 获取字段值
      *
@@ -25,14 +25,14 @@ public interface FieldAccessor {
      * @return 字段值
      */
     Object getValue(Object target);
-    
+
     /**
      * 获取字段名称
      *
      * @return 字段名称
      */
     String getFieldName();
-    
+
     /**
      * 获取字段类型
      *

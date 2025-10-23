@@ -1,15 +1,14 @@
 package com.lambda.cloud.netty.protocol.accessor.asm;
 
-import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import static org.objectweb.asm.Opcodes.*;
 
+import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.objectweb.asm.Opcodes.*;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 /**
  * 字段访问器生成器
@@ -43,6 +42,9 @@ public class FieldAccessorGenerator {
      * @return 字段访问器
      */
     private static FieldAccessor createAccessor(Field field) {
+        // 确保字段可访问
+        field.setAccessible(true);
+
         String className = generateClassName(field);
         byte[] classBytes = generateAccessorClass(field, className);
 
@@ -64,8 +66,8 @@ public class FieldAccessorGenerator {
      * @return 类名
      */
     private static String generateClassName(Field field) {
-        return field.getDeclaringClass().getName() + "$" + field.getName() +
-                FIELD_ACCESSOR_SUFFIX + COUNTER.incrementAndGet();
+        return field.getDeclaringClass().getName() + "$" + field.getName() + FIELD_ACCESSOR_SUFFIX
+                + COUNTER.incrementAndGet();
     }
 
     /**
@@ -81,9 +83,14 @@ public class FieldAccessorGenerator {
         String fieldAccessorType = Type.getInternalName(FieldAccessor.class);
 
         // 定义类
-        cw.visit(V1_8, ACC_PUBLIC | ACC_FINAL, internalClassName, null,
-                "java/lang/Object", new String[]{fieldAccessorType});
-
+        cw.visit(
+                V1_8,
+                ACC_PUBLIC | ACC_FINAL | ACC_STATIC | ACC_SYNTHETIC,
+                internalClassName,
+                null,
+                "java/lang/Object",
+                new String[]{fieldAccessorType}
+        );
         // 生成构造函数
         generateConstructor(cw);
 
@@ -120,8 +127,8 @@ public class FieldAccessorGenerator {
      * 生成setValue方法
      */
     private static void generateSetValueMethod(ClassWriter cw, Field field, String className) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "setValue",
-                "(Ljava/lang/Object;Ljava/lang/Object;)V", null, null);
+        MethodVisitor mv =
+                cw.visitMethod(ACC_PUBLIC, "setValue", "(Ljava/lang/Object;Ljava/lang/Object;)V", null, null);
         mv.visitCode();
 
         // 类型转换
@@ -134,8 +141,7 @@ public class FieldAccessorGenerator {
         generateValueCast(mv, field.getType());
 
         // 设置字段值
-        mv.visitFieldInsn(PUTFIELD, ownerType, field.getName(),
-                Type.getDescriptor(field.getType()));
+        mv.visitFieldInsn(PUTFIELD, ownerType, field.getName(), Type.getDescriptor(field.getType()));
 
         mv.visitInsn(RETURN);
         mv.visitMaxs(2, 3);
@@ -146,8 +152,7 @@ public class FieldAccessorGenerator {
      * 生成getValue方法
      */
     private static void generateGetValueMethod(ClassWriter cw, Field field, String className) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getValue",
-                "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getValue", "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
         mv.visitCode();
 
         // 类型转换
@@ -156,8 +161,7 @@ public class FieldAccessorGenerator {
         mv.visitTypeInsn(CHECKCAST, ownerType);
 
         // 获取字段值
-        mv.visitFieldInsn(GETFIELD, ownerType, field.getName(),
-                Type.getDescriptor(field.getType()));
+        mv.visitFieldInsn(GETFIELD, ownerType, field.getName(), Type.getDescriptor(field.getType()));
 
         // 装箱基本类型
         generateBoxing(mv, field.getType());
@@ -171,8 +175,7 @@ public class FieldAccessorGenerator {
      * 生成getFieldName方法
      */
     private static void generateGetFieldNameMethod(ClassWriter cw, Field field) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldName",
-                "()Ljava/lang/String;", null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldName", "()Ljava/lang/String;", null, null);
         mv.visitCode();
         mv.visitLdcInsn(field.getName());
         mv.visitInsn(ARETURN);
@@ -184,8 +187,7 @@ public class FieldAccessorGenerator {
      * 生成getFieldType方法
      */
     private static void generateGetFieldTypeMethod(ClassWriter cw, Field field) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldType",
-                "()Ljava/lang/Class;", null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldType", "()Ljava/lang/Class;", null, null);
         mv.visitCode();
 
         // 加载Class对象
@@ -213,8 +215,7 @@ public class FieldAccessorGenerator {
             mv.visitTypeInsn(CHECKCAST, wrapperType);
 
             String unboxMethod = getUnboxMethod(fieldType);
-            mv.visitMethodInsn(INVOKEVIRTUAL, wrapperType, unboxMethod,
-                    "()" + Type.getDescriptor(fieldType), false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, wrapperType, unboxMethod, "()" + Type.getDescriptor(fieldType), false);
         } else {
             // 引用类型直接转换
             mv.visitTypeInsn(CHECKCAST, Type.getInternalName(fieldType));
@@ -227,8 +228,12 @@ public class FieldAccessorGenerator {
     private static void generateBoxing(MethodVisitor mv, Class<?> fieldType) {
         if (fieldType.isPrimitive()) {
             String wrapperType = getWrapperType(fieldType);
-            mv.visitMethodInsn(INVOKESTATIC, wrapperType, "valueOf",
-                    "(" + Type.getDescriptor(fieldType) + ")L" + wrapperType + ";", false);
+            mv.visitMethodInsn(
+                    INVOKESTATIC,
+                    wrapperType,
+                    "valueOf",
+                    "(" + Type.getDescriptor(fieldType) + ")L" + wrapperType + ";",
+                    false);
         }
         // 引用类型不需要装箱
     }

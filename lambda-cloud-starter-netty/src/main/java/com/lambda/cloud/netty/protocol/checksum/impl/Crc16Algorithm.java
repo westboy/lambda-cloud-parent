@@ -15,7 +15,6 @@ import com.lambda.cloud.netty.protocol.checksum.CrcAlgorithm;
  */
 public record Crc16Algorithm(CRC16Checksum crc16Checksum, String algorithmName) implements CrcAlgorithm {
 
-
     @Override
     public long calculate(byte[] data) {
         if (data == null || data.length == 0) {

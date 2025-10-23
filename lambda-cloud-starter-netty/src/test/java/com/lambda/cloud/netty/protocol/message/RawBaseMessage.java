@@ -28,7 +28,13 @@ public class RawBaseMessage {
     /**
      * 报文头 - 数据长度
      */
-    @ProtocolField(order = 1, length = 1, dataType = ProtocolDataType.HEX, lengthFiled = true, littleEndian = true, description = "数据长度")
+    @ProtocolField(
+            order = 1,
+            length = 1,
+            dataType = ProtocolDataType.HEX,
+            lengthFiled = true,
+            littleEndian = true,
+            description = "数据长度")
     private Integer dataLength;
 
     /**

@@ -11,16 +11,14 @@ import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
-import com.lambda.cloud.netty.protocol.message.RawBaseMessage;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * 交易记录协议解析测试
@@ -38,7 +36,8 @@ public class EncryptedRecordTest {
     private static final String TEST_DATA4 =
             "68A2077A003B181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B4733";
 
-    private static final String TEST_DATA5 = "68A2077A003B2037F805A159DE3A41232ECFE8487CF088CF649D2BA64D35CF60F7B6A616FFC52037F805A159DE3A41232ECFE8487CF02E1CBDE1056671A88FF48AA5587144CC21BEF093AB37F25930D97271D43881B0AC0527A95C69C4CB6FE89264E12799EF176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6F568907040EF2BBCE7D4F0AA1ACBEB8B3FBB18110EFC91A40DD03405BFBFED501FA803585DD09612E42FB4B0A609AC26F7FC1B38D486B8141A8560AE76CAB459A56B1C644A56F7E5C1F8FF3B4BB7CAE410736B960D5A3B99E738958AE83488349FF87AA618203A1FE73408F54CD113378587840255A4C0884F21F698B0BCC1D54733";
+    private static final String TEST_DATA5 =
+            "68A2077A003B2037F805A159DE3A41232ECFE8487CF088CF649D2BA64D35CF60F7B6A616FFC52037F805A159DE3A41232ECFE8487CF02E1CBDE1056671A88FF48AA5587144CC21BEF093AB37F25930D97271D43881B0AC0527A95C69C4CB6FE89264E12799EF176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6F568907040EF2BBCE7D4F0AA1ACBEB8B3FBB18110EFC91A40DD03405BFBFED501FA803585DD09612E42FB4B0A609AC26F7FC1B38D486B8141A8560AE76CAB459A56B1C644A56F7E5C1F8FF3B4BB7CAE410736B960D5A3B99E738958AE83488349FF87AA618203A1FE73408F54CD113378587840255A4C0884F21F698B0BCC1D54733";
 
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
@@ -76,14 +75,13 @@ public class EncryptedRecordTest {
 
             log.info("开始解析报文...");
 
-
             log.info("开始解析报文...");
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             // 使用协议引擎解析消息
             EncryptedBaseMessage record = engine.parse(byteBuf, EncryptedBaseMessage.class);
             stopWatch.stop();
-            log.info("解析结果: {} time {}", record,stopWatch.getTotalTimeSeconds());
+            log.info("解析结果: {} time {}", record, stopWatch.getTotalTimeSeconds());
             log.info("解析结果: {}", record);
 
             ValidationResult validation = engine.validate(record);
@@ -102,7 +100,7 @@ public class EncryptedRecordTest {
             // 如果到达这里，说明序列化成功了
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
-            log.info("序列化报文： {}",HexUtil.encodeHexStr(serializedBytes, false));
+            log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

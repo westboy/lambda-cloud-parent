@@ -6,7 +6,9 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
-import com.lambda.cloud.netty.protocol.accessor.ReflectionFieldAccessor;
+import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
+import com.lambda.cloud.netty.protocol.accessor.FieldAccessorFactory;
+import com.lambda.cloud.netty.protocol.accessor.impl.ReflectionFieldAccessor;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
@@ -16,11 +18,10 @@ import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.model.SerializedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CRC处理器
@@ -63,11 +64,11 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
 
             // 将计算出的CRC值设置到所有CRC字段中
             for (ProtocolFieldMetadata crcField : crcFields) {
-                if(crcField.isCrcField()) {
+                if (crcField.isCrcField()) {
                     setValueToInstance(message, crcField, serializedData.getCrc());
                     log.debug("设置CRC字段: {} = {}", crcField.getFieldName(), serializedData.getCrc());
                 }
-                if(crcField.isLengthFiled()) {
+                if (crcField.isLengthFiled()) {
                     setValueToInstance(message, crcField, serializedData.getLength());
                     log.debug("设置Length字段: {} = {}", crcField.getFieldName(), serializedData.getLength());
                 }
@@ -109,7 +110,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
         // 验证每个CRC字段
         for (ProtocolFieldMetadata crcField : crcFields) {
             try {
-                if(crcField.isLengthFiled()) {
+                if (crcField.isLengthFiled()) {
                     continue;
                 }
                 // 获取实例中存储的CRC值
@@ -145,7 +146,8 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
             byte[] dataForCrc = HexUtil.decodeHex(raw);
 
             // 使用CRC算法计算校验值
-            long crcValue = crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
+            long crcValue =
+                    crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
 
             log.info("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
             return crcValue;
@@ -163,7 +165,8 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
      */
     private List<ProtocolFieldMetadata> getCrcAndLengthFields(ProtocolFrameMetadata frameMetadata) {
         return frameMetadata.fields().stream()
-                .filter(protocolFieldMetadata -> protocolFieldMetadata.isCrcField() || protocolFieldMetadata.isLengthFiled())
+                .filter(protocolFieldMetadata ->
+                        protocolFieldMetadata.isCrcField() || protocolFieldMetadata.isLengthFiled())
                 .collect(Collectors.toList());
     }
 
@@ -190,7 +193,8 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
      * @param frameMetadata 消息元数据
      * @return CRC值
      */
-    private SerializedData calculateCrcAndDataLengthForAllComputedFields(Object message, ProtocolFrameMetadata frameMetadata) {
+    private SerializedData calculateCrcAndDataLengthForAllComputedFields(
+            Object message, ProtocolFrameMetadata frameMetadata) {
         // 序列化消息到字节数组（用于CRC计算）
         SerializedData serializedData = new SerializedData();
         ByteBuf byteBuf = ByteBufPool.buffer();
@@ -219,7 +223,8 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
             byte[] dataForCrc = ByteBufUtil.getBytes(byteBuf);
 
             // 使用CRC算法计算校验值
-            long crcValue = crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
+            long crcValue =
+                    crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
             if (log.isDebugEnabled()) {
                 String raw = HexUtil.encodeHexStr(dataForCrc);
                 log.debug("CRC计算完成，raw：{} 数据长度: {} bytes, CRC值: {}", raw, dataForCrc.length, crcValue);
@@ -260,10 +265,11 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
                 }
                 return Long.parseLong(hexString, 16);
             }
-            default -> throw new ProtocolException(
-                    ProtocolException.ErrorCode.CRC_ERROR,
-                    "不支持的CRC值类型: " + value.getClass().getSimpleName(),
-                    crcField.getFieldName());
+            default ->
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.CRC_ERROR,
+                        "不支持的CRC值类型: " + value.getClass().getSimpleName(),
+                        crcField.getFieldName());
         }
     }
 
@@ -294,7 +300,6 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
         }
         fieldMetadata.setValue(instance, value);
     }
-
 
     /**
      * 递归序列化复合字段中参与CRC计算的子字段
@@ -333,8 +338,9 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
 
                     // 创建子字段的元数据
                     ProtocolValidation subValidation = field.getAnnotation(ProtocolValidation.class);
+                    FieldAccessor fieldAccessor = FieldAccessorFactory.createAccessor(field);
                     ProtocolFieldMetadata subFieldMetadata =
-                            new ProtocolFieldMetadata(new ReflectionFieldAccessor(field), protocolField, subValidation);
+                            new ProtocolFieldMetadata(fieldAccessor, protocolField, subValidation);
 
                     // 递归处理子字段
                     if (subFieldMetadata.isComposite()) {

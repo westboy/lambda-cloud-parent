@@ -18,9 +18,8 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
  * @param validation    验证注解
  * @author Jin
  */
-public record ProtocolFieldMetadata(FieldAccessor fieldAccessor, ProtocolField protocolField,
-                                    ProtocolValidation validation) {
-
+public record ProtocolFieldMetadata(
+        FieldAccessor fieldAccessor, ProtocolField protocolField, ProtocolValidation validation) {
 
     /**
      * 获取字段名称

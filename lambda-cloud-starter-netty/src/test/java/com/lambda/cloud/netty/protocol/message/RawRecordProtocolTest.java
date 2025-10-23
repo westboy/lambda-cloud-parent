@@ -67,7 +67,7 @@ public class RawRecordProtocolTest {
             // 使用协议引擎解析消息
             RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
             stopWatch.stop();
-            log.info("解析结果: {} time {}", record,stopWatch.getTotalTimeSeconds());
+            log.info("解析结果: {} time {}", record, stopWatch.getTotalTimeSeconds());
 
             {
                 log.info("开始第二次解析报文...");
@@ -76,7 +76,7 @@ public class RawRecordProtocolTest {
                 ByteBuf byteBuf2 = Unpooled.wrappedBuffer(bytes);
                 RawBaseMessage record2 = engine.parse(byteBuf2, RawBaseMessage.class);
                 stopWatch.stop();
-                log.info("开始第二次解析结果: {} time {}", record2,stopWatch.getTotalTimeSeconds());
+                log.info("开始第二次解析结果: {} time {}", record2, stopWatch.getTotalTimeSeconds());
             }
 
             // 验证解析结果
@@ -97,7 +97,7 @@ public class RawRecordProtocolTest {
 
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
-            log.info("序列化报文： {}",HexUtil.encodeHexStr(serializedBytes, false));
+            log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

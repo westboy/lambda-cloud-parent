@@ -5,6 +5,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 交易记录消息
@@ -14,6 +15,7 @@ import lombok.Setter;
  *
  * @author Jin
  */
+@ToString
 @Getter
 @Setter
 @ProtocolFrame(frameType = "0x00", name = "云快充协议基础字段", description = "云快充2.1协议基础字段")
@@ -28,7 +30,13 @@ public class EncryptedBaseMessage {
     /**
      * 报文头 - 数据长度
      */
-    @ProtocolField(order = 1, length = 1, dataType = ProtocolDataType.HEX, lengthFiled = true, littleEndian = true, description = "数据长度")
+    @ProtocolField(
+            order = 1,
+            length = 1,
+            dataType = ProtocolDataType.HEX,
+            lengthFiled = true,
+            littleEndian = true,
+            description = "数据长度")
     private Integer dataLength;
 
     /**

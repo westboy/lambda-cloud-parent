@@ -12,10 +12,9 @@ import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.model.ParsedData;
 import com.lambda.cloud.netty.utils.ExceptionUtils;
 import io.netty.buffer.ByteBuf;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 字段处理器
@@ -180,8 +179,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             byte[] fieldData,
             ProtocolFieldMetadata fieldMetadata,
             DataTypeConverter converter,
-            boolean isEncryptionEnabled
-    )
+            boolean isEncryptionEnabled)
             throws ProtocolException {
         try {
             // 检查是否需要解密（需要同时满足：字段标记为加密 + 已启用加密控制 + 存在加密服务）
@@ -324,8 +322,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             ProtocolFrameMetadata frameMetadata,
             DataTypeConverter converter,
             boolean isEncryptionEnabled,
-            List<ParsedData> parsedRawDataList
-    )
+            List<ParsedData> parsedRawDataList)
             throws ProtocolException {
         try {
             // 获取复合字段的目标类型
@@ -359,7 +356,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
         }
     }
 
-    private static void fillParsedRawData(ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata frameMetadata, List<ParsedData> parsedRawDataList, byte[] fieldData) {
+    private static void fillParsedRawData(
+            ProtocolFieldMetadata fieldMetadata,
+            ProtocolFrameMetadata frameMetadata,
+            List<ParsedData> parsedRawDataList,
+            byte[] fieldData) {
         if (frameMetadata.isPayload()) {
             ParsedData parsedRawData = new ParsedData();
             String value;
