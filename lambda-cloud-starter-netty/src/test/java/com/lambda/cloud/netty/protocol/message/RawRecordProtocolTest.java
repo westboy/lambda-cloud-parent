@@ -160,6 +160,8 @@ public class RawRecordProtocolTest {
             stopWatch.start();
             byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
             for (int i = 0; i < 500; i++) {
+                int finalI = i;
+                Thread.ofVirtual().start(()->{
                     ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
                     RawBaseMessage record = null;
                     try {
@@ -172,7 +174,7 @@ public class RawRecordProtocolTest {
                             engine.serialize(record, serializeBuffer);
                             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
                             serializeBuffer.readBytes(serializedBytes);
-//                            log.info("{} 序列化结果: {} ", i, HexUtil.encodeHexStr(serializedBytes, false));
+                            log.info("{} 序列化结果: {} ", finalI, HexUtil.encodeHexStr(serializedBytes, false));
                         }finally {
                             ByteBufPool.safeRelease(serializeBuffer);
                         }
@@ -181,9 +183,11 @@ public class RawRecordProtocolTest {
                     }finally {
                         byteBuf.release();
                     }
+                });
             }
             stopWatch.stop();
             log.info("总体用时: time {}", stopWatch.prettyPrint(TimeUnit.MILLISECONDS));
+            Thread.sleep(100*200);
         } catch (Exception e) {
             log.error("解析过程中发生未知异常", e);
             throw new RuntimeException("解析失败", e);
