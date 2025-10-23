@@ -121,17 +121,6 @@ public class FieldAccessorFactory {
                 case BYTECODE -> new ByteCodeFieldAccessor(field);
             };
         } catch (Exception e) {
-            // 如果字节码生成失败，降级到反射访问器
-            if (type == AccessorType.BYTECODE) {
-                try {
-                    return new ReflectionFieldAccessor(field);
-                } catch (Exception fallbackException) {
-                    throw new RuntimeException(
-                            "Failed to create both bytecode and reflection accessor for field: "
-                                    + field.getDeclaringClass().getName() + "#" + field.getName(),
-                            fallbackException);
-                }
-            }
             throw new RuntimeException(
                     "Failed to create accessor for field: "
                             + field.getDeclaringClass().getName() + "#" + field.getName(),

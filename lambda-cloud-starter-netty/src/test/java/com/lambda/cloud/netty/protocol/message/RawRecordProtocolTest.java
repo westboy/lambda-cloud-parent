@@ -77,7 +77,7 @@ public class RawRecordProtocolTest {
             }
 
             // 输出关键字段
-            logKeyFields(record);
+//            logKeyFields(record);
             record.setChecksum(null);
             record.setDataLength(null);
             log.info("解析功能验证完成，数据解析正常");
@@ -85,7 +85,7 @@ public class RawRecordProtocolTest {
             long current = System.currentTimeMillis();
             engine.serialize(record, serializeBuffer);
             long stop = System.currentTimeMillis();
-            log.info("解析结果: {} time {}", record, (stop-current) );
+            log.info("解析结果: time {}", (stop-current) );
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
             log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
