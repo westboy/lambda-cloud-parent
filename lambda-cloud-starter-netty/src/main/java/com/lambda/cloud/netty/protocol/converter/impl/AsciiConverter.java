@@ -4,7 +4,6 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.utils.ExceptionUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -89,8 +88,10 @@ public class AsciiConverter implements DataTypeConverter {
     public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         int expectedLength = fieldMetadata.getLength();
         if (expectedLength != -1 && data.length != expectedLength) {
-            throw ExceptionUtils.createParseException(
-                    "ASCII数据长度不匹配，期望: " + expectedLength + ", 实际: " + data.length, fieldMetadata);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "ASCII数据长度不匹配，期望: " + expectedLength + ", 实际: " + data.length,
+                    fieldMetadata.getFieldName());
         }
     }
 

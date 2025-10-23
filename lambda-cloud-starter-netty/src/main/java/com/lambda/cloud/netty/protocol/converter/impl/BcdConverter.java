@@ -3,7 +3,6 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.utils.ExceptionUtils;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 
@@ -28,7 +27,10 @@ public class BcdConverter implements DataTypeConverter {
 
             // 验证BCD数字有效性
             if (high > 9 || low > 9) {
-                throw ExceptionUtils.createParseException("无效的BCD数字: " + String.format("0x%02X", b), fieldMetadata);
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.PARSE_ERROR,
+                        "无效的BCD数字: " + String.format("0x%02X", b),
+                        fieldMetadata.getFieldName());
             }
 
             sb.append(high).append(low);
@@ -53,7 +55,11 @@ public class BcdConverter implements DataTypeConverter {
                 return value;
             }
         } catch (NumberFormatException e) {
-            throw ExceptionUtils.createParseException("BCD字符串转换为数字失败: " + result, fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "BCD字符串转换为数字失败: " + result,
+                    fieldMetadata.getFieldName(),
+                    e);
         }
         return result;
     }

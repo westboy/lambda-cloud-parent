@@ -4,7 +4,6 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.ByteBufferUtils;
-import com.lambda.cloud.netty.utils.ExceptionUtils;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import java.nio.ByteBuffer;
@@ -70,8 +69,10 @@ public class UInt32Converter implements DataTypeConverter {
             } else if (value instanceof String) {
                 longValue = Long.parseUnsignedLong((String) value);
             } else {
-                throw ExceptionUtils.createSerializeException(
-                        "不支持的UINT32数据类型: " + value.getClass().getName(), fieldMetadata);
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                        "不支持的UINT32数据类型: " + value.getClass().getName(),
+                        fieldMetadata.getFieldName());
             }
 
             // 检查范围
@@ -85,7 +86,11 @@ public class UInt32Converter implements DataTypeConverter {
         } catch (ProtocolException e) {
             throw e;
         } catch (Exception e) {
-            throw ExceptionUtils.createSerializeException("序列化UINT32数据失败: " + e.getMessage(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    "序列化UINT32数据失败: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 
@@ -111,7 +116,11 @@ public class UInt32Converter implements DataTypeConverter {
         } catch (ProtocolException e) {
             throw e;
         } catch (Exception e) {
-            throw ExceptionUtils.createParseException("从字符串解析UINT32数据失败: " + e.getMessage(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "从字符串解析UINT32数据失败: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 

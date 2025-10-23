@@ -20,8 +20,6 @@ import lombok.Setter;
 @Setter
 public class FieldAccessorFactory {
 
-
-
     /**
      * 默认访问器类型
      */

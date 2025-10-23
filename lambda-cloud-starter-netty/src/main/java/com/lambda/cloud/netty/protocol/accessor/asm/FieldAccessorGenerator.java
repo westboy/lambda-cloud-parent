@@ -29,7 +29,6 @@ public final class FieldAccessorGenerator {
     // Unsafe 相关
     private static final UnsafeInfo UNSAFE_INFO = initializeUnsafe();
 
-
     /**
      * 初始化 Unsafe
      */

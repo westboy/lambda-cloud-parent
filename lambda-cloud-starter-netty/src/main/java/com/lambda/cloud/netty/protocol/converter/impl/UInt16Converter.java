@@ -6,7 +6,6 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.protocol.validation.impl.NumberRangeValidator;
 import com.lambda.cloud.netty.utils.ByteBufferUtils;
-import com.lambda.cloud.netty.utils.ExceptionUtils;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import java.nio.ByteBuffer;
@@ -54,7 +53,11 @@ public class UInt16Converter implements DataTypeConverter {
 
             return value;
         } catch (Exception e) {
-            throw ExceptionUtils.createParseException("解析UInt16数据失败: " + e.getMessage(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "解析UInt16数据失败: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 
@@ -69,8 +72,10 @@ public class UInt16Converter implements DataTypeConverter {
         } else if (value instanceof String) {
             intValue = Integer.parseUnsignedInt((String) value);
         } else {
-            throw ExceptionUtils.createSerializeException(
-                    "不支持的UINT16数据类型: " + value.getClass().getName(), fieldMetadata);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    "不支持的UINT16数据类型: " + value.getClass().getName(),
+                    fieldMetadata.getFieldName());
         }
 
         ValidationUtils.validateNumberRange(intValue, 0, 0xFFFF, fieldMetadata, "UINT16");

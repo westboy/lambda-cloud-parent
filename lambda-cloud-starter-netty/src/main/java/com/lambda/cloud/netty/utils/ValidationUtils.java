@@ -1,7 +1,5 @@
 package com.lambda.cloud.netty.utils;
 
-import static com.lambda.cloud.netty.utils.ExceptionUtils.createSerializeException;
-
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import java.util.regex.Pattern;
@@ -270,7 +268,10 @@ public final class ValidationUtils {
             long value, long minValue, long maxValue, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
             throws ProtocolException {
         if (value < minValue || value > maxValue) {
-            throw createSerializeException(dataTypeName + "序列化值不能为null", fieldMetadata);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    dataTypeName + "值超出范围: " + value + " (范围: " + minValue + "-" + maxValue + ")",
+                    fieldMetadata != null ? fieldMetadata.getFieldName() : null);
         }
     }
 
@@ -285,11 +286,14 @@ public final class ValidationUtils {
     public static void validateSerializeValue(Object value, ProtocolFieldMetadata fieldMetadata, String dataTypeName)
             throws ProtocolException {
         if (fieldMetadata == null) {
-            throw createSerializeException("字段元数据不能为null", null);
+            throw new ProtocolException(ProtocolException.ErrorCode.SERIALIZE_ERROR, "字段元数据不能为null", (String) null);
         }
 
         if (value == null) {
-            throw createSerializeException(dataTypeName + "序列化值不能为null", fieldMetadata);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    dataTypeName + "序列化值不能为null",
+                    fieldMetadata.getFieldName());
         }
     }
 }

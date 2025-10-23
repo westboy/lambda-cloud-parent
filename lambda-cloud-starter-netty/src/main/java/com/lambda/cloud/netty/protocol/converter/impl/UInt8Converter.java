@@ -3,7 +3,6 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.utils.ExceptionUtils;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 
@@ -40,8 +39,10 @@ public class UInt8Converter implements DataTypeConverter {
         } else if (value instanceof String) {
             intValue = Integer.parseUnsignedInt((String) value);
         } else {
-            throw ExceptionUtils.createSerializeException(
-                    "不支持的UINT8数据类型: " + value.getClass().getName(), fieldMetadata);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    "不支持的UINT8数据类型: " + value.getClass().getName(),
+                    fieldMetadata.getFieldName());
         }
 
         ValidationUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
@@ -64,7 +65,11 @@ public class UInt8Converter implements DataTypeConverter {
             }
             return intValue;
         } catch (Exception e) {
-            throw ExceptionUtils.createParseException("从字符串解析UINT8数据失败: " + e.getMessage(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "从字符串解析UINT8数据失败: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 

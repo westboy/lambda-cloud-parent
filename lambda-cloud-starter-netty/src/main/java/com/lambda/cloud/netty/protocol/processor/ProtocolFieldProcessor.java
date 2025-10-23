@@ -10,7 +10,6 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.model.ParsedData;
-import com.lambda.cloud.netty.utils.ExceptionUtils;
 import io.netty.buffer.ByteBuf;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -148,8 +147,10 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             // 可选字段，使用默认值
             setDefaultValue(instance, fieldMetadata);
         } else {
-            throw ExceptionUtils.createBufferUnderflowException(
-                    "缓冲区数据不足，字段: " + fieldMetadata.getFieldName(), fieldMetadata);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.BUFFER_UNDERFLOW,
+                    "缓冲区数据不足，字段: " + fieldMetadata.getFieldName(),
+                    fieldMetadata.getFieldName());
         }
     }
 
@@ -192,7 +193,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 return converter.parse(fieldData, fieldMetadata);
             }
         } catch (Exception e) {
-            throw ExceptionUtils.createParseException("字段数据转换失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "字段数据转换失败: " + fieldMetadata.getFieldName(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 
@@ -209,7 +214,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
         try {
             fieldMetadata.setValue(instance, value);
         } catch (Exception e) {
-            throw ExceptionUtils.createParseException("设置字段值失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "设置字段值失败: " + fieldMetadata.getFieldName(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 
@@ -225,7 +234,8 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
         try {
             return fieldMetadata.getValue(instance);
         } catch (Exception e) {
-            throw ExceptionUtils.createSerializeException("获取字段值失败!", fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR, "获取字段值失败!", fieldMetadata.getFieldName(), e);
         }
     }
 
@@ -243,8 +253,10 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 // 可选字段为空，跳过
                 return false;
             } else {
-                throw ExceptionUtils.createValidationException(
-                        "必填字段不能为空: " + fieldMetadata.getFieldName(), fieldMetadata);
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.VALIDATION_ERROR,
+                        "必填字段不能为空: " + fieldMetadata.getFieldName(),
+                        fieldMetadata.getFieldName());
             }
         }
         return true;
@@ -270,8 +282,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 return converter.serialize(value, fieldMetadata);
             }
         } catch (Exception e) {
-            throw ExceptionUtils.createSerializeException(
-                    "字段数据序列化失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                    "字段数据序列化失败: " + fieldMetadata.getFieldName(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 
@@ -301,7 +316,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 log.debug("设置默认值: {} = {}", fieldMetadata.getFieldName(), defaultValue);
                 // TODO: 实现默认值设置逻辑
             } catch (Exception e) {
-                throw ExceptionUtils.createParseException("设置默认值失败: " + fieldMetadata.getFieldName(), fieldMetadata, e);
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.PARSE_ERROR,
+                        "设置默认值失败: " + fieldMetadata.getFieldName(),
+                        fieldMetadata.getFieldName(),
+                        e);
             }
         }
     }
@@ -351,8 +370,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             }
 
         } catch (Exception e) {
-            throw ExceptionUtils.createParseException(
-                    "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(), fieldMetadata, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
     }
 
@@ -400,7 +422,8 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             return totalLength;
 
         } catch (Exception e) {
-            throw ExceptionUtils.createParseException("计算复合字段长度失败: " + compositeType.getSimpleName(), null, e);
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR, "计算复合字段长度失败: " + compositeType.getSimpleName(), null, e);
         }
     }
 }
