@@ -2,6 +2,8 @@ package com.lambda.cloud.netty.pool;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.PooledByteBufAllocatorMetric;
+import io.netty.util.IllegalReferenceCountException;
 import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,16 +28,25 @@ public class ByteBufPool {
         return ALLOCATOR.buffer(capacity);
     }
 
-    public static void release(ByteBuf buf) {
-        if (buf != null && buf.refCnt() > 0) {
-            buf.release();
-            log.debug("Released ByteBuf with reference count: {}", buf.refCnt());
-        } else {
-            log.warn("Attempted to release ByteBuf that was already released or null.");
+    public static void safeRelease(ByteBuf buf) {
+        if (buf == null) return;
+        try {
+            int before = buf.refCnt();
+            if (before > 0) {
+                buf.release();
+            }
+        } catch (IllegalReferenceCountException e) {
+            log.warn("Attempted double-release ByteBuf: {}", e.getMessage());
         }
     }
 
     public static String getPoolStats() {
-        return String.format("usedDirectMemory: %d", PlatformDependent.usedDirectMemory());
+        PooledByteBufAllocatorMetric m = ALLOCATOR.metric();
+        return String.format(
+                "usedDirectMemory=%d, normalCacheSize=%d, threadLocalCaches=%d",
+                PlatformDependent.usedDirectMemory(),
+                m.normalCacheSize(),
+                m.numThreadLocalCaches()
+        );
     }
 }

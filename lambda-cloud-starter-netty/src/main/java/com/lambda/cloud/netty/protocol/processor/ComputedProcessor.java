@@ -120,8 +120,8 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
                     throw new ProtocolException(
                             ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,
                             String.format(
-                                    "CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
-                                    crcField.getFieldName(), expectedCrc, calculatedCrc),
+                                    "原始报文%s CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
+                                    raw,crcField.getFieldName(), expectedCrc, calculatedCrc),
                             crcField.getFieldName());
                 }
 
@@ -234,7 +234,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
         } catch (Exception e) {
             throw new RuntimeException("计算CRC失败", e);
         } finally {
-            byteBuf.release();
+            ByteBufPool.safeRelease(byteBuf);
         }
     }
 

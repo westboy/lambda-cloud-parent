@@ -3,6 +3,7 @@ package com.lambda.cloud.netty.protocol.message;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
+import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
@@ -10,9 +11,9 @@ import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 交易记录协议解析测试
@@ -168,23 +169,32 @@ public class RawRecordProtocolTest {
         try {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
-            for (int i = 0; i < 100000; i++) {
-                byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
-                ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
-                ////                log.info("{} 解析结果: {} ", i,record);
-                //                record.setChecksum(null);
-                //                record.setDataLength(null);
-                //                ByteBuf serializeBuffer = Unpooled.buffer();
-                //                engine.serialize(record, serializeBuffer);
-                //                byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
-                //                serializeBuffer.readBytes(serializedBytes);
+            byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
+            for (int i = 0; i < 500; i++) {
+                    ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+                    RawBaseMessage record = null;
+                    try {
+                        record = engine.parse(byteBuf, RawBaseMessage.class);
+//                        log.info("{} 解析结果: {} ", finalI,record);
+                        record.setChecksum(null);
+                        record.setDataLength(null);
+                        ByteBuf serializeBuffer = ByteBufPool.buffer();
+                        try {
+                            engine.serialize(record, serializeBuffer);
+                            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+                            serializeBuffer.readBytes(serializedBytes);
+//                            log.info("{} 序列化结果: {} ", i, HexUtil.encodeHexStr(serializedBytes, false));
+                        }finally {
+                            ByteBufPool.safeRelease(serializeBuffer);
+                        }
+                    } catch (ProtocolException e) {
+                        throw new RuntimeException(e);
+                    }finally {
+                        byteBuf.release();
+                    }
             }
             stopWatch.stop();
             log.info("总体用时: time {}", stopWatch.prettyPrint(TimeUnit.MILLISECONDS));
-        } catch (ProtocolException e) {
-            log.error("协议解析异常: {}", e.getMessage(), e);
-            throw new RuntimeException("协议解析失败", e);
         } catch (Exception e) {
             log.error("解析过程中发生未知异常", e);
             throw new RuntimeException("解析失败", e);

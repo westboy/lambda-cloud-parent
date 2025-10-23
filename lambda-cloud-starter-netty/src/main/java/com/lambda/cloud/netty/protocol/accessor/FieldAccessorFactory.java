@@ -40,7 +40,7 @@ public class FieldAccessorFactory {
     /**
      * 默认访问器类型
      */
-    private static volatile AccessorType defaultAccessorType = AccessorType.BYTECODE;
+    private static volatile AccessorType defaultAccessorType = AccessorType.REFLECTION;
 
     /**
      * 访问器缓存，避免重复创建
