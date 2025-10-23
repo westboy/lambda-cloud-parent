@@ -10,6 +10,7 @@ import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -155,5 +156,38 @@ public class RawRecordProtocolTest {
 
         log.info("=== 总计信息 ===");
         log.info("CRC: {}", record.getChecksum());
+    }
+
+    @Test
+    public void test2() {
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
+        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
+        // 获取协议引擎
+        ProtocolEngine<RawBaseMessage> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        try {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+            for (int i = 0; i < 100000; i++) {
+                byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+                RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
+////                log.info("{} 解析结果: {} ", i,record);
+//                record.setChecksum(null);
+//                record.setDataLength(null);
+//                ByteBuf serializeBuffer = Unpooled.buffer();
+//                engine.serialize(record, serializeBuffer);
+//                byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+//                serializeBuffer.readBytes(serializedBytes);
+            }
+            stopWatch.stop();
+            log.info("总体用时: time {}", stopWatch.prettyPrint(TimeUnit.MILLISECONDS));
+        } catch (ProtocolException e) {
+            log.error("协议解析异常: {}", e.getMessage(), e);
+            throw new RuntimeException("协议解析失败", e);
+        } catch (Exception e) {
+            log.error("解析过程中发生未知异常", e);
+            throw new RuntimeException("解析失败", e);
+        }
     }
 }

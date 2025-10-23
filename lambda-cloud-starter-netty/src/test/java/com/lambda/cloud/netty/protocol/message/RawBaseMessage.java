@@ -5,6 +5,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 交易记录消息
@@ -14,6 +15,7 @@ import lombok.Setter;
  *
  * @author Jin
  */
+@ToString
 @Getter
 @Setter
 @ProtocolFrame(frameType = "base", name = "云快充基础协议", isPayload = true, description = "云快充基础协议字段")

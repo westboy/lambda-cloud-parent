@@ -7,7 +7,6 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessorFactory;
-import com.lambda.cloud.netty.protocol.accessor.impl.ReflectionFieldAccessor;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
@@ -278,8 +277,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         }
 
         List<ProtocolFieldMetadata> fields = new ArrayList<>();
-
-        for (Field field : getAllFields(messageClass)) {
+        List<Field> allFields = getAllFields(messageClass);
+        for (Field field : allFields) {
             ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
             if (protocolField != null) {
                 // 校验：同一字段不可同时标注加密控制与加密数据
@@ -403,38 +402,14 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @param frameMetadata 协议帧元数据
      */
     private void logProtocolOperation(String operation, ProtocolFrameMetadata frameMetadata) {
-        if (log.isInfoEnabled()) {
-            log.info(
+        if (log.isDebugEnabled()) {
+            log.debug(
                     "协议{} - 类型: {}, 名称: {}, 长度: {}B, 字段数: {}",
                     operation,
                     frameMetadata.getFrameType(),
                     frameMetadata.getMessageName(),
                     frameMetadata.totalLength(),
                     frameMetadata.fields().size());
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug(
-                    """
-
-                            ┏━━━━━━━━━━━━━━━━━━━━━ 协议{} ━━━━━━━━━━━━━━━━━━━━━┓
-                            ┃ 消息类型: {}
-                            ┃ 消息名称: {}
-                            ┃ 消息描述: {}
-                            ┃ 消息总长度: {} 字节
-                            ┃ 字段数量: {}
-                            ┃ 线程: {}
-                            ┃ 时间戳: {}
-                            ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-                            """,
-                    operation,
-                    frameMetadata.getFrameType(),
-                    frameMetadata.getMessageName(),
-                    frameMetadata.getDescription(),
-                    frameMetadata.totalLength(),
-                    frameMetadata.fields().size(),
-                    Thread.currentThread().getName(),
-                    System.currentTimeMillis());
         }
     }
 }

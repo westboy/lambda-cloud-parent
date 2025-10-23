@@ -2,10 +2,9 @@ package com.lambda.cloud.netty.protocol.accessor;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.reflect.Field;
-
 import com.lambda.cloud.netty.protocol.accessor.impl.ByteCodeFieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.impl.ReflectionFieldAccessor;
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

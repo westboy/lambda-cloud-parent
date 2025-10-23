@@ -2,9 +2,10 @@ package com.lambda.cloud.netty.protocol.accessor;
 
 import com.lambda.cloud.netty.protocol.accessor.impl.ByteCodeFieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.impl.ReflectionFieldAccessor;
-
 import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 字段访问器工厂类
@@ -15,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Jin
  */
+@Getter
+@Setter
 public class FieldAccessorFactory {
 
     /**
@@ -37,7 +40,7 @@ public class FieldAccessorFactory {
     /**
      * 默认访问器类型
      */
-    private static volatile AccessorType defaultAccessorType = AccessorType.BYTECODE;
+    private static volatile AccessorType defaultAccessorType = AccessorType.REFLECTION;
 
     /**
      * 访问器缓存，避免重复创建
@@ -51,24 +54,6 @@ public class FieldAccessorFactory {
     private static volatile boolean cacheEnabled = true;
 
     /**
-     * 设置默认访问器类型
-     *
-     * @param type 访问器类型
-     */
-    public static void setDefaultAccessorType(AccessorType type) {
-        defaultAccessorType = type;
-    }
-
-    /**
-     * 获取默认访问器类型
-     *
-     * @return 默认访问器类型
-     */
-    public static AccessorType getDefaultAccessorType() {
-        return defaultAccessorType;
-    }
-
-    /**
      * 设置是否启用缓存
      *
      * @param enabled 是否启用缓存
@@ -78,15 +63,6 @@ public class FieldAccessorFactory {
         if (!enabled) {
             clearCache();
         }
-    }
-
-    /**
-     * 检查是否启用缓存
-     *
-     * @return 是否启用缓存
-     */
-    public static boolean isCacheEnabled() {
-        return cacheEnabled;
     }
 
     /**
@@ -141,14 +117,10 @@ public class FieldAccessorFactory {
      */
     private static FieldAccessor doCreateAccessor(Field field, AccessorType type) {
         try {
-            switch (type) {
-                case REFLECTION:
-                    return new ReflectionFieldAccessor(field);
-                case BYTECODE:
-                    return new ByteCodeFieldAccessor(field);
-                default:
-                    throw new IllegalArgumentException("Unsupported accessor type: " + type);
-            }
+            return switch (type) {
+                case REFLECTION -> new ReflectionFieldAccessor(field);
+                case BYTECODE -> new ByteCodeFieldAccessor(field);
+            };
         } catch (Exception e) {
             // 如果字节码生成失败，降级到反射访问器
             if (type == AccessorType.BYTECODE) {

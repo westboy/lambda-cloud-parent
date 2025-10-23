@@ -53,7 +53,8 @@ public class FieldAccessorGenerator {
         Class<?> accessorClass = classLoader.defineClass(className, classBytes);
 
         try {
-            return (FieldAccessor) accessorClass.getDeclaredConstructor().newInstance();
+            return (FieldAccessor)
+                    accessorClass.getDeclaredConstructor(Field.class).newInstance(field);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create field accessor for: " + field, e);
         }
@@ -83,16 +84,16 @@ public class FieldAccessorGenerator {
         String fieldAccessorType = Type.getInternalName(FieldAccessor.class);
 
         // 定义类
-        cw.visit(
-                V1_8,
-                ACC_PUBLIC | ACC_FINAL | ACC_STATIC | ACC_SYNTHETIC,
-                internalClassName,
-                null,
-                "java/lang/Object",
-                new String[]{fieldAccessorType}
-        );
+        cw.visit(V1_8, ACC_PUBLIC | ACC_FINAL, internalClassName, null, "java/lang/Object", new String[] {
+            fieldAccessorType
+        });
+
+        // 添加Field字段来存储目标字段
+        cw.visitField(ACC_PRIVATE | ACC_FINAL, "field", "Ljava/lang/reflect/Field;", null, null)
+                .visitEnd();
+
         // 生成构造函数
-        generateConstructor(cw);
+        generateConstructor(cw, internalClassName);
 
         // 生成setValue方法
         generateSetValueMethod(cw, field, internalClassName);
@@ -112,14 +113,25 @@ public class FieldAccessorGenerator {
 
     /**
      * 生成构造函数
+     *
+     * @param cw ClassWriter
+     * @param internalClassName 内部类名
      */
-    private static void generateConstructor(ClassWriter cw) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+    private static void generateConstructor(ClassWriter cw, String internalClassName) {
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "(Ljava/lang/reflect/Field;)V", null, null);
         mv.visitCode();
+
+        // 调用父类构造函数
         mv.visitVarInsn(ALOAD, 0);
         mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+
+        // 存储Field参数到实例字段
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitVarInsn(ALOAD, 1);
+        mv.visitFieldInsn(PUTFIELD, internalClassName, "field", "Ljava/lang/reflect/Field;");
+
         mv.visitInsn(RETURN);
-        mv.visitMaxs(1, 1);
+        mv.visitMaxs(2, 2);
         mv.visitEnd();
     }
 
@@ -128,46 +140,57 @@ public class FieldAccessorGenerator {
      */
     private static void generateSetValueMethod(ClassWriter cw, Field field, String className) {
         MethodVisitor mv =
-                cw.visitMethod(ACC_PUBLIC, "setValue", "(Ljava/lang/Object;Ljava/lang/Object;)V", null, null);
+                cw.visitMethod(ACC_PUBLIC, "setValue", "(Ljava/lang/Object;Ljava/lang/Object;)V", null, new String[] {
+                    "java/lang/IllegalAccessException"
+                });
         mv.visitCode();
 
-        // 类型转换
-        String ownerType = Type.getInternalName(field.getDeclaringClass());
+        // 加载this.field
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, className.replace('.', '/'), "field", "Ljava/lang/reflect/Field;");
+
+        // 加载目标对象
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitTypeInsn(CHECKCAST, ownerType);
 
-        // 加载值并进行类型转换
+        // 加载值
         mv.visitVarInsn(ALOAD, 2);
-        generateValueCast(mv, field.getType());
 
-        // 设置字段值
-        mv.visitFieldInsn(PUTFIELD, ownerType, field.getName(), Type.getDescriptor(field.getType()));
+        // 调用Field.set(Object obj, Object value)
+        mv.visitMethodInsn(
+                INVOKEVIRTUAL, "java/lang/reflect/Field", "set", "(Ljava/lang/Object;Ljava/lang/Object;)V", false);
 
         mv.visitInsn(RETURN);
-        mv.visitMaxs(2, 3);
+        mv.visitMaxs(3, 3);
         mv.visitEnd();
     }
 
     /**
      * 生成getValue方法
+     *
+     * @param cw                ClassWriter
+     * @param field             目标字段
+     * @param internalClassName 内部类名
      */
-    private static void generateGetValueMethod(ClassWriter cw, Field field, String className) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getValue", "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
+    private static void generateGetValueMethod(ClassWriter cw, Field field, String internalClassName) {
+        MethodVisitor mv =
+                cw.visitMethod(ACC_PUBLIC, "getValue", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] {
+                    "java/lang/IllegalAccessException"
+                });
         mv.visitCode();
 
-        // 类型转换
-        String ownerType = Type.getInternalName(field.getDeclaringClass());
+        // 加载this.field
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, internalClassName, "field", "Ljava/lang/reflect/Field;");
+
+        // 加载目标对象
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitTypeInsn(CHECKCAST, ownerType);
 
-        // 获取字段值
-        mv.visitFieldInsn(GETFIELD, ownerType, field.getName(), Type.getDescriptor(field.getType()));
-
-        // 装箱基本类型
-        generateBoxing(mv, field.getType());
+        // 调用Field.get(Object obj)
+        mv.visitMethodInsn(
+                INVOKEVIRTUAL, "java/lang/reflect/Field", "get", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
 
         mv.visitInsn(ARETURN);
-        mv.visitMaxs(1, 2);
+        mv.visitMaxs(2, 2);
         mv.visitEnd();
     }
 
@@ -190,82 +213,12 @@ public class FieldAccessorGenerator {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldType", "()Ljava/lang/Class;", null, null);
         mv.visitCode();
 
-        // 加载Class对象
-        if (field.getType().isPrimitive()) {
-            // 基本类型的Class对象
-            String wrapperType = getWrapperType(field.getType());
-            mv.visitFieldInsn(GETSTATIC, wrapperType, "TYPE", "Ljava/lang/Class;");
-        } else {
-            // 引用类型的Class对象
-            mv.visitLdcInsn(Type.getType(field.getType()));
-        }
+        // 直接加载字段类型的Class对象
+        mv.visitLdcInsn(Type.getType(field.getType()));
 
         mv.visitInsn(ARETURN);
         mv.visitMaxs(1, 1);
         mv.visitEnd();
-    }
-
-    /**
-     * 生成值类型转换代码
-     */
-    private static void generateValueCast(MethodVisitor mv, Class<?> fieldType) {
-        if (fieldType.isPrimitive()) {
-            // 基本类型需要拆箱
-            String wrapperType = getWrapperType(fieldType);
-            mv.visitTypeInsn(CHECKCAST, wrapperType);
-
-            String unboxMethod = getUnboxMethod(fieldType);
-            mv.visitMethodInsn(INVOKEVIRTUAL, wrapperType, unboxMethod, "()" + Type.getDescriptor(fieldType), false);
-        } else {
-            // 引用类型直接转换
-            mv.visitTypeInsn(CHECKCAST, Type.getInternalName(fieldType));
-        }
-    }
-
-    /**
-     * 生成装箱代码
-     */
-    private static void generateBoxing(MethodVisitor mv, Class<?> fieldType) {
-        if (fieldType.isPrimitive()) {
-            String wrapperType = getWrapperType(fieldType);
-            mv.visitMethodInsn(
-                    INVOKESTATIC,
-                    wrapperType,
-                    "valueOf",
-                    "(" + Type.getDescriptor(fieldType) + ")L" + wrapperType + ";",
-                    false);
-        }
-        // 引用类型不需要装箱
-    }
-
-    /**
-     * 获取基本类型对应的包装类型
-     */
-    private static String getWrapperType(Class<?> primitiveType) {
-        if (primitiveType == int.class) return "java/lang/Integer";
-        if (primitiveType == long.class) return "java/lang/Long";
-        if (primitiveType == double.class) return "java/lang/Double";
-        if (primitiveType == float.class) return "java/lang/Float";
-        if (primitiveType == boolean.class) return "java/lang/Boolean";
-        if (primitiveType == byte.class) return "java/lang/Byte";
-        if (primitiveType == short.class) return "java/lang/Short";
-        if (primitiveType == char.class) return "java/lang/Character";
-        throw new IllegalArgumentException("Unsupported primitive type: " + primitiveType);
-    }
-
-    /**
-     * 获取拆箱方法名
-     */
-    private static String getUnboxMethod(Class<?> primitiveType) {
-        if (primitiveType == int.class) return "intValue";
-        if (primitiveType == long.class) return "longValue";
-        if (primitiveType == double.class) return "doubleValue";
-        if (primitiveType == float.class) return "floatValue";
-        if (primitiveType == boolean.class) return "booleanValue";
-        if (primitiveType == byte.class) return "byteValue";
-        if (primitiveType == short.class) return "shortValue";
-        if (primitiveType == char.class) return "charValue";
-        throw new IllegalArgumentException("Unsupported primitive type: " + primitiveType);
     }
 
     /**

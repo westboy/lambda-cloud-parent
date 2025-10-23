@@ -8,7 +8,6 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessorFactory;
-import com.lambda.cloud.netty.protocol.accessor.impl.ReflectionFieldAccessor;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
@@ -149,7 +148,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
             long crcValue =
                     crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
 
-            log.info("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
+            log.debug("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
             return crcValue;
 
         } catch (Exception e) {

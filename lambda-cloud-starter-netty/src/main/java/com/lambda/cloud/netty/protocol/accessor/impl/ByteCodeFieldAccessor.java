@@ -2,9 +2,8 @@ package com.lambda.cloud.netty.protocol.accessor.impl;
 
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.asm.FieldAccessorGenerator;
-import lombok.Getter;
-
 import java.lang.reflect.Field;
+import lombok.Getter;
 
 /**
  * 基于字节码生成的高性能字段访问器
