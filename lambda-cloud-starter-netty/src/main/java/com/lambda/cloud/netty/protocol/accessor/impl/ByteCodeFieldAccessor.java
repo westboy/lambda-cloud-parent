@@ -25,11 +25,8 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      */
     private final FieldAccessor dynamicAccessor;
 
-    /**
-     * 目标字段信息
-     *
-     */
-    private final Field field;
+    private final String name;
+    private final Class<?> type;
 
     /**
      * 构造函数
@@ -38,15 +35,9 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      * @throws RuntimeException 如果字节码生成失败
      */
     public ByteCodeFieldAccessor(Field field) {
-        this.field = field;
-        try {
-            this.dynamicAccessor = FieldAccessorGenerator.generateAccessor(field);
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "Failed to generate bytecode accessor for field: "
-                            + field.getDeclaringClass().getName() + "#" + field.getName(),
-                    e);
-        }
+        this.dynamicAccessor = FieldAccessorGenerator.generateAccessor(field);
+        this.name = field.getName();
+        this.type = field.getType();
     }
 
     /**
@@ -61,12 +52,7 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      */
     @Override
     public void setValue(Object target, Object value) {
-        try {
-            dynamicAccessor.setValue(target, value);
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "Failed to set field value: " + field.getDeclaringClass().getName() + "#" + field.getName(), e);
-        }
+        dynamicAccessor.setValue(target, value);
     }
 
     /**
@@ -81,12 +67,7 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      */
     @Override
     public Object getValue(Object target) {
-        try {
-            return dynamicAccessor.getValue(target);
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "Failed to get field value: " + field.getDeclaringClass().getName() + "#" + field.getName(), e);
-        }
+        return dynamicAccessor.getValue(target);
     }
 
     /**
@@ -96,7 +77,7 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      */
     @Override
     public String getFieldName() {
-        return field.getName();
+        return name;
     }
 
     /**
@@ -106,7 +87,7 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      */
     @Override
     public Class<?> getFieldType() {
-        return field.getType();
+        return type;
     }
 
     /**
@@ -115,7 +96,7 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      * @return 如果是基本类型返回 true
      */
     public boolean isPrimitive() {
-        return field.getType().isPrimitive();
+        return type.isPrimitive();
     }
 
     /**
@@ -125,27 +106,5 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
      */
     public String getAccessorType() {
         return "ByteCode";
-    }
-
-    @Override
-    public String toString() {
-        return "ByteCodeFieldAccessor{" + "field="
-                + field.getDeclaringClass().getSimpleName() + "#" + field.getName() + ", type="
-                + field.getType().getSimpleName() + ", dynamicAccessor="
-                + dynamicAccessor.getClass().getSimpleName() + '}';
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        ByteCodeFieldAccessor that = (ByteCodeFieldAccessor) obj;
-        return field.equals(that.field);
-    }
-
-    @Override
-    public int hashCode() {
-        return field.hashCode();
     }
 }
