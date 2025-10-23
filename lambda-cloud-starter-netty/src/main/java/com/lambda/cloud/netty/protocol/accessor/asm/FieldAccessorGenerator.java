@@ -5,6 +5,7 @@ import static org.objectweb.asm.Opcodes.*;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -23,7 +24,9 @@ public class FieldAccessorGenerator {
 
     private static final String FIELD_ACCESSOR_SUFFIX = "$FieldAccessor";
     private static final AtomicLong COUNTER = new AtomicLong(0);
-
+    private static final AccessorClassLoader ACCESSOR_CLASS_LOADER = new AccessorClassLoader();
+    private static final ConcurrentHashMap<String, FieldAccessor> GENERATOR_CACHE = new ConcurrentHashMap<>();
+    
     /**
      * 为指定字段生成基于Unsafe的高性能访问器
      *
@@ -32,13 +35,13 @@ public class FieldAccessorGenerator {
      * @throws RuntimeException 如果生成失败
      */
     public static FieldAccessor generateAccessor(Field field) {
+        return GENERATOR_CACHE.computeIfAbsent(generateCacheKey(field), k -> getFieldAccessor(field));
+    }
+
+    private static FieldAccessor getFieldAccessor(Field field) {
         String className = generateClassName(field);
         byte[] classBytes = generateUnsafeAccessorClass(field, className);
-
-        // 使用简单的类加载器，因为Unsafe访问不需要特殊的访问权限
-        AccessorClassLoader classLoader = new AccessorClassLoader();
-        Class<?> accessorClass = classLoader.defineClass(className, classBytes);
-
+        Class<?> accessorClass = ACCESSOR_CLASS_LOADER.defineClass(className, classBytes);
         try {
             return (FieldAccessor) accessorClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
@@ -52,6 +55,14 @@ public class FieldAccessorGenerator {
     private static String generateClassName(Field field) {
         return field.getDeclaringClass().getName() + "$" + field.getName() + FIELD_ACCESSOR_SUFFIX
                 + COUNTER.incrementAndGet();
+    }
+
+    private static String generateCacheKey(Field field) {
+        if (field == null) {
+            throw new IllegalArgumentException("field cannot be null");
+        }
+            // 使用类全限定名 + 字段名作为缓存 key
+            return field.getDeclaringClass().getName() + "#" + field.getName();
     }
 
     /**
@@ -194,33 +205,7 @@ public class FieldAccessorGenerator {
                 cw.visitMethod(ACC_PUBLIC, "setValue", "(Ljava/lang/Object;Ljava/lang/Object;)V", null, new String[] {
                     "java/lang/IllegalAccessException"
                 });
-        mv.visitCode();
-
-        Class<?> fieldType = field.getType();
-        boolean isStatic = Modifier.isStatic(field.getModifiers());
-        String internalClassName = field.getDeclaringClass().getName().replace('.', '/') + "$" + field.getName()
-                + FIELD_ACCESSOR_SUFFIX + "1";
-
-        // 加载Unsafe实例
-        mv.visitFieldInsn(GETSTATIC, internalClassName, "UNSAFE", "Lsun/misc/Unsafe;");
-
-        if (isStatic) {
-            // 对于静态字段，加载静态字段的基地址
-            mv.visitFieldInsn(GETSTATIC, internalClassName, "UNSAFE", "Lsun/misc/Unsafe;");
-            mv.visitLdcInsn(Type.getType(field.getDeclaringClass()));
-            mv.visitMethodInsn(
-                    INVOKEVIRTUAL,
-                    "sun/misc/Unsafe",
-                    "staticFieldBase",
-                    "(Ljava/lang/Class;)Ljava/lang/Object;",
-                    false);
-        } else {
-            // 对于实例字段，加载目标对象
-            mv.visitVarInsn(ALOAD, 1);
-        }
-
-        // 加载字段偏移量
-        mv.visitFieldInsn(GETSTATIC, internalClassName, "FIELD_OFFSET", "J");
+        Class<?> fieldType = getFieldType(field, mv);
 
         // 加载值并转换类型
         mv.visitVarInsn(ALOAD, 2);
@@ -242,6 +227,20 @@ public class FieldAccessorGenerator {
                 cw.visitMethod(ACC_PUBLIC, "getValue", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] {
                     "java/lang/IllegalAccessException"
                 });
+        Class<?> fieldType = getFieldType(field, mv);
+
+        // 调用相应的Unsafe.getXXX方法
+        generateUnsafeGetCall(mv, fieldType);
+
+        // 装箱基本类型
+        generateUnsafeBoxing(mv, fieldType);
+
+        mv.visitInsn(ARETURN);
+        mv.visitMaxs(4, 2);
+        mv.visitEnd();
+    }
+
+    private static Class<?> getFieldType(Field field, MethodVisitor mv) {
         mv.visitCode();
 
         Class<?> fieldType = field.getType();
@@ -269,16 +268,7 @@ public class FieldAccessorGenerator {
 
         // 加载字段偏移量
         mv.visitFieldInsn(GETSTATIC, internalClassName, "FIELD_OFFSET", "J");
-
-        // 调用相应的Unsafe.getXXX方法
-        generateUnsafeGetCall(mv, fieldType);
-
-        // 装箱基本类型
-        generateUnsafeBoxing(mv, fieldType);
-
-        mv.visitInsn(ARETURN);
-        mv.visitMaxs(4, 2);
-        mv.visitEnd();
+        return fieldType;
     }
 
     /**

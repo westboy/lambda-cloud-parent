@@ -40,7 +40,7 @@ public class FieldAccessorFactory {
     /**
      * 默认访问器类型
      */
-    private static volatile AccessorType defaultAccessorType = AccessorType.REFLECTION;
+    private static volatile AccessorType defaultAccessorType = AccessorType.BYTECODE;
 
     /**
      * 访问器缓存，避免重复创建
@@ -103,7 +103,6 @@ public class FieldAccessorFactory {
             ACCESSOR_CACHE.put(cacheKey, accessor);
             return accessor;
         } else {
-            // 不使用缓存，直接创建
             return doCreateAccessor(field, type);
         }
     }

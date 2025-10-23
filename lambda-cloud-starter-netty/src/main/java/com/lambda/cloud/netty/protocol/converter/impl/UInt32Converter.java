@@ -28,9 +28,8 @@ public class UInt32Converter implements DataTypeConverter {
                     "UINT32数据长度必须为4字节，实际: " + data.length,
                     fieldMetadata.getFieldName());
         }
-
+        ByteBuffer buffer = ByteBuffer.wrap(data);
         try {
-            ByteBuffer buffer = ByteBuffer.wrap(data);
             buffer.order(fieldMetadata.isLittleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
 
             int value = buffer.getInt();
@@ -54,6 +53,8 @@ public class UInt32Converter implements DataTypeConverter {
                     "解析UINT32数据失败: " + e.getMessage(),
                     fieldMetadata.getFieldName(),
                     e);
+        }finally{
+            buffer.clear();
         }
     }
 

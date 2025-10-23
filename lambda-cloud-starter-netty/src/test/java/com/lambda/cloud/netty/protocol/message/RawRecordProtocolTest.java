@@ -64,22 +64,9 @@ public class RawRecordProtocolTest {
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
             log.info("开始解析报文...");
-            StopWatch stopWatch = new StopWatch();
-            stopWatch.start();
             // 使用协议引擎解析消息
             RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
-            stopWatch.stop();
-            log.info("解析结果: {} time {}", record, stopWatch.getTotalTimeSeconds());
 
-            {
-                log.info("开始第二次解析报文...");
-                stopWatch.start();
-                // 使用协议引擎解析消息
-                ByteBuf byteBuf2 = Unpooled.wrappedBuffer(bytes);
-                RawBaseMessage record2 = engine.parse(byteBuf2, RawBaseMessage.class);
-                stopWatch.stop();
-                log.info("开始第二次解析结果: {} time {}", record2, stopWatch.getTotalTimeSeconds());
-            }
 
             // 验证解析结果
             ValidationResult validation = engine.validate(record);
@@ -95,8 +82,10 @@ public class RawRecordProtocolTest {
             record.setDataLength(null);
             log.info("解析功能验证完成，数据解析正常");
             ByteBuf serializeBuffer = Unpooled.buffer();
+            long current = System.currentTimeMillis();
             engine.serialize(record, serializeBuffer);
-
+            long stop = System.currentTimeMillis();
+            log.info("解析结果: {} time {}", record, (stop-current) );
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
             log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
