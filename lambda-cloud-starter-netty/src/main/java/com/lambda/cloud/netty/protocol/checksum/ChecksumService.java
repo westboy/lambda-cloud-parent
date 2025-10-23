@@ -1,6 +1,5 @@
 package com.lambda.cloud.netty.protocol.checksum;
 
-import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.checksum.impl.Crc16Algorithm;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ChecksumService {
-
 
     /**
      * 获取CRC算法

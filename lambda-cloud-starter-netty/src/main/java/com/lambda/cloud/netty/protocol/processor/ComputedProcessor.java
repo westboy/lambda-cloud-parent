@@ -121,7 +121,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
                             ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,
                             String.format(
                                     "原始报文%s CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
-                                    raw,crcField.getFieldName(), expectedCrc, calculatedCrc),
+                                    raw, crcField.getFieldName(), expectedCrc, calculatedCrc),
                             crcField.getFieldName());
                 }
 

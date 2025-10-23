@@ -20,27 +20,12 @@ import lombok.Setter;
 @Setter
 public class FieldAccessorFactory {
 
-    /**
-     * 访问器类型枚举
-     */
-    public enum AccessorType {
-        /**
-         * 基于 MethodHandle 的反射访问器
-         * 兼容性好，性能中等
-         */
-        REFLECTION,
 
-        /**
-         * 基于 ASM 字节码生成的访问器
-         * 性能最高，但有一定的内存开销
-         */
-        BYTECODE
-    }
 
     /**
      * 默认访问器类型
      */
-    private static volatile AccessorType defaultAccessorType = AccessorType.BYTECODE;
+    private static volatile FileAccessorType defaultAccessorType = FileAccessorType.BYTECODE;
 
     /**
      * 访问器缓存，避免重复创建
@@ -82,7 +67,7 @@ public class FieldAccessorFactory {
      * @param type  访问器类型
      * @return 字段访问器
      */
-    public static FieldAccessor createAccessor(Field field, AccessorType type) {
+    public static FieldAccessor createAccessor(Field field, FileAccessorType type) {
         if (field == null) {
             throw new IllegalArgumentException("Field cannot be null");
         }
@@ -114,7 +99,7 @@ public class FieldAccessorFactory {
      * @param type  访问器类型
      * @return 字段访问器
      */
-    private static FieldAccessor doCreateAccessor(Field field, AccessorType type) {
+    private static FieldAccessor doCreateAccessor(Field field, FileAccessorType type) {
         try {
             return switch (type) {
                 case REFLECTION -> new ReflectionFieldAccessor(field);
@@ -135,7 +120,7 @@ public class FieldAccessorFactory {
      * @param type  访问器类型
      * @return 缓存键
      */
-    private static String generateCacheKey(Field field, AccessorType type) {
+    private static String generateCacheKey(Field field, FileAccessorType type) {
         return field.getDeclaringClass().getName() + "#" + field.getName() + "@" + type.name();
     }
 
@@ -162,7 +147,7 @@ public class FieldAccessorFactory {
      * @param type  访问器类型
      * @return 是否已缓存
      */
-    public static boolean isCached(Field field, AccessorType type) {
+    public static boolean isCached(Field field, FileAccessorType type) {
         if (!cacheEnabled) {
             return false;
         }
@@ -177,7 +162,7 @@ public class FieldAccessorFactory {
      * @param type   访问器类型
      * @return 字段访问器数组
      */
-    public static FieldAccessor[] createAccessors(Field[] fields, AccessorType type) {
+    public static FieldAccessor[] createAccessors(Field[] fields, FileAccessorType type) {
         if (fields == null) {
             throw new IllegalArgumentException("Fields array cannot be null");
         }

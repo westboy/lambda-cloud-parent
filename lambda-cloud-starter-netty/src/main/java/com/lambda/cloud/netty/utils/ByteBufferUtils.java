@@ -13,8 +13,7 @@ import java.nio.ByteOrder;
  * @author Jin
  */
 public final class ByteBufferUtils {
-    private static final ThreadLocal<ByteBuffer> BUFFER_POOL =
-            ThreadLocal.withInitial(() -> ByteBuffer.allocate(8));
+    private static final ThreadLocal<ByteBuffer> BUFFER_POOL = ThreadLocal.withInitial(() -> ByteBuffer.allocate(8));
 
     /**
      * 创建配置了字节序的ByteBuffer

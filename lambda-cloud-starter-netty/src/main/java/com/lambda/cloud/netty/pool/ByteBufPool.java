@@ -44,9 +44,6 @@ public class ByteBufPool {
         PooledByteBufAllocatorMetric m = ALLOCATOR.metric();
         return String.format(
                 "usedDirectMemory=%d, normalCacheSize=%d, threadLocalCaches=%d",
-                PlatformDependent.usedDirectMemory(),
-                m.normalCacheSize(),
-                m.numThreadLocalCaches()
-        );
+                PlatformDependent.usedDirectMemory(), m.normalCacheSize(), m.numThreadLocalCaches());
     }
 }

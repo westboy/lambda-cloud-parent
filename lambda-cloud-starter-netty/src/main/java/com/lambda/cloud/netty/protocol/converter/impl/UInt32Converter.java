@@ -53,7 +53,7 @@ public class UInt32Converter implements DataTypeConverter {
                     "解析UINT32数据失败: " + e.getMessage(),
                     fieldMetadata.getFieldName(),
                     e);
-        }finally{
+        } finally {
             buffer.clear();
         }
     }
