@@ -172,13 +172,13 @@ public class RawRecordProtocolTest {
                 byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
                 ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
                 RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
-////                log.info("{} 解析结果: {} ", i,record);
-//                record.setChecksum(null);
-//                record.setDataLength(null);
-//                ByteBuf serializeBuffer = Unpooled.buffer();
-//                engine.serialize(record, serializeBuffer);
-//                byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
-//                serializeBuffer.readBytes(serializedBytes);
+                ////                log.info("{} 解析结果: {} ", i,record);
+                //                record.setChecksum(null);
+                //                record.setDataLength(null);
+                //                ByteBuf serializeBuffer = Unpooled.buffer();
+                //                engine.serialize(record, serializeBuffer);
+                //                byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+                //                serializeBuffer.readBytes(serializedBytes);
             }
             stopWatch.stop();
             log.info("总体用时: time {}", stopWatch.prettyPrint(TimeUnit.MILLISECONDS));

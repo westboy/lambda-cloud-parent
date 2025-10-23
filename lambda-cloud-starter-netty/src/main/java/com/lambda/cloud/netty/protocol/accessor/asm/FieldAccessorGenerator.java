@@ -4,6 +4,8 @@ import static org.objectweb.asm.Opcodes.*;
 
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.objectweb.asm.ClassWriter;
@@ -14,6 +16,7 @@ import org.objectweb.asm.Type;
  * 字段访问器生成器
  * <p>
  * 使用ASM字节码生成技术动态生成高性能的字段访问器，替代反射操作
+ * 优化版本：生成真正的字节码访问器，避免反射API调用
  * </p>
  *
  * @author Jin
@@ -48,15 +51,35 @@ public class FieldAccessorGenerator {
         String className = generateClassName(field);
         byte[] classBytes = generateAccessorClass(field, className);
 
-        // 使用自定义类加载器加载生成的类
-        AccessorClassLoader classLoader = new AccessorClassLoader();
-        Class<?> accessorClass = classLoader.defineClass(className, classBytes);
+        // 使用目标类的类加载器加载生成的类，确保访问权限
+        ClassLoader targetClassLoader = field.getDeclaringClass().getClassLoader();
+        if (targetClassLoader == null) {
+            targetClassLoader = ClassLoader.getSystemClassLoader();
+        }
+
+        Class<?> accessorClass = defineClass(targetClassLoader, className, classBytes);
 
         try {
-            return (FieldAccessor)
-                    accessorClass.getDeclaredConstructor(Field.class).newInstance(field);
+            return (FieldAccessor) accessorClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException("Failed to create field accessor for: " + field, e);
+        }
+    }
+
+    /**
+     * 使用目标类加载器定义类
+     */
+    private static Class<?> defineClass(ClassLoader classLoader, String className, byte[] classBytes) {
+        try {
+            // 使用反射调用ClassLoader的defineClass方法
+            Method defineClassMethod = ClassLoader.class.getDeclaredMethod(
+                    "defineClass", String.class, byte[].class, int.class, int.class);
+            defineClassMethod.setAccessible(true);
+            return (Class<?>) defineClassMethod.invoke(classLoader, className, classBytes, 0, classBytes.length);
+        } catch (Exception e) {
+            // 如果失败，回退到自定义类加载器
+            AccessorClassLoader fallbackLoader = new AccessorClassLoader(classLoader);
+            return fallbackLoader.defineClass(className, classBytes);
         }
     }
 
@@ -88,18 +111,14 @@ public class FieldAccessorGenerator {
             fieldAccessorType
         });
 
-        // 添加Field字段来存储目标字段
-        cw.visitField(ACC_PRIVATE | ACC_FINAL, "field", "Ljava/lang/reflect/Field;", null, null)
-                .visitEnd();
+        // 生成无参构造函数
+        generateOptimizedConstructor(cw, internalClassName);
 
-        // 生成构造函数
-        generateConstructor(cw, internalClassName);
+        // 生成优化的setValue方法
+        generateOptimizedSetValueMethod(cw, field, internalClassName);
 
-        // 生成setValue方法
-        generateSetValueMethod(cw, field, internalClassName);
-
-        // 生成getValue方法
-        generateGetValueMethod(cw, field, internalClassName);
+        // 生成优化的getValue方法
+        generateOptimizedGetValueMethod(cw, field, internalClassName);
 
         // 生成getFieldName方法
         generateGetFieldNameMethod(cw, field);
@@ -112,52 +131,56 @@ public class FieldAccessorGenerator {
     }
 
     /**
-     * 生成构造函数
+     * 生成优化的无参构造函数
      *
      * @param cw ClassWriter
      * @param internalClassName 内部类名
      */
-    private static void generateConstructor(ClassWriter cw, String internalClassName) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "(Ljava/lang/reflect/Field;)V", null, null);
+    private static void generateOptimizedConstructor(ClassWriter cw, String internalClassName) {
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         mv.visitCode();
 
         // 调用父类构造函数
         mv.visitVarInsn(ALOAD, 0);
         mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
 
-        // 存储Field参数到实例字段
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitFieldInsn(PUTFIELD, internalClassName, "field", "Ljava/lang/reflect/Field;");
-
         mv.visitInsn(RETURN);
-        mv.visitMaxs(2, 2);
+        mv.visitMaxs(1, 1);
         mv.visitEnd();
     }
 
     /**
-     * 生成setValue方法
+     * 生成优化的setValue方法 - 使用直接字节码访问
      */
-    private static void generateSetValueMethod(ClassWriter cw, Field field, String className) {
+    private static void generateOptimizedSetValueMethod(ClassWriter cw, Field field, String className) {
         MethodVisitor mv =
                 cw.visitMethod(ACC_PUBLIC, "setValue", "(Ljava/lang/Object;Ljava/lang/Object;)V", null, new String[] {
                     "java/lang/IllegalAccessException"
                 });
         mv.visitCode();
 
-        // 加载this.field
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, className.replace('.', '/'), "field", "Ljava/lang/reflect/Field;");
+        Class<?> declaringClass = field.getDeclaringClass();
+        Class<?> fieldType = field.getType();
+        String ownerType = Type.getInternalName(declaringClass);
+        String fieldName = field.getName();
+        boolean isStatic = Modifier.isStatic(field.getModifiers());
 
-        // 加载目标对象
-        mv.visitVarInsn(ALOAD, 1);
+        if (!isStatic) {
+            // 加载目标对象并转换类型
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(CHECKCAST, ownerType);
+        }
 
-        // 加载值
+        // 加载值并转换为正确类型
         mv.visitVarInsn(ALOAD, 2);
+        generateUnboxing(mv, fieldType);
 
-        // 调用Field.set(Object obj, Object value)
-        mv.visitMethodInsn(
-                INVOKEVIRTUAL, "java/lang/reflect/Field", "set", "(Ljava/lang/Object;Ljava/lang/Object;)V", false);
+        // 使用PUTFIELD或PUTSTATIC直接设置字段值
+        if (isStatic) {
+            mv.visitFieldInsn(PUTSTATIC, ownerType, fieldName, Type.getDescriptor(fieldType));
+        } else {
+            mv.visitFieldInsn(PUTFIELD, ownerType, fieldName, Type.getDescriptor(fieldType));
+        }
 
         mv.visitInsn(RETURN);
         mv.visitMaxs(3, 3);
@@ -165,33 +188,101 @@ public class FieldAccessorGenerator {
     }
 
     /**
-     * 生成getValue方法
-     *
-     * @param cw                ClassWriter
-     * @param field             目标字段
-     * @param internalClassName 内部类名
+     * 生成优化的getValue方法 - 使用直接字节码访问
      */
-    private static void generateGetValueMethod(ClassWriter cw, Field field, String internalClassName) {
+    private static void generateOptimizedGetValueMethod(ClassWriter cw, Field field, String internalClassName) {
         MethodVisitor mv =
                 cw.visitMethod(ACC_PUBLIC, "getValue", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] {
                     "java/lang/IllegalAccessException"
                 });
         mv.visitCode();
 
-        // 加载this.field
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, internalClassName, "field", "Ljava/lang/reflect/Field;");
+        Class<?> declaringClass = field.getDeclaringClass();
+        Class<?> fieldType = field.getType();
+        String ownerType = Type.getInternalName(declaringClass);
+        String fieldName = field.getName();
+        boolean isStatic = Modifier.isStatic(field.getModifiers());
 
-        // 加载目标对象
-        mv.visitVarInsn(ALOAD, 1);
+        if (!isStatic) {
+            // 加载目标对象并转换类型
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(CHECKCAST, ownerType);
+        }
 
-        // 调用Field.get(Object obj)
-        mv.visitMethodInsn(
-                INVOKEVIRTUAL, "java/lang/reflect/Field", "get", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
+        // 使用GETFIELD或GETSTATIC直接获取字段值
+        if (isStatic) {
+            mv.visitFieldInsn(GETSTATIC, ownerType, fieldName, Type.getDescriptor(fieldType));
+        } else {
+            mv.visitFieldInsn(GETFIELD, ownerType, fieldName, Type.getDescriptor(fieldType));
+        }
+
+        // 装箱基本类型
+        generateBoxing(mv, fieldType);
 
         mv.visitInsn(ARETURN);
         mv.visitMaxs(2, 2);
         mv.visitEnd();
+    }
+
+    /**
+     * 生成拆箱代码
+     */
+    private static void generateUnboxing(MethodVisitor mv, Class<?> type) {
+        if (type.isPrimitive()) {
+            if (type == int.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Integer");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I", false);
+            } else if (type == long.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Long");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J", false);
+            } else if (type == double.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Double");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false);
+            } else if (type == float.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Float");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F", false);
+            } else if (type == boolean.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false);
+            } else if (type == byte.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Byte");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B", false);
+            } else if (type == char.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Character");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C", false);
+            } else if (type == short.class) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Short");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S", false);
+            }
+        } else {
+            mv.visitTypeInsn(CHECKCAST, Type.getInternalName(type));
+        }
+    }
+
+    /**
+     * 生成装箱代码
+     */
+    private static void generateBoxing(MethodVisitor mv, Class<?> type) {
+        if (type.isPrimitive()) {
+            if (type == int.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+            } else if (type == long.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
+            } else if (type == double.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+            } else if (type == float.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+            } else if (type == boolean.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+            } else if (type == byte.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
+            } else if (type == char.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
+            } else if (type == short.class) {
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
+            }
+        }
+        // 对象类型不需要装箱
     }
 
     /**
@@ -225,6 +316,15 @@ public class FieldAccessorGenerator {
      * 自定义类加载器
      */
     private static class AccessorClassLoader extends ClassLoader {
+
+        public AccessorClassLoader() {
+            super();
+        }
+
+        public AccessorClassLoader(ClassLoader parent) {
+            super(parent);
+        }
+
         public Class<?> defineClass(String name, byte[] bytes) {
             return defineClass(name, bytes, 0, bytes.length);
         }
