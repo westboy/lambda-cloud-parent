@@ -3,7 +3,7 @@ package com.lambda.cloud.netty.protocol.accessor;
 /**
  * 字段访问器接口
  * <p>
- * 用于替代反射的高性能字段访问接口，通过ASM字节码生成具体实现
+ * 用于替代反射的高性能字段访问接口
  * </p>
  *
  * @author Jin

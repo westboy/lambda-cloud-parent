@@ -1,7 +1,5 @@
 package com.lambda.cloud.netty.utils;
 
-import static cn.hutool.core.util.ReflectUtil.getFieldValue;
-
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
@@ -17,9 +15,9 @@ public class EncryptionUtils {
      */
     public static boolean isEncryptionEnabled(Object instance, ProtocolFrameMetadata msgMetadata) {
         try {
-            for (ProtocolFieldMetadata meta : msgMetadata.fields()) {
-                if (meta.isEncryptionKey()) {
-                    Object value = getFieldValue(instance, meta.field());
+            for (ProtocolFieldMetadata fieldMetadata : msgMetadata.fields()) {
+                if (fieldMetadata.isEncryptionKey()) {
+                    Object value = fieldMetadata.getValue(instance);
                     return isEnableEncryption(value);
                 }
             }

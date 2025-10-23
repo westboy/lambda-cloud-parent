@@ -6,6 +6,7 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.accessor.ReflectionFieldAccessor;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
@@ -333,7 +334,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
                     // 创建子字段的元数据
                     ProtocolValidation subValidation = field.getAnnotation(ProtocolValidation.class);
                     ProtocolFieldMetadata subFieldMetadata =
-                            new ProtocolFieldMetadata(field, protocolField, subValidation);
+                            new ProtocolFieldMetadata(new ReflectionFieldAccessor(field), protocolField, subValidation);
 
                     // 递归处理子字段
                     if (subFieldMetadata.isComposite()) {

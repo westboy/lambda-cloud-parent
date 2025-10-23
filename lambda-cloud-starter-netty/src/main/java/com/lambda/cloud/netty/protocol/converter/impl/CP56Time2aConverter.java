@@ -71,7 +71,9 @@ public class CP56Time2aConverter implements DataTypeConverter {
         int minutes = data[2] & 0x3F;
 
         // 小时和夏令时标志
-        boolean summerTime = (data[3] & 0x80) != 0;
+        if(log.isDebugEnabled()) {
+            boolean summerTime = (data[3] & 0x80) != 0;
+        }
         int hours = data[3] & 0x1F;
 
         // 日期和星期
@@ -94,10 +96,11 @@ public class CP56Time2aConverter implements DataTypeConverter {
         }
 
         LocalDateTime dateTime = LocalDateTime.of(year, month, dayOfMonth, hours, minutes, seconds, millis * 1_000_000);
-
-        int actualDayOfWeek = dateTime.getDayOfWeek().getValue();
-        if (actualDayOfWeek != originalDayOfWeek) {
-            log.warn("CP56TIME2A原始数据中的星期({})与实际日期计算的星期({})不符", originalDayOfWeek, actualDayOfWeek);
+        if(log.isDebugEnabled()) {
+            int actualDayOfWeek = dateTime.getDayOfWeek().getValue();
+            if (actualDayOfWeek != originalDayOfWeek) {
+                log.warn("CP56TIME2A原始数据中的星期({})与实际日期计算的星期({})不符", originalDayOfWeek, actualDayOfWeek);
+            }
         }
         return dateTime;
     }

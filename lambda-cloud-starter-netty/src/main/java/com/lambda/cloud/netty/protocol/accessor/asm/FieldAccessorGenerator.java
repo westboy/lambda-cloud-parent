@@ -1,8 +1,9 @@
-package com.lambda.cloud.netty.protocol.accessor;
+package com.lambda.cloud.netty.protocol.accessor.asm;
 
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.Method;
+import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,11 +20,11 @@ import static org.objectweb.asm.Opcodes.*;
  * @author Jin
  */
 public class FieldAccessorGenerator {
-    
+
     private static final String FIELD_ACCESSOR_SUFFIX = "$FieldAccessor";
     private static final AtomicLong COUNTER = new AtomicLong(0);
     private static final ConcurrentHashMap<String, FieldAccessor> ACCESSOR_CACHE = new ConcurrentHashMap<>();
-    
+
     /**
      * 为指定字段生成访问器
      *
@@ -34,7 +35,7 @@ public class FieldAccessorGenerator {
         String cacheKey = field.getDeclaringClass().getName() + "#" + field.getName();
         return ACCESSOR_CACHE.computeIfAbsent(cacheKey, k -> createAccessor(field));
     }
-    
+
     /**
      * 创建字段访问器
      *
@@ -44,18 +45,18 @@ public class FieldAccessorGenerator {
     private static FieldAccessor createAccessor(Field field) {
         String className = generateClassName(field);
         byte[] classBytes = generateAccessorClass(field, className);
-        
+
         // 使用自定义类加载器加载生成的类
         AccessorClassLoader classLoader = new AccessorClassLoader();
         Class<?> accessorClass = classLoader.defineClass(className, classBytes);
-        
+
         try {
             return (FieldAccessor) accessorClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException("Failed to create field accessor for: " + field, e);
         }
     }
-    
+
     /**
      * 生成访问器类名
      *
@@ -63,10 +64,10 @@ public class FieldAccessorGenerator {
      * @return 类名
      */
     private static String generateClassName(Field field) {
-        return field.getDeclaringClass().getName() + "$" + field.getName() + 
-               FIELD_ACCESSOR_SUFFIX + COUNTER.incrementAndGet();
+        return field.getDeclaringClass().getName() + "$" + field.getName() +
+                FIELD_ACCESSOR_SUFFIX + COUNTER.incrementAndGet();
     }
-    
+
     /**
      * 生成访问器类的字节码
      *
@@ -78,30 +79,30 @@ public class FieldAccessorGenerator {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         String internalClassName = className.replace('.', '/');
         String fieldAccessorType = Type.getInternalName(FieldAccessor.class);
-        
+
         // 定义类
-        cw.visit(V1_8, ACC_PUBLIC | ACC_FINAL, internalClassName, null, 
+        cw.visit(V1_8, ACC_PUBLIC | ACC_FINAL, internalClassName, null,
                 "java/lang/Object", new String[]{fieldAccessorType});
-        
+
         // 生成构造函数
         generateConstructor(cw);
-        
+
         // 生成setValue方法
         generateSetValueMethod(cw, field, internalClassName);
-        
+
         // 生成getValue方法
         generateGetValueMethod(cw, field, internalClassName);
-        
+
         // 生成getFieldName方法
         generateGetFieldNameMethod(cw, field);
-        
+
         // 生成getFieldType方法
         generateGetFieldTypeMethod(cw, field);
-        
+
         cw.visitEnd();
         return cw.toByteArray();
     }
-    
+
     /**
      * 生成构造函数
      */
@@ -114,63 +115,63 @@ public class FieldAccessorGenerator {
         mv.visitMaxs(1, 1);
         mv.visitEnd();
     }
-    
+
     /**
      * 生成setValue方法
      */
     private static void generateSetValueMethod(ClassWriter cw, Field field, String className) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "setValue", 
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "setValue",
                 "(Ljava/lang/Object;Ljava/lang/Object;)V", null, null);
         mv.visitCode();
-        
+
         // 类型转换
         String ownerType = Type.getInternalName(field.getDeclaringClass());
         mv.visitVarInsn(ALOAD, 1);
         mv.visitTypeInsn(CHECKCAST, ownerType);
-        
+
         // 加载值并进行类型转换
         mv.visitVarInsn(ALOAD, 2);
         generateValueCast(mv, field.getType());
-        
+
         // 设置字段值
-        mv.visitFieldInsn(PUTFIELD, ownerType, field.getName(), 
+        mv.visitFieldInsn(PUTFIELD, ownerType, field.getName(),
                 Type.getDescriptor(field.getType()));
-        
+
         mv.visitInsn(RETURN);
         mv.visitMaxs(2, 3);
         mv.visitEnd();
     }
-    
+
     /**
      * 生成getValue方法
      */
     private static void generateGetValueMethod(ClassWriter cw, Field field, String className) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getValue", 
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getValue",
                 "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
         mv.visitCode();
-        
+
         // 类型转换
         String ownerType = Type.getInternalName(field.getDeclaringClass());
         mv.visitVarInsn(ALOAD, 1);
         mv.visitTypeInsn(CHECKCAST, ownerType);
-        
+
         // 获取字段值
-        mv.visitFieldInsn(GETFIELD, ownerType, field.getName(), 
+        mv.visitFieldInsn(GETFIELD, ownerType, field.getName(),
                 Type.getDescriptor(field.getType()));
-        
+
         // 装箱基本类型
         generateBoxing(mv, field.getType());
-        
+
         mv.visitInsn(ARETURN);
         mv.visitMaxs(1, 2);
         mv.visitEnd();
     }
-    
+
     /**
      * 生成getFieldName方法
      */
     private static void generateGetFieldNameMethod(ClassWriter cw, Field field) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldName", 
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldName",
                 "()Ljava/lang/String;", null, null);
         mv.visitCode();
         mv.visitLdcInsn(field.getName());
@@ -178,15 +179,15 @@ public class FieldAccessorGenerator {
         mv.visitMaxs(1, 1);
         mv.visitEnd();
     }
-    
+
     /**
      * 生成getFieldType方法
      */
     private static void generateGetFieldTypeMethod(ClassWriter cw, Field field) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldType", 
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getFieldType",
                 "()Ljava/lang/Class;", null, null);
         mv.visitCode();
-        
+
         // 加载Class对象
         if (field.getType().isPrimitive()) {
             // 基本类型的Class对象
@@ -196,12 +197,12 @@ public class FieldAccessorGenerator {
             // 引用类型的Class对象
             mv.visitLdcInsn(Type.getType(field.getType()));
         }
-        
+
         mv.visitInsn(ARETURN);
         mv.visitMaxs(1, 1);
         mv.visitEnd();
     }
-    
+
     /**
      * 生成值类型转换代码
      */
@@ -210,28 +211,28 @@ public class FieldAccessorGenerator {
             // 基本类型需要拆箱
             String wrapperType = getWrapperType(fieldType);
             mv.visitTypeInsn(CHECKCAST, wrapperType);
-            
+
             String unboxMethod = getUnboxMethod(fieldType);
-            mv.visitMethodInsn(INVOKEVIRTUAL, wrapperType, unboxMethod, 
+            mv.visitMethodInsn(INVOKEVIRTUAL, wrapperType, unboxMethod,
                     "()" + Type.getDescriptor(fieldType), false);
         } else {
             // 引用类型直接转换
             mv.visitTypeInsn(CHECKCAST, Type.getInternalName(fieldType));
         }
     }
-    
+
     /**
      * 生成装箱代码
      */
     private static void generateBoxing(MethodVisitor mv, Class<?> fieldType) {
         if (fieldType.isPrimitive()) {
             String wrapperType = getWrapperType(fieldType);
-            mv.visitMethodInsn(INVOKESTATIC, wrapperType, "valueOf", 
+            mv.visitMethodInsn(INVOKESTATIC, wrapperType, "valueOf",
                     "(" + Type.getDescriptor(fieldType) + ")L" + wrapperType + ";", false);
         }
         // 引用类型不需要装箱
     }
-    
+
     /**
      * 获取基本类型对应的包装类型
      */
@@ -246,7 +247,7 @@ public class FieldAccessorGenerator {
         if (primitiveType == char.class) return "java/lang/Character";
         throw new IllegalArgumentException("Unsupported primitive type: " + primitiveType);
     }
-    
+
     /**
      * 获取拆箱方法名
      */
@@ -261,7 +262,7 @@ public class FieldAccessorGenerator {
         if (primitiveType == char.class) return "charValue";
         throw new IllegalArgumentException("Unsupported primitive type: " + primitiveType);
     }
-    
+
     /**
      * 自定义类加载器
      */

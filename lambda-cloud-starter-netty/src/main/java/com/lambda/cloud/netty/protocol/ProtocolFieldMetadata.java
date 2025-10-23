@@ -1,12 +1,11 @@
 package com.lambda.cloud.netty.protocol;
 
-import cn.hutool.core.util.ReflectUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
+import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import java.lang.reflect.Field;
 
 /**
  * 字段元数据
@@ -14,12 +13,14 @@ import java.lang.reflect.Field;
  * 封装字段的反射信息和注解信息，提供高效的字段访问
  * </p>
  *
- * @param field         字段反射信息
+ * @param fieldAccessor 字段反射信息
  * @param protocolField 协议字段注解
  * @param validation    验证注解
  * @author Jin
  */
-public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, ProtocolValidation validation) {
+public record ProtocolFieldMetadata(FieldAccessor fieldAccessor, ProtocolField protocolField,
+                                    ProtocolValidation validation) {
+
 
     /**
      * 获取字段名称
@@ -27,7 +28,7 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      * @return 字段名称
      */
     public String getFieldName() {
-        return field.getName();
+        return fieldAccessor.getFieldName();
     }
 
     /**
@@ -36,7 +37,7 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      * @return 字段类型
      */
     public Class<?> getFieldType() {
-        return field.getType();
+        return fieldAccessor.getFieldType();
     }
 
     /**
@@ -212,7 +213,7 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      */
     public void setValue(Object target, Object value) throws ProtocolException {
         try {
-            ReflectUtil.setFieldValue(target, field, value);
+            fieldAccessor.setValue(target, value);
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.REFLECTION_ERROR, "无法设置字段值: " + getFieldName(), getFieldName(), e);
@@ -228,7 +229,7 @@ public record ProtocolFieldMetadata(Field field, ProtocolField protocolField, Pr
      */
     public Object getValue(Object target) throws ProtocolException {
         try {
-            return ReflectUtil.getFieldValue(target, field);
+            return fieldAccessor.getValue(target);
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.REFLECTION_ERROR, "无法获取字段值: " + getFieldName(), getFieldName(), e);

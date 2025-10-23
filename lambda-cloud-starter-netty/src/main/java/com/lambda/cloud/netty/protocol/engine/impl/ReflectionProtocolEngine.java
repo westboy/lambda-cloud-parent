@@ -5,6 +5,7 @@ import cn.hutool.cache.impl.LRUCache;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.accessor.ReflectionFieldAccessor;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
@@ -104,13 +105,13 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             }
 
             if(metadata.isPayload()) {
-                // 获取参与CRC计算的原始数据（只进行一次stream操作）
-                String parsedRawData = parsedRawDataList.stream()
-                        .filter(ParsedData::getIsComputed)
-                        .sorted(Comparator.comparing(ParsedData::getOrder))
-                        .map(ParsedData::getRaw)
-                        .collect(Collectors.joining());
-                
+                // 获取参与CRC计算的原始数据
+                parsedRawDataList.sort(Comparator.comparingInt(ParsedData::getOrder));
+                StringBuilder sb = new StringBuilder(512);
+                for (ParsedData data : parsedRawDataList) {
+                    if (data.getIsComputed()) sb.append(data.getRaw());
+                }
+                String parsedRawData = sb.toString();
                 // 记录解析的原始数据（调试级别）
                 if (log.isDebugEnabled()) {
                     log.debug("解析原始数据：{}", parsedRawData);
@@ -281,7 +282,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                     throw new IllegalArgumentException("同一字段不可同时标注 encryptedKey 与 encryptedField: " + field.getName());
                 }
                 ProtocolValidation validation = field.getAnnotation(ProtocolValidation.class);
-                fields.add(new ProtocolFieldMetadata(field, protocolField, validation));
+
+                fields.add(new ProtocolFieldMetadata(new ReflectionFieldAccessor(field), protocolField, validation));
             }
         }
 
