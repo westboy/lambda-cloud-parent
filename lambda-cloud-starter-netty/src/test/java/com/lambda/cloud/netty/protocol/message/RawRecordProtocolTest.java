@@ -35,6 +35,10 @@ public class RawRecordProtocolTest {
     private static final String TEST_DATA4 =
             "68A2077A003B181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B4733";
 
+    private static final String TEST_DATA5 =
+            "68A28001003B18220000000155021673797553635328182200000001550208CF1C16170A19D0841517170A19400D0300000000000000000000000000400D0300000000000000000000000000400D0300000000000000000000000000A85B01007375000000000000876800000A000000007D75000000737500000000000087680000000000000000000000000000000000000001D0841517170A19450000000000000000A5B3";
+
+
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
 //        log.info("开始使用新协议框架解析交易记录报文");
@@ -55,7 +59,7 @@ public class RawRecordProtocolTest {
 //                log.info("字段数量: {}", metadata.fields().size());
 
                 // 将十六进制字符串转换为字节数组
-                byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
+                byte[] bytes = HexUtil.decodeHex(i%2==0?TEST_DATA5:TEST_DATA4);
 //                log.info("实际数据长度: {} 字节", bytes.length);
 
                 if (bytes.length < metadata.totalLength()) {
@@ -63,7 +67,7 @@ public class RawRecordProtocolTest {
                 }
 
                 ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-
+                long current = System.currentTimeMillis();
 //                log.info("开始解析报文...");
                 // 使用协议引擎解析消息
                 RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
@@ -82,10 +86,10 @@ public class RawRecordProtocolTest {
                 record.setDataLength(null);
 //                log.info("解析功能验证完成，数据解析正常");
                 ByteBuf serializeBuffer = Unpooled.buffer();
-                long current = System.currentTimeMillis();
+
                 engine.serialize(record, serializeBuffer);
                 long stop = System.currentTimeMillis();
-                log.info("解析结果: time {}", (stop - current));
+                log.info("解析结果: time {}  {}", (stop - current),record.getInnerRecord());
                 byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
                 serializeBuffer.readBytes(serializedBytes);
 //                log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
