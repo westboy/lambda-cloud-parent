@@ -96,9 +96,9 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
     public void validateCrc(Object instance, String raw, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
-        List<ProtocolFieldMetadata> crcFields = getCrcAndLengthFields(frameMetadata);
+        List<ProtocolFieldMetadata> computedFields = getCrcAndLengthFields(frameMetadata);
 
-        if (crcFields.isEmpty()) {
+        if (computedFields.isEmpty()) {
             log.debug("消息中没有CRC字段，跳过CRC验证");
             return;
         }
@@ -106,16 +106,16 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
         // 计算所有checksum=true字段的CRC值（只计算一次）
         long calculatedCrc = calculateCrcByParsedDataList(raw, frameMetadata);
 
-        // 验证每个CRC字段
-        for (ProtocolFieldMetadata crcField : crcFields) {
+        // 验证每个 CRC 字段
+        for (ProtocolFieldMetadata crcField : computedFields) {
             try {
                 if (crcField.isLengthFiled()) {
                     continue;
                 }
-                // 获取实例中存储的CRC值
+                // 获取实例中存储的 CRC 值
                 long expectedCrc = getCrcValueFromInstance(instance, crcField);
 
-                // 验证CRC值
+                // 验证 CRC 值
                 if (expectedCrc != calculatedCrc) {
                     throw new ProtocolException(
                             ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,

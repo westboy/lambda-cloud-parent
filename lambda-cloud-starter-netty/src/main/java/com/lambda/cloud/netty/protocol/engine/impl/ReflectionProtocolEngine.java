@@ -104,7 +104,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             }
 
             if (metadata.isPayload()) {
-                // 获取参与CRC计算的原始数据
+                // 获取参与 CRC 计算的原始数据
                 parsedRawDataList.sort(Comparator.comparingInt(ParsedData::getOrder));
                 StringBuilder sb = new StringBuilder(512);
                 for (ParsedData data : parsedRawDataList) {
@@ -116,7 +116,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                     log.debug("解析原始数据：{}", parsedRawData);
                 }
 
-                // 验证CRC校验和
+                // 验证 CRC 校验和
                 computedProcessor.validateCrc(instance, parsedRawData, metadata);
             }
 

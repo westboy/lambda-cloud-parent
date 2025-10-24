@@ -392,7 +392,6 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 value = HexUtil.encodeHexStr(fieldData);
             }
             parsedRawData.setRaw(value);
-
             parsedRawData.setIsComputed(fieldMetadata.isComputed());
             parsedRawData.setOrder(fieldMetadata.getOrder());
             parsedRawDataList.add(parsedRawData);
