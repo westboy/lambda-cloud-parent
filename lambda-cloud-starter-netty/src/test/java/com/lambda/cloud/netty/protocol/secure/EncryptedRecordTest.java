@@ -41,12 +41,8 @@ public class EncryptedRecordTest {
 
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
-        log.info("开始使用新协议框架解析交易记录报文");
-        log.info("测试数据: {}", TEST_DATA4);
-        log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         SecretKey key = SecureUtil.generateKey("AES", "0123456789abcdef".getBytes(StandardCharsets.UTF_8));
-        String keyFormat = key.getFormat();
         String encryptHex =
                 HexUtil.encodeHexStr(SecureUtil.aes(key.getEncoded()).encrypt(RAW), false);
         System.out.println("rawHex: " + RAW);
@@ -55,7 +51,7 @@ public class EncryptedRecordTest {
 
         String format = String.format(TEST_DATA5, encryptHex);
 
-        System.out.println("加密报文: " + format);
+//        System.out.println("加密报文: " + format);
 
         EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
 
@@ -71,28 +67,25 @@ public class EncryptedRecordTest {
 
         try {
             byte[] bytes = HexUtil.decodeHex(format);
-            ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
-            log.info("开始解析报文...");
-
-            log.info("开始解析报文...");
+            for (int i = 0; i <500 ; i++) {
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             // 使用协议引擎解析消息
             EncryptedBaseMessage record = engine.parse(byteBuf, EncryptedBaseMessage.class);
-            stopWatch.stop();
-            log.info("解析结果: {} time {}", record, stopWatch.getTotalTimeSeconds());
-            log.info("解析结果: {}", record);
+
+//            log.info("解析结果: {}", record);
 
             ValidationResult validation = engine.validate(record);
             if (validation.valid()) {
-                log.info("消息验证通过");
+//                log.info("消息验证通过");
             } else {
                 log.warn("消息验证失败: {}", validation.message());
             }
 
-            logKeyFields(record);
-            log.info("解析功能验证完成，数据解析正常");
+//            logKeyFields(record);
+//            log.info("解析功能验证完成，数据解析正常");
 
             ByteBuf serializeBuffer = Unpooled.buffer();
             engine.serialize(record, serializeBuffer);
@@ -100,8 +93,11 @@ public class EncryptedRecordTest {
             // 如果到达这里，说明序列化成功了
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
-            log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
+//            log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
+            stopWatch.stop();
+            log.info("结果: time {}", stopWatch.getTotalTimeNanos());
 
+            }
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);
             throw new RuntimeException("协议解析失败", e);
