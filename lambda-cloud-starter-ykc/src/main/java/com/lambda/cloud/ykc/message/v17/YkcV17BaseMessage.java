@@ -1,4 +1,4 @@
-package com.lambda.cloud.ykc;
+package com.lambda.cloud.ykc.message.v17;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -10,8 +10,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "base", name = "云快充基础协议2.0", isPayload = true, description = "云快充2.0协议基础协议字段")
-public class YkcV20BaseMessage {
+@ProtocolFrame(frameType = "base", name = "云快充基础协议", isPayload = true, description = "云快充基础协议字段")
+public abstract class YkcV17BaseMessage<T> {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
     private String startFlag;
@@ -31,7 +31,7 @@ public class YkcV20BaseMessage {
             dataType = ProtocolDataType.HEX,
             computed = true,
             littleEndian = true,
-            description = "数据长度")
+            description = "序列号域")
     private Integer serialNumber;
 
     @ProtocolField(
@@ -40,14 +40,14 @@ public class YkcV20BaseMessage {
             dataType = ProtocolDataType.HEX,
             computed = true,
             littleEndian = true,
-            description = "数据长度")
-    private String encryption;
+            description = "加密标志")
+    private String encryptFlag;
 
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, computed = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, computed = true, encryptedField = true, description = "内容")
-    private Object body;
+    @ProtocolField(order = 5, composite = true, computed = true, description = "内容")
+    private T body;
 
     @ProtocolField(
             order = 6,

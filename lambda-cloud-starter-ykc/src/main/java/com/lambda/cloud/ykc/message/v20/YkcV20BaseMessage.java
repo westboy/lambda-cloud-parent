@@ -1,4 +1,4 @@
-package com.lambda.cloud.ykc;
+package com.lambda.cloud.ykc.message.v20;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -10,8 +10,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "base", name = "云快充基础协议", isPayload = true, description = "云快充基础协议字段")
-public class YkcV16BaseMessage {
+@ProtocolFrame(frameType = "base", name = "云快充基础协议2.0", isPayload = true, description = "云快充2.0协议基础协议字段")
+public abstract class YkcV20BaseMessage {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
     private String startFlag;
@@ -31,7 +31,7 @@ public class YkcV16BaseMessage {
             dataType = ProtocolDataType.HEX,
             computed = true,
             littleEndian = true,
-            description = "序列号域")
+            description = "数据长度")
     private Integer serialNumber;
 
     @ProtocolField(
@@ -40,8 +40,8 @@ public class YkcV16BaseMessage {
             dataType = ProtocolDataType.HEX,
             computed = true,
             littleEndian = true,
-            description = "加密标志")
-    private String encryptFlag;
+            description = "数据长度")
+    private String encryption;
 
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, computed = true, description = "帧类型")
     private String frameType;
