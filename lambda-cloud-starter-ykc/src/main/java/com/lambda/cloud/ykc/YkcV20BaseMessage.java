@@ -7,9 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@ToString
 @Getter
 @Setter
+@ToString
 @ProtocolFrame(frameType = "base", name = "云快充基础协议2.0", isPayload = true, description = "云快充2.0协议基础协议字段")
 public class YkcV20BaseMessage {
 
