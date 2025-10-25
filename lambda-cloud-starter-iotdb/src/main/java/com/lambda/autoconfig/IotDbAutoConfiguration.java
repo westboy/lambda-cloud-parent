@@ -108,7 +108,7 @@ public class IotDbAutoConfiguration {
         @ConditionalOnMissingBean(IotDbConsumerManager.class)
         public IotDbConsumerManager iotDbConsumerManager() {
             log.info("Creating IotDbConsumerManager bean");
-            return new IotDbConsumerManager();
+            return new IotDbConsumerManager(iotDbProperties);
         }
 
         @Bean
