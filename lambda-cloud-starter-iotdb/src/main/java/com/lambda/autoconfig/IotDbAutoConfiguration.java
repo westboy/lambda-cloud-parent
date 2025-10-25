@@ -33,15 +33,13 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfiguration
 @EnableConfigurationProperties(value = {IotDbProperties.class})
 public class IotDbAutoConfiguration {
-    private final IotDbProperties iotDbProperties;
-
     @Bean
     @ConditionalOnProperty(
             prefix = "lambda.iotdb",
             name = {"tree-dialect"},
             havingValue = "true")
     @ConditionalOnMissingBean(SessionPool.class)
-    public SessionPool sessionPool() {
+    public SessionPool sessionPool(IotDbProperties iotDbProperties) {
         return new SessionPool.Builder()
                 .nodeUrls(iotDbProperties.getNodeUrls())
                 .user(iotDbProperties.getUser())
@@ -56,7 +54,7 @@ public class IotDbAutoConfiguration {
             name = {"table-dialect"},
             havingValue = "true")
     @ConditionalOnMissingBean(ITableSessionPool.class)
-    public ITableSessionPool tableSessionPool() {
+    public ITableSessionPool tableSessionPool(IotDbProperties iotDbProperties) {
         return new TableSessionPoolBuilder()
                 .nodeUrls(iotDbProperties.getNodeUrls())
                 .user(iotDbProperties.getUser())
@@ -72,14 +70,14 @@ public class IotDbAutoConfiguration {
             prefix = "lambda.iotdb",
             name = {"enable-subscription"},
             havingValue = "true")
-    public class IotDbSubscriptionConfiguration {
+    public static class IotDbSubscriptionConfiguration {
 
         @Bean(initMethod = "open", destroyMethod = "close")
         @ConditionalOnProperty(
                 prefix = "lambda.iotdb",
                 name = {"tree-dialect"},
                 havingValue = "true")
-        public ISubscriptionTreeSession subscriptionTreeSession() {
+        public ISubscriptionTreeSession subscriptionTreeSession(IotDbProperties iotDbProperties) {
             return new SubscriptionTreeSessionBuilder()
                     .host(iotDbProperties.getHost())
                     .port(iotDbProperties.getPort())
@@ -94,7 +92,8 @@ public class IotDbAutoConfiguration {
                 prefix = "lambda.iotdb",
                 name = {"table-dialect"},
                 havingValue = "true")
-        public ISubscriptionTableSession subscriptionTableSession() throws IoTDBConnectionException {
+        public ISubscriptionTableSession subscriptionTableSession(IotDbProperties iotDbProperties)
+                throws IoTDBConnectionException {
             return new SubscriptionTableSessionBuilder()
                     .host(iotDbProperties.getHost())
                     .port(iotDbProperties.getPort())
@@ -106,14 +105,15 @@ public class IotDbAutoConfiguration {
 
         @Bean(destroyMethod = "stopAll")
         @ConditionalOnMissingBean(IotDbConsumerManager.class)
-        public IotDbConsumerManager iotDbConsumerManager() {
+        public IotDbConsumerManager iotDbConsumerManager(IotDbProperties iotDbProperties) {
             log.info("Creating IotDbConsumerManager bean");
             return new IotDbConsumerManager(iotDbProperties);
         }
 
         @Bean
         @ConditionalOnMissingBean(IotDbConsumerRegistrar.class)
-        public IotDbConsumerRegistrar iotDbConsumerRegistrar(IotDbConsumerManager consumerManager) {
+        public IotDbConsumerRegistrar iotDbConsumerRegistrar(
+                IotDbConsumerManager consumerManager, IotDbProperties iotDbProperties) {
             log.info("Creating IotDbConsumerRegistrar bean with basePackage: {}", iotDbProperties.getBasePackage());
             return new IotDbConsumerRegistrar(consumerManager, iotDbProperties);
         }
