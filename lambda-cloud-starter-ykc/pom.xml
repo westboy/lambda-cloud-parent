@@ -12,9 +12,13 @@
     <dependencies>
         <dependency>
             <groupId>com.lambda.cloud</groupId>
+            <artifactId>lambda-cloud-core</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-netty</artifactId>
             <version>${project.parent.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.lambda.cloud</groupId>
