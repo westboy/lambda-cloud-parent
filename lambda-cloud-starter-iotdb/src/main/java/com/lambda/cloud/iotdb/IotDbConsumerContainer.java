@@ -32,7 +32,7 @@ public class IotDbConsumerContainer {
         listeners.add(handler);
     }
 
-    public void start() throws Exception {
+    public void start() {
         pullConsumer = new SubscriptionTablePullConsumerBuilder()
                 .consumerId(consumerId)
                 .consumerGroupId(consumerGroupId)

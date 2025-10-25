@@ -1,5 +1,7 @@
 package com.lambda.autoconfig;
 
+import com.lambda.cloud.iotdb.IotDbConsumerRegistrar;
+import com.lambda.cloud.iotdb.manager.IotDbConsumerManager;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,6 +102,20 @@ public class IotDbAutoConfiguration {
                     .password(iotDbProperties.getPassword())
                     .thriftMaxFrameSize(iotDbProperties.getThriftMaxFrameSize())
                     .build();
+        }
+
+        @Bean(destroyMethod = "stopAll")
+        @ConditionalOnMissingBean(IotDbConsumerManager.class)
+        public IotDbConsumerManager iotDbConsumerManager() {
+            log.info("Creating IotDbConsumerManager bean");
+            return new IotDbConsumerManager();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(IotDbConsumerRegistrar.class)
+        public IotDbConsumerRegistrar iotDbConsumerRegistrar(IotDbConsumerManager consumerManager) {
+            log.info("Creating IotDbConsumerRegistrar bean with basePackage: {}", iotDbProperties.getBasePackage());
+            return new IotDbConsumerRegistrar(consumerManager, iotDbProperties);
         }
     }
 }

@@ -28,6 +28,7 @@ public class IotDbProperties {
     private String password;
     private String database;
     private long ttl;
+    private long timeout = 10000;
     private int thriftMaxFrameSize;
     private String basePackage = "com.lambda.cloud.iotdb";
 
