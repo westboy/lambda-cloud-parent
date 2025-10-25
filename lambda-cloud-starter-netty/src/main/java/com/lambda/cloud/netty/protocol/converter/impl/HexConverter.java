@@ -88,10 +88,15 @@ public class HexConverter implements DataTypeConverter {
             int precision = fieldMetadata.getPrecision();
 
             switch (value) {
-                case String hexString -> {
+                case String str -> {
                     // 移除可能的空格和0x前缀
-                    hexString = hexString.replaceAll("\\s+", "").replaceAll("^0x", "");
-                    result = HexUtil.decodeHex(hexString);
+                    str = str.replaceAll("\\s+", "").replaceAll("^0x", "");
+                    if (HexUtil.isHexNumber(str)) {
+                        result = HexUtil.decodeHex(str);
+                    } else {
+                        String hexStr = HexUtil.encodeHexStr(str);
+                        result = HexUtil.decodeHex(hexStr);
+                    }
                 }
                 case Integer i -> {
                     // 修正：使用BigDecimal避免精度损失
