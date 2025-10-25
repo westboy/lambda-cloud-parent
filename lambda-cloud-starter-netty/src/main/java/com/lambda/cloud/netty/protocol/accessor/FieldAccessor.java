@@ -39,4 +39,8 @@ public interface FieldAccessor {
      * @return 字段类型
      */
     Class<?> getFieldType();
+
+    void setFieldName(String fieldName);
+
+    void setFieldType(Class<?> fieldType);
 }

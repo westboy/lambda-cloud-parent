@@ -4,6 +4,7 @@ import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.asm.FieldAccessorGenerator;
 import java.lang.reflect.Field;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 基于字节码生成的高性能字段访问器
@@ -17,16 +18,12 @@ import lombok.Getter;
  * @see ReflectionFieldAccessor
  */
 @Getter
+@Setter
 public class ByteCodeFieldAccessor implements FieldAccessor {
 
-    /**
-     * 动态生成的字段访问器实例
-     *
-     */
     private final FieldAccessor dynamicAccessor;
-
-    private final String name;
-    private final Class<?> type;
+    private String name;
+    private Class<?> type;
 
     /**
      * 构造函数
@@ -88,6 +85,16 @@ public class ByteCodeFieldAccessor implements FieldAccessor {
     @Override
     public Class<?> getFieldType() {
         return type;
+    }
+
+    @Override
+    public void setFieldName(String fieldName) {
+        this.name = fieldName;
+    }
+
+    @Override
+    public void setFieldType(Class<?> fieldType) {
+        this.type = fieldType;
     }
 
     /**

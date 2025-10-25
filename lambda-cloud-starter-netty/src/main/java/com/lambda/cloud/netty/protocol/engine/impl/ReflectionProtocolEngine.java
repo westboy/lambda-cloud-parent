@@ -2,6 +2,7 @@ package com.lambda.cloud.netty.protocol.engine.impl;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
+import cn.hutool.core.util.ClassUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
@@ -25,6 +26,9 @@ import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.EncryptionUtils;
 import io.netty.buffer.ByteBuf;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
@@ -287,6 +291,10 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                 }
                 ProtocolValidation validation = field.getAnnotation(ProtocolValidation.class);
                 FieldAccessor fieldAccessor = FieldAccessorFactory.createAccessor(field);
+                if (isGenericField(field)) {
+                    Class<?> typeArgument = ClassUtil.getTypeArgument(messageClass);
+                    fieldAccessor.setFieldType(typeArgument);
+                }
                 fields.add(new ProtocolFieldMetadata(fieldAccessor, protocolField, validation));
             }
         }
@@ -295,6 +303,11 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         fields.sort(Comparator.comparingInt(ProtocolFieldMetadata::getOrder));
 
         return ProtocolFrameMetadata.create(messageClass, protocolMessage, fields);
+    }
+
+    public static boolean isGenericField(Field field) {
+        Type type = field.getGenericType();
+        return (type instanceof ParameterizedType) || (type instanceof TypeVariable);
     }
 
     /**

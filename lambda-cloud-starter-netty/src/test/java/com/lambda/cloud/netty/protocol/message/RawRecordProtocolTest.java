@@ -38,12 +38,11 @@ public class RawRecordProtocolTest {
     private static final String TEST_DATA5 =
             "68A28001003B18220000000155021673797553635328182200000001550208CF1C16170A19D0841517170A19400D0300000000000000000000000000400D0300000000000000000000000000400D0300000000000000000000000000A85B01007375000000000000876800000A000000007D75000000737500000000000087680000000000000000000000000000000000000001D0841517170A19450000000000000000A5B3";
 
-
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
-//        log.info("开始使用新协议框架解析交易记录报文");
-//        log.info("测试数据: {}", TEST_DATA4);
-//        log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
+        //        log.info("开始使用新协议框架解析交易记录报文");
+        //        log.info("测试数据: {}", TEST_DATA4);
+        //        log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
         ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
@@ -55,12 +54,12 @@ public class RawRecordProtocolTest {
             for (int i = 0; i < 1000; i++) {
                 // 先获取消息元数据，检查预期长度
                 var metadata = engine.getMetadata(RawBaseMessage.class);
-//                log.info("消息预期总长度: {} 字节", metadata.totalLength());
-//                log.info("字段数量: {}", metadata.fields().size());
+                //                log.info("消息预期总长度: {} 字节", metadata.totalLength());
+                //                log.info("字段数量: {}", metadata.fields().size());
 
                 // 将十六进制字符串转换为字节数组
-                byte[] bytes = HexUtil.decodeHex(i%2==0?TEST_DATA5:TEST_DATA4);
-//                log.info("实际数据长度: {} 字节", bytes.length);
+                byte[] bytes = HexUtil.decodeHex(i % 2 == 0 ? TEST_DATA5 : TEST_DATA4);
+                //                log.info("实际数据长度: {} 字节", bytes.length);
 
                 if (bytes.length < metadata.totalLength()) {
                     log.warn("数据长度不足！实际: {} 字节，预期: {} 字节", bytes.length, metadata.totalLength());
@@ -68,31 +67,31 @@ public class RawRecordProtocolTest {
 
                 ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
                 long current = System.currentTimeMillis();
-//                log.info("开始解析报文...");
+                //                log.info("开始解析报文...");
                 // 使用协议引擎解析消息
                 RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
 
                 // 验证解析结果
                 ValidationResult validation = engine.validate(record);
-//                if (validation.valid()) {
-//                    log.info("消息验证通过");
-//                } else {
-//                    log.warn("消息验证失败: {}", validation.message());
-//                }
+                //                if (validation.valid()) {
+                //                    log.info("消息验证通过");
+                //                } else {
+                //                    log.warn("消息验证失败: {}", validation.message());
+                //                }
 
                 // 输出关键字段
                 //            logKeyFields(record);
                 record.setChecksum(null);
                 record.setDataLength(null);
-//                log.info("解析功能验证完成，数据解析正常");
+                //                log.info("解析功能验证完成，数据解析正常");
                 ByteBuf serializeBuffer = Unpooled.buffer();
 
                 engine.serialize(record, serializeBuffer);
                 long stop = System.currentTimeMillis();
-                log.info("解析结果: time {}  {}", (stop - current),record.getInnerRecord());
+                log.info("解析结果: time {}  {}", (stop - current), record.getInnerRecord());
                 byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
                 serializeBuffer.readBytes(serializedBytes);
-//                log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
+                //                log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
             }
 
         } catch (ProtocolException e) {
