@@ -66,16 +66,4 @@ public class YkcV17HeartbeatRequestDetail {
      */
     public YkcV17HeartbeatRequestDetail() {}
 
-    /**
-     * 全参数构造函数
-     *
-     * @param stationCode     桩编码
-     * @param connectorId     枪号
-     * @param connectorStatus 枪状态
-     */
-    public YkcV17HeartbeatRequestDetail(String stationCode, Integer connectorId, String connectorStatus) {
-        this.stationCode = stationCode;
-        this.connectorId = connectorId;
-        this.connectorStatus = connectorStatus;
-    }
 }

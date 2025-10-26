@@ -21,7 +21,7 @@ public class YkcV17HeartbeatRequestMessage extends YkcV17BaseMessage<YkcV17Heart
      */
     public YkcV17HeartbeatRequestMessage(YkcV17HeartbeatRequestDetail body) {
         this.setFrameType("03");
-        this.setBody(body);
+        this.setDetail(body);
     }
 
     /**

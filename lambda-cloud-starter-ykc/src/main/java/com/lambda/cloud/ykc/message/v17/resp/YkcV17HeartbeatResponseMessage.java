@@ -1,5 +1,6 @@
 package com.lambda.cloud.ykc.message.v17.resp;
 
+import com.lambda.cloud.ykc.message.ResponseBuilder;
 import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
 
 /**
@@ -21,7 +22,7 @@ public class YkcV17HeartbeatResponseMessage extends YkcV17BaseMessage<YkcV17Hear
      */
     public YkcV17HeartbeatResponseMessage(YkcV17HeartbeatResponseDetail body) {
         this.setFrameType("04");
-        this.setBody(body);
+        this.setDetail(body);
     }
 
     /**
@@ -29,5 +30,14 @@ public class YkcV17HeartbeatResponseMessage extends YkcV17BaseMessage<YkcV17Hear
      */
     public YkcV17HeartbeatResponseMessage() {
         this.setFrameType("04");
+    }
+    
+    static {
+        ResponseBuilder.register("04", "1.7", protocolMessage -> {
+            YkcV17HeartbeatResponseMessage heartbeatResponseMessage = new YkcV17HeartbeatResponseMessage();
+            heartbeatResponseMessage.setStartFlag("68");
+            heartbeatResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
+            return heartbeatResponseMessage;
+        });
     }
 }

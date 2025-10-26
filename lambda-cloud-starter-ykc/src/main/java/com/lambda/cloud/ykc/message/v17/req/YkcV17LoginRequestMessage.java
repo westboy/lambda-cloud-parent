@@ -18,7 +18,7 @@ public class YkcV17LoginRequestMessage extends YkcV17BaseMessage<YkcV17LoginRequ
      */
     public YkcV17LoginRequestMessage(YkcV17LoginRequestDetail body) {
         this.setFrameType("01");
-        this.setBody(body);
+        this.setDetail(body);
     }
 
     /**

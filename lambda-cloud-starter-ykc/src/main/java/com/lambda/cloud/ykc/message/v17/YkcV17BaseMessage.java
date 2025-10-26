@@ -47,7 +47,7 @@ public abstract class YkcV17BaseMessage<T> implements ProtocolMessage {
     private String frameType;
 
     @ProtocolField(order = 5, composite = true, computed = true, description = "内容")
-    private T body;
+    private T detail;
 
     @ProtocolField(
             order = 6,

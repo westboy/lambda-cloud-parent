@@ -21,7 +21,7 @@ public class YkcV17BillingModelRequestMessage extends YkcV17BaseMessage<YkcV17Bi
      */
     public YkcV17BillingModelRequestMessage(YkcV17BillingModelRequestDetail body) {
         this.setFrameType("09");
-        this.setBody(body);
+        this.setDetail(body);
     }
 
     /**

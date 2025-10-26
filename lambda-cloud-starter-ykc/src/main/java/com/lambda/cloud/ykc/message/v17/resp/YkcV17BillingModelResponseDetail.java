@@ -197,41 +197,4 @@ public class YkcV17BillingModelResponseDetail {
             littleEndian = true,
             description = "时段费率号数组")
     private String timeSlotRates;
-
-    /**
-     * 默认构造函数
-     */
-    public YkcV17BillingModelResponseDetail() {}
-
-    /**
-     * 全参数构造函数
-     */
-    public YkcV17BillingModelResponseDetail(
-            String stationCode,
-            Integer connectorId,
-            String billingModelCode,
-            Long peakElectricityRate,
-            Long peakServiceRate,
-            Long highElectricityRate,
-            Long highServiceRate,
-            Long normalElectricityRate,
-            Long normalServiceRate,
-            Long valleyElectricityRate,
-            Long valleyServiceRate,
-            Integer lossRatio,
-            String timeSlotRates) {
-        this.stationCode = stationCode;
-        this.connectorId = connectorId;
-        this.billingModelCode = billingModelCode;
-        this.peakElectricityRate = peakElectricityRate;
-        this.peakServiceRate = peakServiceRate;
-        this.highElectricityRate = highElectricityRate;
-        this.highServiceRate = highServiceRate;
-        this.normalElectricityRate = normalElectricityRate;
-        this.normalServiceRate = normalServiceRate;
-        this.valleyElectricityRate = valleyElectricityRate;
-        this.valleyServiceRate = valleyServiceRate;
-        this.lossRatio = lossRatio;
-        this.timeSlotRates = timeSlotRates;
-    }
 }

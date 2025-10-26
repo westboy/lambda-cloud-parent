@@ -8,26 +8,37 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 云快充1.7协议读取实时监测数据请求消息体
+ * 云快充1.7协议运营平台远程停机消息体
  * <p>
- * 对应协议帧类型 0x12，读取实时监测数据的消息体部分
- * 样例报文: 68 0C 0000 00 12 32010200000001 01 0069
+ * 对应协议帧类型 0x36，当用户通过远程停止充电时，发送本命令
  * </p>
  *
  * @author Jin
  */
-@ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x12", name = "读取实时监测数据请求", description = "读取实时监测数据请求消息体", version = "1.7")
-public class YkcV17MonitoringDataRequestDetail {
+@ToString
+@ProtocolFrame
+public class YkcV17RemoteStopChargingRequestDetail {
+
+    /**
+     * 交易流水号 (16字节)
+     */
+    @ProtocolField(
+            order = 1,
+            length = 16,
+            computed = true,
+            dataType = ProtocolDataType.BCD,
+            littleEndian = true,
+            description = "交易流水号")
+    private String transactionId;
 
     /**
      * 桩编号 (7字节)
      * 不足7位补0
      */
     @ProtocolField(
-            order = 1,
+            order = 2,
             length = 7,
             computed = true,
             dataType = ProtocolDataType.BCD,
@@ -39,17 +50,11 @@ public class YkcV17MonitoringDataRequestDetail {
      * 枪号 (1字节)
      */
     @ProtocolField(
-            order = 2,
+            order = 3,
             length = 1,
             computed = true,
             dataType = ProtocolDataType.BCD,
             littleEndian = true,
             description = "枪号")
     private Integer connectorId;
-
-    /**
-     * 默认构造函数
-     */
-    public YkcV17MonitoringDataRequestDetail() {}
-
 }

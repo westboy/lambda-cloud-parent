@@ -1,4 +1,4 @@
-package com.lambda.cloud.ykc.message.v17.resp;
+package com.lambda.cloud.ykc.message.v17.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -8,19 +8,18 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 云快充1.7协议心跳响应消息体
+ * 云快充1.7协议计费模型验证请求消息体
  * <p>
- * 对应协议帧类型 0x04，心跳包应答的消息体部分
- * 样例报文: 68 0D 0000 00 04 32010200000001 01 00 0069
+ * 对应协议帧类型 0x05，充电桩向运营平台发送计费模型验证请求
  * </p>
  *
  * @author Jin
  */
-@ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x04", name = "心跳响应", description = "心跳包应答消息体", version = "1.7")
-public class YkcV17HeartbeatResponseDetail {
+@ToString
+@ProtocolFrame
+public class YkcV17BillingModelVerificationRequestDetail {
 
     /**
      * 桩编号 (7字节)
@@ -48,16 +47,15 @@ public class YkcV17HeartbeatResponseDetail {
     private Integer connectorId;
 
     /**
-     * 枪状态 (1字节)
-     * 0x00：正常
-     * 0x01：故障
+     * 计费模型编码 (2字节)
      */
     @ProtocolField(
             order = 3,
-            length = 1,
+            length = 2,
             computed = true,
-            dataType = ProtocolDataType.HEX,
+            dataType = ProtocolDataType.BCD,
             littleEndian = true,
-            description = "枪状态")
-    private String connectorStatus;
+            description = "计费模型编码")
+    private String billingModelCode;
+
 }

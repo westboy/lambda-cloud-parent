@@ -1,5 +1,6 @@
 package com.lambda.cloud.ykc.message.v17.resp;
 
+import com.lambda.cloud.ykc.message.ResponseBuilder;
 import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
 
 /**
@@ -21,7 +22,7 @@ public class YkcV17BillingModelResponseMessage extends YkcV17BaseMessage<YkcV17B
      */
     public YkcV17BillingModelResponseMessage(YkcV17BillingModelResponseDetail body) {
         this.setFrameType("0A");
-        this.setBody(body);
+        this.setDetail(body);
     }
 
     /**
@@ -29,5 +30,14 @@ public class YkcV17BillingModelResponseMessage extends YkcV17BaseMessage<YkcV17B
      */
     public YkcV17BillingModelResponseMessage() {
         this.setFrameType("0A");
+    }
+
+    static {
+        ResponseBuilder.register("0A", "1.7", protocolMessage -> {
+            YkcV17BillingModelResponseMessage billingModelResponseMessage = new YkcV17BillingModelResponseMessage();
+            billingModelResponseMessage.setStartFlag("68");
+            billingModelResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
+            return billingModelResponseMessage;
+        });
     }
 }

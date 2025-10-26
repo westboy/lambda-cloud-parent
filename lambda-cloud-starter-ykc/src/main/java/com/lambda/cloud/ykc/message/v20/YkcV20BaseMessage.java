@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @ProtocolFrame(frameType = "base", name = "云快充基础协议2.0", isPayload = true, description = "云快充2.0协议基础协议字段")
-public abstract class YkcV20BaseMessage {
+public abstract class YkcV20BaseMessage<T> {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
     private String startFlag;
@@ -47,7 +47,7 @@ public abstract class YkcV20BaseMessage {
     private String frameType;
 
     @ProtocolField(order = 5, composite = true, computed = true, encryptedField = true, description = "内容")
-    private Object body;
+    private Object detail;
 
     @ProtocolField(
             order = 6,

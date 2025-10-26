@@ -21,7 +21,7 @@ public class YkcV17MonitoringDataRequestMessage extends YkcV17BaseMessage<YkcV17
      */
     public YkcV17MonitoringDataRequestMessage(YkcV17MonitoringDataRequestDetail body) {
         this.setFrameType("12");
-        this.setBody(body);
+        this.setDetail(body);
     }
 
     /**
