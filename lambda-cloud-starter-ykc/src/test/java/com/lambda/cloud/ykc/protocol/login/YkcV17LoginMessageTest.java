@@ -44,7 +44,6 @@ public class YkcV17LoginMessageTest {
             ProtocolEngine<YkcV17LoginRequestMessage> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-
             // 将十六进制字符串转换为字节数组
             byte[] bytes =
                     HexUtil.decodeHex("6822E80300010181200000000500021056312E342E312E35010000000000000000000104FC40");
@@ -83,7 +82,7 @@ public class YkcV17LoginMessageTest {
             // 创建登录请求消息体
             YkcV17LoginRequestDetail requestDetail = new YkcV17LoginRequestDetail();
             requestDetail.setEquipmentId("1812000000005");
-            requestDetail.setEquipmentType("0");
+            requestDetail.setEquipmentType(0);
             requestDetail.setConnectorCount(2);
             requestDetail.setProtocolVersion("10");
             requestDetail.setProgramVersion("V1.4.1.50");
@@ -122,5 +121,4 @@ public class YkcV17LoginMessageTest {
             fail("登录请求序列化失败: " + e.getMessage());
         }
     }
-
 }

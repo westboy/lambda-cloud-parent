@@ -13,7 +13,7 @@ import lombok.ToString;
  * 对应协议帧类型 0x02，充电桩登录认证响应的消息体部分
  * </p>
  *
- * @author Generated
+ * @author Jin
  */
 @ToString
 @Getter

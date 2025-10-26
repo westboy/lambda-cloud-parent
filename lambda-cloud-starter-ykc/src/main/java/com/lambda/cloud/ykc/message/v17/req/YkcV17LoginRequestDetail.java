@@ -13,7 +13,7 @@ import lombok.ToString;
  * 对应协议帧类型 0x01，充电桩登录认证请求的消息体部分
  * </p>
  *
- * @author Generated
+ * @author Jin
  */
 @ToString
 @Getter
@@ -42,10 +42,10 @@ public class YkcV17LoginRequestDetail {
             order = 2,
             length = 1,
             computed = true,
-            dataType = ProtocolDataType.HEX,
+            dataType = ProtocolDataType.UINT8,
             littleEndian = true,
             description = "桩类型")
-    private String equipmentType;
+    private Integer equipmentType;
 
     /**
      * 枪数量 (1字节)

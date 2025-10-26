@@ -1,6 +1,5 @@
 package com.lambda.cloud.ykc.message.v17.resp;
 
-
 import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
 
 /**
@@ -9,10 +8,9 @@ import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
  * 对应协议帧类型 0x02，充电桩登录认证响应
  * </p>
  *
- * @author Generated
+ * @author Jin
  */
 public class YkcV17LoginResponseMessage extends YkcV17BaseMessage<YkcV17LoginResponseDetail> {
-
 
     public YkcV17LoginResponseMessage(YkcV17LoginResponseDetail body) {
         setFrameType("02");
@@ -26,5 +24,4 @@ public class YkcV17LoginResponseMessage extends YkcV17BaseMessage<YkcV17LoginRes
     public YkcV17LoginResponseMessage() {
         this.setFrameType("02");
     }
-
 }

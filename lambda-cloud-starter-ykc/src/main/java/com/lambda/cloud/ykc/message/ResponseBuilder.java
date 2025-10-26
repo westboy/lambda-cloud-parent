@@ -9,14 +9,14 @@ import java.util.function.Function;
  */
 public class ResponseBuilder {
 
-    private static final Map<String, Function<ProtocolMessage, ProtocolMessage>> BUILDER_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Function<ProtocolMessage, ProtocolMessage>> BUILDER_MAP =
+            new ConcurrentHashMap<>();
 
     private static String key(String frameType, String version) {
         return frameType + ":" + version;
     }
 
-    public static void register(String frameType, String version,
-                                Function<ProtocolMessage, ProtocolMessage> builder) {
+    public static void register(String frameType, String version, Function<ProtocolMessage, ProtocolMessage> builder) {
         BUILDER_MAP.put(key(frameType, version), builder);
     }
 

@@ -1,6 +1,5 @@
 package com.lambda.cloud.ykc.message.v17.req;
 
-
 import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
 
 /**
@@ -9,7 +8,7 @@ import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
  * 对应协议帧类型 0x01，充电桩登录认证请求
  * </p>
  *
- * @author Generated
+ * @author Jin
  */
 public class YkcV17LoginRequestMessage extends YkcV17BaseMessage<YkcV17LoginRequestDetail> {
     /**
@@ -29,5 +28,4 @@ public class YkcV17LoginRequestMessage extends YkcV17BaseMessage<YkcV17LoginRequ
     public YkcV17LoginRequestMessage() {
         this.setFrameType("01");
     }
-
 }
