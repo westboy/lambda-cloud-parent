@@ -13,11 +13,18 @@ import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
  */
 public class YkcV17LoginResponseMessage extends YkcV17BaseMessage<YkcV17LoginResponseDetail> {
 
-    public YkcV17LoginResponseMessage() {
-        setFrameType("02");
-    }
 
     public YkcV17LoginResponseMessage(YkcV17LoginResponseDetail body) {
+        setFrameType("02");
         setBody(body);
     }
+
+    /**
+     * 不带消息体的构造函数
+     *
+     */
+    public YkcV17LoginResponseMessage() {
+        this.setFrameType("02");
+    }
+
 }

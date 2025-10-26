@@ -3,7 +3,6 @@ package com.lambda.cloud.ykc.protocol.login;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cn.hutool.core.util.HexUtil;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
@@ -42,18 +41,18 @@ public class YkcV17LoginMessageTest {
         log.info("开始测试登录请求消息的序列化");
 
         try {
-            ProtocolEngine<YkcV17LoginRequestDetail> engine =
+            ProtocolEngine<YkcV17LoginRequestMessage> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
 
             // 将十六进制字符串转换为字节数组
             byte[] bytes =
-                    HexUtil.decodeHex("68226D0D00011812000000005100021056342E312E3530000101010101010101010101042E5F");
+                    HexUtil.decodeHex("6822E80300010181200000000500021056312E342E312E35010000000000000000000104FC40");
 
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
             // 使用协议引擎解析消息
-            YkcV17LoginRequestDetail record = engine.parse(byteBuf, YkcV17LoginRequestDetail.class);
+            YkcV17LoginRequestMessage record = engine.parse(byteBuf, YkcV17LoginRequestMessage.class);
 
             System.out.println(record);
 
@@ -83,9 +82,9 @@ public class YkcV17LoginMessageTest {
 
             // 创建登录请求消息体
             YkcV17LoginRequestDetail requestDetail = new YkcV17LoginRequestDetail();
-            requestDetail.setStationCode(18120000000051L);
-            requestDetail.setStationType("0");
-            requestDetail.setGunCount(2);
+            requestDetail.setEquipmentId("1812000000005");
+            requestDetail.setEquipmentType("0");
+            requestDetail.setConnectorCount(2);
             requestDetail.setProtocolVersion("10");
             requestDetail.setProgramVersion("V1.4.1.50");
             requestDetail.setNetworkType("1");

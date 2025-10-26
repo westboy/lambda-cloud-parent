@@ -31,7 +31,7 @@ public class YkcV17LoginRequestDetail {
             dataType = ProtocolDataType.BCD,
             littleEndian = true,
             description = "桩编号")
-    private Long stationCode;
+    private String equipmentId;
 
     /**
      * 桩类型 (1字节)
@@ -45,7 +45,7 @@ public class YkcV17LoginRequestDetail {
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             description = "桩类型")
-    private String stationType;
+    private String equipmentType;
 
     /**
      * 枪数量 (1字节)
@@ -57,7 +57,7 @@ public class YkcV17LoginRequestDetail {
             dataType = ProtocolDataType.HEX,
             littleEndian = true,
             description = "枪数量")
-    private Integer gunCount;
+    private Integer connectorCount;
 
     /**
      * 协议版本 (2字节)

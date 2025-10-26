@@ -12,20 +12,22 @@ import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
  * @author Generated
  */
 public class YkcV17LoginRequestMessage extends YkcV17BaseMessage<YkcV17LoginRequestDetail> {
-
-    /**
-     * 默认构造函数
-     */
-    public YkcV17LoginRequestMessage() {
-    }
-
     /**
      * 带消息体的构造函数
      *
      * @param body 登录请求消息体
      */
     public YkcV17LoginRequestMessage(YkcV17LoginRequestDetail body) {
-        setFrameType("01");
-        setBody(body);
+        this.setFrameType("01");
+        this.setBody(body);
     }
+
+    /**
+     * 不带消息体的构造函数
+     *
+     */
+    public YkcV17LoginRequestMessage() {
+        this.setFrameType("01");
+    }
+
 }

@@ -3,6 +3,7 @@ package com.lambda.cloud.ykc.message.v17;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.ykc.message.ProtocolMessage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,11 +11,10 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "base", name = "云快充基础协议", isPayload = true, description = "云快充基础协议字段")
-public abstract class YkcV17BaseMessage<T> {
-
+@ProtocolFrame(frameType = "base", name = "云快充1.7协议", isPayload = true, description = "云快充1.7协议基础字段")
+public abstract class YkcV17BaseMessage<T> implements ProtocolMessage {
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
-    private String startFlag;
+    private String startFlag = "68";
 
     @ProtocolField(
             order = 1,

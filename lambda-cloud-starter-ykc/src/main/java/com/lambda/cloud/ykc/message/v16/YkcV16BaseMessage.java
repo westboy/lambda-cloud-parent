@@ -1,4 +1,4 @@
-package com.lambda.cloud.ykc.protocol.base;
+package com.lambda.cloud.ykc.message.v16;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @ProtocolFrame(frameType = "base", name = "云快充基础协议", isPayload = true, description = "云快充基础协议字段")
-public class YkcV16BaseMessage<T> {
+public abstract class YkcV16BaseMessage<T> {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
     private String startFlag;
