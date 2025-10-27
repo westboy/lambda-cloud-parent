@@ -77,40 +77,29 @@ lambda-cloud-parent
 ├── lambda-cloud-core                    # 核心功能与通用工具包（BaseDO/DTO/VO、对象转换、工具类、异常处理）
 ├── lambda-cloud-processor               # 注解处理器（MapStruct 等编译时代码生成）
 ├── lambda-cloud-starter-dependencies    # 项目统一依赖版本管理（BOM）
-├── ─── Web 开发模块
 ├── lambda-cloud-starter-web             # 通用 Web 开发组件封装（全局异常、Jackson 定制、统一响应）
 ├── lambda-cloud-starter-swagger         # API 文档生成（Knife4j/SpringDoc）
 ├── lambda-cloud-starter-gateway         # Spring Cloud Gateway 网关模块
-├── ─── 数据持久化模块
 ├── lambda-cloud-starter-mybatis         # MyBatis Plus 集成（扩展 Mapper、多租户、字段加密、数据权限）
 ├── lambda-cloud-starter-datasource      # 多数据源与数据库连接池管理
 ├── lambda-cloud-starter-liquibase       # 数据库版本管理工具集成
 ├── lambda-cloud-starter-iotdb           # IoTDB 时序数据库集成
-├── ─── 缓存模块
 ├── lambda-cloud-starter-redis           # Redis 缓存与分布式锁支持（Redisson、Caffeine）
-├── ─── 消息队列模块
 ├── lambda-cloud-starter-kafka           # Kafka 消息队列集成
 ├── lambda-cloud-starter-rocketmq        # RocketMQ 消息队列集成
-├── ─── RPC 模块
 ├── lambda-cloud-starter-dubbo           # Dubbo RPC 集成支持
 ├── lambda-cloud-starter-feign           # 声明式 HTTP 客户端支持（OpenFeign）
-├── ─── 安全认证模块
 ├── lambda-cloud-starter-security        # 安全认证模块（表单登录、短信登录、HMAC、第三方登录）
-├── ─── 网络通信模块
 ├── lambda-cloud-starter-netty           # Netty 网络通信框架（协议引擎、TCP 长连接、性能监控）
 ├── lambda-cloud-starter-websocket       # WebSocket 通信支持
 ├── lambda-cloud-starter-sse             # Server-Sent Events 支持
-├── ─── 监控与日志模块
 ├── lambda-cloud-starter-actuator        # 健康检查与监控集成
 ├── lambda-cloud-starter-logger          # 日志统一采集与追踪
-├── ─── 第三方服务集成
 ├── lambda-cloud-starter-oss             # 对象存储（MinIO、OSS）支持
 ├── lambda-cloud-starter-sms             # 短信网关支持
 ├── lambda-cloud-starter-wxjava          # 微信开发 SDK 集成
-├── ─── 行业协议模块
 ├── lambda-cloud-starter-ykc             # 云快充协议支持（基于 Netty 协议引擎）
-└── ─── 测试模块
-    └── lambda-cloud-starter-test            # 测试工具与集成测试支持
+└── lambda-cloud-starter-test            # 测试工具与集成测试支持
 ```
 
 ## 快速开始
