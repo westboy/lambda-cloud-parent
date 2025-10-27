@@ -84,11 +84,11 @@ public class YkcV17LoginMessageTest {
             requestDetail.setEquipmentId("1812000000005");
             requestDetail.setEquipmentType(0);
             requestDetail.setConnectorCount(2);
-            requestDetail.setProtocolVersion("10");
+            requestDetail.setProtocolVersion(10);
             requestDetail.setProgramVersion("V1.4.1.50");
-            requestDetail.setNetworkType("1");
+            requestDetail.setNetworkType(1);
             requestDetail.setSimCardNumber("1");
-            requestDetail.setOperator("4");
+            requestDetail.setOperator(4);
 
             // 创建登录请求消息
             YkcV17LoginRequestMessage requestMessage = new YkcV17LoginRequestMessage(requestDetail);

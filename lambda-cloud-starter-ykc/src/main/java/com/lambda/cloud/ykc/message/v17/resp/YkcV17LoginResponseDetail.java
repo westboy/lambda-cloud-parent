@@ -22,21 +22,16 @@ import lombok.ToString;
 public class YkcV17LoginResponseDetail {
 
     /**
-     * 桩编号 (7字节)
+     * 桩编码 (7字节)
+     * BCD码，不足7位补0
      */
-    @ProtocolField(order = 1, length = 7, computed = true, dataType = ProtocolDataType.HEX, description = "桩编号")
+    @ProtocolField(order = 1, length = 7, computed = true, dataType = ProtocolDataType.BCD, description = "桩编码")
     private String stationCode;
 
     /**
-     * 登录结果 (1字节)
-     * 0x00: 登录成功
-     * 0x01: 用户名或密码错误
-     * 0x02: 充电桩未注册
-     * 0x03: 充电桩已被禁用
-     * 0x04: 系统维护中
-     * 0x05: 网络连接异常
-     * 0x06: 其他错误
+     * 登陆结果 (1字节)
+     * BIN码: 0x00 登陆成功, 0x01 登陆失败
      */
-    @ProtocolField(order = 2, length = 1, computed = true, dataType = ProtocolDataType.HEX, description = "登录结果")
+    @ProtocolField(order = 2, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "登陆结果")
     private Integer loginResult;
 }
