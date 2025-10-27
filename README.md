@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://gitee.com/lamuda-cloud/lamuda-cloud-parent">
-    <img src="https://img.shields.io/badge/lambda--cloud-1.0.0--SNAPSHOT-brightgreen" alt="Lambda Cloud">
+    <img src="https://img.shields.io/badge/lambda--cloud-2025.1.1--SNAPSHOT-brightgreen" alt="Lambda Cloud">
   </a>
   <a href="https://spring.io/projects/spring-boot">
     <img src="https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen" alt="Spring Boot">
@@ -19,92 +19,118 @@
 
 ## 核心优势
 
-- 🚀 **现代化技术栈**：基于最新的 Spring Boot 3.5.3 和 Spring Cloud 2025.0.0 构建，始终与技术前沿同步
-- 🧩 **模块化设计**：支持灵活组合各类中间件能力，适配不同项目需求，实现按需定制
-- ⚙️ **自动化配置**：封装各类基础设施配置，简化开发流程，提高上线效率，减少重复工作
-- 🛠️ **快速开发支持**：提供通用开发脚手架，业务团队可专注于核心业务逻辑实现，提升开发效率
-- 🌐 **完整的微服务能力覆盖**：支持服务治理、安全认证、链路追踪等能力，构建健壮的微服务架构
+- 🚀 **现代化技术栈**：基于 Spring Boot 3.5.3、Spring Cloud 2025.0.0、Spring Cloud Alibaba 2025.0.0.0 和 JDK 21 构建，充分利用虚拟线程等最新特性
+- 🧩 **高度模块化**：27 个独立模块，支持灵活组合，按需引入，避免依赖膨胀
+- ⚡ **高性能网络**：基于 Netty 的高性能协议引擎，支持 TCP 长连接、协议自动解析、性能监控，适用于 IoT 设备通信
+- 🔐 **企业级安全**：集成 Sa-Token，支持表单登录、短信登录、HMAC 签名认证、第三方登录等多种认证方式
+- 💾 **MyBatis Plus 增强**：扩展 Mapper、自动填充、多租户、字段加密、数据权限等企业级功能开箱即用
+- 🎯 **注解驱动开发**：基于 MapStruct 的 `@AutoConverter` 实现编译期对象转换，协议引擎的 `@ProtocolMessage` 实现声明式协议解析
+- 🔧 **自动化配置**：所有中间件均提供自动配置，零配置即可快速启动，支持细粒度定制
+- 📊 **完整的可观测性**：集成 Actuator、P6Spy SQL 监控、Netty 性能统计，系统运行状态一目了然
+- 🌐 **微服务全栈支持**：Dubbo、OpenFeign 双 RPC、Nacos 注册中心、Gateway 网关、Kafka/RocketMQ 消息队列
 - 📦 **统一依赖管理**：通过 `lambda-cloud-starter-dependencies` 管理所有组件版本，避免依赖冲突
 
 ## 技术栈
 
 | 分类 | 技术 | 版本 | 说明 |
 | --- | --- | --- | --- |
-| 核心框架 | JDK | 21 | 运行环境 |
-| | Spring Boot | 3.5.3 | 核心框架 |
+| **核心框架** | JDK | 21 | 运行环境，支持虚拟线程 |
+| | Spring Boot | 3.5.3 | 应用框架 |
 | | Spring Cloud | 2025.0.0 | 微服务框架 |
-| | Spring Cloud Alibaba | 2023.0.3.3 | 阿里巴巴微服务解决方案 |
-| 数据库 | MyBatis Plus | 3.5.12 | ORM 框架 |
+| | Spring Cloud Alibaba | 2025.0.0.0 | 阿里巴巴微服务解决方案 |
+| | Spring AI | 1.0.0 | AI 应用开发支持 |
+| **数据持久化** | MyBatis Plus | 3.5.12 | ORM 框架，支持扩展 Mapper、多租户、字段加密 |
+| | Dynamic Datasource | 4.3.1 | 动态数据源管理 |
 | | MySQL | 8.2.0 | 关系型数据库 |
-| | Liquibase | 4.29.1 | 数据库迁移工具 |
+| | Liquibase | 4.29.1 | 数据库版本管理 |
 | | Apache IoTDB | 2.0.3 | 时序数据库 |
-| 缓存 | Redis | - | 分布式缓存 |
-| | Redisson | 3.34.1 | Redis 客户端 |
-| 消息队列 | Kafka | - | 高吞吐量消息中间件 |
+| | P6Spy | 3.9.1 | SQL 性能监控 |
+| **缓存** | Redis | - | 分布式缓存 |
+| | Redisson | 3.34.1 | Redis 客户端，支持分布式锁 |
+| | Caffeine | 2.9.3 | 本地缓存 |
+| **消息队列** | Kafka | - | 高吞吐量消息中间件 |
 | | RocketMQ | 2.3.4 | 分布式消息中间件 |
-| RPC框架 | Dubbo | 3.3.1 | 高性能RPC框架 |
-| 安全框架 | Sa-Token | 1.43.0 | 权限认证框架 |
-| API文档 | Knife4j | 4.5.0 | Swagger增强工具 |
+| **RPC 框架** | Dubbo | 3.3.5 | 高性能 RPC 框架 |
+| | OpenFeign | - | 声明式 HTTP 客户端 |
+| **安全认证** | Sa-Token | 1.43.0 | 权限认证框架，支持多种登录方式 |
+| | BouncyCastle | 1.77 | 加密算法库 |
+| **网络通信** | Netty | - | 高性能网络框架，支持协议引擎 |
+| | OkHttp | 4.12.0 | HTTP 客户端 |
+| **对象映射** | MapStruct | 1.6.0.RC1 | Java Bean 映射工具，编译期代码生成 |
+| **API 文档** | Knife4j | 4.5.0 | Swagger 增强工具 |
 | | SpringDoc | 2.8.9 | OpenAPI 3 文档生成 |
-| 微信开发 | WxJava | 4.7.0 | 微信开发Java SDK |
-| 工具类 | Lombok | 1.18.34 | 简化Java代码工具 |
-| | Guava | 33.2.1-jre | Google核心Java库 |
-| | MapStruct | 1.6.0.RC1 | Java Bean映射工具 |
-| | Hutool | 5.8.29 | Java工具库 |
-| 通信 | Netty | - | 高性能网络通信框架 |
-| | OkHttp | 4.12.0 | HTTP客户端 |
-| 日志 | SLF4J | 2.0.16 | 日志门面接口 |
-| 云原生 | Nacos | 2.3.2 | 服务注册与配置中心 |
+| **微信开发** | WxJava | 4.7.0 | 微信开发 Java SDK |
+| **工具库** | Lombok | 1.18.34 | 简化 Java 代码 |
+| | Guava | 33.2.1-jre | Google 核心工具库 |
+| | Hutool | 5.8.41 | Java 工具集合 |
+| **日志** | SLF4J | 2.0.16 | 日志门面接口 |
+| **监控** | Actuator | - | 应用监控和管理 |
+| | Jacoco | 0.8.12 | 代码覆盖率 |
+| **代码质量** | Spotless | 2.44.4 | 代码格式化 |
+| | Spotbugs | 4.9.3.0 | 代码静态分析 |
+| **云原生** | Nacos | 2.3.2 | 服务注册与配置中心 |
 
 ## 项目结构概览
 
 ```
 lambda-cloud-parent
-├── lambda-cloud-core                    # 核心功能与通用工具包
-├── lambda-cloud-starter-actuator        # 健康检查与监控集成
+├── lambda-cloud-core                    # 核心功能与通用工具包（BaseDO/DTO/VO、对象转换、工具类、异常处理）
+├── lambda-cloud-processor               # 注解处理器（MapStruct 等编译时代码生成）
+├── lambda-cloud-starter-dependencies    # 项目统一依赖版本管理（BOM）
+├── ─── Web 开发模块
+├── lambda-cloud-starter-web             # 通用 Web 开发组件封装（全局异常、Jackson 定制、统一响应）
+├── lambda-cloud-starter-swagger         # API 文档生成（Knife4j/SpringDoc）
+├── lambda-cloud-starter-gateway         # Spring Cloud Gateway 网关模块
+├── ─── 数据持久化模块
+├── lambda-cloud-starter-mybatis         # MyBatis Plus 集成（扩展 Mapper、多租户、字段加密、数据权限）
 ├── lambda-cloud-starter-datasource      # 多数据源与数据库连接池管理
-├── lambda-cloud-starter-dependencies    # 项目统一依赖版本管理
-├── lambda-cloud-starter-dubbo           # Dubbo RPC 集成支持
-├── lambda-cloud-starter-feign           # 声明式 HTTP 客户端支持
-├── lambda-cloud-starter-gateway         # 基于 Spring Cloud Gateway 的网关模块
+├── lambda-cloud-starter-liquibase       # 数据库版本管理工具集成
 ├── lambda-cloud-starter-iotdb           # IoTDB 时序数据库集成
+├── ─── 缓存模块
+├── lambda-cloud-starter-redis           # Redis 缓存与分布式锁支持（Redisson、Caffeine）
+├── ─── 消息队列模块
 ├── lambda-cloud-starter-kafka           # Kafka 消息队列集成
-├── lambda-cloud-starter-liquibase       # 数据库变更管理工具集成
-├── lambda-cloud-starter-logger          # 日志统一采集与追踪
-├── lambda-cloud-starter-mybatis         # MyBatis ORM 框架集成
-├── lambda-cloud-starter-netty           # Netty 网络通信框架集成
-├── lambda-cloud-starter-oss             # 对象存储（如 MinIO、OSS）支持
-├── lambda-cloud-starter-redis           # Redis 缓存与分布式锁支持
 ├── lambda-cloud-starter-rocketmq        # RocketMQ 消息队列集成
-├── lambda-cloud-starter-security        # 基于 Sa-Token 的安全认证模块
-├── lambda-cloud-starter-sms             # 短信网关支持
+├── ─── RPC 模块
+├── lambda-cloud-starter-dubbo           # Dubbo RPC 集成支持
+├── lambda-cloud-starter-feign           # 声明式 HTTP 客户端支持（OpenFeign）
+├── ─── 安全认证模块
+├── lambda-cloud-starter-security        # 安全认证模块（表单登录、短信登录、HMAC、第三方登录）
+├── ─── 网络通信模块
+├── lambda-cloud-starter-netty           # Netty 网络通信框架（协议引擎、TCP 长连接、性能监控）
+├── lambda-cloud-starter-websocket       # WebSocket 通信支持
 ├── lambda-cloud-starter-sse             # Server-Sent Events 支持
-├── lambda-cloud-starter-swagger         # API 文档生成（Swagger/OpenAPI）
-├── lambda-cloud-starter-test            # 测试工具与集成测试支持
-├── lambda-cloud-starter-web             # 通用 Web 开发组件封装
-└── lambda-cloud-starter-websocket       # WebSocket 通信支持
+├── ─── 监控与日志模块
+├── lambda-cloud-starter-actuator        # 健康检查与监控集成
+├── lambda-cloud-starter-logger          # 日志统一采集与追踪
+├── ─── 第三方服务集成
+├── lambda-cloud-starter-oss             # 对象存储（MinIO、OSS）支持
+├── lambda-cloud-starter-sms             # 短信网关支持
+├── lambda-cloud-starter-wxjava          # 微信开发 SDK 集成
+├── ─── 行业协议模块
+├── lambda-cloud-starter-ykc             # 云快充协议支持（基于 Netty 协议引擎）
+└── ─── 测试模块
+    └── lambda-cloud-starter-test            # 测试工具与集成测试支持
 ```
 
 ## 快速开始
 
 ### 环境要求
 
-- JDK 21 或更高版本
-- Maven 3.6+ 或 Gradle 7+
-- Redis 5.0+（如使用缓存相关功能）
-- MySQL 8.0+（如使用数据库相关功能）
+- **JDK**：21 或更高版本
+- **构建工具**：Maven 3.6+
 
 ### 添加依赖
 
 在您的 Maven 项目中引入 Lambda Cloud 的 BOM：
 
-```
+```xml
 <dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-dependencies</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>2025.1.1-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -114,7 +140,7 @@ lambda-cloud-parent
 
 然后根据需要添加相应的 starter 依赖，例如：
 
-```
+```xml
 <dependencies>
     <!-- Web 模块 -->
     <dependency>
@@ -128,6 +154,12 @@ lambda-cloud-parent
         <artifactId>lambda-cloud-starter-security</artifactId>
     </dependency>
     
+    <!-- MyBatis Plus 模块 -->
+    <dependency>
+        <groupId>com.lambda.cloud</groupId>
+        <artifactId>lambda-cloud-starter-mybatis</artifactId>
+    </dependency>
+    
     <!-- Redis 缓存模块 -->
     <dependency>
         <groupId>com.lambda.cloud</groupId>
@@ -138,10 +170,26 @@ lambda-cloud-parent
 
 ## 应用场景
 
-- 快速构建企业级微服务项目
-- 多模块协作的分布式系统开发
-- 微服务架构的技术落地与标准化支撑
-- 面向中小型团队的低门槛高效率开发平台
+- 🏢 **企业级微服务与 SaaS 平台**  
+  适用于快速构建企业信息化系统与 SaaS 应用。框架内置多租户管理、数据权限、安全认证等核心能力，帮助企业在微服务架构下实现高效、稳定的业务系统。
+
+- 📱 **IoT 设备接入与管理**  
+  基于 Netty 协议引擎，支持高并发 TCP 长连接与协议自动解析。可广泛应用于充电桩、网关、传感器等物联网设备的接入、监控与远程控制。
+
+- 📊 **时序数据与大数据分析平台**  
+  集成 IoTDB 时序数据库与多源数据处理能力，支持高性能采集、实时查询与可视化分析，适用于工业监控、能耗管理等数据密集型场景。
+
+- 🛍️ **电商与交易系统**  
+  结合 Redis 缓存、Kafka 消息队列与分布式锁机制，轻松应对高并发下的库存、订单、支付等核心业务，确保系统高可用与一致性。
+
+- 💳 **支付与清结算平台**  
+  提供 HMAC 签名认证、多数据源管理与分布式事务支持，助力构建安全可靠的支付网关与清结算系统。
+
+- 🌐 **开放平台与网关服务**  
+  集成 Dubbo、OpenFeign、Gateway 与 Knife4j 文档体系，帮助企业快速搭建统一的 API 接入与管理平台，实现服务聚合与安全控制。
+
+- 🛡️ **高安全互联网应用**  
+  提供基于 Sa-Token 的统一认证体系，结合 XSS/CSRF 防护、字段加密与审计日志功能，为安全敏感型应用提供全方位防护。
 
 ## License
 
