@@ -2,7 +2,6 @@ package com.lambda.autoconfig;
 
 import com.lambda.cloud.iotdb.IotDbConsumerRegistrar;
 import com.lambda.cloud.iotdb.manager.IotDbConsumerManager;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.iotdb.isession.pool.ITableSessionPool;
@@ -25,9 +24,6 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Jin
  */
-@SuppressFBWarnings(
-        value = {"EI_EXPOSE_REP"},
-        justification = "springboot properties")
 @Slf4j
 @RequiredArgsConstructor
 @AutoConfiguration

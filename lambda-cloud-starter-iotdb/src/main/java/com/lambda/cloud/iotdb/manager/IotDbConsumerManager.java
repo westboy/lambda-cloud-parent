@@ -4,6 +4,7 @@ import com.lambda.autoconfig.IotDbProperties;
 import com.lambda.cloud.iotdb.IotDbConsumerContainer;
 import com.lambda.cloud.iotdb.annotation.IotDbSubscription;
 import com.lambda.cloud.iotdb.handler.MessageHandler;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
@@ -26,6 +27,7 @@ import org.springframework.context.ApplicationContextAware;
  *
  * @author Jin
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class IotDbConsumerManager implements ApplicationContextAware {
 
     private static final Logger logger = LoggerFactory.getLogger(IotDbConsumerManager.class);
