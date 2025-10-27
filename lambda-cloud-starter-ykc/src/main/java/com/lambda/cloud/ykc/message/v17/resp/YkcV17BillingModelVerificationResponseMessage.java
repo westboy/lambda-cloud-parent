@@ -11,7 +11,8 @@ import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
  *
  * @author Jin
  */
-public class YkcV17BillingModelVerificationResponseMessage extends YkcV17BaseMessage<YkcV17BillingModelVerificationResponseDetail> {
+public class YkcV17BillingModelVerificationResponseMessage
+        extends YkcV17BaseMessage<YkcV17BillingModelVerificationResponseDetail> {
 
     /**
      * 带消息体的构造函数
@@ -29,10 +30,11 @@ public class YkcV17BillingModelVerificationResponseMessage extends YkcV17BaseMes
     public YkcV17BillingModelVerificationResponseMessage() {
         this.setFrameType("06");
     }
-    
+
     static {
         ResponseBuilder.register("06", "1.7", protocolMessage -> {
-            YkcV17BillingModelVerificationResponseMessage verificationResponseMessage = new YkcV17BillingModelVerificationResponseMessage();
+            YkcV17BillingModelVerificationResponseMessage verificationResponseMessage =
+                    new YkcV17BillingModelVerificationResponseMessage();
             verificationResponseMessage.setStartFlag("68");
             verificationResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
             return verificationResponseMessage;

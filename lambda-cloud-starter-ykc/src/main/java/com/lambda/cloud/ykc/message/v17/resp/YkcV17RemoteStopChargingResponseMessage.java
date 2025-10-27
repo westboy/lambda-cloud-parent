@@ -29,10 +29,11 @@ public class YkcV17RemoteStopChargingResponseMessage extends YkcV17BaseMessage<Y
         this.setFrameType("35");
         this.setDetail(body);
     }
-    
+
     static {
         ResponseBuilder.register("35", "1.7", protocolMessage -> {
-            YkcV17RemoteStopChargingResponseMessage remoteStopChargingResponseMessage = new YkcV17RemoteStopChargingResponseMessage();
+            YkcV17RemoteStopChargingResponseMessage remoteStopChargingResponseMessage =
+                    new YkcV17RemoteStopChargingResponseMessage();
             remoteStopChargingResponseMessage.setStartFlag("68");
             remoteStopChargingResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
             return remoteStopChargingResponseMessage;

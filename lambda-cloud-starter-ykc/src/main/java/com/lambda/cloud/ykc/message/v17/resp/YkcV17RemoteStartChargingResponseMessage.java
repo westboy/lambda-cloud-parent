@@ -11,7 +11,8 @@ import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
  *
  * @author Jin
  */
-public class YkcV17RemoteStartChargingResponseMessage extends YkcV17BaseMessage<YkcV17RemoteStartChargingResponseDetail> {
+public class YkcV17RemoteStartChargingResponseMessage
+        extends YkcV17BaseMessage<YkcV17RemoteStartChargingResponseDetail> {
 
     /**
      * 默认构造函数
@@ -29,10 +30,11 @@ public class YkcV17RemoteStartChargingResponseMessage extends YkcV17BaseMessage<
         this.setFrameType("33");
         this.setDetail(body);
     }
-    
+
     static {
         ResponseBuilder.register("33", "1.7", protocolMessage -> {
-            YkcV17RemoteStartChargingResponseMessage remoteStartChargingResponseMessage = new YkcV17RemoteStartChargingResponseMessage();
+            YkcV17RemoteStartChargingResponseMessage remoteStartChargingResponseMessage =
+                    new YkcV17RemoteStartChargingResponseMessage();
             remoteStartChargingResponseMessage.setStartFlag("68");
             remoteStartChargingResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
             return remoteStartChargingResponseMessage;

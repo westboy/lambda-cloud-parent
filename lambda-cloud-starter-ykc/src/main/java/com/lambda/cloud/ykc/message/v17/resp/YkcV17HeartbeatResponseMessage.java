@@ -31,7 +31,7 @@ public class YkcV17HeartbeatResponseMessage extends YkcV17BaseMessage<YkcV17Hear
     public YkcV17HeartbeatResponseMessage() {
         this.setFrameType("04");
     }
-    
+
     static {
         ResponseBuilder.register("04", "1.7", protocolMessage -> {
             YkcV17HeartbeatResponseMessage heartbeatResponseMessage = new YkcV17HeartbeatResponseMessage();

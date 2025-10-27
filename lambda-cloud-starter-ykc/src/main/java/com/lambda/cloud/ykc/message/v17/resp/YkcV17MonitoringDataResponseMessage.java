@@ -31,10 +31,11 @@ public class YkcV17MonitoringDataResponseMessage extends YkcV17BaseMessage<YkcV1
     public YkcV17MonitoringDataResponseMessage() {
         this.setFrameType("13");
     }
-    
+
     static {
         ResponseBuilder.register("13", "1.7", protocolMessage -> {
-            YkcV17MonitoringDataResponseMessage monitoringDataResponseMessage = new YkcV17MonitoringDataResponseMessage();
+            YkcV17MonitoringDataResponseMessage monitoringDataResponseMessage =
+                    new YkcV17MonitoringDataResponseMessage();
             monitoringDataResponseMessage.setStartFlag("68");
             monitoringDataResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
             return monitoringDataResponseMessage;

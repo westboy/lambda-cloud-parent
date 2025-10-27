@@ -10,7 +10,8 @@ import com.lambda.cloud.ykc.message.v17.YkcV17BaseMessage;
  *
  * @author Jin
  */
-public class YkcV17BillingModelVerificationRequestMessage extends YkcV17BaseMessage<YkcV17BillingModelVerificationRequestDetail> {
+public class YkcV17BillingModelVerificationRequestMessage
+        extends YkcV17BaseMessage<YkcV17BillingModelVerificationRequestDetail> {
 
     /**
      * 带消息体的构造函数

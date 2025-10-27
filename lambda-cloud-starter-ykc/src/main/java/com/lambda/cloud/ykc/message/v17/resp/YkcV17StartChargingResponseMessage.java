@@ -29,7 +29,7 @@ public class YkcV17StartChargingResponseMessage extends YkcV17BaseMessage<YkcV17
         setFrameType("32");
         setDetail(body);
     }
-    
+
     static {
         ResponseBuilder.register("32", "1.7", protocolMessage -> {
             YkcV17StartChargingResponseMessage startChargingResponseMessage = new YkcV17StartChargingResponseMessage();

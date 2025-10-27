@@ -29,10 +29,11 @@ public class YkcV17TransactionRecordResponseMessage extends YkcV17BaseMessage<Yk
         this.setFrameType("40");
         this.setDetail(body);
     }
-    
+
     static {
         ResponseBuilder.register("40", "1.7", protocolMessage -> {
-            YkcV17TransactionRecordResponseMessage transactionRecordConfirmResponseMessage = new YkcV17TransactionRecordResponseMessage();
+            YkcV17TransactionRecordResponseMessage transactionRecordConfirmResponseMessage =
+                    new YkcV17TransactionRecordResponseMessage();
             transactionRecordConfirmResponseMessage.setStartFlag("68");
             transactionRecordConfirmResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
             return transactionRecordConfirmResponseMessage;

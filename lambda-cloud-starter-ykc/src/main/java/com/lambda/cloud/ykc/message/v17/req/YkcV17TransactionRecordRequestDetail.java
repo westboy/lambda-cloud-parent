@@ -3,11 +3,11 @@ package com.lambda.cloud.ykc.message.v17.req;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
  * 云快充1.7协议交易记录消息体
@@ -17,6 +17,7 @@ import java.math.BigDecimal;
  *
  * @author Jin
  */
+@SuppressFBWarnings("EI_EXPOSE_REP")
 @Getter
 @Setter
 @ToString
@@ -25,39 +26,23 @@ public class YkcV17TransactionRecordRequestDetail {
 
     /**
      * 交易流水号 (16字节)
+     * BCD码
      */
-    @ProtocolField(
-            order = 1,
-            length = 16,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "交易流水号")
+    @ProtocolField(order = 1, length = 16, computed = true, dataType = ProtocolDataType.BCD, description = "交易流水号")
     private String transactionId;
 
     /**
      * 桩编号 (7字节)
-     * 不足7位补0
+     * BCD码，不足7位补0
      */
-    @ProtocolField(
-            order = 2,
-            length = 7,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "桩编号")
+    @ProtocolField(order = 2, length = 7, computed = true, dataType = ProtocolDataType.BCD, description = "桩编号")
     private String stationCode;
 
     /**
      * 枪号 (1字节)
+     * BCD码
      */
-    @ProtocolField(
-            order = 3,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "枪号")
+    @ProtocolField(order = 3, length = 1, computed = true, dataType = ProtocolDataType.BCD, description = "枪号")
     private Integer connectorId;
 
     /**
@@ -88,30 +73,21 @@ public class YkcV17TransactionRecordRequestDetail {
 
     /**
      * 电表表号 (6字节)
+     * BCD码
      */
-    @ProtocolField(
-            order = 6,
-            length = 6,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "电表表号")
+    @ProtocolField(order = 6, length = 6, computed = true, dataType = ProtocolDataType.BCD, description = "电表表号")
     private String meterNumber;
 
     /**
      * 电表密文 (34字节)
+     * BIN码
      */
-    @ProtocolField(
-            order = 7,
-            length = 34,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            description = "电表密文")
+    @ProtocolField(order = 7, length = 34, computed = true, dataType = ProtocolDataType.HEX, description = "电表密文")
     private String meterCiphertext;
 
     /**
      * 电表协议版本号 (2字节)
+     * BIN码
      */
     @ProtocolField(
             order = 8,
@@ -124,14 +100,9 @@ public class YkcV17TransactionRecordRequestDetail {
 
     /**
      * 加密方式 (1字节)
+     * BIN码
      */
-    @ProtocolField(
-            order = 9,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.UINT8,
-            littleEndian = true,
-            description = "加密方式")
+    @ProtocolField(order = 9, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "加密方式")
     private Integer encryptionMethod;
 
     /**
@@ -428,31 +399,21 @@ public class YkcV17TransactionRecordRequestDetail {
 
     /**
      * 电动汽车唯一标识 (17字节)
-     * VIN码，正序直接上传，无需补0和反序
+     * ASCII码，VIN码，正序直接上传，无需补0和反序
      */
     @ProtocolField(
             order = 31,
             length = 17,
             computed = true,
             dataType = ProtocolDataType.ASCII,
-            littleEndian = true,
             description = "电动汽车唯一标识")
     private String vinCode;
 
     /**
      * 交易标识 (1字节)
-     * 0x01：app启动
-     * 0x02：卡启动
-     * 0x04：离线卡启动
-     * 0x05：vin码启动充电
+     * BIN码: 0x01 app启动, 0x02 卡启动, 0x04 离线卡启动, 0x05 vin码启动充电
      */
-    @ProtocolField(
-            order = 32,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.UINT8,
-            littleEndian = true,
-            description = "交易标识")
+    @ProtocolField(order = 32, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "交易标识")
     private Integer transactionType;
 
     /**
@@ -470,28 +431,15 @@ public class YkcV17TransactionRecordRequestDetail {
 
     /**
      * 停止原因 (1字节)
-     * 见附录11.1
+     * BIN码，见附录11.1
      */
-    @ProtocolField(
-            order = 34,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.UINT8,
-            littleEndian = true,
-            description = "停止原因")
+    @ProtocolField(order = 34, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "停止原因")
     private Integer stopReason;
 
     /**
      * 物理卡号 (8字节)
-     * 不足8位补0
+     * BCD码，不足8位补0
      */
-    @ProtocolField(
-            order = 35,
-            length = 8,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "物理卡号")
+    @ProtocolField(order = 35, length = 8, computed = true, dataType = ProtocolDataType.BCD, description = "物理卡号")
     private String physicalCardNumber;
-
 }

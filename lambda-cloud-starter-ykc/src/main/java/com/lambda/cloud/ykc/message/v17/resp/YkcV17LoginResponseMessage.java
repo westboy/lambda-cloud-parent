@@ -25,7 +25,7 @@ public class YkcV17LoginResponseMessage extends YkcV17BaseMessage<YkcV17LoginRes
     public YkcV17LoginResponseMessage() {
         this.setFrameType("02");
     }
-    
+
     static {
         ResponseBuilder.register("02", "1.7", protocolMessage -> {
             YkcV17LoginResponseMessage loginResponseMessage = new YkcV17LoginResponseMessage();

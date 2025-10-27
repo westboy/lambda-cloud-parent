@@ -18,43 +18,27 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame
+@ProtocolFrame(frameType = "0x36", name = "运营平台远程停机", description = "当用户通过远程停止充电时，发送本命令", version = "1.7")
 public class YkcV17RemoteStopChargingRequestDetail {
 
     /**
      * 交易流水号 (16字节)
+     * BCD码
      */
-    @ProtocolField(
-            order = 1,
-            length = 16,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "交易流水号")
+    @ProtocolField(order = 1, length = 16, computed = true, dataType = ProtocolDataType.BCD, description = "交易流水号")
     private String transactionId;
 
     /**
      * 桩编号 (7字节)
-     * 不足7位补0
+     * BCD码，不足7位补0
      */
-    @ProtocolField(
-            order = 2,
-            length = 7,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "桩编号")
+    @ProtocolField(order = 2, length = 7, computed = true, dataType = ProtocolDataType.BCD, description = "桩编号")
     private String stationCode;
 
     /**
      * 枪号 (1字节)
+     * BCD码
      */
-    @ProtocolField(
-            order = 3,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "枪号")
+    @ProtocolField(order = 3, length = 1, computed = true, dataType = ProtocolDataType.BCD, description = "枪号")
     private Integer connectorId;
 }

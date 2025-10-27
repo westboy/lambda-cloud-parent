@@ -24,40 +24,22 @@ public class YkcV17HeartbeatResponseDetail {
 
     /**
      * 桩编号 (7字节)
-     * 不足7位补0
+     * BCD码，不足7位补0
      */
-    @ProtocolField(
-            order = 1,
-            length = 7,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "桩编号")
+    @ProtocolField(order = 1, length = 7, computed = true, dataType = ProtocolDataType.BCD, description = "桩编号")
     private String stationCode;
 
     /**
      * 枪号 (1字节)
+     * BCD码
      */
-    @ProtocolField(
-            order = 2,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "枪号")
+    @ProtocolField(order = 2, length = 1, computed = true, dataType = ProtocolDataType.BCD, description = "枪号")
     private Integer connectorId;
 
     /**
      * 枪状态 (1字节)
-     * 0x00：正常
-     * 0x01：故障
+     * BIN码: 0x00 正常, 0x01 故障
      */
-    @ProtocolField(
-            order = 3,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            description = "枪状态")
-    private String connectorStatus;
+    @ProtocolField(order = 3, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "枪状态")
+    private Integer connectorStatus;
 }

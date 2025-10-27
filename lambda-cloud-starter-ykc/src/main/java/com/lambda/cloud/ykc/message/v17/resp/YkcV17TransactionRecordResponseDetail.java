@@ -18,33 +18,20 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame
+@ProtocolFrame(frameType = "0x40", name = "交易记录确认", description = "运营平台确认收到充电桩上传的交易记录", version = "1.7")
 public class YkcV17TransactionRecordResponseDetail {
 
     /**
      * 交易流水号 (16字节)
-     * 与0x3D报文中的交易流水号保持一致
+     * BCD码，与0x3D报文中的交易流水号保持一致
      */
-    @ProtocolField(
-            order = 1,
-            length = 16,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "交易流水号")
+    @ProtocolField(order = 1, length = 16, computed = true, dataType = ProtocolDataType.BCD, description = "交易流水号")
     private String transactionId;
 
     /**
      * 确认结果 (1字节)
-     * 0x00：成功
-     * 0x01：失败
+     * BIN码: 0x00 成功, 0x01 失败
      */
-    @ProtocolField(
-            order = 2,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            description = "确认结果")
+    @ProtocolField(order = 2, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "确认结果")
     private Integer confirmResult;
 }

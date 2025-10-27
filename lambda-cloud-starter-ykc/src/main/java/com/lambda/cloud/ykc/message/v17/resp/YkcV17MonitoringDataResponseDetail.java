@@ -26,79 +26,44 @@ public class YkcV17MonitoringDataResponseDetail {
      * 交易流水号 (16字节)
      * 见名词解释
      */
-    @ProtocolField(
-            order = 1,
-            length = 16,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "交易流水号")
+    @ProtocolField(order = 1, length = 16, computed = true, dataType = ProtocolDataType.BCD, description = "交易流水号")
     private String transactionId;
 
     /**
      * 桩编号 (7字节)
-     * 不足7位补0
+     * BCD码，不足7位补0
      */
-    @ProtocolField(
-            order = 2,
-            length = 7,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "桩编号")
+    @ProtocolField(order = 2, length = 7, computed = true, dataType = ProtocolDataType.BCD, description = "桩编号")
     private String stationCode;
 
     /**
      * 枪号 (1字节)
+     * BCD码
      */
-    @ProtocolField(
-            order = 3,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "枪号")
+    @ProtocolField(order = 3, length = 1, computed = true, dataType = ProtocolDataType.BCD, description = "枪号")
     private Integer connectorId;
 
     /**
      * 状态 (1字节)
-     * 0x00：离线 0x01：故障 0x02：空闲 0x03：充电
+     * BIN码: 0x00 离线, 0x01 故障, 0x02 空闲, 0x03 充电
      * 需做到变位上送
      */
-    @ProtocolField(
-            order = 4,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            description = "状态")
+    @ProtocolField(order = 4, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "状态")
     private Integer status;
 
     /**
      * 枪是否归位 (1字节)
-     * 0x00否 0x01是 0x02未知（无法检测到枪是否插回枪座即未知）
+     * BIN码: 0x00 否, 0x01 是, 0x02 未知
      */
-    @ProtocolField(
-            order = 5,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            description = "枪是否归位")
+    @ProtocolField(order = 5, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "枪是否归位")
     private Integer gunInPlace;
 
     /**
      * 是否插枪 (1字节)
-     * 0x00否 0x01是
+     * BIN码: 0x00 否, 0x01 是
      * 需做到变位上送
      */
-    @ProtocolField(
-            order = 6,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            description = "是否插枪")
+    @ProtocolField(order = 6, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "是否插枪")
     private Integer gunPlugged;
 
     /**
@@ -133,52 +98,28 @@ public class YkcV17MonitoringDataResponseDetail {
      * 枪线温度 (1字节)
      * 整形，偏移量-50；待机置零
      */
-    @ProtocolField(
-            order = 9,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.UINT8,
-            littleEndian = true,
-            description = "枪线温度")
+    @ProtocolField(order = 9, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "枪线温度")
     private Integer cableTemperature;
 
     /**
      * 枪线编码 (8字节)
-     * 没有置零
+     * BIN码，没有置零
      */
-    @ProtocolField(
-            order = 10,
-            length = 8,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
-            description = "枪线编码")
+    @ProtocolField(order = 10, length = 8, computed = true, dataType = ProtocolDataType.HEX, description = "枪线编码")
     private String cableCode;
 
     /**
      * SOC (1字节)
-     * 待机置零；交流桩置零
+     * BIN码，待机置零；交流桩置零
      */
-    @ProtocolField(
-            order = 11,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.UINT8,
-            littleEndian = true,
-            description = "SOC")
+    @ProtocolField(order = 11, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "SOC")
     private Integer soc;
 
     /**
      * 电池组最高温度 (1字节)
-     * 整形，偏移量-50ºC；待机置零；交流桩置零
+     * BIN码，整形，偏移量-50ºC；待机置零；交流桩置零
      */
-    @ProtocolField(
-            order = 12,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.UINT8,
-            littleEndian = true,
-            description = "电池组最高温度")
+    @ProtocolField(order = 12, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "电池组最高温度")
     private Integer batteryMaxTemperature;
 
     /**
