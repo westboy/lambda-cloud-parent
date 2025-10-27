@@ -29,7 +29,6 @@ public class YkcV17LoginRequestDetail {
             length = 7,
             computed = true,
             dataType = ProtocolDataType.BCD,
-            littleEndian = true,
             description = "桩编号")
     private String equipmentId;
 
