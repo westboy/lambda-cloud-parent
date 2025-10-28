@@ -19,14 +19,11 @@
 
 ## 核心优势
 
-- 🚀 **现代化技术栈**：基于 Spring Boot 3.5.3、Spring Cloud 2025.0.0、Spring Cloud Alibaba 2025.0.0.0 和 JDK 21 构建，充分利用虚拟线程等最新特性
-- 🧩 **高度模块化**：27 个独立模块，支持灵活组合，按需引入，避免依赖膨胀
-- ⚡ **高性能网络**：基于 Netty 的高性能协议引擎，支持 TCP 长连接、协议自动解析、性能监控，适用于 IoT 设备通信
+- 🚀 **现代化技术栈**：基于 Spring Boot 3.5.3、Spring Cloud 2025.0.0、Spring Cloud Alibaba 2025.0.0.0
+- 🧩 **高度模块化**：25+ 个独立模块，支持灵活组合，按需引入，避免依赖膨胀
 - 🔐 **企业级安全**：集成 Sa-Token，支持表单登录、短信登录、HMAC 签名认证、第三方登录等多种认证方式
 - 💾 **MyBatis Plus 增强**：扩展 Mapper、自动填充、多租户、字段加密、数据权限等企业级功能开箱即用
-- 🎯 **注解驱动开发**：基于 MapStruct 的 `@AutoConverter` 实现编译期对象转换，协议引擎的 `@ProtocolMessage` 实现声明式协议解析
 - 🔧 **自动化配置**：所有中间件均提供自动配置，零配置即可快速启动，支持细粒度定制
-- 📊 **完整的可观测性**：集成 Actuator、P6Spy SQL 监控、Netty 性能统计，系统运行状态一目了然
 - 🌐 **微服务全栈支持**：Dubbo、OpenFeign 双 RPC、Nacos 注册中心、Gateway 网关、Kafka/RocketMQ 消息队列
 - 📦 **统一依赖管理**：通过 `lambda-cloud-starter-dependencies` 管理所有组件版本，避免依赖冲突
 
@@ -99,6 +96,8 @@ lambda-cloud-parent
 ├── lambda-cloud-starter-sms             # 短信网关支持
 ├── lambda-cloud-starter-wxjava          # 微信开发 SDK 集成
 ├── lambda-cloud-starter-ykc             # 云快充协议支持（基于 Netty 协议引擎）
+├── lambda-cloud-starter-webclient       # WebClient HTTP 客户端支持
+├── lambda-cloud-starter-nacos           # Nacos 服务注册与配置中心集成
 └── lambda-cloud-starter-test            # 测试工具与集成测试支持
 ```
 
