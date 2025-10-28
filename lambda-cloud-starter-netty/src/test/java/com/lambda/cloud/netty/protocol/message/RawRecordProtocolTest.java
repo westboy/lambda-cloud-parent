@@ -2,6 +2,7 @@ package com.lambda.cloud.netty.protocol.message;
 
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.HexUtil;
+import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
@@ -36,7 +37,7 @@ public class RawRecordProtocolTest {
             "68A2077A003B181200000002660116430696294154241812000000026601204E0E0C120A19F0D21C0D120A19000000006879370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009AA9534F0002238B4F006879370000000000000000004C4741473450593333533630313332333501F0D21C0D120A19410150BE785B3E781B4733";
 
     private static final String TEST_DATA5 =
-            "68A28001003B18220000000155021673797553635328182200000001550208CF1C16170A19D0841517170A19400D0300000000000000000000000000400D0300000000000000000000000000400D0300000000000000000000000000A85B01007375000000000000876800000A000000007D75000000737500000000000087680000000000000000000000000000000000000001D0841517170A19450000000000000000A5B3";
+            "68A28001003B1821000000048101169542925446348818210000000481010000030D190A19B80B1F13190A19D07E0100A297050000000000007B0500400D0300000000000000000000000000400D0300000000000000000000000000400D03000000000000000000000000000A00000000AC97050000A297050000000000F97A05004C47414734505933335336303133323335002C961F121B0A19830000000000000000BD87";
 
     @Test
     public void testParseTransactionRecordWithNewProtocol() {
@@ -51,14 +52,14 @@ public class RawRecordProtocolTest {
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         try {
-            for (int i = 0; i < 1000; i++) {
+//            for (int i = 0; i < 1000; i++) {
                 // 先获取消息元数据，检查预期长度
                 var metadata = engine.getMetadata(RawBaseMessage.class);
                 //                log.info("消息预期总长度: {} 字节", metadata.totalLength());
                 //                log.info("字段数量: {}", metadata.fields().size());
 
                 // 将十六进制字符串转换为字节数组
-                byte[] bytes = HexUtil.decodeHex(i % 2 == 0 ? TEST_DATA5 : TEST_DATA4);
+                byte[] bytes = HexUtil.decodeHex(TEST_DATA5);
                 //                log.info("实际数据长度: {} 字节", bytes.length);
 
                 if (bytes.length < metadata.totalLength()) {
@@ -80,19 +81,23 @@ public class RawRecordProtocolTest {
                 //                }
 
                 // 输出关键字段
-                //            logKeyFields(record);
+                            logKeyFields(record);
                 record.setChecksum(null);
                 record.setDataLength(null);
                 //                log.info("解析功能验证完成，数据解析正常");
-                ByteBuf serializeBuffer = Unpooled.buffer();
 
-                engine.serialize(record, serializeBuffer);
+
+
                 long stop = System.currentTimeMillis();
-                log.info("解析结果: time {}  {}", (stop - current), record.getInnerRecord());
+            log.info("解析耗时: time {}  {}", (stop - current), record);
+            record.setChecksum(null);
+            ByteBuf serializeBuffer = Unpooled.buffer();
+            record.getInnerRecord().setVIN("LGAG4PY33S6013235");
+            engine.serialize(record, serializeBuffer);
                 byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
                 serializeBuffer.readBytes(serializedBytes);
-                //                log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
-            }
+                                log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
+//            }
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);
@@ -107,7 +112,7 @@ public class RawRecordProtocolTest {
      * 输出关键字段信息
      */
     private void logKeyFields(RawBaseMessage record) {
-        log.info("=== 关键字段信息 ===");
+        System.out.println("=== 关键字段信息 ===");
         log.info("帧类型: {}", record.getFrameType());
         log.info("订单编号: {}", record.getInnerRecord().getOrderNumber());
         log.info("桩编号: {}", record.getInnerRecord().getStationNumber());
@@ -142,7 +147,10 @@ public class RawRecordProtocolTest {
 
         log.info("=== 总计信息 ===");
         log.info("消费金额: {}", record.getInnerRecord().getTotalAmount());
-        log.info("VIN: {}", record.getInnerRecord().getVIN());
+
+            log.info("VIN: {}", record.getInnerRecord().getVIN());
+
+
         log.info("交易标识: {}", record.getInnerRecord().getTag());
         log.info("交易日期、时间: {}", record.getInnerRecord().getTIME());
         log.info("停止原因: {}", record.getInnerRecord().getDesc());
