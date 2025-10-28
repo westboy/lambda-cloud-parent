@@ -1,5 +1,7 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import cn.hutool.core.util.ByteUtil;
+import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
@@ -21,6 +23,10 @@ public class AsciiConverter implements DataTypeConverter {
 
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        if(ValidationUtils.isAllZero(data)){
+            return "";
+        }
+
         // 验证输入参数
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "ASCII");
 

@@ -24,6 +24,18 @@ public final class ValidationUtils {
     private static final Pattern MAC_PATTERN = Pattern.compile("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$");
 
     /**
+     * 是否全是0
+     * @param data 数组
+     * @return boolean
+     */
+    public static boolean isAllZero(byte[] data) {
+        for (byte b : data) {
+            if (b != 0) return false;
+        }
+        return true;
+    }
+
+    /**
      * 验证数值范围
      *
      * @param value 数值
