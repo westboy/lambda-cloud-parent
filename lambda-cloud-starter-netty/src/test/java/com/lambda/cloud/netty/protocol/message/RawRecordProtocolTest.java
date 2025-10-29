@@ -2,7 +2,6 @@ package com.lambda.cloud.netty.protocol.message;
 
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.HexUtil;
-import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
@@ -52,52 +51,50 @@ public class RawRecordProtocolTest {
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         try {
-//            for (int i = 0; i < 1000; i++) {
-                // 先获取消息元数据，检查预期长度
-                var metadata = engine.getMetadata(RawBaseMessage.class);
-                //                log.info("消息预期总长度: {} 字节", metadata.totalLength());
-                //                log.info("字段数量: {}", metadata.fields().size());
+            //            for (int i = 0; i < 1000; i++) {
+            // 先获取消息元数据，检查预期长度
+            var metadata = engine.getMetadata(RawBaseMessage.class);
+            //                log.info("消息预期总长度: {} 字节", metadata.totalLength());
+            //                log.info("字段数量: {}", metadata.fields().size());
 
-                // 将十六进制字符串转换为字节数组
-                byte[] bytes = HexUtil.decodeHex(TEST_DATA5);
-                //                log.info("实际数据长度: {} 字节", bytes.length);
+            // 将十六进制字符串转换为字节数组
+            byte[] bytes = HexUtil.decodeHex(TEST_DATA5);
+            //                log.info("实际数据长度: {} 字节", bytes.length);
 
-                if (bytes.length < metadata.totalLength()) {
-                    log.warn("数据长度不足！实际: {} 字节，预期: {} 字节", bytes.length, metadata.totalLength());
-                }
+            if (bytes.length < metadata.totalLength()) {
+                log.warn("数据长度不足！实际: {} 字节，预期: {} 字节", bytes.length, metadata.totalLength());
+            }
 
-                ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                long current = System.currentTimeMillis();
-                //                log.info("开始解析报文...");
-                // 使用协议引擎解析消息
-                RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+            long current = System.currentTimeMillis();
+            //                log.info("开始解析报文...");
+            // 使用协议引擎解析消息
+            RawBaseMessage record = engine.parse(byteBuf, RawBaseMessage.class);
 
-                // 验证解析结果
-                ValidationResult validation = engine.validate(record);
-                //                if (validation.valid()) {
-                //                    log.info("消息验证通过");
-                //                } else {
-                //                    log.warn("消息验证失败: {}", validation.message());
-                //                }
+            // 验证解析结果
+            ValidationResult validation = engine.validate(record);
+            //                if (validation.valid()) {
+            //                    log.info("消息验证通过");
+            //                } else {
+            //                    log.warn("消息验证失败: {}", validation.message());
+            //                }
 
-                // 输出关键字段
-                            logKeyFields(record);
-                record.setChecksum(null);
-                record.setDataLength(null);
-                //                log.info("解析功能验证完成，数据解析正常");
+            // 输出关键字段
+            logKeyFields(record);
+            record.setChecksum(null);
+            record.setDataLength(null);
+            //                log.info("解析功能验证完成，数据解析正常");
 
-
-
-                long stop = System.currentTimeMillis();
+            long stop = System.currentTimeMillis();
             log.info("解析耗时: time {}  {}", (stop - current), record);
             record.setChecksum(null);
             ByteBuf serializeBuffer = Unpooled.buffer();
             record.getInnerRecord().setVIN("LGAG4PY33S6013235");
             engine.serialize(record, serializeBuffer);
-                byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
-                serializeBuffer.readBytes(serializedBytes);
-                                log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
-//            }
+            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+            serializeBuffer.readBytes(serializedBytes);
+            log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
+            //            }
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);
@@ -148,8 +145,7 @@ public class RawRecordProtocolTest {
         log.info("=== 总计信息 ===");
         log.info("消费金额: {}", record.getInnerRecord().getTotalAmount());
 
-            log.info("VIN: {}", record.getInnerRecord().getVIN());
-
+        log.info("VIN: {}", record.getInnerRecord().getVIN());
 
         log.info("交易标识: {}", record.getInnerRecord().getTag());
         log.info("交易日期、时间: {}", record.getInnerRecord().getTIME());
