@@ -46,7 +46,7 @@ public abstract class YkcV17BaseMessage<T> implements ProtocolMessage {
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, computed = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, computed = true, description = "内容")
+    @ProtocolField(order = 5, composite = true, computed = true, description = "数据域")
     private T detail;
 
     @ProtocolField(
