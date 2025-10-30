@@ -21,13 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implements DataTypeConverter {
 
     /**
-     * 构造函数
-     *
-     * @param protocolEngine 协议解析引擎
-     */
-    public CompositeConverter {}
-
-    /**
      * 解析字节数据为复合对象
      *
      * @param data          字节数据

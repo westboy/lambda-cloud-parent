@@ -6,6 +6,7 @@ import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
+import java.util.List;
 
 /**
  * 字段元数据
@@ -233,5 +234,69 @@ public record ProtocolFieldMetadata(
             throw new ProtocolException(
                     ProtocolException.ErrorCode.REFLECTION_ERROR, "无法获取字段值: " + getFieldName(), getFieldName(), e);
         }
+    }
+
+    /**
+     * 是否为List字段
+     *
+     * @return true 表示List字段
+     */
+    public boolean isList() {
+        return protocolField.dataType() == ProtocolDataType.LIST
+                || List.class.isAssignableFrom(fieldAccessor.getFieldType());
+    }
+
+    /**
+     * 获取List元素数据类型
+     *
+     * @return List元素的数据类型
+     */
+    public ProtocolDataType getListElementDataType() {
+        return protocolField.listElementType();
+    }
+
+    /**
+     * 获取List固定长度
+     *
+     * @return List固定长度，0表示动态长度
+     */
+    public int getListLength() {
+        return protocolField.listLength();
+    }
+
+    /**
+     * 获取List长度字段名
+     *
+     * @return 长度字段名
+     */
+    public String getListLengthField() {
+        return protocolField.listLengthField();
+    }
+
+    /**
+     * 获取List元素长度
+     *
+     * @return List元素长度，0表示自动确定
+     */
+    public int getListElementLength() {
+        return protocolField.listElementLength();
+    }
+
+    /**
+     * 是否为固定长度List
+     *
+     * @return true 表示固定长度
+     */
+    public boolean isFixedLengthList() {
+        return getListLength() > 0;
+    }
+
+    /**
+     * 是否使用长度字段确定List长度
+     *
+     * @return true 表示使用长度字段
+     */
+    public boolean hasListLengthField() {
+        return !getListLengthField().isEmpty();
     }
 }

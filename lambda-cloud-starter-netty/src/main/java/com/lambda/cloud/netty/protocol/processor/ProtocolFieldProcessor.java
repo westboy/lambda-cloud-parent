@@ -66,8 +66,16 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             return;
         }
 
-        // 特殊处理复合字段
-        if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
+        // 特殊处理List字段
+        if (fieldMetadata.isList()) {
+            // List字段需要特殊处理，计算实际需要读取的数据长度
+            Object value = parseListField(byteBuf, fieldMetadata, converter, isEncryptionEnabled);
+            setFieldValue(instance, fieldMetadata, value);
+            // List字段的原始数据记录需要特殊处理
+            if (frameMetadata.isPayload()) {
+                recordListFieldRawData(fieldMetadata, frameMetadata, parsedRawDataList, value);
+            }
+        } else if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
             Object value = parseCompositeFieldWithDynamicLength(
                     byteBuf, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, parsedRawDataList);
@@ -424,5 +432,96 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR, "计算复合字段长度失败: " + compositeType.getSimpleName(), null, e);
         }
+    }
+
+    /**
+     * 解析List字段
+     *
+     * @param byteBuf           字节缓冲区
+     * @param fieldMetadata     字段元数据
+     * @param converter         转换器
+     * @param isEncryptionEnabled 是否启用加密
+     * @return 解析后的List对象
+     * @throws ProtocolException 解析异常
+     */
+    private Object parseListField(
+            ByteBuf byteBuf,
+            ProtocolFieldMetadata fieldMetadata,
+            DataTypeConverter converter,
+            boolean isEncryptionEnabled)
+            throws ProtocolException {
+
+        log.info(
+                "解析List字段: fieldName={}, listLength={}, listElementLength={}, isComposite={}",
+                fieldMetadata.getFieldName(),
+                fieldMetadata.getListLength(),
+                fieldMetadata.getListElementLength(),
+                fieldMetadata.isComposite());
+
+        // 计算List字段需要读取的总字节数
+        int totalBytes = calculateListFieldLength(byteBuf, fieldMetadata);
+        log.info("计算得到的总字节数: {}", totalBytes);
+
+        // 读取List字段的所有数据
+        byte[] listData = new byte[totalBytes];
+        byteBuf.readBytes(listData);
+        log.info("读取的字节数据: {}", java.util.Arrays.toString(listData));
+
+        // 使用ListConverter解析数据
+        Object result = convertFieldData(listData, fieldMetadata, converter, isEncryptionEnabled);
+        log.info("解析结果类型: {}, 值: {}", result != null ? result.getClass().getName() : "null", result);
+        return result;
+    }
+
+    /**
+     * 计算List字段需要读取的总字节数
+     *
+     * @param byteBuf       字节缓冲区
+     * @param fieldMetadata 字段元数据
+     * @return 需要读取的字节数
+     * @throws ProtocolException 计算异常
+     */
+    private int calculateListFieldLength(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata)
+            throws ProtocolException {
+
+        int listLength = fieldMetadata.getListLength();
+        int elementLength = fieldMetadata.getListElementLength();
+
+        // 如果listLength > 0，表示固定长度的List
+        if (listLength > 0) {
+            if (elementLength > 0) {
+                return listLength * elementLength;
+            } else {
+                // 元素长度未指定，使用字段的默认长度
+                return listLength * fieldMetadata.getDataType().getDefaultLength();
+            }
+        }
+
+        // 如果listLength == 0，需要动态计算
+        // 这种情况下，List的长度信息应该在数据中
+        // 暂时使用剩余的所有字节数据
+        return byteBuf.readableBytes();
+    }
+
+    /**
+     * 记录List字段的原始数据
+     *
+     * @param fieldMetadata     字段元数据
+     * @param frameMetadata     消息元数据
+     * @param parsedRawDataList 原始数据列表
+     * @param listValue         List值
+     */
+    private void recordListFieldRawData(
+            ProtocolFieldMetadata fieldMetadata,
+            ProtocolFrameMetadata frameMetadata,
+            List<ParsedData> parsedRawDataList,
+            Object listValue) {
+
+        // 对于List字段，记录一个特殊的原始数据项
+        ParsedData parsedRawData = new ParsedData();
+        parsedRawData.setIsComputed(fieldMetadata.isComputed());
+        parsedRawData.setRaw("LIST[" + (listValue != null ? ((List<?>) listValue).size() : 0) + " items]");
+        parsedRawData.setOrder(fieldMetadata.getOrder());
+        parsedRawDataList.add(parsedRawData);
     }
 }

@@ -47,13 +47,6 @@ public class YkcV20BillingModelResponseDetail {
     private Integer rateCount;
 
     /**
-     * 电费费率列表
-     * 每个费率4字节，精确到五位小数
-     */
-    @ProtocolField(order = 4, composite = true, description = "电费费率")
-    private List<BillingModelFee> fees;
-
-    /**
      * 计损比例 (1字节)
      * 见名词解释
      */
@@ -61,11 +54,25 @@ public class YkcV20BillingModelResponseDetail {
     private Integer lossRatio;
 
     /**
+     * 复合字段List
+     * 电费费率列表
+     * 每个费率4字节，精确到五位小数
+     */
+    @ProtocolField(order = 4, composite = true, description = "电费费率")
+    private List<BillingModelFee> fees;
+
+    /**
+     *  普通字段List
      * 时段费率号列表 (48字节)
      * 每半小时一个时段，共48个时段
      * 0x01：第1个费率，0x02：第2个费率，...，0x30：第48个费率
      */
-    @ProtocolField(order = 6, length = 1, dataType = ProtocolDataType.UINT8, description = "时段费率号")
+    @ProtocolField(
+            order = 6,
+            length = 1,
+            listElementLength = 48,
+            dataType = ProtocolDataType.UINT8,
+            description = "时段费率号")
     private List<Integer> timeSlotRateNumbers;
 
     @Getter

@@ -3,6 +3,7 @@ package com.lambda.cloud.netty.protocol.engine.impl;
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
 import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.TypeUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
@@ -88,6 +89,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         this.validationEngine = new ValidationEngine();
         this.protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
         this.computedProcessor = new ComputedProcessor(checksumService, encryptionService);
+        this.converterFactory.registerConverter(ProtocolDataType.COMPOSITE,new CompositeConverter(this));
     }
 
     @Override
@@ -293,7 +295,16 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                 FieldAccessor fieldAccessor = FieldAccessorFactory.createAccessor(field);
                 if (isGenericField(field)) {
                     Class<?> typeArgument = ClassUtil.getTypeArgument(messageClass);
-                    fieldAccessor.setFieldType(typeArgument);
+                    if (typeArgument != null) {
+                        fieldAccessor.setFieldType(typeArgument);
+                    } else {
+                        Type genericType = field.getGenericType();
+                        if (genericType instanceof ParameterizedType pt) {
+                            Type actualType = pt.getActualTypeArguments()[0];
+                            Class<?> aClass = TypeUtil.getClass(actualType);
+                            fieldAccessor.setFieldType(aClass);
+                        }
+                    }
                 }
                 fields.add(new ProtocolFieldMetadata(fieldAccessor, protocolField, validation));
             }
@@ -344,6 +355,10 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * 获取转换器（支持加密控制）
      */
     private DataTypeConverter getConverter(ProtocolFieldMetadata fieldMetadata, boolean encryptionEnabled) {
+        // List字段优先处理
+        if (fieldMetadata.isList()) {
+            return getListConverter();
+        }
         // 复合字段优先
         if (fieldMetadata.isComposite()) {
             return getCompositeConverter();
@@ -372,15 +387,29 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     }
 
     /**
+     * 获取List字段转换器
+     *
+     * @return List字段转换器
+     */
+    private DataTypeConverter getListConverter() {
+        DataTypeConverter converter = converterCache.get(ProtocolDataType.LIST.name());
+        if (converter == null) {
+            converter = converterFactory.getConverter(ProtocolDataType.LIST);
+            converterCache.put(ProtocolDataType.LIST.name(), converter);
+        }
+        return converter;
+    }
+
+    /**
      * 获取复合字段转换器
      *
      * @return 复合字段转换器
      */
     private DataTypeConverter getCompositeConverter() {
-        DataTypeConverter converter = converterCache.get("COMPOSITE_KEY");
+        DataTypeConverter converter = converterCache.get(ProtocolDataType.COMPOSITE.name());
         if (converter == null) {
-            converter = new CompositeConverter(this);
-            converterCache.put("COMPOSITE_KEY", converter);
+            converter = converterFactory.getConverter(ProtocolDataType.COMPOSITE);
+            converterCache.put(ProtocolDataType.COMPOSITE.name(), converter);
         }
         return converter;
     }

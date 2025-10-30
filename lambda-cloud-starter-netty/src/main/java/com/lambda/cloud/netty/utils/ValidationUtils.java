@@ -2,6 +2,8 @@ package com.lambda.cloud.netty.utils;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
+
 import java.util.regex.Pattern;
 
 /**
@@ -22,6 +24,23 @@ public final class ValidationUtils {
     private static final Pattern IP_PATTERN =
             Pattern.compile("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
     private static final Pattern MAC_PATTERN = Pattern.compile("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$");
+
+    /**
+     * 获取数据类型的默认长度
+     *
+     * @param dataType 数据类型
+     * @return 默认长度
+     */
+    public static int getDefaultElementLength(ProtocolDataType dataType) {
+        return switch (dataType) {
+            case UINT8, INT8 -> 1;
+            case UINT16, INT16 -> 2;
+            case UINT32, INT32, FLOAT -> 4;
+            case DOUBLE -> 8;
+            case CP56TIME2A -> 7;
+            default -> 0; // 变长类型
+        };
+    }
 
     /**
      * 是否全是0

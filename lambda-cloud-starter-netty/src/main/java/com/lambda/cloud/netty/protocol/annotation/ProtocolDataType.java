@@ -78,9 +78,14 @@ public enum ProtocolDataType {
     CP56TIME2A("CP56Time2a时间格式"),
 
     /**
-     * 自定义类型（需要自定义解析器）
+     * 复合类型
      */
-    CUSTOM("自定义类型");
+    COMPOSITE("COMPOSITE"),
+
+    /**
+     * 列表类型（支持List集合）
+     */
+    LIST("列表类型");
 
     /**
      *  获取数据类型描述
