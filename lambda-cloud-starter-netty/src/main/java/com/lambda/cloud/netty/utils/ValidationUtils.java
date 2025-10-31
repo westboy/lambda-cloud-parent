@@ -32,10 +32,9 @@ public final class ValidationUtils {
      */
     public static int getDefaultElementLength(ProtocolDataType dataType) {
         return switch (dataType) {
-            case UINT8, INT8 -> 1;
-            case UINT16, INT16 -> 2;
-            case UINT32, INT32, FLOAT -> 4;
-            case DOUBLE -> 8;
+            case UINT8 -> 1;
+            case UINT16 -> 2;
+            case UINT32-> 4;
             case CP56TIME2A -> 7;
             default -> 0; // 变长类型
         };

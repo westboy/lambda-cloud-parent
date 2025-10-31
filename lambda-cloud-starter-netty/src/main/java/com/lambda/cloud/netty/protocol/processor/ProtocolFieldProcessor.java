@@ -11,10 +11,11 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.model.ParsedData;
 import io.netty.buffer.ByteBuf;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 字段处理器
@@ -416,12 +417,17 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
     private int calculateCompositeFieldLength(Class<?> compositeType) throws ProtocolException {
         try {
             int totalLength = 0;
+
             Field[] fields = compositeType.getDeclaredFields();
 
             for (Field field : fields) {
                 ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
                 if (protocolField != null) {
-                    totalLength += protocolField.length();
+                    if (protocolField.listElementSize() > 0) {
+                        totalLength += (protocolField.listElementSize() * protocolField.length());
+                    } else {
+                        totalLength += protocolField.length();
+                    }
                 }
             }
 
