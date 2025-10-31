@@ -6,16 +6,18 @@ import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.model.ParsedData;
 import io.netty.buffer.ByteBuf;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 字段处理器
@@ -23,11 +25,13 @@ import java.util.List;
  * 负责处理协议字段的解析和序列化逻辑，将复杂的字段处理逻辑从引擎中分离出来
  * </p>
  *
- * @param encryptionService 加密服务（可选）
  * @author Jin
  */
 @Slf4j
-public record ProtocolFieldProcessor(EncryptionService encryptionService) {
+public class ProtocolFieldProcessor {
+
+    private final Map<Class<?>, Integer> compositeFieldLengthCache = new ConcurrentHashMap<>();
+    private final EncryptionService encryptionService;
 
     /**
      * 构造函数（支持加密）
@@ -416,24 +420,23 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      */
     private int calculateCompositeFieldLength(Class<?> compositeType) throws ProtocolException {
         try {
-            int totalLength = 0;
-
-            Field[] fields = compositeType.getDeclaredFields();
-
-            for (Field field : fields) {
-                ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
-                if (protocolField != null) {
-                    if (protocolField.listElementSize() > 0) {
-                        totalLength += (protocolField.listElementSize() * protocolField.length());
-                    } else {
-                        totalLength += protocolField.length();
+            return compositeFieldLengthCache.computeIfAbsent(compositeType, clazz -> {
+                int totalLength = 0;
+                Field[] fields = compositeType.getDeclaredFields();
+                for (Field field : fields) {
+                    ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
+                    if (protocolField != null) {
+                        if (protocolField.listElementSize() > 0
+                                && protocolField.dataType() == ProtocolDataType.LIST) {
+                            totalLength += (protocolField.listElementSize() * protocolField.length());
+                        } else {
+                            totalLength += protocolField.length();
+                        }
                     }
                 }
-            }
-
-            log.debug("计算复合字段长度: {} = {}", compositeType.getSimpleName(), totalLength);
-            return totalLength;
-
+                log.debug("计算复合字段长度: {} = {}", compositeType.getSimpleName(), totalLength);
+                return totalLength;
+            });
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR, "计算复合字段长度失败: " + compositeType.getSimpleName(), null, e);
@@ -445,11 +448,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      *
      * @param byteBuf             字节缓冲区
      * @param fieldMetadata       字段元数据
-     * @param frameMetadata
+     * @param frameMetadata       帧元数据
      * @param converter           转换器
      * @param isEncryptionEnabled 是否启用加密
-     * @param parsedRawDataList
-     * @return 解析后的List对象
+     * @param parsedRawDataList   原文
+     * @return 解析后的 List 对象
      * @throws ProtocolException 解析异常
      */
     private Object parseListField(
@@ -496,7 +499,6 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      * @return 需要读取的字节数
      */
     private int calculateListFieldLength(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
-
         int listLength = fieldMetadata.getLength();
         int elementSize = fieldMetadata.getListElementSize();
 
