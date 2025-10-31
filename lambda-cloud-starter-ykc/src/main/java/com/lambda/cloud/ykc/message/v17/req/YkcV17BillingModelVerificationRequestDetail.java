@@ -32,7 +32,7 @@ public class YkcV17BillingModelVerificationRequestDetail {
             dataType = ProtocolDataType.BCD,
             littleEndian = true,
             description = "桩编号")
-    private String stationCode;
+    private String equipmentId;
 
     /**
      * 枪号 (1字节)

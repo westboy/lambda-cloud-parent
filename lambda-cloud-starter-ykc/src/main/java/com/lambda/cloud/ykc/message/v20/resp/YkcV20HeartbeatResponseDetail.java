@@ -27,7 +27,7 @@ public class YkcV20HeartbeatResponseDetail {
      * 不足7位补0
      */
     @ProtocolField(order = 1, length = 7, dataType = ProtocolDataType.BCD, description = "桩编码")
-    private String stationCode;
+    private String equipmentId;
 
     /**
      * 枪号 (1字节)

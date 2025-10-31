@@ -1,15 +1,16 @@
-package com.lambda.cloud.ykc.message.v17.resp;
+package com.lambda.cloud.ykc.message.v16;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import java.math.BigDecimal;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 云快充1.7协议计费模型响应消息体
+ * 云快充1.6协议计费模型响应消息体
  * <p>
  * 对应协议帧类型 0x0A，计费模型请求应答的消息体部分
  * 包含各种费率信息和48个时段费率号（每30分钟一个时段）
@@ -20,8 +21,8 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x0A", name = "计费模型响应", description = "计费模型请求应答消息体", version = "1.7")
-public class YkcV17BillingModelResponseDetail {
+@ProtocolFrame(frameType = "0x0A", name = "计费模型响应", description = "计费模型请求应答消息体", version = "1.6")
+public class YkcV16BillingModelResponseDetail {
 
     /**
      * 桩编号 (7字节)
@@ -35,18 +36,6 @@ public class YkcV17BillingModelResponseDetail {
             littleEndian = true,
             description = "桩编号")
     private String equipmentId;
-
-    /**
-     * 枪号 (1字节)
-     */
-    @ProtocolField(
-            order = 2,
-            length = 1,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            littleEndian = true,
-            description = "枪号")
-    private Integer connectorId;
 
     /**
      * 计费模型编号 (2字节)
@@ -69,11 +58,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 4,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "尖费电费费率")
-    private Long peakElectricityRate;
+    private BigDecimal peakElectricityRate;
 
     /**
      * 尖服务费费率 (4字节)
@@ -83,11 +72,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 5,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "尖服务费费率")
-    private Long peakServiceRate;
+    private BigDecimal peakServiceRate;
 
     /**
      * 峰电费费率 (4字节)
@@ -97,11 +86,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 6,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "峰电费费率")
-    private Long highElectricityRate;
+    private BigDecimal highElectricityRate;
 
     /**
      * 峰服务费费率 (4字节)
@@ -111,11 +100,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 7,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "峰服务费费率")
-    private Long highServiceRate;
+    private BigDecimal highServiceRate;
 
     /**
      * 平电费费率 (4字节)
@@ -125,11 +114,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 8,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "平电费费率")
-    private Long normalElectricityRate;
+    private BigDecimal normalElectricityRate;
 
     /**
      * 平服务费费率 (4字节)
@@ -139,11 +128,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 9,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "平服务费费率")
-    private Long normalServiceRate;
+    private BigDecimal normalServiceRate;
 
     /**
      * 谷电费费率 (4字节)
@@ -153,11 +142,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 10,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "谷电费费率")
-    private Long valleyElectricityRate;
+    private BigDecimal valleyElectricityRate;
 
     /**
      * 谷服务费费率 (4字节)
@@ -167,11 +156,11 @@ public class YkcV17BillingModelResponseDetail {
             order = 11,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             littleEndian = true,
             precision = 5,
             description = "谷服务费费率")
-    private Long valleyServiceRate;
+    private BigDecimal valleyServiceRate;
 
     /**
      * 计损比例 (1字节)
@@ -192,10 +181,11 @@ public class YkcV17BillingModelResponseDetail {
      */
     @ProtocolField(
             order = 13,
-            length = 48,
+            length = 1,
             computed = true,
             dataType = ProtocolDataType.LIST,
             listElementType = ProtocolDataType.BCD,
+            listElementSize = 48,
             littleEndian = true,
             description = "时段费率号数组")
     private List<String> timeSlotRates;

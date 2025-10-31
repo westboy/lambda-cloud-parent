@@ -30,7 +30,7 @@ public class YkcV20BillingModelResponseDetail {
      * 不足7位补0
      */
     @ProtocolField(order = 1, length = 7, dataType = ProtocolDataType.BCD, description = "桩编号")
-    private String stationCode;
+    private String equipmentId;
 
     /**
      * 计费模型编号 (2字节)

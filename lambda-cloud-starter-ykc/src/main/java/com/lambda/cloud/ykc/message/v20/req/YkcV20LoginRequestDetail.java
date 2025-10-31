@@ -34,7 +34,7 @@ public class YkcV20LoginRequestDetail {
      * 不足7位补0
      */
     @ProtocolField(order = 2, length = 7, dataType = ProtocolDataType.BCD, description = "桩编码")
-    private String stationCode;
+    private String equipmentId;
 
     /**
      * 桩类型 (1字节)

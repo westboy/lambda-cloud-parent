@@ -33,7 +33,7 @@ public class YkcV17BillingModelRequestDetail {
             dataType = ProtocolDataType.BCD,
             littleEndian = true,
             description = "桩编号")
-    private String stationCode;
+    private String equipmentId;
 
     /**
      * 枪号 (1字节)
@@ -67,12 +67,12 @@ public class YkcV17BillingModelRequestDetail {
     /**
      * 全参数构造函数
      *
-     * @param stationCode      桩编号
+     * @param equipmentId      桩编号
      * @param connectorId      枪号
      * @param billingModelCode 计费模型编码
      */
-    public YkcV17BillingModelRequestDetail(String stationCode, Integer connectorId, String billingModelCode) {
-        this.stationCode = stationCode;
+    public YkcV17BillingModelRequestDetail(String equipmentId, Integer connectorId, String billingModelCode) {
+        this.equipmentId = equipmentId;
         this.connectorId = connectorId;
         this.billingModelCode = billingModelCode;
     }

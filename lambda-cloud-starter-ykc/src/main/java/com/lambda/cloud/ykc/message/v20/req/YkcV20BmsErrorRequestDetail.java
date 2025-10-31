@@ -34,7 +34,7 @@ public class YkcV20BmsErrorRequestDetail {
      * 不足7位补0
      */
     @ProtocolField(order = 2, length = 7, dataType = ProtocolDataType.BCD, description = "桩编号")
-    private String stationCode;
+    private String equipmentId;
 
     /**
      * 枪号 (1字节)

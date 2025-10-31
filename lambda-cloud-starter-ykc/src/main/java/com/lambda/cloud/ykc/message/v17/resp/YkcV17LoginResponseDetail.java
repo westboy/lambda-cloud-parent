@@ -26,7 +26,7 @@ public class YkcV17LoginResponseDetail {
      * BCD码，不足7位补0
      */
     @ProtocolField(order = 1, length = 7, computed = true, dataType = ProtocolDataType.BCD, description = "桩编码")
-    private String stationCode;
+    private String equipmentId;
 
     /**
      * 登陆结果 (1字节)
