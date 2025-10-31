@@ -59,24 +59,6 @@ class ListConverterTest {
 
         BillingModelMessage record = engine.parse(byteBuf, BillingModelMessage.class);
 
-        System.out.println("解析结果: " + record);
-        System.out.println("fees字段 (listLength=2): " + record.getFees());
-        if (record.getFees() != null) {
-            System.out.println("fees字段大小: " + record.getFees().size());
-            for (int i = 0; i < record.getFees().size(); i++) {
-                BillingModelFee fee = record.getFees().get(i);
-                System.out.println("  fees[" + i + "]: electricityRate=" + fee.getElectricityRate() + ", serviceRate="
-                        + fee.getServiceRate());
-            }
-        }
-        System.out.println("timeSlotRateNumbers字段 (listElementLength=2): " + record.getTimeSlotRateNumbers());
-        if (record.getTimeSlotRateNumbers() != null) {
-            System.out.println("timeSlotRateNumbers字段大小: "
-                    + record.getTimeSlotRateNumbers().size());
-            for (int i = 0; i < record.getTimeSlotRateNumbers().size(); i++) {
-                System.out.println("  timeSlotRateNumbers[" + i + "]: "
-                        + record.getTimeSlotRateNumbers().get(i));
-            }
-        }
+        System.out.println(record);
     }
 }
