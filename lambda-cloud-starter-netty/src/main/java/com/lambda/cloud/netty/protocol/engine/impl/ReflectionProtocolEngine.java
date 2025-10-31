@@ -13,7 +13,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
@@ -81,7 +81,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      */
     private ComputedProcessor computedProcessor;
 
-    public ReflectionProtocolEngine(EncryptionService encryptionService, ChecksumService checksumService) {
+    public ReflectionProtocolEngine(EncryptionService encryptionService) {
         this.fieldCache = CacheUtil.newLRUCache(1000);
         this.converterCache = CacheUtil.newLRUCache(100);
         this.metadataCache = new ConcurrentHashMap<>();
@@ -90,7 +90,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         this.converterResolver = new DataTypeConverterResolver();
         this.converterResolver.setEncryptionService(encryptionService);
         this.converterResolver.registerConverter(ProtocolDataType.COMPOSITE, new CompositeConverter(this));
-        this.computedProcessor = new ComputedProcessor(checksumService, converterResolver);
+        this.computedProcessor = new ComputedProcessor(converterResolver);
     }
 
     @Override

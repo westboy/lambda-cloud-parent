@@ -10,7 +10,7 @@ import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessorFactory;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.model.SerializedData;
@@ -32,11 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ComputedProcessor {
 
-    private final ChecksumService crcService;
     private final DataTypeConverterResolver converterResolver;
 
-    public ComputedProcessor(ChecksumService crcService, DataTypeConverterResolver converterResolver) {
-        this.crcService = crcService;
+    public ComputedProcessor(DataTypeConverterResolver converterResolver) {
         this.converterResolver = converterResolver;
     }
 
@@ -150,7 +148,7 @@ public class ComputedProcessor {
 
             // 使用CRC算法计算校验值
             long crcValue =
-                    crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
+                    ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
 
             log.debug("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
             return crcValue;
@@ -227,7 +225,7 @@ public class ComputedProcessor {
 
             // 使用CRC算法计算校验值
             long crcValue =
-                    crcService.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
+                    ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
             if (log.isDebugEnabled()) {
                 String raw = HexUtil.encodeHexStr(dataForCrc);
                 log.debug("CRC计算完成，raw：{} 数据长度: {} bytes, CRC值: {}", raw, dataForCrc.length, crcValue);

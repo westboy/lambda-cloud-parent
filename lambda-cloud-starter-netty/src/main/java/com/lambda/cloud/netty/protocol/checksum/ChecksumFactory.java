@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
-public class ChecksumService {
+public final class ChecksumFactory {
 
     /**
      * 获取CRC算法
@@ -20,7 +20,7 @@ public class ChecksumService {
      * @param algorithmName 算法名称
      * @return CRC算法实现
      */
-    public CrcAlgorithm getAlgorithm(String algorithmName) {
+    public static CrcAlgorithm getAlgorithm(String algorithmName) {
         CrcAlgorithm algorithm = Crc16Algorithm.modbus();
         switch (algorithmName) {
             case "CRC16-CCITT" -> Crc16Algorithm.ccitt();
