@@ -3,7 +3,7 @@ package com.lambda.cloud.ykc.protocol.login;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cn.hutool.core.util.HexUtil;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
@@ -29,7 +29,7 @@ public class YkcV17LoginMessageTest {
     @BeforeEach
     public void setUp() {
         // 初始化协议引擎
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
     }
 

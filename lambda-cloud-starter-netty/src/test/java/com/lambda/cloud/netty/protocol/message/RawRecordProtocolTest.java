@@ -4,7 +4,7 @@ import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
@@ -44,7 +44,7 @@ public class RawRecordProtocolTest {
         //        log.info("测试数据: {}", TEST_DATA4);
         //        log.info("数据长度: {} 字符 ({} 字节)", TEST_DATA4.length(), TEST_DATA4.length() / 2);
 
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
         // 获取协议引擎
         ProtocolEngine<RawBaseMessage> engine =
@@ -158,7 +158,7 @@ public class RawRecordProtocolTest {
 
     @Test
     public void test2() {
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
         // 获取协议引擎
         ProtocolEngine<RawBaseMessage> engine =

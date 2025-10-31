@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
@@ -22,7 +22,7 @@ class ListConverterTest {
 
     @Test
     void test0() throws ProtocolException {
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
         // 获取协议引擎
         ProtocolEngine<BillingModelMessage> engine =

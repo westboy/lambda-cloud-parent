@@ -38,7 +38,7 @@ public class SimpleCrcTest {
     @Test
     public void testCrcService() {
         // 测试CRC服务
-        ChecksumService service = new ChecksumService();
+        ChecksumFactory service = new ChecksumFactory();
         assertNotNull(service);
 
         System.out.println("CRC服务实例化成功");

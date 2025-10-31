@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
+import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
@@ -34,7 +34,7 @@ public class YkcV16BillingMessageTest {
     @BeforeEach
     public void setUp() {
         // 初始化协议引擎
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
+        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
     }
 
@@ -98,7 +98,7 @@ public class YkcV16BillingMessageTest {
         try {
             EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
             ReflectionProtocolEngine reflectionProtocolEngine =
-                    new ReflectionProtocolEngine(encryptionService, new ChecksumService());
+                    new ReflectionProtocolEngine(encryptionService);
             ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
             reflectionProtocolEngine.setProtocolFieldProcessor(protocolFieldProcessor);
             ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
