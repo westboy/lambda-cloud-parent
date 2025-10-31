@@ -265,21 +265,12 @@ public record ProtocolFieldMetadata(
     }
 
     /**
-     * 获取List长度字段名
+     * 获取List元素个数
      *
-     * @return 长度字段名
+     * @return List元素长度
      */
-    public String getListLengthField() {
-        return protocolField.listLengthField();
-    }
-
-    /**
-     * 获取List元素长度
-     *
-     * @return List元素长度，0表示自动确定
-     */
-    public int getListElementLength() {
-        return protocolField.listElementLength();
+    public int getListElementSize() {
+        return protocolField.listElementSize();
     }
 
     /**
@@ -289,14 +280,5 @@ public record ProtocolFieldMetadata(
      */
     public boolean isFixedLengthList() {
         return getListLength() > 0;
-    }
-
-    /**
-     * 是否使用长度字段确定List长度
-     *
-     * @return true 表示使用长度字段
-     */
-    public boolean hasListLengthField() {
-        return !getListLengthField().isEmpty();
     }
 }

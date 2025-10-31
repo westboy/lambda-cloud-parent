@@ -11,9 +11,10 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.model.ParsedData;
 import io.netty.buffer.ByteBuf;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 字段处理器
@@ -437,9 +438,9 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
     /**
      * 解析List字段
      *
-     * @param byteBuf           字节缓冲区
-     * @param fieldMetadata     字段元数据
-     * @param converter         转换器
+     * @param byteBuf             字节缓冲区
+     * @param fieldMetadata       字段元数据
+     * @param converter           转换器
      * @param isEncryptionEnabled 是否启用加密
      * @return 解析后的List对象
      * @throws ProtocolException 解析异常
@@ -455,7 +456,7 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
                 "解析List字段: fieldName={}, listLength={}, listElementLength={}, isComposite={}",
                 fieldMetadata.getFieldName(),
                 fieldMetadata.getListLength(),
-                fieldMetadata.getListElementLength(),
+                fieldMetadata.getListElementSize(),
                 fieldMetadata.isComposite());
 
         // 计算List字段需要读取的总字节数
@@ -479,13 +480,11 @@ public record ProtocolFieldProcessor(EncryptionService encryptionService) {
      * @param byteBuf       字节缓冲区
      * @param fieldMetadata 字段元数据
      * @return 需要读取的字节数
-     * @throws ProtocolException 计算异常
      */
-    private int calculateListFieldLength(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata)
-            throws ProtocolException {
+    private int calculateListFieldLength(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
 
         int listLength = fieldMetadata.getListLength();
-        int elementLength = fieldMetadata.getListElementLength();
+        int elementLength = fieldMetadata.getListElementSize();
 
         // 如果listLength > 0，表示固定长度的List
         if (listLength > 0) {

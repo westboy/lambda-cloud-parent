@@ -51,7 +51,7 @@ public class ListConverter implements DataTypeConverter {
         try {
             // 1. 确定List长度
             int listSize = determineListSize(data, fieldMetadata);
-            log.debug("List字段 {} 元素数量: {}", fieldMetadata.getFieldName(), listSize);
+            log.debug ("List字段 {} 元素数量: {}", fieldMetadata.getFieldName(), listSize);
 
             // 2. 获取元素转换器
             DataTypeConverter elementConverter = getElementConverter(fieldMetadata);
@@ -166,40 +166,14 @@ public class ListConverter implements DataTypeConverter {
     }
 
     /**
-     * 确定List长度
+     * 确定 List 长度
      *
      * @param data          字节数据
      * @param fieldMetadata 字段元数据
      * @return List长度
      */
     private int determineListSize(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        // 策略1：固定长度
-        if (fieldMetadata.isFixedLengthList()) {
-            return fieldMetadata.getListLength();
-        }
-
-        // 策略2：前置长度字段（暂时不实现，需要访问其他字段值）
-        if (fieldMetadata.hasListLengthField()) {
-            throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR, "暂不支持通过长度字段确定List长度", fieldMetadata.getFieldName());
-        }
-
-        // 策略3：根据剩余数据长度计算
-        int elementLength = fieldMetadata.getListElementLength();
-        if (elementLength > 0) {
-            return data.length / elementLength;
-        }
-
-        // 策略4：根据元素类型的默认长度计算
-        int defaultElementLength = ValidationUtils.getDefaultElementLength(fieldMetadata.getListElementDataType());
-        if (defaultElementLength > 0) {
-            return data.length / defaultElementLength;
-        }
-
-        throw new ProtocolException(
-                ProtocolException.ErrorCode.PARSE_ERROR,
-                "无法确定List长度，请配置listLength或listElementLength",
-                fieldMetadata.getFieldName());
+        return data.length / fieldMetadata.getLength();
     }
 
     /**
@@ -212,12 +186,8 @@ public class ListConverter implements DataTypeConverter {
      */
     private int calculateElementLength(byte[] data, ProtocolFieldMetadata fieldMetadata, int listSize)
             throws ProtocolException {
-        // 如果注解中指定了元素长度，直接使用
-        if (fieldMetadata.getListElementLength() > 0) {
-            return fieldMetadata.getListElementLength();
-        }
 
-        // 根据数据类型获取默认长度
+          // 根据数据类型获取默认长度
         int defaultLength = ValidationUtils.getDefaultElementLength(fieldMetadata.getListElementDataType());
         if (defaultLength > 0) {
             return defaultLength;

@@ -18,7 +18,7 @@ public class BillingModelMessage {
      * 电费费率列表
      * 每个费率4字节，精确到五位小数
      */
-    @ProtocolField(order = 1,listElementLength =2, composite = true, dataType = ProtocolDataType.LIST, description = "电费费率")
+    @ProtocolField(order = 1, listElementSize = 2, composite = true, dataType = ProtocolDataType.LIST, description = "电费费率")
     private List<BillingModelFee> fees;
 
     /**
@@ -30,7 +30,8 @@ public class BillingModelMessage {
     @ProtocolField(
             order = 6,
             length = 1,
-            listElementLength =2,
+            listElementSize = 1,
+            listElementType = ProtocolDataType.HEX,
             dataType = ProtocolDataType.LIST,
             description = "时段费率号")
     private List<Integer> timeSlotRateNumbers;

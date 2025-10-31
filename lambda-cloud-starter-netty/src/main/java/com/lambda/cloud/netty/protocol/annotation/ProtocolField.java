@@ -178,28 +178,7 @@ public @interface ProtocolField {
     ProtocolDataType listElementType() default ProtocolDataType.HEX;
 
     /**
-     * List固定长度（仅对LIST数据类型有效）
-     * <p>
-     * 指定List中元素的固定数量，当值大于0时，List将包含固定数量的元素
-     * </p>
-     *
-     * @return List元素数量，0表示动态长度
-     */
-    int listLength() default 0;
-
-    /**
-     * List长度字段名（仅对LIST数据类型有效）
-     * <p>
-     * 指定用于确定List长度的字段名，该字段必须在当前List字段之前定义
-     * 当listLength为0时，将使用此字段的值作为List元素数量
-     * </p>
-     *
-     * @return 长度字段名，空字符串表示不使用长度字段
-     */
-    String listLengthField() default "";
-
-    /**
-     * List元素长度（仅对LIST数据类型有效）
+     * List元素长度
      * <p>
      * 指定List中每个元素的字节长度，用于正确解析变长元素
      * 当值为0时，将根据元素类型自动确定长度
@@ -207,5 +186,15 @@ public @interface ProtocolField {
      *
      * @return 元素字节长度，0表示自动确定
      */
-    int listElementLength() default 0;
+    int listLength() default 0;
+
+    /**
+     * List固定长度（仅对LIST数据类型有效）
+     * <p>
+     * 指定List中元素的固定数量，当值大于0时，List将包含固定数量的元素
+     * </p>
+     *
+     * @return List元素数量
+     */
+    int listElementSize() default 0;
 }

@@ -4,13 +4,12 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 
 import java.lang.annotation.Annotation;
 
-import static com.lambda.cloud.netty.utils.ValidationUtils.getDefaultElementLength;
-
 /**
  * ProtocolField代理类，用于创建元素元数据
  *
  * @author zx
  */
+@SuppressWarnings("all")
 public record ProtocolFieldProxy(ProtocolFieldMetadata listMetadata) implements ProtocolField {
     @Override
     public int order() {
@@ -54,9 +53,7 @@ public record ProtocolFieldProxy(ProtocolFieldMetadata listMetadata) implements 
 
     @Override
     public int length() {
-        return listMetadata.getListElementLength() > 0
-                ? listMetadata.getListElementLength()
-                : getDefaultElementLength(listMetadata.getListElementDataType());
+        return listMetadata.getLength();
     }
 
     @Override
@@ -115,13 +112,8 @@ public record ProtocolFieldProxy(ProtocolFieldMetadata listMetadata) implements 
     }
 
     @Override
-    public String listLengthField() {
-        return listMetadata.getListLengthField();
-    }
-
-    @Override
-    public int listElementLength() {
-        return listMetadata.getListLength();
+    public int listElementSize() {
+        return listMetadata.getListElementSize();
     }
 
     @Override
