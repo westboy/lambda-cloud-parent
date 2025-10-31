@@ -20,11 +20,11 @@ public class YkcV20ChargingHandshakeRequestMessage extends YkcV20BaseMessage<Ykc
 
     public YkcV20ChargingHandshakeRequestMessage() {
         super();
-        this.frameType = "15";
+        setFrameType("15");
     }
 
     public YkcV20ChargingHandshakeRequestMessage(YkcV20ChargingHandshakeRequestDetail detail) {
-        super(detail);
-        this.frameType = "15";
+        setFrameType("15");
+        setDetail(detail);
     }
 }

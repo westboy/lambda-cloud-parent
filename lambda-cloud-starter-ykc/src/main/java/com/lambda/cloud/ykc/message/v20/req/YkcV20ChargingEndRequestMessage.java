@@ -27,7 +27,7 @@ public class YkcV20ChargingEndRequestMessage extends YkcV20BaseMessage<YkcV20Cha
      * @param detail 充电结束响应详细信息
      */
     public YkcV20ChargingEndRequestMessage(YkcV20ChargingEndRequestDetail detail) {
-        super(detail);
         this.setFrameType("19");
+        this.setDetail(detail);
     }
 }
