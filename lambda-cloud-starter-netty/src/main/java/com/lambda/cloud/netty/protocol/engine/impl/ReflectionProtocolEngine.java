@@ -26,15 +26,14 @@ import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.EncryptionUtils;
 import io.netty.buffer.ByteBuf;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 反射协议引擎

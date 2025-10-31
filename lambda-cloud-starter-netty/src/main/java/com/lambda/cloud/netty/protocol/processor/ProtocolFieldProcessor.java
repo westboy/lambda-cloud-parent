@@ -426,8 +426,7 @@ public class ProtocolFieldProcessor {
                 for (Field field : fields) {
                     ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
                     if (protocolField != null) {
-                        if (protocolField.listElementSize() > 0
-                                && protocolField.dataType() == ProtocolDataType.LIST) {
+                        if (protocolField.listElementSize() > 0 && protocolField.dataType() == ProtocolDataType.LIST) {
                             totalLength += (protocolField.listElementSize() * protocolField.length());
                         } else {
                             totalLength += protocolField.length();

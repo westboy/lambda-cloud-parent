@@ -16,11 +16,10 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.model.SerializedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CRC处理器
@@ -269,10 +268,11 @@ public class ComputedProcessor {
                 }
                 return Long.parseLong(hexString, 16);
             }
-            default -> throw new ProtocolException(
-                    ProtocolException.ErrorCode.CRC_ERROR,
-                    "不支持的CRC值类型: " + value.getClass().getSimpleName(),
-                    crcField.getFieldName());
+            default ->
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.CRC_ERROR,
+                        "不支持的CRC值类型: " + value.getClass().getSimpleName(),
+                        crcField.getFieldName());
         }
     }
 

@@ -4,10 +4,9 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.converter.impl.*;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
-import lombok.Setter;
-
 import java.util.EnumMap;
 import java.util.Map;
+import lombok.Setter;
 
 /**
  * 数据类型转换器工厂
