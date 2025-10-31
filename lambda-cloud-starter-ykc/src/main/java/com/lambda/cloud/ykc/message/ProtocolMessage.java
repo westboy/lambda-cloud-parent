@@ -10,7 +10,7 @@ public interface ProtocolMessage {
 
     void setSerialNumber(Integer serialNumber);
 
-    default String getTerminalId(){
+    default String getTerminalId() {
         throw new UnsupportedOperationException("not implement");
     }
 }

@@ -1,30 +1,15 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
-import com.lambda.cloud.netty.protocol.accessor.FieldAccessorFactory;
-import com.lambda.cloud.netty.protocol.accessor.FileAccessorType;
-import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
-import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
@@ -35,16 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ListConverterTest {
 
-    @Mock
-    private DataTypeConverterFactory converterFactory;
-
-    private ListConverter listConverter;
-
-    @BeforeEach
-    void setUp() {
-        listConverter = new ListConverter(converterFactory);
-    }
-
     @Test
     void test0() throws ProtocolException {
         ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null, new ChecksumService());
@@ -53,12 +28,19 @@ class ListConverterTest {
         ProtocolEngine<BillingModelMessage> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        byte[] bytes = {0x09, 0x02, 0x03, 0x04, 0x05, 0x05};
+        byte[] bytes = {0x09, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
 
-        ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(HexUtil.decodeHex("0902030405"));
 
         BillingModelMessage record = engine.parse(byteBuf, BillingModelMessage.class);
 
-        System.out.println(record);
+        System.out.println(record.getTimeSlotRateNumbers());
+        System.out.println(record.getFees());
+
+        ByteBuf serializeBuffer = Unpooled.buffer();
+        engine.serialize(record, serializeBuffer);
+        byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+        serializeBuffer.readBytes(serializedBytes);
+        System.out.println("序列化报文： " + HexUtil.encodeHexStr(serializedBytes, false));
     }
 }

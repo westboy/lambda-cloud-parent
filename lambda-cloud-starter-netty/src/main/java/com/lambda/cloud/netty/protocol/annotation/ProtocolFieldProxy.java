@@ -1,7 +1,6 @@
 package com.lambda.cloud.netty.protocol.annotation;
 
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-
 import java.lang.annotation.Annotation;
 
 /**

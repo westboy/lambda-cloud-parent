@@ -70,7 +70,7 @@ public class YkcV20BillingModelResponseDetail {
     @ProtocolField(
             order = 6,
             length = 1,
-            listElementSize= 48,
+            listElementSize = 48,
             dataType = ProtocolDataType.UINT8,
             description = "时段费率号")
     private List<Integer> timeSlotRateNumbers;

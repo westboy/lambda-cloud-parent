@@ -7,12 +7,11 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolFieldProxy;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
 import com.lambda.cloud.netty.utils.ValidationUtils;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * List转换器
@@ -49,47 +48,43 @@ public class ListConverter implements DataTypeConverter {
         log.debug("开始解析List字段: {}, 数据长度: {}", fieldMetadata.getFieldName(), data.length);
 
         try {
-            // 1. 确定List长度
-            int listSize = determineListSize(data, fieldMetadata);
-            log.debug ("List字段 {} 元素数量: {}", fieldMetadata.getFieldName(), listSize);
-
-            // 2. 获取元素转换器
             DataTypeConverter elementConverter = getElementConverter(fieldMetadata);
 
-            // 3. 计算元素长度
-            int elementLength = calculateElementLength(data, fieldMetadata, listSize);
-            log.debug("List字段 {} 元素长度: {}", fieldMetadata.getFieldName(), elementLength);
+            List<Object> result = new ArrayList<>(fieldMetadata.getListElementSize());
 
-            // 4. 解析List元素
-            List<Object> result = new ArrayList<>(listSize);
-            int offset = 0;
-
-            for (int i = 0; i < listSize; i++) {
-                if (offset + elementLength > data.length) {
-                    throw new ProtocolException(
-                            ProtocolException.ErrorCode.PARSE_ERROR,
-                            String.format("List元素 %d 数据不足，需要 %d 字节，剩余 %d 字节", i, elementLength, data.length - offset),
-                            fieldMetadata.getFieldName());
-                }
-
-                // 提取元素数据
-                byte[] elementData = new byte[elementLength];
-                System.arraycopy(data, offset, elementData, 0, elementLength);
-
-                // 创建元素元数据
+            // 如果是复合字段
+            if (fieldMetadata.isComposite()) {
                 ProtocolFieldMetadata elementMetadata = createElementMetadata(fieldMetadata);
-
-                // 解析元素
-                Object element = elementConverter.parse(elementData, elementMetadata);
+                Object element = elementConverter.parse(data, elementMetadata);
                 result.add(element);
-
-                offset += elementLength;
-                log.trace("解析List元素 {}: {}", i, element);
+            } else {
+                int listSize = determineListSize(data, fieldMetadata);
+                log.debug("List字段 {} 元素数量: {}", fieldMetadata.getFieldName(), listSize);
+                int elementLength = calculateElementLength(data, fieldMetadata, listSize);
+                log.debug("List字段 {} 元素长度: {}", fieldMetadata.getFieldName(), elementLength);
+                int offset = 0;
+                for (int i = 0; i < listSize; i++) {
+                    if (offset + elementLength > data.length) {
+                        throw new ProtocolException(
+                                ProtocolException.ErrorCode.PARSE_ERROR,
+                                String.format(
+                                        "List元素 %d 数据不足，需要 %d 字节，剩余 %d 字节", i, elementLength, data.length - offset),
+                                fieldMetadata.getFieldName());
+                    }
+                    // 提取元素数据
+                    byte[] elementData = new byte[elementLength];
+                    System.arraycopy(data, offset, elementData, 0, elementLength);
+                    // 创建元素元数据
+                    ProtocolFieldMetadata elementMetadata = createElementMetadata(fieldMetadata);
+                    // 解析元素
+                    Object element = elementConverter.parse(elementData, elementMetadata);
+                    result.add(element);
+                    offset += elementLength;
+                    log.trace("解析List元素 {}: {}", i, element);
+                }
+                log.debug("List字段 {} 解析完成，共 {} 个元素", fieldMetadata.getFieldName(), result.size());
             }
-
-            log.debug("List字段 {} 解析完成，共 {} 个元素", fieldMetadata.getFieldName(), result.size());
             return result;
-
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
@@ -172,7 +167,10 @@ public class ListConverter implements DataTypeConverter {
      * @param fieldMetadata 字段元数据
      * @return List长度
      */
-    private int determineListSize(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    private int determineListSize(byte[] data, ProtocolFieldMetadata fieldMetadata) {
+        if (fieldMetadata.isComposite()) {
+            return data.length;
+        }
         return data.length / fieldMetadata.getLength();
     }
 
@@ -187,7 +185,7 @@ public class ListConverter implements DataTypeConverter {
     private int calculateElementLength(byte[] data, ProtocolFieldMetadata fieldMetadata, int listSize)
             throws ProtocolException {
 
-          // 根据数据类型获取默认长度
+        // 根据数据类型获取默认长度
         int defaultLength = ValidationUtils.getDefaultElementLength(fieldMetadata.getListElementDataType());
         if (defaultLength > 0) {
             return defaultLength;
@@ -195,11 +193,14 @@ public class ListConverter implements DataTypeConverter {
 
         // 根据总数据长度和元素数量计算
         if (listSize > 0) {
+            if (fieldMetadata.isComposite()) {
+                return data.length;
+            }
             return data.length / listSize;
         }
 
         throw new ProtocolException(
-                ProtocolException.ErrorCode.PARSE_ERROR, "无法确定List元素长度", fieldMetadata.getFieldName());
+                ProtocolException.ErrorCode.PARSE_ERROR, "无法确定 List 元素长度", fieldMetadata.getFieldName());
     }
 
     /**

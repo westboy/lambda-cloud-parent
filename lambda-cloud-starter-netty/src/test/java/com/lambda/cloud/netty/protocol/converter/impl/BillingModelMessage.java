@@ -3,10 +3,9 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -18,7 +17,12 @@ public class BillingModelMessage {
      * 电费费率列表
      * 每个费率4字节，精确到五位小数
      */
-    @ProtocolField(order = 1, listElementSize = 2, composite = true, dataType = ProtocolDataType.LIST, description = "电费费率")
+    @ProtocolField(
+            order = 1,
+            listElementSize = 1,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            description = "电费费率")
     private List<BillingModelFee> fees;
 
     /**
@@ -30,7 +34,7 @@ public class BillingModelMessage {
     @ProtocolField(
             order = 6,
             length = 1,
-            listElementSize = 1,
+            listElementSize = 3,
             listElementType = ProtocolDataType.HEX,
             dataType = ProtocolDataType.LIST,
             description = "时段费率号")

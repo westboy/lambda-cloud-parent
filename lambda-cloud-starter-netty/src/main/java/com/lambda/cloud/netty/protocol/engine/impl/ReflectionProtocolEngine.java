@@ -89,7 +89,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         this.validationEngine = new ValidationEngine();
         this.protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
         this.computedProcessor = new ComputedProcessor(checksumService, encryptionService);
-        this.converterFactory.registerConverter(ProtocolDataType.COMPOSITE,new CompositeConverter(this));
+        this.converterFactory.registerConverter(ProtocolDataType.COMPOSITE, new CompositeConverter(this));
     }
 
     @Override
