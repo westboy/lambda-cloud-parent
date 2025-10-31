@@ -106,11 +106,6 @@ public record ProtocolFieldProxy(ProtocolFieldMetadata listMetadata) implements 
     }
 
     @Override
-    public int listLength() {
-        return listMetadata.getListLength();
-    }
-
-    @Override
     public int listElementSize() {
         return listMetadata.getListElementSize();
     }

@@ -23,18 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author zx
  */
 @Slf4j
-public class ListConverter implements DataTypeConverter {
-
-    private final DataTypeConverterResolver converterFactory;
-
-    /**
-     * 构造函数
-     *
-     * @param converterFactory 转换器工厂
-     */
-    public ListConverter(DataTypeConverterResolver converterFactory) {
-        this.converterFactory = converterFactory;
-    }
+public record ListConverter(DataTypeConverterResolver converterResolver) implements DataTypeConverter {
 
     @Override
     public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
@@ -214,10 +203,10 @@ public class ListConverter implements DataTypeConverter {
 
         // 如果是复合类型，使用CompositeConverter
         if (fieldMetadata.isComposite()) {
-            return converterFactory.getConverter(ProtocolDataType.COMPOSITE);
+            return converterResolver.getConverter(ProtocolDataType.COMPOSITE);
         }
 
-        return converterFactory.getConverter(elementType);
+        return converterResolver.getConverter(elementType);
     }
 
     /**

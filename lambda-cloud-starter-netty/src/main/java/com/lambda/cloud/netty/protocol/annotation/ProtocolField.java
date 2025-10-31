@@ -178,17 +178,6 @@ public @interface ProtocolField {
     ProtocolDataType listElementType() default ProtocolDataType.HEX;
 
     /**
-     * List元素长度
-     * <p>
-     * 指定List中每个元素的字节长度，用于正确解析变长元素
-     * 当值为0时，将根据元素类型自动确定长度
-     * </p>
-     *
-     * @return 元素字节长度，0表示自动确定
-     */
-    int listLength() default 0;
-
-    /**
      * List固定长度（仅对LIST数据类型有效）
      * <p>
      * 指定List中元素的固定数量，当值大于0时，List将包含固定数量的元素

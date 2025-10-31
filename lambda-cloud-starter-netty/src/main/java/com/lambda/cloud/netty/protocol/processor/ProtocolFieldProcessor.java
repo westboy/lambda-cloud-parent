@@ -84,7 +84,7 @@ public class ProtocolFieldProcessor {
                     byteBuf, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, parsedRawDataList);
             setFieldValue(instance, fieldMetadata, value);
         } else {
-            // 普通字段或长度固定的复合字段
+            // 普通字段或长度固定复合字段
             byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
             Object value = convertFieldData(fieldData, fieldMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
@@ -114,6 +114,7 @@ public class ProtocolFieldProcessor {
      * @param converter     数据类型转换器
      * @throws ProtocolException 序列化异常
      */
+    @SuppressWarnings("unused")
     public void serializeField(
             Object instance,
             ByteBuf byteBuf,
@@ -318,6 +319,7 @@ public class ProtocolFieldProcessor {
      * @param fieldMetadata 字段元数据
      * @throws ProtocolException 设置异常
      */
+    @SuppressWarnings("unused")
     private void setDefaultValue(Object instance, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         String defaultValue = fieldMetadata.getDefaultValue();
         if (defaultValue != null && !defaultValue.isEmpty()) {
@@ -464,9 +466,9 @@ public class ProtocolFieldProcessor {
             throws ProtocolException {
 
         log.info(
-                "解析List字段: fieldName={}, listLength={}, listElementSize={}, isComposite={}",
+                "解析List字段: fieldName={}, length={}, listElementSize={}, isComposite={}",
                 fieldMetadata.getFieldName(),
-                fieldMetadata.getListLength(),
+                fieldMetadata.getLength(),
                 fieldMetadata.getListElementSize(),
                 fieldMetadata.isComposite());
 
@@ -497,6 +499,7 @@ public class ProtocolFieldProcessor {
      * @param fieldMetadata 字段元数据
      * @return 需要读取的字节数
      */
+    @SuppressWarnings("unused")
     private int calculateListFieldLength(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
         int listLength = fieldMetadata.getLength();
         int elementSize = fieldMetadata.getListElementSize();

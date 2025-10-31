@@ -256,29 +256,11 @@ public record ProtocolFieldMetadata(
     }
 
     /**
-     * 获取List固定长度
-     *
-     * @return List固定长度，0表示动态长度
-     */
-    public int getListLength() {
-        return protocolField.listLength();
-    }
-
-    /**
      * 获取List元素个数
      *
      * @return List元素长度
      */
     public int getListElementSize() {
         return protocolField.listElementSize();
-    }
-
-    /**
-     * 是否为固定长度List
-     *
-     * @return true 表示固定长度
-     */
-    public boolean isFixedLengthList() {
-        return getListLength() > 0;
     }
 }

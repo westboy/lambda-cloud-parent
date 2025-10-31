@@ -98,6 +98,7 @@ public record ProtocolFrameMetadata(
      *
      * @return 字段数量
      */
+    @SuppressWarnings("unused")
     public int getFieldCount() {
         return fields.size();
     }
@@ -108,6 +109,7 @@ public record ProtocolFrameMetadata(
      * @param order 字段顺序
      * @return 字段元数据
      */
+    @SuppressWarnings("unused")
     public ProtocolFieldMetadata getFieldByOrder(int order) {
         return fieldMap.get(order);
     }
@@ -130,6 +132,7 @@ public record ProtocolFrameMetadata(
      *
      * @return 必填字段列表
      */
+    @SuppressWarnings("unused")
     public List<ProtocolFieldMetadata> getRequiredFields() {
         return fields.stream().filter(field -> !field.isOptional()).toList();
     }
@@ -139,6 +142,7 @@ public record ProtocolFrameMetadata(
      *
      * @return 可选字段列表
      */
+    @SuppressWarnings("unused")
     public List<ProtocolFieldMetadata> getOptionalFields() {
         return fields.stream().filter(ProtocolFieldMetadata::isOptional).toList();
     }
@@ -148,6 +152,7 @@ public record ProtocolFrameMetadata(
      *
      * @return 默认字符编码
      */
+    @SuppressWarnings("unused")
     public String getDefaultCharset() {
         return protocolMessage.defaultCharset();
     }
