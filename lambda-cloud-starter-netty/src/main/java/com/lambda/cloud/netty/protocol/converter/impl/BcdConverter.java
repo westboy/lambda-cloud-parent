@@ -25,7 +25,7 @@ public class BcdConverter implements DataTypeConverter {
             int high = (b >> 4) & 0x0F;
             int low = b & 0x0F;
 
-            // 验证BCD数字有效性
+            // 验证 BCD 数字有效性
             if (high > 9 || low > 9) {
                 throw new ProtocolException(
                         ProtocolException.ErrorCode.PARSE_ERROR,

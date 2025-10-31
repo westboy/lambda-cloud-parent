@@ -4,6 +4,8 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.converter.impl.*;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import lombok.Setter;
+
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -15,7 +17,8 @@ import java.util.Map;
  *
  * @author Jin
  */
-public class DataTypeConverterFactory {
+@Setter
+public class DataTypeConverterResolver {
 
     /**
      * 转换器映射
@@ -30,7 +33,7 @@ public class DataTypeConverterFactory {
     /**
      * 构造函数
      */
-    public DataTypeConverterFactory() {
+    public DataTypeConverterResolver() {
         this.converters = new EnumMap<>(ProtocolDataType.class);
         initializeConverters();
     }
@@ -40,7 +43,7 @@ public class DataTypeConverterFactory {
      *
      * @param encryptionService 加密服务
      */
-    public DataTypeConverterFactory(EncryptionService encryptionService) {
+    public DataTypeConverterResolver(EncryptionService encryptionService) {
         this.converters = new EnumMap<>(ProtocolDataType.class);
         this.encryptionService = encryptionService;
         initializeConverters();

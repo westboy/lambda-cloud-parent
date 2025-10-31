@@ -3,7 +3,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
+import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
-public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implements DataTypeConverter {
+public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implements DataTypeConverter {
 
     /**
      * 解析字节数据为复合对象
@@ -103,7 +103,7 @@ public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implem
     /**
      * 从字符串解析复合对象（暂不支持）
      *
-     * @param data         字符串值
+     * @param data          字符串值
      * @param fieldMetadata 字段元数据
      * @return 解析后的对象
      * @throws ProtocolException 解析异常
@@ -122,10 +122,9 @@ public record CompositeConverter(ReflectionProtocolEngine protocolEngine) implem
      *
      * @param data          字节数据
      * @param fieldMetadata 字段元数据
-     * @throws ProtocolException 验证异常
      */
     @Override
-    public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) {
         if (data == null) {
             return;
         }

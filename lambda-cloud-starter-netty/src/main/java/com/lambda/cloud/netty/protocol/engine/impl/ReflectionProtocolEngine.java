@@ -15,7 +15,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
+import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
@@ -26,14 +26,15 @@ import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.EncryptionUtils;
 import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 反射协议引擎
@@ -55,7 +56,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * 数据类型转换器工厂
      */
-    private DataTypeConverterFactory converterFactory;
+    private DataTypeConverterResolver converterResolver;
 
     /**
      * 验证引擎
@@ -77,7 +78,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     private ProtocolFieldProcessor protocolFieldProcessor;
 
     /**
-     * CRC处理器
+     * CRC 处理器
      */
     private ComputedProcessor computedProcessor;
 
@@ -85,11 +86,12 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         this.fieldCache = CacheUtil.newLRUCache(1000);
         this.converterCache = CacheUtil.newLRUCache(100);
         this.metadataCache = new ConcurrentHashMap<>();
-        this.converterFactory = new DataTypeConverterFactory();
         this.validationEngine = new ValidationEngine();
         this.protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
-        this.computedProcessor = new ComputedProcessor(checksumService, encryptionService);
-        this.converterFactory.registerConverter(ProtocolDataType.COMPOSITE, new CompositeConverter(this));
+        this.converterResolver = new DataTypeConverterResolver();
+        this.converterResolver.setEncryptionService(encryptionService);
+        this.converterResolver.registerConverter(ProtocolDataType.COMPOSITE, new CompositeConverter(this));
+        this.computedProcessor = new ComputedProcessor(checksumService, converterResolver);
     }
 
     @Override
@@ -355,7 +357,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * 获取转换器（支持加密控制）
      */
     private DataTypeConverter getConverter(ProtocolFieldMetadata fieldMetadata, boolean encryptionEnabled) {
-        // List字段优先处理
+        // List 字段优先处理
         if (fieldMetadata.isList()) {
             return getListConverter();
         }
@@ -380,7 +382,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     private DataTypeConverter getConverterFromCache(ProtocolDataType dataType) {
         DataTypeConverter converter = converterCache.get(dataType.name());
         if (converter == null) {
-            converter = converterFactory.getConverter(dataType);
+            converter = converterResolver.getConverter(dataType);
             converterCache.put(dataType.name(), converter);
         }
         return converter;
@@ -394,7 +396,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     private DataTypeConverter getListConverter() {
         DataTypeConverter converter = converterCache.get(ProtocolDataType.LIST.name());
         if (converter == null) {
-            converter = converterFactory.getConverter(ProtocolDataType.LIST);
+            converter = converterResolver.getConverter(ProtocolDataType.LIST);
             converterCache.put(ProtocolDataType.LIST.name(), converter);
         }
         return converter;
@@ -408,7 +410,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     private DataTypeConverter getCompositeConverter() {
         DataTypeConverter converter = converterCache.get(ProtocolDataType.COMPOSITE.name());
         if (converter == null) {
-            converter = converterFactory.getConverter(ProtocolDataType.COMPOSITE);
+            converter = converterResolver.getConverter(ProtocolDataType.COMPOSITE);
             converterCache.put(ProtocolDataType.COMPOSITE.name(), converter);
         }
         return converter;
@@ -421,7 +423,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @return 加密字段转换器
      */
     private DataTypeConverter getEncryptedConverter(ProtocolFieldMetadata fieldMetadata) {
-        return converterFactory.getConverter(fieldMetadata);
+        return converterResolver.getConverter(fieldMetadata);
     }
 
     /**

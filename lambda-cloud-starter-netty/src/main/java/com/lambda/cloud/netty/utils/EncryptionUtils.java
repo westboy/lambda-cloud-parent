@@ -35,8 +35,8 @@ public class EncryptionUtils {
      */
     public static boolean isEnableEncryption(Object value) {
         return switch (value) {
-            case Number num -> num.intValue() == 0;
-            case String num -> StrUtil.equals(num, "00");
+            case Number num -> num.intValue() == 1;
+            case String num -> StrUtil.equals(num, "01");
             case null, default -> false;
         };
     }

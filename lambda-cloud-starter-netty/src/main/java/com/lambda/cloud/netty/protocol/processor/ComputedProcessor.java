@@ -12,15 +12,15 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.checksum.ChecksumService;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
-import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.model.SerializedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * CRC处理器
@@ -28,13 +28,18 @@ import lombok.extern.slf4j.Slf4j;
  * 负责处理协议消息中的CRC校验计算和验证
  * </p>
  *
- * @param crcService CRC校验服务
  * @author Jin
  */
 @Slf4j
-public record ComputedProcessor(ChecksumService crcService, EncryptionService encryptionService) {
+public class ComputedProcessor {
 
-    private static final DataTypeConverterFactory converterFactory = new DataTypeConverterFactory();
+    private final ChecksumService crcService;
+    private final DataTypeConverterResolver converterResolver;
+
+    public ComputedProcessor(ChecksumService crcService, DataTypeConverterResolver converterResolver) {
+        this.crcService = crcService;
+        this.converterResolver = converterResolver;
+    }
 
     /**
      * 在序列化时计算并设置CRC值
@@ -88,9 +93,9 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
      * 然后与CRCFiled=true字段中存储的值进行比较
      * </p>
      *
-     * @param instance Object
-     * @param raw 原始数据列表
-     * @param frameMetadata  消息元数据
+     * @param instance      Object
+     * @param raw           原始数据列表
+     * @param frameMetadata 消息元数据
      * @throws ProtocolException CRC验证失败
      */
     public void validateCrc(Object instance, String raw, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
@@ -264,20 +269,19 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
                 }
                 return Long.parseLong(hexString, 16);
             }
-            default ->
-                throw new ProtocolException(
-                        ProtocolException.ErrorCode.CRC_ERROR,
-                        "不支持的CRC值类型: " + value.getClass().getSimpleName(),
-                        crcField.getFieldName());
+            default -> throw new ProtocolException(
+                    ProtocolException.ErrorCode.CRC_ERROR,
+                    "不支持的CRC值类型: " + value.getClass().getSimpleName(),
+                    crcField.getFieldName());
         }
     }
 
     /**
      * 设置CRC值到实例
      *
-     * @param instance 消息实例
+     * @param instance      消息实例
      * @param fieldMetadata CRC字段元数据
-     * @param crcValue CRC值
+     * @param crcValue      CRC值
      * @throws ProtocolException 设置失败
      */
     private void setValueToInstance(Object instance, ProtocolFieldMetadata fieldMetadata, long crcValue)
@@ -378,7 +382,7 @@ public record ComputedProcessor(ChecksumService crcService, EncryptionService en
     public void serializeFieldValue(ByteBuf byteBuf, Object fieldValue, ProtocolFieldMetadata fieldMetadata)
             throws ProtocolException {
         try {
-            DataTypeConverter converter = converterFactory.getConverter(fieldMetadata.getDataType());
+            DataTypeConverter converter = converterResolver.getConverter(fieldMetadata.getDataType());
             byte[] serializedData = converter.serialize(fieldValue, fieldMetadata);
             byteBuf.writeBytes(serializedData);
         } catch (Exception e) {

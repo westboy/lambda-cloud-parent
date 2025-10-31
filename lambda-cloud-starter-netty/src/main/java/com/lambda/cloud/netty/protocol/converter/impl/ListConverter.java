@@ -5,7 +5,7 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFieldProxy;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.protocol.converter.DataTypeConverterFactory;
+import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,14 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ListConverter implements DataTypeConverter {
 
-    private final DataTypeConverterFactory converterFactory;
+    private final DataTypeConverterResolver converterFactory;
 
     /**
      * 构造函数
      *
      * @param converterFactory 转换器工厂
      */
-    public ListConverter(DataTypeConverterFactory converterFactory) {
+    public ListConverter(DataTypeConverterResolver converterFactory) {
         this.converterFactory = converterFactory;
     }
 
