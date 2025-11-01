@@ -3,7 +3,6 @@ package com.lambda.cloud.ykc.protocol.login;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cn.hutool.core.util.HexUtil;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;

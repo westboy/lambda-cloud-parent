@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
-import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
@@ -97,8 +96,7 @@ public class YkcV16BillingMessageTest {
         String format = String.format(TEST_DATA4, encryptHex);
         try {
             EncryptionService encryptionService = new DefaultEncryptionService(key.getEncoded());
-            ReflectionProtocolEngine reflectionProtocolEngine =
-                    new ReflectionProtocolEngine(encryptionService);
+            ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(encryptionService);
             ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
             reflectionProtocolEngine.setProtocolFieldProcessor(protocolFieldProcessor);
             ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);

@@ -147,8 +147,8 @@ public class ComputedProcessor {
             byte[] dataForCrc = HexUtil.decodeHex(raw);
 
             // 使用CRC算法计算校验值
-            long crcValue =
-                    ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
+            long crcValue = ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName())
+                    .calculate(dataForCrc);
 
             log.debug("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
             return crcValue;
@@ -224,8 +224,8 @@ public class ComputedProcessor {
             byte[] dataForCrc = ByteBufUtil.getBytes(byteBuf);
 
             // 使用CRC算法计算校验值
-            long crcValue =
-                    ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName()).calculate(dataForCrc);
+            long crcValue = ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName())
+                    .calculate(dataForCrc);
             if (log.isDebugEnabled()) {
                 String raw = HexUtil.encodeHexStr(dataForCrc);
                 log.debug("CRC计算完成，raw：{} 数据长度: {} bytes, CRC值: {}", raw, dataForCrc.length, crcValue);
