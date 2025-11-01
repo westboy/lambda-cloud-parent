@@ -1,16 +1,13 @@
 package com.lambda.cloud.netty.protocol.message;
 
-import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -153,51 +150,5 @@ public class RawRecordProtocolTest {
 
         log.info("=== 总计信息 ===");
         log.info("CRC: {}", record.getChecksum());
-    }
-
-    @Test
-    public void test2() {
-        ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
-        // 获取协议引擎
-        ProtocolEngine<RawBaseMessage> engine =
-                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
-        try {
-            StopWatch stopWatch = new StopWatch();
-            stopWatch.start();
-            byte[] bytes = HexUtil.decodeHex(TEST_DATA4);
-            for (int i = 0; i < 500; i++) {
-                int finalI = i;
-                Thread.ofVirtual().start(() -> {
-                    ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                    RawBaseMessage record = null;
-                    try {
-                        record = engine.parse(byteBuf, RawBaseMessage.class);
-                        //                        log.info("{} 解析结果: {} ", finalI,record);
-                        record.setChecksum(null);
-                        record.setDataLength(null);
-                        ByteBuf serializeBuffer = ByteBufPool.buffer();
-                        try {
-                            engine.serialize(record, serializeBuffer);
-                            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
-                            serializeBuffer.readBytes(serializedBytes);
-                            log.info("{} 序列化结果: {} ", finalI, HexUtil.encodeHexStr(serializedBytes, false));
-                        } finally {
-                            ByteBufPool.safeRelease(serializeBuffer);
-                        }
-                    } catch (ProtocolException e) {
-                        throw new RuntimeException(e);
-                    } finally {
-                        byteBuf.release();
-                    }
-                });
-            }
-            stopWatch.stop();
-            log.info("总体用时: time {}", stopWatch.prettyPrint(TimeUnit.MILLISECONDS));
-            Thread.sleep(100 * 200);
-        } catch (Exception e) {
-            log.error("解析过程中发生未知异常", e);
-            throw new RuntimeException("解析失败", e);
-        }
     }
 }

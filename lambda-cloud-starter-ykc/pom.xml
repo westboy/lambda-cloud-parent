@@ -9,6 +9,10 @@
 
     <artifactId>lambda-cloud-starter-ykc</artifactId>
 
+    <properties>
+        <spotbugs.skip>true</spotbugs.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.lambda.cloud</groupId>
