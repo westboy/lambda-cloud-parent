@@ -103,8 +103,10 @@ public class YkcV16BillingMessageTest {
             ProtocolFieldProcessor protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
             reflectionProtocolEngine.setProtocolFieldProcessor(protocolFieldProcessor);
             ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
-            ProtocolEngine<YkcV16BillingModelResponsePayload> engine =
+            ProtocolEngine<YkcV16BasePayload> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+
+            ProtocolPayloadRegistry.register("58", YkcV16BillingModelResponseDetail.class);
 
             // 将十六进制字符串转换为字节数组
             byte[] bytes = HexUtil.decodeHex(format);
@@ -112,7 +114,7 @@ public class YkcV16BillingMessageTest {
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
             // 使用协议引擎解析消息
-            YkcV16BillingModelResponsePayload record = engine.parse(byteBuf, YkcV16BillingModelResponsePayload.class);
+            YkcV16BasePayload record = engine.parse(byteBuf, YkcV16BasePayload.class);
 
             System.out.println(record);
 

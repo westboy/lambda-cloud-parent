@@ -355,6 +355,11 @@ public class ProtocolFieldProcessor {
             ByteArrayOutputStream outputStream)
             throws ProtocolException {
         try {
+            Class<?> targetType = fieldMetadata.getFieldType();
+            if (fieldMetadata.isPayload() && instance instanceof ProtocolMessage protocolMessage) {
+                targetType = ProtocolPayloadRegistry.getProtocolMessage(protocolMessage.getFrameType());
+                fieldMetadata.extParam().put("CompositeType", targetType);
+            }
             if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 // 加密字段的长度
                 int remaining =
@@ -369,11 +374,6 @@ public class ProtocolFieldProcessor {
                 fillParsedRawData(fieldMetadata, frameMetadata, outputStream, fieldData);
                 return converter.parseWithEncryption(fieldData, fieldMetadata, encryptionService);
             } else {
-                Class<?> targetType = fieldMetadata.getFieldType();
-                if (fieldMetadata.isPayload() && instance instanceof ProtocolMessage protocolMessage) {
-                    targetType = ProtocolPayloadRegistry.getProtocolMessage(protocolMessage.getFrameType());
-                    fieldMetadata.extParam().put("CompositeType", targetType);
-                }
                 // 获取复合字段的目标类型
                 int actualLength = calculateCompositeFieldLength(targetType);
                 if (fieldMetadata.isList()) {
