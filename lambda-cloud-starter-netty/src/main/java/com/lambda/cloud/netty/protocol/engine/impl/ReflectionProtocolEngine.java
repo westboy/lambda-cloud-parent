@@ -2,8 +2,7 @@ package com.lambda.cloud.netty.protocol.engine.impl;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
-import cn.hutool.core.util.ClassUtil;
-import cn.hutool.core.util.TypeUtil;
+import cn.hutool.core.util.*;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
@@ -18,13 +17,14 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
-import com.lambda.cloud.netty.protocol.model.ParsedData;
 import com.lambda.cloud.netty.protocol.processor.ComputedProcessor;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.EncryptionUtils;
 import io.netty.buffer.ByteBuf;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -96,36 +96,27 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
         ProtocolFrameMetadata metadata = getMetadata(messageClass);
         long startTime = System.nanoTime();
-
         try {
             // 记录解析开始
             logProtocolOperation("帧解析", metadata);
-
             // 创建消息实例
             Object instance = messageClass.getDeclaredConstructor().newInstance();
-            List<ParsedData> parsedRawDataList = new LinkedList<>();
-            // 解析各个字段
-            for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
-                parseField(byteBuf, instance, fieldMetadata, metadata, parsedRawDataList);
-            }
-
-            if (metadata.isPayload()) {
-                // 获取参与 CRC 计算的原始数据
-                parsedRawDataList.sort(Comparator.comparingInt(ParsedData::getOrder));
-                StringBuilder sb = new StringBuilder(512);
-                for (ParsedData data : parsedRawDataList) {
-                    if (data.getIsComputed()) sb.append(data.getRaw());
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(512)) {
+                // 解析各个字段
+                for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
+                    parseField(byteBuf, instance, fieldMetadata, metadata, outputStream);
                 }
-                String parsedRawData = sb.toString();
-                // 记录解析的原始数据（调试级别）
-                if (log.isDebugEnabled()) {
-                    log.debug("解析原始数据：{}", parsedRawData);
+                if (metadata.isPayload()) {
+                    // 获取参与 CRC 计算的原始数据
+                    byte[] parsedRawData = outputStream.toByteArray();
+                    // 记录解析的原始数据（调试级别）
+                    if (log.isDebugEnabled()) {
+                        log.debug("解析原始数据：{}", HexUtil.encodeHexStr(parsedRawData));
+                    }
+                    // 验证 CRC 校验和
+                    computedProcessor.validateCrc(instance, parsedRawData, metadata);
                 }
-
-                // 验证 CRC 校验和
-                computedProcessor.validateCrc(instance, parsedRawData, metadata);
             }
-
             // 记录解析成功和性能指标
             if (log.isDebugEnabled()) {
                 long duration = System.nanoTime() - startTime;
@@ -227,7 +218,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @param instance          目标实例
      * @param fieldMetadata     字段元数据
      * @param msgMetadata       消息元数据
-     * @param parsedRawDataList 原始数据
+     * @param outputStream 原始数据
      * @throws ProtocolException 解析异常
      */
     private void parseField(
@@ -235,8 +226,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             Object instance,
             ProtocolFieldMetadata fieldMetadata,
             ProtocolFrameMetadata msgMetadata,
-            List<ParsedData> parsedRawDataList)
-            throws ProtocolException {
+            ByteArrayOutputStream outputStream)
+            throws ProtocolException, IOException {
 
         // 计算是否启用加密
         boolean encryptionEnabled = EncryptionUtils.isEncryptionEnabled(instance, msgMetadata);
@@ -244,7 +235,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
         // 此处设置复合转换器解析
         protocolFieldProcessor.parseField(
-                byteBuf, instance, fieldMetadata, msgMetadata, converter, encryptionEnabled, parsedRawDataList);
+                byteBuf, instance, fieldMetadata, msgMetadata, converter, encryptionEnabled, outputStream);
     }
 
     /**

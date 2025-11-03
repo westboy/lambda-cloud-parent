@@ -1,8 +1,11 @@
 package com.lambda.cloud.netty.utils;
 
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.List;
 
 /**
  * 转换器验证工具类
@@ -40,5 +43,16 @@ public final class ByteBufferUtils {
         }
         buffer.order(fieldMetadata.isLittleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
         return buffer;
+    }
+
+    public static byte[] addAllBytes(List<byte[]> bytes) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            for (byte[] by : bytes) {
+                outputStream.write(by);
+            }
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -77,8 +77,6 @@ public class RawRecordProtocolTest {
 
             // 输出关键字段
             logKeyFields(record);
-            record.setChecksum(null);
-            record.setDataLength(null);
             //                log.info("解析功能验证完成，数据解析正常");
 
             long stop = System.currentTimeMillis();

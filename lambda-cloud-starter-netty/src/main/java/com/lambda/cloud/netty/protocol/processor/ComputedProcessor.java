@@ -93,9 +93,9 @@ public class ComputedProcessor {
      * @param instance      Object
      * @param raw           原始数据列表
      * @param frameMetadata 消息元数据
-     * @throws ProtocolException CRC验证失败
+     * @throws ProtocolException CRC 验证失败
      */
-    public void validateCrc(Object instance, String raw, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
+    public void validateCrc(Object instance, byte[] raw, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> computedFields = getCrcAndLengthFields(frameMetadata);
@@ -123,7 +123,7 @@ public class ComputedProcessor {
                             ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,
                             String.format(
                                     "原始报文%s CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
-                                    raw, crcField.getFieldName(), expectedCrc, calculatedCrc),
+                                    HexUtil.encodeHexStr(raw), crcField.getFieldName(), expectedCrc, calculatedCrc),
                             crcField.getFieldName());
                 }
 
@@ -141,12 +141,9 @@ public class ComputedProcessor {
         }
     }
 
-    private long calculateCrcByParsedDataList(String raw, ProtocolFrameMetadata frameMetadata) {
+    private long calculateCrcByParsedDataList(byte[] dataForCrc, ProtocolFrameMetadata frameMetadata) {
         try {
-            // 获取参与CRC计算的字段
-            byte[] dataForCrc = HexUtil.decodeHex(raw);
-
-            // 使用CRC算法计算校验值
+            // 使用 CRC 算法计算校验值
             long crcValue = ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName())
                     .calculate(dataForCrc);
 

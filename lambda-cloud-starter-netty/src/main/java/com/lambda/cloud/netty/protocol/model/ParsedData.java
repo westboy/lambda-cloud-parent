@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ParsedData {
-    private String raw;
+    private byte[] raw;
     private Boolean isComputed;
     private Integer order;
 }
