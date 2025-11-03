@@ -2,14 +2,14 @@ package com.lambda.cloud.netty.protocol.secure;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x3B", name = "交易记录", description = "消息体", isPayload = true, version = "1.0")
+@ProtocolPayload(frameType = "0x3B", name = "交易记录", description = "消息体", isFrame = true, version = "1.0")
 public class EncryptedInnerRecord {
 
     /**

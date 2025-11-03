@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v17.resp;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "0x40", name = "交易记录确认", description = "运营平台确认收到充电桩上传的交易记录", version = "1.7")
+@ProtocolPayload(frameType = "0x40", name = "交易记录确认", description = "运营平台确认收到充电桩上传的交易记录", version = "1.7")
 public class YkcV17TransactionRecordResponseDetail {
 
     /**

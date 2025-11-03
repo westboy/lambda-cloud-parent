@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v20.resp;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.Getter;
@@ -22,7 +22,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
+@ProtocolPayload(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
 public class YkcV20BillingModelResponseDetail {
 
     /**
@@ -77,7 +77,7 @@ public class YkcV20BillingModelResponseDetail {
 
     @Getter
     @Setter
-    @ProtocolFrame(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
+    @ProtocolPayload(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
     public static class BillingModelFee {
         /**
          * 电费费率列表

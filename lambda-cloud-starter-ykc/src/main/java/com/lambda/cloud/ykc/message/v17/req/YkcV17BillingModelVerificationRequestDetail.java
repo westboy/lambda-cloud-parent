@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v17.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame
+@ProtocolPayload
 public class YkcV17BillingModelVerificationRequestDetail {
 
     /**

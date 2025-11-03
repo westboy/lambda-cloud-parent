@@ -1,6 +1,8 @@
 package com.lambda.cloud.netty.protocol.engine;
 
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
+import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,13 +26,14 @@ public class ProtocolEngineFactory {
      * @return 协议引擎实例
      */
     @SuppressWarnings("unchecked")
-    public static <T> ProtocolEngine<T> getEngine(EngineType type) {
+    public static <T extends ProtocolMessage> ProtocolEngine<T> getEngine(EngineType type) {
         return (ProtocolEngine<T>) ENGINE_CACHE.get(type);
     }
 
     /**
      * 添加引起
-     * @param type 引擎类型
+     *
+     * @param type   引擎类型
      * @param engine 引擎
      */
     public static void addEngine(EngineType type, ProtocolEngine<?> engine) {

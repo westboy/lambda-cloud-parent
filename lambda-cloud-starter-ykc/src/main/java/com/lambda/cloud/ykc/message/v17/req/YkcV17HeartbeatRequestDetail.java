@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v17.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x03", name = "心跳请求", description = "充电桩心跳包消息体", version = "1.7")
+@ProtocolPayload(frameType = "0x03", name = "心跳请求", description = "充电桩心跳包消息体", version = "1.7")
 public class YkcV17HeartbeatRequestDetail {
 
     /**

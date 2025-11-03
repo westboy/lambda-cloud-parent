@@ -7,6 +7,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 字段元数据
@@ -20,7 +21,7 @@ import java.util.List;
  * @author Jin
  */
 public record ProtocolFieldMetadata(
-        FieldAccessor fieldAccessor, ProtocolField protocolField, ProtocolValidation validation) {
+        FieldAccessor fieldAccessor, ProtocolField protocolField, ProtocolValidation validation, Map<String,Object> extParam) {
 
     /**
      * 获取字段名称
@@ -168,6 +169,15 @@ public record ProtocolFieldMetadata(
      */
     public boolean isComputed() {
         return protocolField.computed();
+    }
+
+    /**
+     * 是否 Payload
+     *
+     * @return true 是Payload
+     */
+    public boolean isPayload() {
+        return protocolField.payload();
     }
 
     /**

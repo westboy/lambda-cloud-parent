@@ -5,7 +5,7 @@ import cn.hutool.core.util.ReflectUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolPayloadMetadata;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessorFactory;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -18,6 +18,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +50,7 @@ public class ComputedProcessor {
      * @param frameMetadata 消息元数据
      * @throws ProtocolException CRC处理异常
      */
-    public void calculateAndSetCrc(Object message, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
+    public void calculateAndSetCrc(Object message, ProtocolPayloadMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有CRC字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> crcFields = getCrcAndLengthFields(frameMetadata);
@@ -63,7 +64,7 @@ public class ComputedProcessor {
             // 计算所有checksum=true字段的CRC值（只计算一次）
             SerializedData serializedData = calculateCrcAndDataLengthForAllComputedFields(message, frameMetadata);
 
-            // 将计算出的CRC值设置到所有CRC字段中
+            // 将计算出的 CRC 值设置到所有 CRC 字段中
             for (ProtocolFieldMetadata crcField : crcFields) {
                 if (crcField.isCrcField()) {
                     setValueToInstance(message, crcField, serializedData.getCrc());
@@ -95,7 +96,7 @@ public class ComputedProcessor {
      * @param frameMetadata 消息元数据
      * @throws ProtocolException CRC 验证失败
      */
-    public void validateCrc(Object instance, byte[] raw, ProtocolFrameMetadata frameMetadata) throws ProtocolException {
+    public void validateCrc(Object instance, byte[] raw, ProtocolPayloadMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> computedFields = getCrcAndLengthFields(frameMetadata);
@@ -141,7 +142,7 @@ public class ComputedProcessor {
         }
     }
 
-    private long calculateCrcByParsedDataList(byte[] dataForCrc, ProtocolFrameMetadata frameMetadata) {
+    private long calculateCrcByParsedDataList(byte[] dataForCrc, ProtocolPayloadMetadata frameMetadata) {
         try {
             // 使用 CRC 算法计算校验值
             long crcValue = ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName())
@@ -161,7 +162,7 @@ public class ComputedProcessor {
      * @param frameMetadata 消息元数据
      * @return CRC字段列表
      */
-    private List<ProtocolFieldMetadata> getCrcAndLengthFields(ProtocolFrameMetadata frameMetadata) {
+    private List<ProtocolFieldMetadata> getCrcAndLengthFields(ProtocolPayloadMetadata frameMetadata) {
         return frameMetadata.fields().stream()
                 .filter(protocolFieldMetadata ->
                         protocolFieldMetadata.isCrcField() || protocolFieldMetadata.isLengthFiled())
@@ -174,7 +175,7 @@ public class ComputedProcessor {
      * @param frameMetadata 消息元数据
      * @return 参与CRC计算的字段列表
      */
-    private List<ProtocolFieldMetadata> getComputedFields(ProtocolFrameMetadata frameMetadata) {
+    private List<ProtocolFieldMetadata> getComputedFields(ProtocolPayloadMetadata frameMetadata) {
         return frameMetadata.fields().stream()
                 .filter(ProtocolFieldMetadata::isComputed)
                 .collect(Collectors.toList());
@@ -192,7 +193,7 @@ public class ComputedProcessor {
      * @return CRC值
      */
     private SerializedData calculateCrcAndDataLengthForAllComputedFields(
-            Object message, ProtocolFrameMetadata frameMetadata) {
+            Object message, ProtocolPayloadMetadata frameMetadata) {
         // 序列化消息到字节数组（用于CRC计算）
         SerializedData serializedData = new SerializedData();
         ByteBuf byteBuf = ByteBufPool.buffer();
@@ -338,7 +339,7 @@ public class ComputedProcessor {
                     ProtocolValidation subValidation = field.getAnnotation(ProtocolValidation.class);
                     FieldAccessor fieldAccessor = FieldAccessorFactory.createAccessor(field);
                     ProtocolFieldMetadata subFieldMetadata =
-                            new ProtocolFieldMetadata(fieldAccessor, protocolField, subValidation);
+                            new ProtocolFieldMetadata(fieldAccessor, protocolField, subValidation,new ConcurrentHashMap<>(8));
 
                     // 递归处理子字段
                     if (subFieldMetadata.isComposite()) {

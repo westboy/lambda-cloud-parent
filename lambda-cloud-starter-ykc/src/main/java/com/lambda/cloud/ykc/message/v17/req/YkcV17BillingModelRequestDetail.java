@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v17.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x09", name = "计费模型请求", description = "充电桩计费模型请求消息体", version = "1.7")
+@ProtocolPayload(frameType = "0x09", name = "计费模型请求", description = "充电桩计费模型请求消息体", version = "1.7")
 public class YkcV17BillingModelRequestDetail {
 
     /**
@@ -59,21 +59,4 @@ public class YkcV17BillingModelRequestDetail {
             description = "计费模型编码")
     private String billingModelCode;
 
-    /**
-     * 默认构造函数
-     */
-    public YkcV17BillingModelRequestDetail() {}
-
-    /**
-     * 全参数构造函数
-     *
-     * @param equipmentId      桩编号
-     * @param connectorId      枪号
-     * @param billingModelCode 计费模型编码
-     */
-    public YkcV17BillingModelRequestDetail(String equipmentId, Integer connectorId, String billingModelCode) {
-        this.equipmentId = equipmentId;
-        this.connectorId = connectorId;
-        this.billingModelCode = billingModelCode;
-    }
 }

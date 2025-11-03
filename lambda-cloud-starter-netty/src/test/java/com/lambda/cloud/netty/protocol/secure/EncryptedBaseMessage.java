@@ -2,7 +2,8 @@ package com.lambda.cloud.netty.protocol.secure;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
+import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,8 +19,8 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x00", name = "云快充协议基础字段", description = "云快充2.1协议基础字段")
-public class EncryptedBaseMessage {
+@ProtocolPayload(frameType = "0x00", name = "云快充协议基础字段", description = "云快充2.1协议基础字段")
+public class EncryptedBaseMessage implements ProtocolMessage {
 
     /**
      * 报文头 - 起始符 (68)
@@ -84,4 +85,14 @@ public class EncryptedBaseMessage {
             crcFiled = true,
             description = "校验码")
     private String checksum;
+
+    @Override
+    public Integer getSerialNumber() {
+        return 0;
+    }
+
+    @Override
+    public void setSerialNumber(Integer serialNumber) {
+
+    }
 }

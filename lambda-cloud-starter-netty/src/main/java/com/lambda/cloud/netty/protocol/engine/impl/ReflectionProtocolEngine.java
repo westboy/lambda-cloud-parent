@@ -5,12 +5,12 @@ import cn.hutool.cache.impl.LRUCache;
 import cn.hutool.core.util.*;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolPayloadMetadata;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessorFactory;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
@@ -49,7 +49,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * 元数据缓存
      */
-    private Map<Class<?>, ProtocolFrameMetadata> metadataCache;
+    private Map<Class<?>, ProtocolPayloadMetadata> metadataCache;
 
     /**
      * 数据类型转换器工厂
@@ -93,28 +93,28 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     }
 
     @Override
-    public Object parse(ByteBuf byteBuf, Class<Object> messageClass) throws ProtocolException {
-        ProtocolFrameMetadata metadata = getMetadata(messageClass);
+    public Object parse(ByteBuf byteBuf, Class<?> messageClass) throws ProtocolException {
+        ProtocolPayloadMetadata metadata = getMetadata(messageClass);
         long startTime = System.nanoTime();
         try {
             // 记录解析开始
             logProtocolOperation("帧解析", metadata);
             // 创建消息实例
-            Object instance = messageClass.getDeclaredConstructor().newInstance();
+            Object protocolMessage = messageClass.getDeclaredConstructor().newInstance();
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(512)) {
                 // 解析各个字段
                 for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
-                    parseField(byteBuf, instance, fieldMetadata, metadata, outputStream);
+                    parseField(byteBuf, protocolMessage, fieldMetadata, metadata, outputStream);
                 }
-                if (metadata.isPayload()) {
+                if (metadata.isFrame()) {
                     // 获取参与 CRC 计算的原始数据
-                    byte[] parsedRawData = outputStream.toByteArray();
+                    byte[] bytes = outputStream.toByteArray();
                     // 记录解析的原始数据（调试级别）
                     if (log.isDebugEnabled()) {
-                        log.debug("解析原始数据：{}", HexUtil.encodeHexStr(parsedRawData));
+                        log.debug("解析原始数据：{}", HexUtil.encodeHexStr(bytes));
                     }
                     // 验证 CRC 校验和
-                    computedProcessor.validateCrc(instance, parsedRawData, metadata);
+                    computedProcessor.validateCrc(protocolMessage, bytes, metadata);
                 }
             }
             // 记录解析成功和性能指标
@@ -126,7 +126,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                         duration / 1000,
                         byteBuf.readableBytes());
             }
-            return instance;
+            return protocolMessage;
         } catch (Exception e) {
             // 记录解析失败和性能指标
             long duration = System.nanoTime() - startTime;
@@ -143,7 +143,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
     @Override
     public void serialize(Object message, ByteBuf byteBuf) throws ProtocolException {
-        ProtocolFrameMetadata metadata = getMetadata(message.getClass());
+        ProtocolPayloadMetadata metadata = getMetadata(message.getClass());
         long startTime = System.nanoTime();
         int initialWriterIndex = byteBuf.writerIndex();
 
@@ -192,7 +192,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     @Override
     public ValidationResult validate(Object message) {
         try {
-            ProtocolFrameMetadata metadata = getMetadata(message.getClass());
+            ProtocolPayloadMetadata metadata = getMetadata(message.getClass());
             return validationEngine.validate(message, metadata);
         } catch (Exception e) {
             log.error("验证消息时发生异常", e);
@@ -202,12 +202,12 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
     @Override
     public int calculateLength(Class<?> messageClass) {
-        ProtocolFrameMetadata metadata = getMetadata(messageClass);
+        ProtocolPayloadMetadata metadata = getMetadata(messageClass);
         return metadata.totalLength();
     }
 
     @Override
-    public ProtocolFrameMetadata getMetadata(Class<?> messageClass) {
+    public ProtocolPayloadMetadata getMetadata(Class<?> messageClass) {
         return metadataCache.computeIfAbsent(messageClass, this::buildMetadata);
     }
 
@@ -225,7 +225,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             ByteBuf byteBuf,
             Object instance,
             ProtocolFieldMetadata fieldMetadata,
-            ProtocolFrameMetadata msgMetadata,
+            ProtocolPayloadMetadata msgMetadata,
             ByteArrayOutputStream outputStream)
             throws ProtocolException, IOException {
 
@@ -248,7 +248,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @throws ProtocolException 序列化异常
      */
     private void serializeField(
-            Object instance, ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, ProtocolFrameMetadata msgMetadata)
+            Object instance, ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, ProtocolPayloadMetadata msgMetadata)
             throws ProtocolException {
 
         // 计算是否启用加密
@@ -267,10 +267,10 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @param messageClass 消息类
      * @return 消息元数据
      */
-    private ProtocolFrameMetadata buildMetadata(Class<?> messageClass) {
-        ProtocolFrame protocolMessage = messageClass.getAnnotation(ProtocolFrame.class);
+    private ProtocolPayloadMetadata buildMetadata(Class<?> messageClass) {
+        ProtocolPayload protocolMessage = messageClass.getAnnotation(ProtocolPayload.class);
         if (protocolMessage == null) {
-            throw new IllegalArgumentException("类必须标注 @ProtocolMessage 注解: " + messageClass.getName());
+            throw new IllegalArgumentException("类必须标注 @ProtocolPayload 注解: " + messageClass.getName());
         }
 
         List<ProtocolFieldMetadata> fields = new ArrayList<>();
@@ -297,14 +297,14 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                         }
                     }
                 }
-                fields.add(new ProtocolFieldMetadata(fieldAccessor, protocolField, validation));
+                fields.add(new ProtocolFieldMetadata(fieldAccessor, protocolField, validation,new ConcurrentHashMap<>(8)));
             }
         }
 
         // 按 order 排序
         fields.sort(Comparator.comparingInt(ProtocolFieldMetadata::getOrder));
 
-        return ProtocolFrameMetadata.create(messageClass, protocolMessage, fields);
+        return ProtocolPayloadMetadata.create(messageClass, protocolMessage, fields);
     }
 
     public static boolean isGenericField(Field field) {
@@ -434,7 +434,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @param operation     操作类型（如"帧解析"、"序列化"）
      * @param frameMetadata 协议帧元数据
      */
-    private void logProtocolOperation(String operation, ProtocolFrameMetadata frameMetadata) {
+    private void logProtocolOperation(String operation, ProtocolPayloadMetadata frameMetadata) {
         if (log.isDebugEnabled()) {
             log.debug(
                     "协议{} - 类型: {}, 名称: {}, 长度: {}B, 字段数: {}",

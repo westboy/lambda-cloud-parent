@@ -32,8 +32,8 @@ public class YkcAutoConfiguration {
     // ==================== 登录消息 ====================
 
     @Bean
-    public YkcV17LoginRequestMessage ykcV17LoginRequestMessage() {
-        return new YkcV17LoginRequestMessage();
+    public YkcV17LoginRequestPayload ykcV17LoginRequestMessage() {
+        return new YkcV17LoginRequestPayload();
     }
 
     @Bean
@@ -42,8 +42,8 @@ public class YkcAutoConfiguration {
     }
 
     @Bean
-    public YkcV17LoginResponseMessage ykcV17LoginResponseMessage() {
-        return new YkcV17LoginResponseMessage();
+    public YkcV17LoginResponsePayload ykcV17LoginResponseMessage() {
+        return new YkcV17LoginResponsePayload();
     }
 
     @Bean
@@ -54,8 +54,8 @@ public class YkcAutoConfiguration {
     // ==================== 心跳消息 ====================
 
     @Bean
-    public YkcV17HeartbeatRequestMessage ykcV17HeartbeatRequestMessage() {
-        return new YkcV17HeartbeatRequestMessage();
+    public YkcV17HeartbeatRequestPayload ykcV17HeartbeatRequestMessage() {
+        return new YkcV17HeartbeatRequestPayload();
     }
 
     @Bean
@@ -64,8 +64,8 @@ public class YkcAutoConfiguration {
     }
 
     @Bean
-    public YkcV17HeartbeatResponseMessage ykcV17HeartbeatResponseMessage() {
-        return new YkcV17HeartbeatResponseMessage();
+    public YkcV17HeartbeatResponsePayload ykcV17HeartbeatResponseMessage() {
+        return new YkcV17HeartbeatResponsePayload();
     }
 
     @Bean
@@ -76,8 +76,8 @@ public class YkcAutoConfiguration {
     // ==================== 计费模型消息 ====================
 
     @Bean
-    public YkcV17BillingModelRequestMessage ykcV17BillingModelRequestMessage() {
-        return new YkcV17BillingModelRequestMessage();
+    public YkcV17BillingModelRequestPayload ykcV17BillingModelRequestMessage() {
+        return new YkcV17BillingModelRequestPayload();
     }
 
     @Bean
@@ -86,8 +86,8 @@ public class YkcAutoConfiguration {
     }
 
     @Bean
-    public YkcV17BillingModelResponseMessage ykcV17BillingModelResponseMessage() {
-        return new YkcV17BillingModelResponseMessage();
+    public YkcV17BillingModelResponsePayload ykcV17BillingModelResponseMessage() {
+        return new YkcV17BillingModelResponsePayload();
     }
 
     @Bean
@@ -98,8 +98,8 @@ public class YkcAutoConfiguration {
     // ==================== 监测数据消息 ====================
 
     @Bean
-    public YkcV17MonitoringDataRequestMessage ykcV17MonitoringDataRequestMessage() {
-        return new YkcV17MonitoringDataRequestMessage();
+    public YkcV17MonitoringDataRequestPayload ykcV17MonitoringDataRequestMessage() {
+        return new YkcV17MonitoringDataRequestPayload();
     }
 
     @Bean
@@ -108,8 +108,8 @@ public class YkcAutoConfiguration {
     }
 
     @Bean
-    public YkcV17MonitoringDataResponseMessage ykcV17MonitoringDataResponseMessage() {
-        return new YkcV17MonitoringDataResponseMessage();
+    public YkcV17MonitoringDataResponsePayload ykcV17MonitoringDataResponseMessage() {
+        return new YkcV17MonitoringDataResponsePayload();
     }
 
     @Bean

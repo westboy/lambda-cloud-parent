@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v20.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,7 +19,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "A5", name = "充电桩主动申请启动充电", description = "充电桩主动申请启动充电请求详细信息")
+@ProtocolPayload(frameType = "A5", name = "充电桩主动申请启动充电", description = "充电桩主动申请启动充电请求详细信息")
 public class YkcV20StartChargingRequestDetail {
 
     /**

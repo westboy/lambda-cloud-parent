@@ -2,14 +2,14 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
+@ProtocolPayload(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
 public class BillingModelFee {
     /**
      * 电费费率列表

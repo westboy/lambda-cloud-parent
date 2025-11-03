@@ -1,7 +1,7 @@
 package com.lambda.cloud.netty.protocol.engine;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolPayloadMetadata;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 
@@ -24,7 +24,7 @@ public interface ProtocolEngine<T> {
      * @return 解析后的消息对象
      * @throws ProtocolException 协议解析异常
      */
-    T parse(ByteBuf byteBuf, Class<T> messageClass) throws ProtocolException;
+    T parse(ByteBuf byteBuf, Class<?> messageClass) throws ProtocolException;
 
     /**
      * 将协议消息序列化到字节缓冲区
@@ -57,5 +57,5 @@ public interface ProtocolEngine<T> {
      * @param messageClass 消息类型
      * @return 消息元数据
      */
-    ProtocolFrameMetadata getMetadata(Class<?> messageClass);
+    ProtocolPayloadMetadata getMetadata(Class<?> messageClass);
 }

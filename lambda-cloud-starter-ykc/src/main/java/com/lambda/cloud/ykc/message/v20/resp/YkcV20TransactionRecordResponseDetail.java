@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v20.resp;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,7 +19,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "3D", name = "交易记录", description = "交易记录响应详细信息")
+@ProtocolPayload(frameType = "3D", name = "交易记录", description = "交易记录响应详细信息")
 public class YkcV20TransactionRecordResponseDetail {
 
     /**

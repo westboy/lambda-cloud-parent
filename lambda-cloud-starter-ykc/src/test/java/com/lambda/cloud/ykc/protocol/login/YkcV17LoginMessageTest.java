@@ -7,7 +7,7 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequestDetail;
-import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequestMessage;
+import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequestPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class YkcV17LoginMessageTest {
         log.info("开始测试登录请求消息的序列化");
 
         try {
-            ProtocolEngine<YkcV17LoginRequestMessage> engine =
+            ProtocolEngine<YkcV17LoginRequestPayload> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
             // 将十六进制字符串转换为字节数组
@@ -50,7 +50,7 @@ public class YkcV17LoginMessageTest {
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
             // 使用协议引擎解析消息
-            YkcV17LoginRequestMessage record = engine.parse(byteBuf, YkcV17LoginRequestMessage.class);
+            YkcV17LoginRequestPayload record = engine.parse(byteBuf, YkcV17LoginRequestPayload.class);
 
             System.out.println(record);
 
@@ -75,7 +75,7 @@ public class YkcV17LoginMessageTest {
         log.info("开始测试登录请求消息的序列化");
 
         try {
-            ProtocolEngine<YkcV17LoginRequestMessage> loginRequestEngine =
+            ProtocolEngine<YkcV17LoginRequestPayload> loginRequestEngine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
             // 创建登录请求消息体
@@ -90,7 +90,7 @@ public class YkcV17LoginMessageTest {
             requestDetail.setOperator(4);
 
             // 创建登录请求消息
-            YkcV17LoginRequestMessage requestMessage = new YkcV17LoginRequestMessage(requestDetail);
+            YkcV17LoginRequestPayload requestMessage = new YkcV17LoginRequestPayload(requestDetail);
             requestMessage.setStartFlag("68");
             requestMessage.setSerialNumber(1000);
             requestMessage.setEncryptFlag("00");

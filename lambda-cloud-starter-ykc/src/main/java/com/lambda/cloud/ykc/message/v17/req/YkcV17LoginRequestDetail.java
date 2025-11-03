@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v17.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0x01", name = "登录请求", description = "充电桩登录认证请求消息体", version = "1.7")
+@ProtocolPayload(frameType = "0x01", name = "登录请求", description = "充电桩登录认证请求消息体", version = "1.7")
 public class YkcV17LoginRequestDetail {
 
     /**

@@ -2,15 +2,36 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import java.util.List;
+
+import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@ProtocolFrame(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
-public class BillingModelMessage {
+@ProtocolPayload(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
+public class BillingModelMessage implements ProtocolMessage {
+    @Override
+    public String getFrameType() {
+        return "";
+    }
+
+    @Override
+    public void setFrameType(String frameType) {
+
+    }
+
+    @Override
+    public Integer getSerialNumber() {
+        return 0;
+    }
+
+    @Override
+    public void setSerialNumber(Integer serialNumber) {
+
+    }
 
     /**
      * 复合字段List

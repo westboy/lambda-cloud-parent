@@ -4,6 +4,7 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
+import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -35,8 +36,14 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
         }
 
         try {
+
             // 获取复合字段的目标类型
             Class<?> targetType = fieldMetadata.getFieldType();
+
+            Object compositeType = fieldMetadata.extParam().get("CompositeType");
+            if(compositeType!=null){
+                targetType = (Class<?>) compositeType;
+            }
 
             // 验证目标类型
             validateTargetType(targetType, fieldMetadata);
@@ -45,8 +52,7 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
             ByteBuf byteBuf = Unpooled.wrappedBuffer(data);
 
             // 使用协议引擎递归解析复合对象
-            @SuppressWarnings("unchecked")
-            Object compositeObject = protocolEngine.parse(byteBuf, (Class<Object>) targetType);
+            Object compositeObject = protocolEngine.parse(byteBuf, targetType);
 
             log.debug("成功解析复合字段: {}, 类型: {}", fieldMetadata.getFieldName(), targetType.getSimpleName());
 

@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.utils;
 
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolPayloadMetadata;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,7 +13,7 @@ public class EncryptionUtils {
     /**
      * 判断是否启用加密控制
      */
-    public static boolean isEncryptionEnabled(Object instance, ProtocolFrameMetadata msgMetadata) {
+    public static boolean isEncryptionEnabled(Object instance, ProtocolPayloadMetadata msgMetadata) {
         try {
             for (ProtocolFieldMetadata fieldMetadata : msgMetadata.fields()) {
                 if (fieldMetadata.isEncryptionKey()) {

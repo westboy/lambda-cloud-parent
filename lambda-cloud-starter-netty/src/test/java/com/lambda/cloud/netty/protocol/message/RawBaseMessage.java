@@ -2,7 +2,7 @@ package com.lambda.cloud.netty.protocol.message;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,8 +18,8 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "base", name = "云快充基础协议", isPayload = true, description = "云快充基础协议字段")
-public class RawBaseMessage {
+@ProtocolPayload(frameType = "base", name = "云快充基础协议", isFrame = true, description = "云快充基础协议字段")
+public class RawBaseMessage implements ProtocolMessage {
 
     /**
      * 报文头 - 起始符 (68)
@@ -82,4 +82,14 @@ public class RawBaseMessage {
             crcFiled = true,
             description = "校验码")
     private String checksum;
+
+    @Override
+    public Integer getSerialNumber() {
+        return 0;
+    }
+
+    @Override
+    public void setSerialNumber(Integer serialNumber) {
+
+    }
 }

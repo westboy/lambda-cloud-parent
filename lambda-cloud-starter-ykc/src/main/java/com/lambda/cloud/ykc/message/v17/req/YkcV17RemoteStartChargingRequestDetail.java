@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v17.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "0x34", name = "运营平台远程控制启机", description = "当用户通过远程启动充电时，发送本命令", version = "1.7")
+@ProtocolPayload(frameType = "0x34", name = "运营平台远程控制启机", description = "当用户通过远程启动充电时，发送本命令", version = "1.7")
 public class YkcV17RemoteStartChargingRequestDetail {
 
     /**

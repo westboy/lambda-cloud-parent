@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v17.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import lombok.Getter;
@@ -21,7 +21,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "0x3D", name = "交易记录", description = "充电桩在网络正常情况下，主动发送结算账单", version = "1.7")
+@ProtocolPayload(frameType = "0x3D", name = "交易记录", description = "充电桩在网络正常情况下，主动发送结算账单", version = "1.7")
 public class YkcV17TransactionRecordRequestDetail {
 
     /**

@@ -43,14 +43,14 @@ public class YkcV16OrderMessageTest {
         ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
         // 获取协议引擎
-        ProtocolEngine<YkcV16OrderMessage> engine =
+        ProtocolEngine<YkcV16OrderPayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         try {
             for (int i = 0; i < 500; i++) {
 
                 // 先获取消息元数据，检查预期长度
-                var metadata = engine.getMetadata(YkcV16OrderMessage.class);
+                var metadata = engine.getMetadata(YkcV16OrderPayload.class);
                 //                log.info("消息预期总长度: {} 字节", metadata.totalLength());
                 //                log.info("字段数量: {}", metadata.fields().size());
 
@@ -66,7 +66,7 @@ public class YkcV16OrderMessageTest {
                 long current = System.currentTimeMillis();
                 //                log.info("开始解析报文...");
                 // 使用协议引擎解析消息
-                YkcV16OrderMessage record = engine.parse(byteBuf, YkcV16OrderMessage.class);
+                YkcV16OrderPayload record = engine.parse(byteBuf, YkcV16OrderPayload.class);
                 // 验证解析结果
                 ValidationResult validation = engine.validate(record);
                 //                if (validation.valid()) {

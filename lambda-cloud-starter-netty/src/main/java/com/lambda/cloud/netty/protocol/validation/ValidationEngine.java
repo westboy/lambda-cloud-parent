@@ -1,7 +1,7 @@
 package com.lambda.cloud.netty.protocol.validation;
 
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.ProtocolFrameMetadata;
+import com.lambda.cloud.netty.protocol.ProtocolPayloadMetadata;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class ValidationEngine {
      * @param metadata 消息元数据
      * @return 验证结果
      */
-    public ValidationResult validate(Object message, ProtocolFrameMetadata metadata) {
+    public ValidationResult validate(Object message, ProtocolPayloadMetadata metadata) {
         List<String> errors = new ArrayList<>();
 
         try {

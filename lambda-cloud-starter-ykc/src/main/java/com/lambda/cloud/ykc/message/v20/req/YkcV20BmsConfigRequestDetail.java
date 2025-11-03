@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v20.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@ProtocolFrame(frameType = "17", name = "参数配置", description = "GBT-27930充电桩与BMS参数配置阶段报文", version = "2.0")
+@ProtocolPayload(frameType = "17", name = "参数配置", description = "GBT-27930充电桩与BMS参数配置阶段报文", version = "2.0")
 public class YkcV20BmsConfigRequestDetail {
 
     /**

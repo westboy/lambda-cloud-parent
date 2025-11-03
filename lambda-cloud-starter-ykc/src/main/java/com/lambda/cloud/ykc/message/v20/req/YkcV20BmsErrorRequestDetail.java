@@ -2,7 +2,7 @@ package com.lambda.cloud.ykc.message.v20.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-import com.lambda.cloud.netty.protocol.annotation.ProtocolFrame;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,7 +19,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolFrame(frameType = "1B", name = "错误报文", description = "GBT-27930充电桩与BMS充电错误报文")
+@ProtocolPayload(frameType = "1B", name = "错误报文", description = "GBT-27930充电桩与BMS充电错误报文")
 public class YkcV20BmsErrorRequestDetail {
 
     /**

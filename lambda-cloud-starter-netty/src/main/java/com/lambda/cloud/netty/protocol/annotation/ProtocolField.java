@@ -57,6 +57,18 @@ public @interface ProtocolField {
      */
     boolean computed() default false;
 
+
+    /**
+     * computed 计算字段
+     *
+     * <p>
+     * 表示该字段为校验字段，参与CRC校验值与长度计算的计算
+     * </p>
+     *
+     * @return 校验
+     */
+    boolean payload() default false;
+
     /**
      * CRCFiled
      * <p>
@@ -66,7 +78,7 @@ public @interface ProtocolField {
      * 序列化的时候需要将计算出的CRC校验值写入该字段
      * </p>
      *
-     * @return CRC字段
+     * @return CRC 字段
      */
     boolean crcFiled() default false;
 
@@ -78,7 +90,6 @@ public @interface ProtocolField {
      * 解析的时候需要取该值参与数据长度计算
      * 序列化的时候需要将计算出的数据长度写入该字段
      * </p>
-     * @return
      */
     boolean lengthFiled() default false;
 
@@ -90,7 +101,6 @@ public @interface ProtocolField {
      * 解析的时候需要取该值参与序号计算
      * 序列化的时候需要将计算出的序号值写入该字段
      * </p>
-     * @return
      */
     boolean serialFiled() default false;
 
@@ -173,7 +183,7 @@ public @interface ProtocolField {
      * 指定List中元素的数据类型，用于正确解析和序列化List元素
      * </p>
      *
-     * @return List元素的数据类型
+     * @return List 元素的数据类型
      */
     ProtocolDataType listElementType() default ProtocolDataType.HEX;
 
@@ -183,7 +193,7 @@ public @interface ProtocolField {
      * 指定List中元素的固定数量，当值大于0时，List将包含固定数量的元素
      * </p>
      *
-     * @return List元素数量
+     * @return List 元素数量
      */
     int listElementSize() default 0;
 }
