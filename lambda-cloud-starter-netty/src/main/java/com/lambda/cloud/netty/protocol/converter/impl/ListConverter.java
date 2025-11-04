@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -219,6 +218,9 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
      */
     private ProtocolFieldMetadata createElementMetadata(ProtocolFieldMetadata listMetadata) {
         return new ProtocolFieldMetadata(
-                listMetadata.fieldAccessor(), new ProtocolFieldProxy(listMetadata), listMetadata.validation(),new ConcurrentHashMap<>(8));
+                listMetadata.fieldAccessor(),
+                new ProtocolFieldProxy(listMetadata),
+                listMetadata.validation(),
+                new ConcurrentHashMap<>(8));
     }
 }

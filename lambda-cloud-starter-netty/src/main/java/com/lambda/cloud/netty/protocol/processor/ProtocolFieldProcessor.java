@@ -12,14 +12,13 @@ import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import io.netty.buffer.ByteBuf;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 字段处理器
@@ -78,8 +77,8 @@ public class ProtocolFieldProcessor {
         // 特殊处理 List 字段
         if (fieldMetadata.isList()) {
             // List 字段需要特殊处理，计算实际需要读取的数据长度
-            Object value =
-                    parseListField(byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, outputStream);
+            Object value = parseListField(
+                    byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, outputStream);
             setFieldValue(instance, fieldMetadata, value);
         } else if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
@@ -357,8 +356,12 @@ public class ProtocolFieldProcessor {
         try {
             Class<?> targetType = fieldMetadata.getFieldType();
             if (fieldMetadata.isPayload() && instance instanceof ProtocolMessage protocolMessage) {
-                targetType = ProtocolPayloadRegistry.getProtocolMessage(protocolMessage.getFrameType());
-                fieldMetadata.extParam().put("CompositeType", targetType);
+                Class<?> protocolMessageType =
+                        ProtocolPayloadRegistry.getProtocolMessage(protocolMessage.getFrameType());
+                if (protocolMessageType != null) {
+                    targetType = protocolMessageType;
+                    fieldMetadata.extParam().put("CompositeType", protocolMessageType);
+                }
             }
             if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 // 加密字段的长度

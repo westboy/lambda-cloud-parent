@@ -92,7 +92,5 @@ public class EncryptedBaseMessage implements ProtocolMessage {
     }
 
     @Override
-    public void setSerialNumber(Integer serialNumber) {
-
-    }
+    public void setSerialNumber(Integer serialNumber) {}
 }

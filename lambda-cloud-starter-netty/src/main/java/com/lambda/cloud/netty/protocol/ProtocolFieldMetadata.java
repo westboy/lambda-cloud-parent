@@ -21,7 +21,10 @@ import java.util.Map;
  * @author Jin
  */
 public record ProtocolFieldMetadata(
-        FieldAccessor fieldAccessor, ProtocolField protocolField, ProtocolValidation validation, Map<String,Object> extParam) {
+        FieldAccessor fieldAccessor,
+        ProtocolField protocolField,
+        ProtocolValidation validation,
+        Map<String, Object> extParam) {
 
     /**
      * 获取字段名称

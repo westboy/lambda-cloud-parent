@@ -58,5 +58,4 @@ public class YkcV17BillingModelRequestDetail {
             littleEndian = true,
             description = "计费模型编码")
     private String billingModelCode;
-
 }

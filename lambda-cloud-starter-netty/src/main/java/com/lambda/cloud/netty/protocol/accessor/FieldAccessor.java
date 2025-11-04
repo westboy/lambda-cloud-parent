@@ -1,7 +1,5 @@
 package com.lambda.cloud.netty.protocol.accessor;
 
-import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
-
 /**
  * 字段访问器接口
  * <p>

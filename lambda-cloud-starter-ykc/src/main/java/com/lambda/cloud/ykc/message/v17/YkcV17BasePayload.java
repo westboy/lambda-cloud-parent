@@ -9,7 +9,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@com.lambda.cloud.netty.protocol.annotation.ProtocolPayload(frameType = "base", name = "云快充1.7协议", isFrame = true, description = "云快充1.7协议基础字段")
+@com.lambda.cloud.netty.protocol.annotation.ProtocolPayload(
+        frameType = "base",
+        name = "云快充1.7协议",
+        isFrame = true,
+        description = "云快充1.7协议基础字段")
 public abstract class YkcV17BasePayload<T> implements com.lambda.cloud.netty.protocol.message.ProtocolMessage {
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
     private String startFlag = "68";

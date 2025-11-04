@@ -13,7 +13,6 @@ import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
 import com.lambda.cloud.ykc.message.v16.YkcV16BillingModelResponseDetail;
-import com.lambda.cloud.ykc.message.v16.YkcV16BillingModelResponsePayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.nio.charset.StandardCharsets;

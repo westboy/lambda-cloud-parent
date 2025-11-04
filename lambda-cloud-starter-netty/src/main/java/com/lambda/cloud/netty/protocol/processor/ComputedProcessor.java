@@ -96,7 +96,8 @@ public class ComputedProcessor {
      * @param frameMetadata 消息元数据
      * @throws ProtocolException CRC 验证失败
      */
-    public void validateCrc(Object instance, byte[] raw, ProtocolPayloadMetadata frameMetadata) throws ProtocolException {
+    public void validateCrc(Object instance, byte[] raw, ProtocolPayloadMetadata frameMetadata)
+            throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
         List<ProtocolFieldMetadata> computedFields = getCrcAndLengthFields(frameMetadata);
@@ -338,8 +339,8 @@ public class ComputedProcessor {
                     // 创建子字段的元数据
                     ProtocolValidation subValidation = field.getAnnotation(ProtocolValidation.class);
                     FieldAccessor fieldAccessor = FieldAccessorFactory.createAccessor(field);
-                    ProtocolFieldMetadata subFieldMetadata =
-                            new ProtocolFieldMetadata(fieldAccessor, protocolField, subValidation,new ConcurrentHashMap<>(8));
+                    ProtocolFieldMetadata subFieldMetadata = new ProtocolFieldMetadata(
+                            fieldAccessor, protocolField, subValidation, new ConcurrentHashMap<>(8));
 
                     // 递归处理子字段
                     if (subFieldMetadata.isComposite()) {

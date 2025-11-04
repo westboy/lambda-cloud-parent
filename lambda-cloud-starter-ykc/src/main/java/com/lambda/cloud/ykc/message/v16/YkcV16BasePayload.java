@@ -9,7 +9,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@com.lambda.cloud.netty.protocol.annotation.ProtocolPayload(frameType = "base", name = "云快充基础协议", isFrame = true, description = "云快充基础协议字段")
+@com.lambda.cloud.netty.protocol.annotation.ProtocolPayload(
+        frameType = "base",
+        name = "云快充基础协议",
+        isFrame = true,
+        description = "云快充基础协议字段")
 public class YkcV16BasePayload implements com.lambda.cloud.netty.protocol.message.ProtocolMessage {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
@@ -46,7 +50,13 @@ public class YkcV16BasePayload implements com.lambda.cloud.netty.protocol.messag
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.HEX, computed = true, description = "帧类型")
     private String frameType;
 
-    @ProtocolField(order = 5, composite = true, payload = true,computed = true, description = "数据域", encryptedField = true)
+    @ProtocolField(
+            order = 5,
+            composite = true,
+            payload = true,
+            computed = true,
+            description = "数据域",
+            encryptedField = true)
     private Object detail;
 
     @ProtocolField(

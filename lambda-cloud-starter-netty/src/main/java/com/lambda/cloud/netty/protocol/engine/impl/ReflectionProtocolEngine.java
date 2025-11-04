@@ -297,7 +297,8 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                         }
                     }
                 }
-                fields.add(new ProtocolFieldMetadata(fieldAccessor, protocolField, validation,new ConcurrentHashMap<>(8)));
+                fields.add(new ProtocolFieldMetadata(
+                        fieldAccessor, protocolField, validation, new ConcurrentHashMap<>(8)));
             }
         }
 

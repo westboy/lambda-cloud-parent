@@ -2,7 +2,6 @@ package com.lambda.cloud.ykc.message.v20;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
-
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +18,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@com.lambda.cloud.netty.protocol.annotation.ProtocolPayload(frameType = "base", name = "云快充2.0协议", isFrame = true, description = "云快充2.0协议基础字段")
+@com.lambda.cloud.netty.protocol.annotation.ProtocolPayload(
+        frameType = "base",
+        name = "云快充2.0协议",
+        isFrame = true,
+        description = "云快充2.0协议基础字段")
 public abstract class YkcV20BasePayload<T> implements com.lambda.cloud.netty.protocol.message.ProtocolMessage {
 
     /**

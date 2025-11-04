@@ -3,9 +3,8 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
-import java.util.List;
-
 import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,9 +18,7 @@ public class BillingModelMessage implements ProtocolMessage {
     }
 
     @Override
-    public void setFrameType(String frameType) {
-
-    }
+    public void setFrameType(String frameType) {}
 
     @Override
     public Integer getSerialNumber() {
@@ -29,9 +26,7 @@ public class BillingModelMessage implements ProtocolMessage {
     }
 
     @Override
-    public void setSerialNumber(Integer serialNumber) {
-
-    }
+    public void setSerialNumber(Integer serialNumber) {}
 
     /**
      * 复合字段List

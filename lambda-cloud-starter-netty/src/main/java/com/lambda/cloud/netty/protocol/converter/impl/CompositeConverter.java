@@ -4,7 +4,6 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
-import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -41,7 +40,7 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
             Class<?> targetType = fieldMetadata.getFieldType();
 
             Object compositeType = fieldMetadata.extParam().get("CompositeType");
-            if(compositeType!=null){
+            if (compositeType != null) {
                 targetType = (Class<?>) compositeType;
             }
 

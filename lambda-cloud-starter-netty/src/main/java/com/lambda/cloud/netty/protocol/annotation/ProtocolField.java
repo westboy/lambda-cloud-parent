@@ -57,7 +57,6 @@ public @interface ProtocolField {
      */
     boolean computed() default false;
 
-
     /**
      * computed 计算字段
      *
