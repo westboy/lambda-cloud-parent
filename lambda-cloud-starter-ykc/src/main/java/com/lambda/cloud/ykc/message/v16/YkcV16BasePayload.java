@@ -2,6 +2,8 @@ package com.lambda.cloud.ykc.message.v16;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
+import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,12 +11,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@com.lambda.cloud.netty.protocol.annotation.ProtocolPayload(
-        frameType = "base",
+@ProtocolPayload(
         name = "云快充基础协议",
         isFrame = true,
         description = "云快充基础协议字段")
-public class YkcV16BasePayload implements com.lambda.cloud.netty.protocol.message.ProtocolMessage {
+public class YkcV16BasePayload implements ProtocolMessage {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
     private String startFlag;
