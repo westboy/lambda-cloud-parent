@@ -36,6 +36,11 @@ public record ProtocolFieldProxy(ProtocolFieldMetadata listMetadata) implements 
     }
 
     @Override
+    public boolean payload() {
+        return listMetadata.isPayload();
+    }
+
+    @Override
     public boolean crcFiled() {
         return false;
     }
