@@ -1,7 +1,5 @@
 package com.lambda.cloud.ykc.message.v16;
 
-import com.lambda.cloud.ykc.message.ResponseBuilder;
-
 /**
  * 云快充1.6协议计费模型响应消息
  * <p>
@@ -31,12 +29,4 @@ public class YkcV16BillingModelResponsePayload extends YkcV16BasePayload {
         this.setFrameType("0A");
     }
 
-    static {
-        ResponseBuilder.register("0A", "1.7", protocolMessage -> {
-            YkcV16BillingModelResponsePayload billingModelResponseMessage = new YkcV16BillingModelResponsePayload();
-            billingModelResponseMessage.setStartFlag("68");
-            billingModelResponseMessage.setSerialNumber(protocolMessage.getSerialNumber());
-            return billingModelResponseMessage;
-        });
-    }
 }
