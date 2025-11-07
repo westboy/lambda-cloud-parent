@@ -1,119 +1,66 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.ykc.message.v17.req.*;
-import com.lambda.cloud.ykc.message.v17.resp.*;
+import com.lambda.cloud.netty.protocol.scanner.ProtocolPayloadScanner;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 
 /**
- * 云快充协议自动配置类
+ * Protocol Payload 自动配置类
  * <p>
- * 负责自动装配云快充V1.7协议相关的消息类，包括：
- * <ul>
- *     <li>登录消息 (0x01, 0x02)</li>
- *     <li>心跳消息 (0x03, 0x04)</li>
- *     <li>计费模型消息 (0x09, 0x0A)</li>
- *     <li>监测数据消息 (0x12, 0x13)</li>
- * </ul>
+ * 自动扫描并注册带有 @ProtocolPayload 注解的协议消息类
  * </p>
  *
- * @author Generated
- * @since 1.0.0
+ * @author Lambda
  */
 @Slf4j
 @AutoConfiguration
+@EnableConfigurationProperties(YkcProperties.class)
+@RequiredArgsConstructor
 public class YkcAutoConfiguration {
 
-    public YkcAutoConfiguration() {
-        log.info("YkcAutoConfiguration initialized - 云快充协议自动配置类已初始化");
+    private final YkcProperties properties;
+
+    /**
+     * 创建协议扫描器
+     */
+    @Bean
+    public ProtocolPayloadScanner protocolPayloadScanner() {
+        return new ProtocolPayloadScanner();
     }
 
-    // ==================== 登录消息 ====================
-
+    /**
+     * 应用启动完成后执行扫描
+     */
     @Bean
-    public YkcV17LoginRequestPayload ykcV17LoginRequestMessage() {
-        return new YkcV17LoginRequestPayload();
-    }
+    public ApplicationListener<ApplicationReadyEvent> protocolScannerListener(
+            ProtocolPayloadScanner scanner) {
+        return event -> {
+            if (properties.isLazyInit()) {
+                log.info("Protocol scanner lazy initialization is enabled, skipping auto-scan");
+                return;
+            }
 
-    @Bean
-    public YkcV17LoginRequestDetail ykcV17LoginRequestDetail() {
-        return new YkcV17LoginRequestDetail();
-    }
+            String[] basePackages = properties.getBasePackages();
+            if (basePackages == null || basePackages.length == 0) {
+                // 如果没有配置扫描路径，使用默认路径
+                basePackages = new String[]{"com.lambda"};
+                log.info("No base packages configured, using default: {}", String.join(", ", basePackages));
+            }
 
-    @Bean
-    public YkcV17LoginResponsePayload ykcV17LoginResponseMessage() {
-        return new YkcV17LoginResponsePayload();
-    }
-
-    @Bean
-    public YkcV17LoginResponseDetail ykcV17LoginResponseDetail() {
-        return new YkcV17LoginResponseDetail();
-    }
-
-    // ==================== 心跳消息 ====================
-
-    @Bean
-    public YkcV17HeartbeatRequestPayload ykcV17HeartbeatRequestMessage() {
-        return new YkcV17HeartbeatRequestPayload();
-    }
-
-    @Bean
-    public YkcV17HeartbeatRequestDetail ykcV17HeartbeatRequestDetail() {
-        return new YkcV17HeartbeatRequestDetail();
-    }
-
-    @Bean
-    public YkcV17HeartbeatResponsePayload ykcV17HeartbeatResponseMessage() {
-        return new YkcV17HeartbeatResponsePayload();
-    }
-
-    @Bean
-    public YkcV17HeartbeatResponseDetail ykcV17HeartbeatResponseDetail() {
-        return new YkcV17HeartbeatResponseDetail();
-    }
-
-    // ==================== 计费模型消息 ====================
-
-    @Bean
-    public YkcV17BillingModelRequestPayload ykcV17BillingModelRequestMessage() {
-        return new YkcV17BillingModelRequestPayload();
-    }
-
-    @Bean
-    public YkcV17BillingModelRequestDetail ykcV17BillingModelRequestDetail() {
-        return new YkcV17BillingModelRequestDetail();
-    }
-
-    @Bean
-    public YkcV17BillingModelResponsePayload ykcV17BillingModelResponseMessage() {
-        return new YkcV17BillingModelResponsePayload();
-    }
-
-    @Bean
-    public YkcV17BillingModelResponseDetail ykcV17BillingModelResponseDetail() {
-        return new YkcV17BillingModelResponseDetail();
-    }
-
-    // ==================== 监测数据消息 ====================
-
-    @Bean
-    public YkcV17MonitoringDataRequestPayload ykcV17MonitoringDataRequestMessage() {
-        return new YkcV17MonitoringDataRequestPayload();
-    }
-
-    @Bean
-    public YkcV17MonitoringDataRequestDetail ykcV17MonitoringDataRequestDetail() {
-        return new YkcV17MonitoringDataRequestDetail();
-    }
-
-    @Bean
-    public YkcV17MonitoringDataResponsePayload ykcV17MonitoringDataResponseMessage() {
-        return new YkcV17MonitoringDataResponsePayload();
-    }
-
-    @Bean
-    public YkcV17MonitoringDataResponseDetail ykcV17MonitoringDataResponseDetail() {
-        return new YkcV17MonitoringDataResponseDetail();
+            log.info("Starting protocol auto-scan with packages: {}", String.join(", ", basePackages));
+            try {
+                scanner.scanAndRegister(basePackages);
+            } catch (Exception e) {
+                log.error("Error during protocol scanning", e);
+                if (properties.isFailOnError()) {
+                    throw new RuntimeException("Protocol scanning failed", e);
+                }
+            }
+        };
     }
 }
