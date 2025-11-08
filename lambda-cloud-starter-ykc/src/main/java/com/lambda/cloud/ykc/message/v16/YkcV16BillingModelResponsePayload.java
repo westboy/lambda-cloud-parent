@@ -28,5 +28,4 @@ public class YkcV16BillingModelResponsePayload extends YkcV16BasePayload {
     public YkcV16BillingModelResponsePayload() {
         this.setFrameType("0A");
     }
-
 }

@@ -11,10 +11,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolPayload(
-        name = "云快充基础协议",
-        isFrame = true,
-        description = "云快充基础协议字段")
+@ProtocolPayload(name = "云快充基础协议", isFrame = true, description = "云快充基础协议字段")
 public class YkcV16BasePayload implements ProtocolMessage {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")

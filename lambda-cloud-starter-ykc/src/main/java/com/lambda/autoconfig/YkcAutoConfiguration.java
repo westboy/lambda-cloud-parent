@@ -37,8 +37,7 @@ public class YkcAutoConfiguration {
      * 应用启动完成后执行扫描
      */
     @Bean
-    public ApplicationListener<ApplicationReadyEvent> protocolScannerListener(
-            ProtocolPayloadScanner scanner) {
+    public ApplicationListener<ApplicationReadyEvent> protocolScannerListener(ProtocolPayloadScanner scanner) {
         return event -> {
             if (properties.isLazyInit()) {
                 log.info("Protocol scanner lazy initialization is enabled, skipping auto-scan");
@@ -48,7 +47,7 @@ public class YkcAutoConfiguration {
             String[] basePackages = properties.getBasePackages();
             if (basePackages == null || basePackages.length == 0) {
                 // 如果没有配置扫描路径，使用默认路径
-                basePackages = new String[]{"com.lambda"};
+                basePackages = new String[] {"com.lambda"};
                 log.info("No base packages configured, using default: {}", String.join(", ", basePackages));
             }
 

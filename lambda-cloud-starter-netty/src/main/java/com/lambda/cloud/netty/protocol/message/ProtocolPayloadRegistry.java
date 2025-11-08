@@ -1,10 +1,9 @@
 package com.lambda.cloud.netty.protocol.message;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ProtocolPayloadRegistry {
@@ -18,7 +17,8 @@ public class ProtocolPayloadRegistry {
 
         ProtocolPayload annotation = protocolMessage.getAnnotation(ProtocolPayload.class);
         if (annotation == null) {
-            log.warn("Class {} does not have @ProtocolPayload annotation, skipping registration",
+            log.warn(
+                    "Class {} does not have @ProtocolPayload annotation, skipping registration",
                     protocolMessage.getName());
             return;
         }
@@ -30,8 +30,11 @@ public class ProtocolPayloadRegistry {
 
         String normalizedProtocol = normalizeProtocol(protocol);
         protocolMessageStore.put(normalizedProtocol, protocolMessage);
-        log.info("Registered protocol [{}] (normalized: {}) with class: {}",
-                protocol, normalizedProtocol, protocolMessage.getName());
+        log.info(
+                "Registered protocol [{}] (normalized: {}) with class: {}",
+                protocol,
+                normalizedProtocol,
+                protocolMessage.getName());
     }
 
     public static Class<?> getProtocolMessage(String protocol) {

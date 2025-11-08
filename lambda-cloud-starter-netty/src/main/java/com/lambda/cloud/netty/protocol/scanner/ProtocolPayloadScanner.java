@@ -2,14 +2,13 @@ package com.lambda.cloud.netty.protocol.scanner;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-
-import java.util.Set;
 
 /**
  * 协议消息扫描器
@@ -49,14 +48,16 @@ public class ProtocolPayloadScanner {
                 try {
                     Class<?> clazz = ClassUtils.forName(className, null);
                     ProtocolPayload annotation = clazz.getAnnotation(ProtocolPayload.class);
-                    
+
                     if (annotation != null && StringUtils.hasText(annotation.frameType())) {
                         // 只注册 isFrame = false 的类
                         if (!annotation.isFrame()) {
                             ProtocolPayloadRegistry.register(annotation.frameType(), clazz);
                             totalRegistered++;
-                            log.debug("Registered protocol class: {} with frameType: {}", 
-                                className, annotation.frameType());
+                            log.debug(
+                                    "Registered protocol class: {} with frameType: {}",
+                                    className,
+                                    annotation.frameType());
                         } else {
                             log.debug("Skipped frame class: {} (isFrame=true)", className);
                         }
@@ -78,12 +79,11 @@ public class ProtocolPayloadScanner {
      * @return 配置好的扫描器
      */
     private ClassPathScanningCandidateComponentProvider createScanner() {
-        ClassPathScanningCandidateComponentProvider scanner = 
-            new ClassPathScanningCandidateComponentProvider(false);
-        
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+
         // 添加 @ProtocolPayload 注解过滤器
         scanner.addIncludeFilter(new AnnotationTypeFilter(ProtocolPayload.class));
-        
+
         return scanner;
     }
 }
