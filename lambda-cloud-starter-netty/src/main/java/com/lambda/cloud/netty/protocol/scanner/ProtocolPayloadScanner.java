@@ -46,8 +46,14 @@ public class ProtocolPayloadScanner {
             for (BeanDefinition beanDefinition : candidates) {
                 String className = beanDefinition.getBeanClassName();
                 try {
-                    Class<?> clazz = ClassUtils.forName(className, null);
-                    ProtocolPayload annotation = clazz.getAnnotation(ProtocolPayload.class);
+                    Class<?> clazz = null;
+                    if (className != null) {
+                        clazz = ClassUtils.forName(className, null);
+                    }
+                    ProtocolPayload annotation = null;
+                    if (clazz != null) {
+                        annotation = clazz.getAnnotation(ProtocolPayload.class);
+                    }
 
                     if (annotation != null && StringUtils.hasText(annotation.frameType())) {
                         // 只注册 isFrame = false 的类
