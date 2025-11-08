@@ -6,7 +6,7 @@ import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
-import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequestDetail;
+import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequest;
 import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequestPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -79,7 +79,7 @@ public class YkcV17LoginMessageTest {
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
             // 创建登录请求消息体
-            YkcV17LoginRequestDetail requestDetail = new YkcV17LoginRequestDetail();
+            YkcV17LoginRequest requestDetail = new YkcV17LoginRequest();
             requestDetail.setEquipmentId("1812000000005");
             requestDetail.setEquipmentType(0);
             requestDetail.setConnectorCount(2);

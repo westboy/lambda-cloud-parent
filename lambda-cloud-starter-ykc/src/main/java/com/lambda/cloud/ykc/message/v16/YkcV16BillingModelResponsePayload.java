@@ -17,7 +17,7 @@ public class YkcV16BillingModelResponsePayload extends YkcV16BasePayload {
      *
      * @param body 计费模型响应消息体
      */
-    public YkcV16BillingModelResponsePayload(YkcV16BillingModelResponseDetail body) {
+    public YkcV16BillingModelResponsePayload(YkcV16BillingModelResponse body) {
         this.setFrameType("0A");
         //        this.setDetail(body);
     }
