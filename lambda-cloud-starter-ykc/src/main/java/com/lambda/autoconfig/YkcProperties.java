@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -11,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author Lambda
  */
+@SuppressFBWarnings("EI_EXPOSE_REP")
 @Data
 @ConfigurationProperties(prefix = "lambda.protocol.scanner")
 public class YkcProperties {

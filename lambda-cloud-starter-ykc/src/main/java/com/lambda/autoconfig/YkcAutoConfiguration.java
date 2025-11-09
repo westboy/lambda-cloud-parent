@@ -1,6 +1,7 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.netty.protocol.scanner.ProtocolPayloadScanner;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Bean;
  *
  * @author Lambda
  */
+@SuppressFBWarnings("EI_EXPOSE_REP")
 @Slf4j
 @AutoConfiguration
 @EnableConfigurationProperties(YkcProperties.class)
