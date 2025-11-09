@@ -11,9 +11,6 @@
 
     <artifactId>lambda-cloud-starter-netty</artifactId>
 
-    <properties>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.lambda.cloud</groupId>
