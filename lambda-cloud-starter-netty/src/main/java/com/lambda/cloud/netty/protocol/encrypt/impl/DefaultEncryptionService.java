@@ -5,6 +5,7 @@ import cn.hutool.crypto.SecureUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public record DefaultEncryptionService(byte[] defaultKeyBytes) implements EncryptionService {
     /**
      * 构造函数（使用指定的默认密钥）

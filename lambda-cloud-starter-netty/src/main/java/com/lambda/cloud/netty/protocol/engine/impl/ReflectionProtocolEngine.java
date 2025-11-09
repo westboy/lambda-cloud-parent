@@ -22,6 +22,7 @@ import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.EncryptionUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Data
 @Slf4j
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
     /**

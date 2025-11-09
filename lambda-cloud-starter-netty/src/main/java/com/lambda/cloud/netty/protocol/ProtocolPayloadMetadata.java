@@ -1,6 +1,7 @@
 package com.lambda.cloud.netty.protocol;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @param totalLength     消息总长度
  * @author Jin
  */
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public record ProtocolPayloadMetadata(
         Class<?> messageClass,
         ProtocolPayload protocolMessage,
@@ -66,6 +68,7 @@ public record ProtocolPayloadMetadata(
     public String getMessageName() {
         return protocolMessage.name();
     }
+
     /**
      * 获取消息名称
      *

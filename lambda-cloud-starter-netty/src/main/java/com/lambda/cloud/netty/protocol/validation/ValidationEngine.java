@@ -21,6 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ValidationEngine {
 
     /**
+     * 定义可接受的误差范围
+     */
+    private static final double EPSILON = 1e-12;
+
+    /**
      * 正则表达式Pattern缓存，避免重复编译
      */
     private final ConcurrentHashMap<String, Pattern> patternCache = new ConcurrentHashMap<>();
@@ -117,11 +122,13 @@ public class ValidationEngine {
             Number value, ProtocolValidation validation, String fieldName, List<String> errors) {
         double doubleValue = value.doubleValue();
 
-        if (validation.min() != Double.MIN_VALUE && doubleValue < validation.min()) {
+        // 检查最小值（使用误差范围）
+        if (validation.min() != Double.MIN_VALUE && doubleValue < validation.min() - EPSILON) {
             errors.add("字段 " + fieldName + " 的值 " + doubleValue + " 小于最小值 " + validation.min());
         }
 
-        if (doubleValue > validation.max()) {
+        // 检查最大值（使用误差范围）
+        if (doubleValue > validation.max() + EPSILON) {
             errors.add("字段 " + fieldName + " 的值 " + doubleValue + " 大于最大值 " + validation.max());
         }
     }

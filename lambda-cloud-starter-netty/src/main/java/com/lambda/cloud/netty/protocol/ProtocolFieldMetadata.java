@@ -6,6 +6,7 @@ import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolValidation;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ import java.util.Map;
  * @param validation    验证注解
  * @author Jin
  */
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public record ProtocolFieldMetadata(
         FieldAccessor fieldAccessor,
         ProtocolField protocolField,

@@ -12,7 +12,6 @@
     <artifactId>lambda-cloud-starter-netty</artifactId>
 
     <properties>
-        <spotbugs.skip>true</spotbugs.skip>
     </properties>
 
     <dependencies>

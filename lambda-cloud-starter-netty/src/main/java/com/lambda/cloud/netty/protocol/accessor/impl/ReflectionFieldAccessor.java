@@ -1,6 +1,7 @@
 package com.lambda.cloud.netty.protocol.accessor.impl;
 
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
@@ -16,6 +17,7 @@ public class ReflectionFieldAccessor implements FieldAccessor {
     private String name;
     private Class<?> type;
 
+    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public ReflectionFieldAccessor(Field field) {
         try {
             field.setAccessible(true);

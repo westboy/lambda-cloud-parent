@@ -7,6 +7,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolFieldProxy;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.utils.ValidationUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author zx
  */
 @Slf4j
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public record ListConverter(DataTypeConverterResolver converterResolver) implements DataTypeConverter {
 
     @Override

@@ -21,16 +21,14 @@ public final class ChecksumFactory {
      * @return CRC算法实现
      */
     public static CrcAlgorithm getAlgorithm(String algorithmName) {
-        CrcAlgorithm algorithm = Crc16Algorithm.modbus();
-        switch (algorithmName) {
+        return switch (algorithmName) {
             case "CRC16-CCITT" -> Crc16Algorithm.ccitt();
             case "CRC16-IBM" -> Crc16Algorithm.ibm();
             case "CRC16-MAXIM" -> Crc16Algorithm.maxim();
             case "CRC16-USB" -> Crc16Algorithm.usb();
             case "CRC16-X25" -> Crc16Algorithm.x25();
             case "CRC16-XMODEM" -> Crc16Algorithm.xmodem();
-            case "CRC16-MODBUS" -> Crc16Algorithm.modbus();
-        }
-        return algorithm;
+            default -> Crc16Algorithm.modbus();
+        };
     }
 }

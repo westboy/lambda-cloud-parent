@@ -14,6 +14,7 @@ import com.lambda.cloud.netty.protocol.checksum.ChecksumFactory;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.model.SerializedData;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import java.lang.reflect.Field;
@@ -31,13 +32,8 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jin
  */
 @Slf4j
-public class ComputedProcessor {
-
-    private final DataTypeConverterResolver converterResolver;
-
-    public ComputedProcessor(DataTypeConverterResolver converterResolver) {
-        this.converterResolver = converterResolver;
-    }
+@SuppressFBWarnings("EI_EXPOSE_REP")
+public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
 
     /**
      * 在序列化时计算并设置CRC值

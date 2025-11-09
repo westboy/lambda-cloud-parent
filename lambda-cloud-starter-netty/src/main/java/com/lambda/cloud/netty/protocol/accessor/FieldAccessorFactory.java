@@ -196,7 +196,5 @@ public class FieldAccessorFactory {
     /**
      * 私有构造函数，防止实例化
      */
-    private FieldAccessorFactory() {
-        throw new UnsupportedOperationException("Utility class cannot be instantiated");
-    }
+    private FieldAccessorFactory() {}
 }

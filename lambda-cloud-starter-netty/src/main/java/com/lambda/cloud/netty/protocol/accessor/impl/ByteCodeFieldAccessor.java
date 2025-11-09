@@ -2,6 +2,7 @@ package com.lambda.cloud.netty.protocol.accessor.impl;
 
 import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
 import com.lambda.cloud.netty.protocol.accessor.asm.FieldAccessorGenerator;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class ByteCodeFieldAccessor implements FieldAccessor {
 
     private final FieldAccessor dynamicAccessor;

@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.repository;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Data
 @Slf4j
+@SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
 public class SerialNumberManager {
 
     /**
