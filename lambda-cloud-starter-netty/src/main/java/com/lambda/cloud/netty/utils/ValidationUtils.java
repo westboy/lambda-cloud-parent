@@ -35,6 +35,7 @@ public final class ValidationUtils {
             case UINT8 -> 1;
             case UINT16 -> 2;
             case UINT32 -> 4;
+            case UINT64 -> 8;
             case CP56TIME2A -> 7;
             default -> 0; // 变长类型
         };

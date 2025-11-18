@@ -102,6 +102,7 @@ public class DataTypeConverterResolver {
         registerConverter(ProtocolDataType.UINT8, new UInt8Converter());
         registerConverter(ProtocolDataType.UINT16, new UInt16Converter());
         registerConverter(ProtocolDataType.UINT32, new UInt32Converter());
+        registerConverter(ProtocolDataType.UINT64, new UInt64Converter());
         registerConverter(ProtocolDataType.CP56TIME2A, new CP56Time2aConverter());
         registerConverter(ProtocolDataType.LIST, new ListConverter(this));
     }

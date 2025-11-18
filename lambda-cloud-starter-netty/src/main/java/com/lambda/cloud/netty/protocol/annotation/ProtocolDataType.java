@@ -48,6 +48,11 @@ public enum ProtocolDataType {
     UINT32("无符号32位整数"),
 
     /**
+     * 无符号整数（8字节）
+     */
+    UINT64("无符号64位整数"),
+
+    /**
      * 时间戳（CP56Time2a格式，7字节）
      */
     CP56TIME2A("CP56Time2a时间格式"),
@@ -81,6 +86,7 @@ public enum ProtocolDataType {
             case UINT8 -> 1;
             case UINT16 -> 2;
             case UINT32 -> 4;
+            case UINT64 -> 8;
             case CP56TIME2A -> 7;
             default -> -1; // 需要显式指定长度
         };
