@@ -331,7 +331,7 @@ public class RawInnerRecord {
     /**
      * 报文头 - 帧类型 (0x3B)
      */
-    @ProtocolField(order = 28, length = 17, computed = true, dataType = ProtocolDataType.HEX, description = "帧类型")
+    @ProtocolField(order = 28, length = 17, computed = true, dataType = ProtocolDataType.ASCII, description = "帧类型")
     private String VIN;
 
     /**
