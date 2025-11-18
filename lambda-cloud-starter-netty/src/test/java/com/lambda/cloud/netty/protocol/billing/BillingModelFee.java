@@ -1,4 +1,4 @@
-package com.lambda.cloud.netty.protocol.converter.impl;
+package com.lambda.cloud.netty.protocol.billing;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
