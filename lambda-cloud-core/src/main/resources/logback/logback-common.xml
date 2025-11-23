@@ -48,13 +48,7 @@
 
     <appender name="async_error" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>0</discardingThreshold>
-        <charset>UTF-8</charset>
         <appender-ref ref="file_error"/>
     </appender>
 
-    <!-- ===================== ROOT 日志配置 ===================== -->
-    <root level="info">
-        <appender-ref ref="async_info"/>
-        <appender-ref ref="async_error"/>
-    </root>
 </included>

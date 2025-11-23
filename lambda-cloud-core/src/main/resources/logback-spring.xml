@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="120 seconds" debug="false"  shutdownHook="true">
+<configuration scan="false" scanPeriod="120 seconds" debug="false"  shutdownHook="true">
 
     <springProperty scope="context" name="log.path" source="spring.application.name" defaultValue="tmp" />
 
@@ -12,7 +12,11 @@
 
     <include resource="logback/logback-common.xml" />
 
+
     <root level="info">
         <appender-ref ref="console"/>
+        <appender-ref ref="async_info"/>
+        <appender-ref ref="async_error"/>
     </root>
+
 </configuration>
