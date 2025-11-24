@@ -26,10 +26,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
@@ -52,6 +49,11 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * 元数据缓存
      */
     private Map<Class<?>, ProtocolPayloadMetadata> metadataCache;
+
+    /**
+     * 构造函数缓存
+     */
+    private Map<Class<?>, Constructor<?>> constructorCache;
 
     /**
      * 数据类型转换器工厂
@@ -86,6 +88,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         this.fieldCache = CacheUtil.newLRUCache(1000);
         this.converterCache = CacheUtil.newLRUCache(100);
         this.metadataCache = new ConcurrentHashMap<>();
+        this.constructorCache = new ConcurrentHashMap<>();
         this.validationEngine = new ValidationEngine();
         this.protocolFieldProcessor = new ProtocolFieldProcessor(encryptionService);
         this.converterResolver = new DataTypeConverterResolver();
@@ -102,7 +105,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             // 记录解析开始
             logProtocolOperation("帧解析", metadata);
             // 创建消息实例
-            Object protocolMessage = messageClass.getDeclaredConstructor().newInstance();
+            Object protocolMessage = getConstructor(messageClass).newInstance();
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(512)) {
                 // 解析各个字段
                 for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
@@ -216,11 +219,11 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     /**
      * 解析字段
      *
-     * @param byteBuf           字节缓冲区
-     * @param instance          目标实例
-     * @param fieldMetadata     字段元数据
-     * @param msgMetadata       消息元数据
-     * @param outputStream 原始数据
+     * @param byteBuf       字节缓冲区
+     * @param instance      目标实例
+     * @param fieldMetadata 字段元数据
+     * @param msgMetadata   消息元数据
+     * @param outputStream  原始数据
      * @throws ProtocolException 解析异常
      */
     private void parseField(
@@ -447,5 +450,20 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                     frameMetadata.totalLength(),
                     frameMetadata.fields().size());
         }
+    }
+
+    /**
+     * 获取构造函数（带缓存）
+     */
+    private Constructor<?> getConstructor(Class<?> messageClass) {
+        return constructorCache.computeIfAbsent(messageClass, k -> {
+            try {
+                Constructor<?> constructor = k.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                return constructor;
+            } catch (NoSuchMethodException e) {
+                throw new IllegalArgumentException("类必须包含无参构造函数: " + k.getName(), e);
+            }
+        });
     }
 }
