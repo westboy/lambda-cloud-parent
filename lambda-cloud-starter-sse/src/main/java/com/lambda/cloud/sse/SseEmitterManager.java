@@ -29,6 +29,7 @@ public class SseEmitterManager implements DisposableBean {
     private final List<SseEventListener> listeners = new CopyOnWriteArrayList<>();
     protected final SseProperties properties;
     protected final ScheduledExecutorService scheduler;
+    protected final ExecutorService executor;
     protected final AtomicInteger connectionCount = new AtomicInteger(0);
 
     protected final AtomicInteger totalMessagesSent = new AtomicInteger(0);
@@ -38,6 +39,7 @@ public class SseEmitterManager implements DisposableBean {
     public SseEmitterManager(SseProperties properties) {
         this.properties = properties;
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
+        this.executor = Executors.newCachedThreadPool();
         startHeartbeatTask();
     }
 
@@ -61,7 +63,12 @@ public class SseEmitterManager implements DisposableBean {
         emitter.onCompletion(() -> removeEmitter(clientId));
         emitter.onTimeout(() -> removeEmitter(clientId));
 
-        emitters.put(clientId, emitter);
+        emitter.onTimeout(() -> removeEmitter(clientId));
+
+        SseEmitter oldEmitter = emitters.put(clientId, emitter);
+        if (oldEmitter != null) {
+            oldEmitter.complete();
+        }
         connectionCount.incrementAndGet();
 
         listeners.forEach(listener -> {
@@ -76,49 +83,57 @@ public class SseEmitterManager implements DisposableBean {
     }
 
     public void sendEvent(String clientId, String eventName, Object data) {
-        SseEmitter emitter = emitters.get(clientId);
-        if (emitter == null) {
+        if (!emitters.containsKey(clientId)) {
             throw new IllegalArgumentException("No emitter found for client: " + clientId);
         }
 
-        int attempts = 0;
-        while (attempts <= properties.getMaxRetryAttempts()) {
-            try {
-                emitter.send(SseEmitter.event().name(eventName).data(data));
-                totalMessagesSent.incrementAndGet();
-                listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
+        executor.submit(() -> {
+            SseEmitter emitter = emitters.get(clientId);
+            if (emitter == null) {
                 return;
-            } catch (IOException e) {
-                attempts++;
-                if (attempts <= properties.getMaxRetryAttempts()) {
-                    retryAttempts.incrementAndGet();
-                    log.warn("Retry attempt {} for client {}", attempts, clientId);
-                    ThreadUtil.safeSleep(500);
-                } else {
-                    failedMessages.incrementAndGet();
-                    log.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
-                    removeEmitter(clientId);
-                    throw new SseException("Failed to send event", e);
+            }
+
+            int attempts = 0;
+            while (attempts <= properties.getMaxRetryAttempts()) {
+                try {
+                    emitter.send(SseEmitter.event().name(eventName).data(data));
+                    totalMessagesSent.incrementAndGet();
+                    listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
+                    return;
+                } catch (IOException e) {
+                    attempts++;
+                    if (attempts <= properties.getMaxRetryAttempts()) {
+                        retryAttempts.incrementAndGet();
+                        log.warn("Retry attempt {} for client {}", attempts, clientId);
+                        ThreadUtil.safeSleep(500);
+                    } else {
+                        failedMessages.incrementAndGet();
+                        log.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
+                        removeEmitter(clientId);
+                        // Async task, no need to throw exception up
+                    }
                 }
             }
-        }
+        });
     }
 
     public void broadcast(String eventName, Object data) {
-        List<String> failedClients = new ArrayList<>();
-        emitters.forEach((clientId, emitter) -> {
-            try {
-                emitter.send(SseEmitter.event().name(eventName).data(data));
-                totalMessagesSent.incrementAndGet();
-                listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
-            } catch (IOException e) {
-                failedClients.add(clientId);
-                failedMessages.incrementAndGet();
-                log.error("Failed to broadcast to client: {}", clientId, e);
-            }
-        });
+        executor.submit(() -> {
+            List<String> failedClients = new ArrayList<>();
+            emitters.forEach((clientId, emitter) -> {
+                try {
+                    emitter.send(SseEmitter.event().name(eventName).data(data));
+                    totalMessagesSent.incrementAndGet();
+                    listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
+                } catch (IOException e) {
+                    failedClients.add(clientId);
+                    failedMessages.incrementAndGet();
+                    log.error("Failed to broadcast to client: {}", clientId, e);
+                }
+            });
 
-        failedClients.forEach(this::removeEmitter);
+            failedClients.forEach(this::removeEmitter);
+        });
     }
 
     public void removeEmitter(String clientId) {
@@ -164,6 +179,7 @@ public class SseEmitterManager implements DisposableBean {
 
     public void shutdown() {
         scheduler.shutdown();
+        executor.shutdown();
         emitters.values().forEach(SseEmitter::complete);
         emitters.clear();
     }
