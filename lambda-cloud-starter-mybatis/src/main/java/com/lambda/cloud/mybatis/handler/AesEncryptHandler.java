@@ -31,20 +31,43 @@ public class AesEncryptHandler extends BaseTypeHandler<Object> {
     @Override
     public String getNullableResult(ResultSet rs, String columnName) throws SQLException {
         String columnValue = rs.getString(columnName);
+        if (StrUtil.isEmpty(columnValue)) {
+            return columnValue;
+        }
         String value = AES.decrypt(columnValue, key);
-        return StrUtil.isNotEmpty(value) ? value : columnValue;
+        if (StrUtil.isEmpty(value)) {
+            throw new SQLException("AES decryption failed for column: " + columnName);
+        }
+        return value;
     }
 
     @Override
     public String getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
         String columnValue = rs.getString(columnIndex);
+        if (StrUtil.isEmpty(columnValue)) {
+            return columnValue;
+        }
         String value = AES.decrypt(columnValue, key);
-        return StrUtil.isNotEmpty(value) ? value : columnValue;
+        if (StrUtil.isEmpty(value)) {
+            throw new SQLException("AES decryption failed for column index: " + columnIndex);
+        }
+        return value;
     }
 
     @Override
     public String getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        String columnValue = cs.getString(columnIndex);
-        return AES.decrypt(columnValue, key);
+        String columnValue = getColumnValue(cs, columnIndex);
+        if (StrUtil.isEmpty(columnValue)) {
+            return columnValue;
+        }
+        String value = AES.decrypt(columnValue, key);
+        if (StrUtil.isEmpty(value)) {
+            throw new SQLException("AES decryption failed for column index: " + columnIndex);
+        }
+        return value;
+    }
+
+    private String getColumnValue(CallableStatement cs, int columnIndex) throws SQLException {
+        return cs.getString(columnIndex);
     }
 }

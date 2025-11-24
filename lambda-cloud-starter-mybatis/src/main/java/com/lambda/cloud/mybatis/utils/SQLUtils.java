@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
+import lombok.experimental.UtilityClass;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.select.Select;
@@ -12,6 +13,7 @@ import net.sf.jsqlparser.statement.select.Select;
 /**
  * @author Jin
  */
+@UtilityClass
 public final class SQLUtils {
     public static final String COMMA = ",";
     public static final String LEFT_BRACKET = "(";
@@ -23,7 +25,7 @@ public final class SQLUtils {
 
     private static final CCJSqlParserManager PARSER = new CCJSqlParserManager();
 
-    private SQLUtils() {}
+    private static final Pattern ORACLE_PATTERN = Pattern.compile("\\?\\|");
 
     /**
      * 将数字数组转为IN模式
@@ -55,12 +57,13 @@ public final class SQLUtils {
     public static String toIn(@Nonnull Set<String> args) {
         StringBuilder builder = new StringBuilder(SPACE);
         if (args.size() == 1) {
-            builder.append("= '").append(args.iterator().next()).append(SINGLE_QUOTE);
+            String value = args.iterator().next().replace(SINGLE_QUOTE, SINGLE_QUOTE + SINGLE_QUOTE);
+            builder.append("= '").append(value).append(SINGLE_QUOTE);
         } else {
             builder.append(IN);
             StringJoiner joiner = new StringJoiner(COMMA, LEFT_BRACKET, RIGHT_BRACKET);
             for (String i : args) {
-                joiner.add(SINGLE_QUOTE + i + SINGLE_QUOTE);
+                joiner.add(SINGLE_QUOTE + i.replace(SINGLE_QUOTE, SINGLE_QUOTE + SINGLE_QUOTE) + SINGLE_QUOTE);
             }
             builder.append(joiner);
         }
@@ -75,7 +78,7 @@ public final class SQLUtils {
      */
     public static Select parse(String sql) throws JSQLParserException {
         // 将Oracle方言中?||按标准模式添加空格
-        sql = Pattern.compile("\\?\\|").matcher(sql).replaceAll("? |");
+        sql = ORACLE_PATTERN.matcher(sql).replaceAll("? |");
         return parse(new StringReader(sql));
     }
 

@@ -5,7 +5,6 @@ import static com.lambda.cloud.mybatis.utils.MybatisUtils.getCurrentMethod;
 import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
 
 import cn.hutool.core.util.IdUtil;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
@@ -119,11 +118,16 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
      * @return java.lang.Object
      */
     private Object emptyResult(Method method) {
-        if (method != null && ClassUtils.isAssignable(method.getReturnType(), Integer.class)) {
-            return Lists.newArrayList(0);
-        } else {
-            return Collections.emptyList();
+        if (method != null) {
+            Class<?> returnType = method.getReturnType();
+            if (ClassUtils.isAssignable(Integer.class, returnType) || ClassUtils.isAssignable(int.class, returnType)) {
+                return 0;
+            } else if (ClassUtils.isAssignable(Long.class, returnType)
+                    || ClassUtils.isAssignable(long.class, returnType)) {
+                return 0L;
+            }
         }
+        return Collections.emptyList();
     }
 
     /**
