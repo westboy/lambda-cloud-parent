@@ -1,5 +1,6 @@
 package com.lambda.cloud.sse;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -51,8 +52,7 @@ class SseEmitterManagerTest {
         verify(listener).onConnect("client1");
 
         manager.sendEvent("client1", "testEvent", "testData");
-        verify(listener).onMessageSent("client1", "testEvent");
-
+        await().untilAsserted(() -> verify(listener).onMessageSent("client1", "testEvent"));
         emitter.complete();
 
         manager.removeEmitter("client1");

@@ -3,7 +3,6 @@ package com.lambda.cloud.sse.cluster;
 import com.lambda.autoconfig.SseProperties;
 import com.lambda.cloud.sse.MessageType;
 import com.lambda.cloud.sse.SseEmitterManager;
-import java.util.concurrent.TimeUnit;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 

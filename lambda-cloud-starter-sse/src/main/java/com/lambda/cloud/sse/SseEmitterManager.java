@@ -2,7 +2,6 @@ package com.lambda.cloud.sse;
 
 import cn.hutool.core.thread.ThreadUtil;
 import com.lambda.autoconfig.SseProperties;
-import com.lambda.cloud.sse.exception.SseException;
 import com.lambda.cloud.sse.listener.SseEventListener;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
