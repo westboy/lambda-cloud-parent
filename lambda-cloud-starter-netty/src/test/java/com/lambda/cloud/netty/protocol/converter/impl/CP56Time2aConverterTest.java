@@ -17,8 +17,7 @@ class CP56Time2aConverterTest {
                 new ProtocolFieldMetadata(
                         new FieldAccessor() {
                             @Override
-                            public void setValue(Object target, Object value) {
-                            }
+                            public void setValue(Object target, Object value) {}
 
                             @Override
                             public Object getValue(Object target) {
@@ -36,12 +35,10 @@ class CP56Time2aConverterTest {
                             }
 
                             @Override
-                            public void setFieldName(String fieldName) {
-                            }
+                            public void setFieldName(String fieldName) {}
 
                             @Override
-                            public void setFieldType(Class<?> fieldType) {
-                            }
+                            public void setFieldType(Class<?> fieldType) {}
                         },
                         null,
                         null,
