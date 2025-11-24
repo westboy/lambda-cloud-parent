@@ -51,6 +51,11 @@ public class KafkaDelayMonitorService {
     private String servers;
 
     /**
+     * 消费者组ID
+     */
+    private String groupId = "lambda-cloud-delay-consumer";
+
+    /**
      * 设置延时Kafka模板
      *
      * @param kafkaDelayTemplate 延时Kafka模板实例
@@ -58,6 +63,15 @@ public class KafkaDelayMonitorService {
     @Autowired
     public void setDelayKafkaTemplate(KafkaDelayTemplate kafkaDelayTemplate) {
         this.kafkaDelayTemplate = kafkaDelayTemplate;
+    }
+
+    /**
+     * 设置消费者组ID
+     *
+     * @param groupId 消费者组ID
+     */
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     /**
@@ -83,17 +97,39 @@ public class KafkaDelayMonitorService {
             consumer.assign(Collections.singleton(
                     new TopicPartition(KafkaDelayRecord.DELAY_TOPIC, kafkaDelayPartition.getPartition())));
             do {
-                kafkaDelayPartition.commit(consumer);
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1L));
-                if (records.isEmpty()) {
-                    continue;
-                }
-                for (ConsumerRecord<String, String> record0 : records) {
-                    execute0(record0, kafkaDelayPartition);
+                try {
+                    // Flow control: pause if queue is full
+                    while (kafkaDelayPartition.isFull()) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            log.warn("Monitor thread interrupted during flow control pause");
+                            return;
+                        }
+                    }
+
+                    kafkaDelayPartition.commit(consumer);
+                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1L));
+                    if (records.isEmpty()) {
+                        continue;
+                    }
+                    for (ConsumerRecord<String, String> record0 : records) {
+                        execute0(record0, kafkaDelayPartition);
+                    }
+                } catch (Exception e) {
+                    log.error("Error in monitor loop for partition {}", kafkaDelayPartition.getPartition(), e);
+                    // Prevent tight loop on persistent errors
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
                 }
             } while (true);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("Fatal error in monitor service for partition {}", kafkaDelayPartition.getPartition(), e);
         }
     }
 
@@ -118,10 +154,15 @@ public class KafkaDelayMonitorService {
         int partition = record0.partition();
         long offset = record0.offset();
         TopicPartition topicPartition = new TopicPartition(topic, partition);
+
+        // Track this offset as pending
+        kafkaDelayPartition.addPendingOffset(offset);
+
         KafkaDelayRecord kafkaDelayRecord = new KafkaDelayRecord(record0);
         if (kafkaDelayRecord.isExpired()) {
             kafkaDelayTemplate.send(kafkaDelayRecord.producerRecord());
-            kafkaDelayPartition.seek(topicPartition, offset);
+            // Processed immediately, remove from pending
+            kafkaDelayPartition.removePendingOffset(offset);
         } else {
             int remaining = kafkaDelayRecord.getDelayTime();
             long active = kafkaDelayRecord.getTopicExpireTime();
@@ -134,6 +175,14 @@ public class KafkaDelayMonitorService {
                         partition,
                         remaining,
                         active);
+            } else {
+                // Should not happen if isFull check works, but if it does, we must handle it.
+                // If we can't queue it, we can't process it later.
+                // For now, log error. Ideally we should block or retry.
+                log.error("Queue full! Dropping message (offset {}) from memory. It will be re-consumed on restart.",
+                        offset);
+                // We do NOT remove pending offset, so commit will not advance past this.
+                // This ensures at-least-once delivery on restart.
             }
         }
     }
@@ -161,7 +210,7 @@ public class KafkaDelayMonitorService {
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, StickyAssignor.class.getName());
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "lambda-cloud-delay-consumer");
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         return properties;
     }
 }

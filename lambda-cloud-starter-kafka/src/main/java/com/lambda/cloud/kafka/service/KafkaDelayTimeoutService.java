@@ -10,7 +10,7 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.TopicPartition;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 
@@ -80,12 +80,12 @@ public class KafkaDelayTimeoutService {
                 Thread.currentThread().interrupt();
             }
             if (Objects.nonNull(delayed)) {
-                TopicPartition topicPartition = delayed.getTopicPartition();
                 ConsumerRecord<String, String> consumerRecord = delayed.getConsumerRecord();
                 long offset = delayed.getOffset();
                 log.trace("Expired: {}, Offset: {}", consumerRecord.value(), offset);
                 kafkaDelayTemplate.send(new KafkaDelayRecord(consumerRecord).producerRecord());
-                kafkaDelayPartition.seek(topicPartition, offset);
+                // Mark as processed
+                kafkaDelayPartition.removePendingOffset(offset);
                 counter.getAndDecrement();
             }
         } while (true);

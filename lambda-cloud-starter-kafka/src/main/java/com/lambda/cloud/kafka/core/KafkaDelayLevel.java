@@ -46,7 +46,7 @@ public class KafkaDelayLevel {
      * @param delay 延时时间（秒），必须大于0
      * @throws IllegalArgumentException 当延时时间小于等于0时抛出
      */
-    @SuppressWarnings({"all"})
+    @SuppressWarnings({ "all" })
     public KafkaDelayLevel(int delay) {
         if (delay <= 0) {
             throw new IllegalArgumentException("Delay must be greater than 0, but was: " + delay);
@@ -58,7 +58,9 @@ public class KafkaDelayLevel {
         } else {
             int i = Math.min((int) Math.log10(delay), 5);
             // 分区从0开始，1-9秒占用分区0-8，10秒以上从分区9开始
-            this.partition = 9 + i;
+            // log10(10)=1 -> 8+1=9
+            // log10(100000)=5 -> 8+5=13
+            this.partition = 8 + i;
             this.level = (int) Math.pow(10D, i);
         }
     }

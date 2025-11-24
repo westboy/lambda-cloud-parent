@@ -7,6 +7,7 @@ import com.lambda.cloud.kafka.service.KafkaDelayTimeoutService;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +19,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * <p>
  * 当配置属性 spring.kafka.delay.enabled=true 时启用，提供：
  * <ul>
- *   <li>线程池执行器配置</li>
- *   <li>延时监控和超时服务配置</li>
- *   <li>延时队列初始化器配置</li>
- *   <li>默认延时主题配置</li>
+ * <li>线程池执行器配置</li>
+ * <li>延时监控和超时服务配置</li>
+ * <li>延时队列初始化器配置</li>
+ * <li>默认延时主题配置</li>
  * </ul>
  *
  * @author jin
@@ -39,9 +40,16 @@ public class KafkaDelayQueueConfigurer {
     public static final String KAFKA_MAX_FIXED_TASK_EXECUTOR = "kafkaMaxFixedTaskExecutor";
 
     /**
-     * 默认分区数量和线程池大小
+     * 默认分区数量
      */
-    public static final int SIZE = 15;
+    @Value("${spring.kafka.delay.partitions:15}")
+    private int partitions;
+
+    /**
+     * 消费者组ID
+     */
+    @Value("${spring.kafka.delay.group-id:lambda-cloud-delay-consumer}")
+    private String groupId;
 
     /**
      * 配置无界任务执行器
@@ -53,8 +61,8 @@ public class KafkaDelayQueueConfigurer {
     @Bean(name = KAFKA_NO_BOUND_TASK_EXECUTOR)
     public Executor kafkaNoBoundTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(SIZE);
-        executor.setMaxPoolSize(SIZE);
+        executor.setCorePoolSize(partitions);
+        executor.setMaxPoolSize(partitions);
         executor.setQueueCapacity(1024);
         executor.setKeepAliveSeconds(300);
         executor.setThreadNamePrefix("lambda-cloud-delay-kafka-bound-");
@@ -74,8 +82,8 @@ public class KafkaDelayQueueConfigurer {
     @Bean(name = KAFKA_MAX_FIXED_TASK_EXECUTOR)
     public Executor kafkaMaxFixedTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(SIZE);
-        executor.setMaxPoolSize(SIZE);
+        executor.setCorePoolSize(partitions);
+        executor.setMaxPoolSize(partitions);
         executor.setQueueCapacity(1024);
         executor.setKeepAliveSeconds(300);
         executor.setThreadNamePrefix("lambda-cloud-delay-kafka-fixed-");
@@ -92,7 +100,9 @@ public class KafkaDelayQueueConfigurer {
      */
     @Bean
     public KafkaDelayMonitorService delayMonitorService() {
-        return new KafkaDelayMonitorService();
+        KafkaDelayMonitorService service = new KafkaDelayMonitorService();
+        service.setGroupId(groupId);
+        return service;
     }
 
     /**
@@ -115,7 +125,7 @@ public class KafkaDelayQueueConfigurer {
     @Bean
     public KafkaDelayInitializer delayKafkaInitializer(
             KafkaDelayMonitorService kafkaDelayMonitorService, KafkaDelayTimeoutService kafkaDelayTimeoutService) {
-        return new KafkaDelayInitializer(kafkaDelayMonitorService, kafkaDelayTimeoutService);
+        return new KafkaDelayInitializer(kafkaDelayMonitorService, kafkaDelayTimeoutService, partitions);
     }
 
     /**
@@ -126,7 +136,7 @@ public class KafkaDelayQueueConfigurer {
     @Bean
     public NewTopic defaultDelayedTopics() {
         return TopicBuilder.name(KafkaDelayRecord.DELAY_TOPIC)
-                .partitions(SIZE)
+                .partitions(partitions)
                 .replicas(1)
                 .build();
     }

@@ -1,6 +1,5 @@
 package com.lambda.cloud.kafka;
 
-import com.lambda.autoconfig.KafkaDelayQueueConfigurer;
 import com.lambda.cloud.kafka.core.KafkaDelayPartition;
 import com.lambda.cloud.kafka.service.KafkaDelayMonitorService;
 import com.lambda.cloud.kafka.service.KafkaDelayTimeoutService;
@@ -20,7 +19,9 @@ import org.springframework.boot.CommandLineRunner;
  */
 @SuppressFBWarnings("EI_EXPOSE_REP")
 public record KafkaDelayInitializer(
-        KafkaDelayMonitorService kafkaDelayMonitorService, KafkaDelayTimeoutService kafkaDelayTimeoutService)
+        KafkaDelayMonitorService kafkaDelayMonitorService,
+        KafkaDelayTimeoutService kafkaDelayTimeoutService,
+        int partitions)
         implements CommandLineRunner {
     /**
      * 应用启动时执行的初始化逻辑
@@ -32,7 +33,7 @@ public record KafkaDelayInitializer(
      */
     @Override
     public void run(String... args) {
-        for (int i = 0; i < KafkaDelayQueueConfigurer.SIZE; i++) {
+        for (int i = 0; i < partitions; i++) {
             KafkaDelayPartition kafkaDelayPartition = new KafkaDelayPartition(i);
             kafkaDelayTimeoutService.execute(kafkaDelayPartition);
             kafkaDelayMonitorService.execute(kafkaDelayPartition);
