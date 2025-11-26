@@ -144,9 +144,7 @@ public class KafkaDelayPartition {
         }
 
         Map<TopicPartition, OffsetAndMetadata> offsets = Maps.newHashMap();
-        offsets.put(
-                new TopicPartition(KafkaDelayRecord.DELAY_TOPIC, partition),
-                new OffsetAndMetadata(commitOffset));
+        offsets.put(new TopicPartition(KafkaDelayRecord.DELAY_TOPIC, partition), new OffsetAndMetadata(commitOffset));
 
         consumer.commitAsync(offsets, delayOffsetCommitCallback);
     }

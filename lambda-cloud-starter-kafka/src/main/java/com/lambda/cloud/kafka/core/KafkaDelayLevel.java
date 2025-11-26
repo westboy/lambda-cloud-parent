@@ -46,7 +46,7 @@ public class KafkaDelayLevel {
      * @param delay 延时时间（秒），必须大于0
      * @throws IllegalArgumentException 当延时时间小于等于0时抛出
      */
-    @SuppressWarnings({ "all" })
+    @SuppressWarnings({"all"})
     public KafkaDelayLevel(int delay) {
         if (delay <= 0) {
             throw new IllegalArgumentException("Delay must be greater than 0, but was: " + delay);

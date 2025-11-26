@@ -179,7 +179,8 @@ public class KafkaDelayMonitorService {
                 // Should not happen if isFull check works, but if it does, we must handle it.
                 // If we can't queue it, we can't process it later.
                 // For now, log error. Ideally we should block or retry.
-                log.error("Queue full! Dropping message (offset {}) from memory. It will be re-consumed on restart.",
+                log.error(
+                        "Queue full! Dropping message (offset {}) from memory. It will be re-consumed on restart.",
                         offset);
                 // We do NOT remove pending offset, so commit will not advance past this.
                 // This ensures at-least-once delivery on restart.
