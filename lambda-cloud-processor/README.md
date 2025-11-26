@@ -60,6 +60,68 @@ public interface UserDTOConverter extends BaseConverter<UserDTO, UserEntity> {
         @FieldMapping(target = "userAge", source = "age")
     }
 )
+# Lambda Cloud Processor
+
+编译时注解处理器，用于自动生成 MapStruct 转换器接口。
+
+## 功能特性
+
+- 基于 `@AutoConverter` 注解自动生成 MapStruct 转换器
+- 支持字段映射配置
+- 支持自定义转换器接口
+- 编译时代码生成，无运行时性能损耗
+
+## 依赖
+
+```xml
+<dependency>
+    <groupId>com.lambda.cloud</groupId>
+    <artifactId>lambda-cloud-processor</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+## 使用方式
+
+### 基本用法
+
+在需要生成转换器的类上添加 `@AutoConverter` 注解：
+
+```java
+@AutoConverter(target = UserEntity.class)
+public class UserDTO {
+    private String name;
+    private Integer age;
+    // getter/setter...
+}
+```
+
+编译后会自动生成 `UserDTOConverter` 接口：
+
+```java
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    uses = { ConvertFunction.class }
+)
+public interface UserDTOConverter extends BaseConverter<UserDTO, UserEntity> {
+}
+```
+
+### 字段映射配置
+
+#### 在注解中配置
+
+```java
+@AutoConverter(
+    target = UserEntity.class,
+    fieldMappings = {
+        @FieldMapping(target = "userName", source = "name"),
+        @FieldMapping(target = "userAge", source = "age")
+    }
+)
 public class UserDTO {
     private String name;
     private Integer age;
@@ -76,10 +138,10 @@ public class UserDTO {
     @FieldMapping(target = "createTime", ignore = true)
 })
 public class UserDTO {
-    private String name;
-    private Integer age;
+    // ...
 }
 ```
+> 支持 `@FieldMappings` 容器注解，可同时配置多个映射规则。
 
 #### 在字段上配置
 
@@ -211,6 +273,9 @@ public class UserDTO {
 - `defaultValue` - 默认值
 - `qualifiedByName` - 指定转换方法名
 - `conditionExpression` - 条件表达式
+- `conditionQualifiedByName` - 条件限定方法名
+- `qualifiedBy` - 限定注解类
+- `conditionQualifiedBy` - 条件限定注解类
 
 示例：
 
@@ -224,9 +289,14 @@ public class UserDTO {
 
 1. 生成的转换器接口名为：`{原类名}Converter`
 2. 生成的接口位于与原类相同的包下
-3. 如果原类继承自 `BaseDTO`，则生成 `BaseConverter<DTO, Entity>` 接口
-4. 否则生成 `BaseConverter<Entity, DTO>` 接口
-5. 自动添加 `ConvertFunction.class` 到 `uses` 属性
+3. **泛型生成规则**：
+   - `isReverse = false` (默认): 生成 `BaseConverter<DTO, Entity>`
+   - `isReverse = true`: 生成 `BaseConverter<Entity, DTO>`
+   - 若指定 `converter` 属性，则继承指定的接口
+4. **依赖注入**：
+   - 自动添加 `ConvertFunctions.class` 到 `uses` 属性
+   - `@AutoConverter` 中配置的 `uses` 类会被追加到列表
+   - 支持 `config` 属性指定 MapStruct 配置类
 
 ## 注意事项
 

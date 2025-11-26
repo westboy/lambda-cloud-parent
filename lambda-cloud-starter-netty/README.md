@@ -91,6 +91,25 @@ public class CustomBootstrapCustomizer implements ServerBootstrapConfigurationCu
 
 ## 使用示例
 
+
+### 自定义处理器
+
+```java
+@Component
+public class MyChannelPipelineCustomizer implements ChannelPipelineConfigurationCustomizer {
+    
+    @Override
+    public void configuration(ChannelPipeline pipeline) {
+        // 添加编解码器
+        pipeline.addLast(new StringDecoder());
+        pipeline.addLast(new StringEncoder());
+        
+        // 添加业务处理器
+        pipeline.addLast(new MyBusinessHandler());
+    }
+}
+```
+
 ### 网络服务基本使用
 
 1. 添加依赖
@@ -106,24 +125,58 @@ public class CustomBootstrapCustomizer implements ServerBootstrapConfigurationCu
 @ProtocolMessage(version = "1.0", description = "用户消息")
 public class UserMessage {
     
+    // 基础字段
     @ProtocolField(order = 1, length = 4, dataType = DataType.UINT32)
     @ProtocolValidation(required = true, min = 1)
     private Long userId;
     
+    // 字符串字段（带填充）
     @ProtocolField(order = 2, length = 10, dataType = DataType.ASCII, 
                   padding = PaddingDirection.RIGHT, paddingChar = ' ')
     @ProtocolValidation(required = true, pattern = "^[a-zA-Z0-9]+$")
     private String username;
     
-    @ProtocolField(order = 3, length = 1, dataType = DataType.UINT8)
-    @ProtocolValidation(required = true, min = 0, max = 255)
-    private Integer status;
+    // 嵌套对象（composite=true）
+    @ProtocolField(order = 3, composite = true)
+    private Address address;
     
-    // getter/setter...
+    // 列表字段（List支持）
+    @ProtocolField(order = 4, dataType = DataType.LIST, listElementType = DataType.UINT16, listElementSize = 5)
+    private List<Integer> scores;
+    
+    // 自动计算字段
+    @ProtocolField(order = 5, length = 4, dataType = DataType.UINT32, lengthFiled = true)
+    private Integer totalLength;  // 自动计算包长度
+    
+    @ProtocolField(order = 6, length = 2, dataType = DataType.UINT16, crcFiled = true)
+    private Integer crc;          // 自动计算CRC校验
 }
 ```
 
-#### 2. 使用协议引擎
+#### 2. ProtocolField 属性详解
+
+| 属性名 | 类型 | 说明 |
+|-------|------|------|
+| `order` | int | 字段顺序（从0开始） |
+| `length` | int | 字段长度（字节数） |
+| `dataType` | DataType | 数据类型 (UINT8, UINT16, UINT32, ASCII, HEX, LIST, BCD等) |
+| `composite` | boolean | 是否为嵌套对象 |
+| `computed` | boolean | 是否为计算字段（参与校验/长度计算） |
+| `payload` | boolean | 是否为有效载荷（参与校验/长度计算） |
+| `crcFiled` | boolean | 是否为CRC校验字段（自动计算并填充） |
+| `lengthFiled` | boolean | 是否为长度字段（自动计算并填充） |
+| `serialFiled` | boolean | 是否为流水号字段（自动递增） |
+| `encryptedKey` | boolean | 是否为加密密钥标识 |
+| `encryptedField` | boolean | 是否为加密字段 |
+| `listElementType` | DataType | List元素类型 |
+| `listElementSize` | int | List固定长度 |
+| `precision` | int | 数值精度（小数位数） |
+| `littleEndian` | boolean | 是否小端字节序 |
+| `optional` | boolean | 是否可选字段 |
+| `padding` | PaddingDirection | 填充方向 (LEFT, RIGHT) |
+| `paddingChar` | String | 填充字符 |
+
+#### 3. 使用协议引擎
 
 ```java
 @Service
@@ -152,72 +205,3 @@ public class MessageService {
     }
 }
 ```
-
-#### 3. 高性能配置
-
-```java
-@Configuration
-public class ProtocolConfig {
-    
-    @Bean
-    public ProtocolEngineManager protocolEngineManager() {
-        // 创建高性能配置
-        ProtocolEngineConfig config = ProtocolEngineConfig.builder()
-            .enablePerformanceMonitoring(true)
-            .fieldCacheSize(1000)
-            .converterCacheSize(500)
-            .maxPoolCapacity(100)
-            .build();
-            
-        ProtocolEngineManager manager = new ProtocolEngineManager(config);
-        manager.start();
-        return manager;
-    }
-}
-```
-
-#### 4. 性能监控
-
-```java
-@RestController
-public class MonitorController {
-    
-    @Autowired
-    private ProtocolEngineManager manager;
-    
-    @GetMapping("/protocol/stats")
-    public String getProtocolStats() {
-        return manager.getPerformanceStats();
-    }
-    
-    @PostMapping("/protocol/reset")
-    public String resetStats() {
-        manager.resetPerformanceStats();
-        return "统计信息已重置";
-    }
-}
-```
-
-### 自定义处理器
-
-```java
-@Component
-public class MyChannelPipelineCustomizer implements ChannelPipelineConfigurationCustomizer {
-    
-    @Override
-    public void configuration(ChannelPipeline pipeline) {
-        // 添加编解码器
-        pipeline.addLast(new StringDecoder());
-        pipeline.addLast(new StringEncoder());
-        
-        // 添加业务处理器
-        pipeline.addLast(new MyBusinessHandler());
-    }
-}
-```
-
-## 注意事项
-
-- 确保配置的端口未被占用
-- 根据实际需求调整线程池大小
-- 自定义处理器需要正确处理异常和资源释放

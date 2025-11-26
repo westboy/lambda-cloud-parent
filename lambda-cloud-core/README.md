@@ -30,8 +30,20 @@ public class UserCreateDTO extends BaseDTO<UserEntity> {
 - **FieldMapping**: 字段映射注解，支持复杂映射规则
 - **Named**: MapStruct注解，用于标记转换方法，支持在DTO类内定义转换逻辑
 - **BaseConverter**: 转换接口基类，提供标准转换方法
-- **ConvertFunction**: 内置转换函数集合，提供常用类型转换
+- **ConvertFunctions**: 内置转换函数集合，支持以下类型转换：
+  - Map ↔ String (JSON)
+  - List ↔ String (JSON)
+  - LocalDateTime/LocalDate ↔ String (ISO格式)
+  - Number (Long, Integer, Double) ↔ String
+  - Boolean ↔ String
+  - Enum ↔ String
+  - UUID ↔ String
 - **ConverterResolver**: 转换器解析器，自动查找和缓存转换器
+- **ConvertUtils**: 简化的转换工具入口
+```java
+// 自动查找转换器并执行转换
+UserVO vo = ConvertUtils.convert(userEntity);
+```
 
 ### 3. 工具类
 - **Assert**: 参数校验工具
@@ -47,6 +59,20 @@ String signature = HmacGenerator.hmacSha256("data", "secret");
 String operator = OperatorUtils.getCurrentOperator();
 ```
 - **TypeConverter**: 类型转换工具类，支持基本类型安全转换
+- **ClassTypeUtils**: 类型检查与转换工具
+```java
+// 判断是否为基本类型或包装类型
+boolean isPrimitive = ClassTypeUtils.isPrimitiveOrWrapper(Integer.class);
+// 字符串转对应类型
+Object value = ClassTypeUtils.convertPrimitiveOrWrapper(Integer.class, "123");
+```
+- **StpLogicUtils**: Sa-Token 多账号体系集成工具
+```java
+// 获取当前活跃的登录逻辑（自动识别 HMAC 或 普通登录）
+StpLogic logic = StpLogicUtils.getActiveStpLogic();
+// 根据 Token 获取会话
+SaSession session = StpLogicUtils.getSaSession(token);
+```
 
 ### 4. 异常处理
 - **基础异常**:
@@ -77,6 +103,10 @@ String operator = OperatorUtils.getCurrentOperator();
 
 ### 6. 其他核心
 - **Constants**: 全局常量定义
+  - 认证常量：HMAC, LOGIN_USER 等
+  - JSON工具：GSON 实例
+  - 日期格式：DATE_TIME_PATTERN, ISO8601_PATTERN 等
+  - 正则表达式：DATE_REGEX, TIME_STAMP_REGEX 等
 - **CorsProperty**: CORS跨域配置属性
 ```yaml
 lambda:
