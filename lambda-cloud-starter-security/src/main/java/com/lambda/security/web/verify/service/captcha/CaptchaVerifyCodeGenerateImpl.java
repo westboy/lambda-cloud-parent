@@ -276,8 +276,7 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
     public boolean support(HttpServletRequest request) {
         final SecurityProperties.Verify verify = securityProperties.getVerify();
         boolean captchaEnabled = securityProperties.getForm().isEnableVerify();
-        boolean isGetMethod = JakartaServletUtil.isGetMethod(request);
-        return captchaEnabled && isGetMethod && matcher.match(verify.getUrl(), request.getRequestURI());
+        return captchaEnabled && matcher.match(verify.getUrl(), request.getRequestURI());
     }
 
     /**
@@ -420,7 +419,7 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
                 captchaCode.toString(),
                 securityProperties.getVerify().getTimeUnit(),
                 securityProperties.getVerify().getDuration());
-        if (WebHttpUtils.isAjaxRequest(request)) {
+        if (WebHttpUtils.isAjaxRequest(request) || JakartaServletUtil.isGetMethod(request)) {
             try (PrintWriter writer = response.getWriter()) {
                 response.setHeader("Expires", "0");
                 response.setHeader("Pragma", "No-cache");
