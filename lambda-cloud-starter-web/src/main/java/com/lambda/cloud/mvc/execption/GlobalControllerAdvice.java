@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * @author Jin
@@ -113,6 +114,18 @@ public class GlobalControllerAdvice {
         model.setStatus(HttpStatus.FORBIDDEN.value());
         model.setError(HttpStatus.FORBIDDEN.getReasonPhrase());
         model.setMessage("无效请求，" + exception.getMessage());
+        return model;
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({NoResourceFoundException.class})
+    public ErrorModel handler404(Exception exception, HttpServletRequest request) {
+        ErrorModel model = new ErrorModel();
+        model.setPath(request.getRequestURI());
+        model.setTimestamp(System.currentTimeMillis());
+        model.setStatus(HttpStatus.NOT_FOUND.value());
+        model.setError(HttpStatus.NOT_FOUND.getReasonPhrase());
+        model.setMessage("无效资源，" + exception.getMessage());
         return model;
     }
 
