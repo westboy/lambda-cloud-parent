@@ -419,7 +419,7 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
                 captchaCode.toString(),
                 securityProperties.getVerify().getTimeUnit(),
                 securityProperties.getVerify().getDuration());
-        if (WebHttpUtils.isAjaxRequest(request) || JakartaServletUtil.isGetMethod(request)) {
+        if (WebHttpUtils.isAjaxRequest(request) || JakartaServletUtil.isPostMethod(request)) {
             try (PrintWriter writer = response.getWriter()) {
                 response.setHeader("Expires", "0");
                 response.setHeader("Pragma", "No-cache");
