@@ -136,10 +136,10 @@ public class SseEmitterManager implements DisposableBean {
             failedClients.forEach(this::removeEmitter);
         });
     }
+
     public void removeEmitter(String clientId) {
         removeEmitter(clientId, true);
     }
-
 
     public void removeEmitter(String clientId, Boolean complete) {
         SseEmitter emitter = emitters.remove(clientId);
