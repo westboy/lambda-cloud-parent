@@ -57,9 +57,9 @@ public class SseEmitterManager implements DisposableBean {
 
     public SseEmitter createEmitter(String clientId) {
         SseEmitter emitter = new SseEmitter(properties.getTimeout());
-        emitter.onCompletion(() -> removeEmitter(clientId));
-        emitter.onTimeout(() -> removeEmitter(clientId));
-        emitter.onError(ex -> removeEmitter(clientId));
+        emitter.onCompletion(() -> removeEmitter(clientId,true));
+        emitter.onTimeout(() -> removeEmitter(clientId,true));
+        emitter.onError(ex -> removeEmitter(clientId,true));
 
         SseEmitter oldEmitter = emitters.put(clientId, emitter);
         if (oldEmitter != null) {
@@ -108,7 +108,7 @@ public class SseEmitterManager implements DisposableBean {
                     } else {
                         failedMessages.incrementAndGet();
                         log.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
-                        removeEmitter(clientId);
+                        removeEmitter(clientId,true);
                     }
                 }
             }
@@ -133,18 +133,20 @@ public class SseEmitterManager implements DisposableBean {
                     failedMessages.incrementAndGet();
                 }
             });
-            failedClients.forEach(this::removeEmitter);
+            failedClients.forEach(clientId -> this.removeEmitter(clientId,true));
         });
     }
 
-    public void removeEmitter(String clientId) {
+    public void removeEmitter(String clientId,Boolean complete) {
         SseEmitter emitter = emitters.remove(clientId);
         if (emitter != null) {
             connectionCount.decrementAndGet();
-            try {
-                emitter.complete();
-            } catch (Exception e) {
-                log.warn("emitter.complete error on disconnect clientId:{}", clientId, e);
+            if(complete == false) {
+                try {
+                    emitter.complete();
+                } catch (Exception e) {
+                    log.warn("emitter.complete error on disconnect clientId:{}", clientId, e);
+                }
             }
             listeners.forEach(listener -> {
                 try {
