@@ -2,7 +2,6 @@ package com.lambda.cloud.sse.controller;
 
 import com.lambda.cloud.sse.SseEmitterManager;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -22,9 +21,7 @@ public class SseController {
         this.emitterManager = emitterManager;
     }
 
-    @GetMapping(
-            value = "${lambda.sse.subscribe-path:/subscribe}/{clientId}",
-            produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "${lambda.sse.subscribe-path:/subscribe}/{clientId}")
     public SseEmitter subscribe(@PathVariable String clientId) {
         return emitterManager.createEmitter(clientId);
     }

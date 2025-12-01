@@ -141,6 +141,11 @@ public class GlobalControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ErrorModel handler500(Exception exception, HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("text/event-stream")) {
+            log.warn("SSE client disconnected or error: {}", exception.getMessage());
+            return null;
+        }
         log.error(exception.getMessage(), exception);
         ErrorModel model = handler500(request);
         model.setMessage("500 - 服务器异常！");

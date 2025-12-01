@@ -1,169 +1,153 @@
 package com.lambda.cloud.sse;
 
-import cn.hutool.core.thread.ThreadUtil;
 import com.lambda.autoconfig.SseProperties;
 import com.lambda.cloud.sse.listener.SseEventListener;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
- * SseEmitterManager
- *
- * @author Jin
+ * 安全版 SSE 管理器
+ * 自动处理客户端断开、IO 异常
  */
-@SuppressWarnings("unused")
-@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Slf4j
-public class SseEmitterManager implements DisposableBean {
+@SuppressFBWarnings("EI_EXPOSE_REP2")
+public class SseEmitterManager {
 
     private final Map<String, WrappedEmitter> emitters = new ConcurrentHashMap<>();
     private final List<SseEventListener> listeners = new CopyOnWriteArrayList<>();
-    protected final SseProperties properties;
-    protected final ScheduledExecutorService scheduler;
-    protected final ExecutorService executor;
-    protected final AtomicInteger connectionCount = new AtomicInteger(0);
 
-    protected final AtomicInteger totalMessagesSent = new AtomicInteger(0);
-    protected final AtomicInteger failedMessages = new AtomicInteger(0);
-    protected final AtomicInteger retryAttempts = new AtomicInteger(0);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+
+    private final AtomicInteger totalMessagesSent = new AtomicInteger(0);
+    private final AtomicInteger failedMessages = new AtomicInteger(0);
+    private final AtomicInteger retryAttempts = new AtomicInteger(0);
+    private final AtomicInteger connectionCount = new AtomicInteger(0);
+
+    protected final SseProperties properties;
 
     public SseEmitterManager(SseProperties properties) {
         this.properties = properties;
-        this.scheduler = Executors.newSingleThreadScheduledExecutor();
-        this.executor = Executors.newCachedThreadPool();
-        startHeartbeatTask();
+        startHeartbeat();
     }
 
-    protected void startHeartbeatTask() {
+    /** 创建 SSE Emitter */
+    public SseEmitter createEmitter(String clientId) {
+        SseEmitter emitter = new SseEmitter(properties.getTimeout());
+
+        // 异步异常 / 断开回调
+        emitter.onCompletion(() -> removeEmitter(clientId));
+        emitter.onTimeout(() -> removeEmitter(clientId));
+        emitter.onError(ex -> {
+            log.warn("SSE 客户端 {} 异常: {}", clientId, ex.getClass().getSimpleName());
+            removeEmitter(clientId, false);
+        });
+
+        WrappedEmitter wrapped = new WrappedEmitter(emitter);
+        WrappedEmitter old = emitters.put(clientId, wrapped);
+
+        if (old != null) old.complete();
+
+        connectionCount.incrementAndGet();
+        listeners.forEach(listener -> safeOnConnect(listener, clientId));
+
+        return emitter;
+    }
+
+    /** 发送消息给单个客户端 */
+    public void sendEvent(String clientId, String eventName, Object data) {
+        WrappedEmitter wrapped = emitters.get(clientId);
+        if (wrapped == null || wrapped.isComplete()) return;
+
+        executor.execute(() -> {
+            try {
+                wrapped.emitter.send(SseEmitter.event().name(eventName).data(data));
+                totalMessagesSent.incrementAndGet();
+                listeners.forEach(listener -> safeOnMessageSent(listener, clientId, eventName));
+            } catch (IOException e) {
+                log.warn("发送给客户端 {} 失败: {}", clientId, e.getMessage());
+                failedMessages.incrementAndGet();
+                removeEmitter(clientId, false);
+            }
+        });
+    }
+
+    /** 广播消息给所有客户端 */
+    public void broadcast(String eventName, Object data) {
+        executor.execute(() -> emitters.forEach((clientId, wrapped) -> {
+            if (wrapped.isComplete()) {
+                removeEmitter(clientId);
+                return;
+            }
+            try {
+                wrapped.emitter.send(SseEmitter.event().name(eventName).data(data));
+                totalMessagesSent.incrementAndGet();
+                listeners.forEach(listener -> safeOnMessageSent(listener, clientId, eventName));
+            } catch (IOException e) {
+                log.warn("广播客户端 {} 失败: {}", clientId, e.getMessage());
+                failedMessages.incrementAndGet();
+                removeEmitter(clientId, false);
+            }
+        }));
+    }
+
+    /** 移除客户端 */
+    public void removeEmitter(String clientId) {
+        removeEmitter(clientId, true);
+    }
+
+    public void removeEmitter(String clientId, boolean complete) {
+        WrappedEmitter wrapped = emitters.remove(clientId);
+        if (wrapped == null) return;
+
+        connectionCount.decrementAndGet();
+
+        if (complete) wrapped.complete();
+
+        listeners.forEach(listener -> safeOnDisconnect(listener, clientId));
+    }
+
+    /** 安全调用 listener 方法 */
+    private void safeOnConnect(SseEventListener listener, String clientId) {
+        try {
+            listener.onConnect(clientId);
+        } catch (Exception e) {
+            log.warn("Listener onConnect 异常: {}", clientId, e);
+        }
+    }
+
+    private void safeOnMessageSent(SseEventListener listener, String clientId, String eventName) {
+        try {
+            listener.onMessageSent(clientId, eventName);
+        } catch (Exception e) {
+            log.warn("Listener onMessageSent 异常: {}", clientId, e);
+        }
+    }
+
+    private void safeOnDisconnect(SseEventListener listener, String clientId) {
+        try {
+            listener.onDisconnect(clientId);
+        } catch (Exception e) {
+            log.warn("Listener onDisconnect 异常: {}", clientId, e);
+        }
+    }
+
+    /** 启动心跳任务 */
+    private void startHeartbeat() {
         scheduler.scheduleAtFixedRate(
-                () -> {
-                    broadcast("heartbeat", "ping");
-                    log.debug("Sent heartbeat to {} clients", emitters.size());
-                },
+                () -> broadcast("heartbeat", "ping"),
                 properties.getHeartbeatInterval(),
                 properties.getHeartbeatInterval(),
                 TimeUnit.MILLISECONDS);
     }
 
-    public SseEmitter createEmitter(String clientId) {
-        SseEmitter emitter = new SseEmitter(properties.getTimeout());
-        emitter.onCompletion(() -> removeEmitter(clientId));
-        emitter.onTimeout(() -> removeEmitter(clientId));
-        emitter.onError(ex -> removeEmitter(clientId));
-
-        WrappedEmitter oldEmitter = emitters.put(clientId, new WrappedEmitter(emitter));
-        if (oldEmitter != null) {
-            try {
-                oldEmitter.complete();
-            } catch (Exception e) {
-                log.warn("oldEmitter.complete error on create clientId:{}", clientId, e);
-            }
-        }
-        connectionCount.incrementAndGet();
-
-        listeners.forEach(listener -> {
-            try {
-                listener.onConnect(clientId);
-            } catch (Exception e) {
-                log.warn("Listener error on connect clientId:{}", clientId);
-            }
-        });
-
-        return emitter;
-    }
-
-    public void sendEvent(String clientId, String eventName, Object data) {
-        if (!emitters.containsKey(clientId)) {
-            throw new IllegalArgumentException("No emitter found for client: " + clientId);
-        }
-
-        executor.submit(() -> {
-            WrappedEmitter wrappedEmitter = emitters.get(clientId);
-            if (wrappedEmitter == null) {
-                return;
-            }
-            int attempts = 0;
-            while (attempts <= properties.getMaxRetryAttempts()) {
-                try {
-                    wrappedEmitter.emitter.send(
-                            SseEmitter.event().name(eventName).data(data));
-                    totalMessagesSent.incrementAndGet();
-                    listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
-                    return;
-                } catch (IOException e) {
-                    attempts++;
-                    if (attempts <= properties.getMaxRetryAttempts()) {
-                        retryAttempts.incrementAndGet();
-                        log.warn("Retry attempt {} for client {}", attempts, clientId);
-                        ThreadUtil.safeSleep(500);
-                    } else {
-                        failedMessages.incrementAndGet();
-                        log.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
-                        removeEmitter(clientId, true);
-                    }
-                }
-            }
-        });
-    }
-
-    public void broadcast(String eventName, Object data) {
-        executor.submit(() -> {
-            List<String> failedClients = new ArrayList<>();
-            emitters.forEach((clientId, wrappedEmitter) -> {
-                if (wrappedEmitter.isComplete()) {
-                    log.warn("客户端 {} 连接不可用", clientId);
-                    failedClients.add(clientId);
-                }
-                try {
-                    wrappedEmitter.emitter.send(
-                            SseEmitter.event().name(eventName).data(data));
-                    totalMessagesSent.incrementAndGet();
-                    listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
-                } catch (AsyncRequestNotUsableException e) {
-                    log.debug("客户端 {} 连接不可用", clientId);
-                    failedClients.add(clientId);
-                    failedMessages.incrementAndGet();
-                } catch (IOException e) {
-                    log.warn("客户端 {} IO 异常", clientId);
-                    failedClients.add(clientId);
-                    failedMessages.incrementAndGet();
-                }
-            });
-            failedClients.forEach(this::removeEmitter);
-        });
-    }
-
-    public void removeEmitter(String clientId) {
-        removeEmitter(clientId, true);
-    }
-
-    public void removeEmitter(String clientId, Boolean complete) {
-        WrappedEmitter wrappedEmitter = emitters.remove(clientId);
-        if (wrappedEmitter != null) {
-            connectionCount.decrementAndGet();
-            if (complete == true) {
-                wrappedEmitter.complete();
-            }
-            listeners.forEach(listener -> {
-                try {
-                    listener.onDisconnect(clientId);
-                } catch (Exception e) {
-                    log.warn("Listener error on disconnect clientId:{}", clientId);
-                }
-            });
-        }
-    }
-
+    /** 获取统计信息 */
     public Map<String, Object> getStatistics() {
         return Map.of(
                 "activeConnections", emitters.size(),
@@ -182,23 +166,39 @@ public class SseEmitterManager implements DisposableBean {
         listeners.remove(listener);
     }
 
-    public int getActiveConnectionCount() {
-        return emitters.size();
-    }
-
+    /** 获取活跃客户端 */
     public Set<String> getActiveClients() {
         return emitters.keySet();
     }
 
+    /** 安全关闭 */
     public void shutdown() {
         scheduler.shutdown();
         executor.shutdown();
-        emitters.values().forEach(wrappedEmitter -> wrappedEmitter.emitter.complete());
+        emitters.values().forEach(WrappedEmitter::complete);
         emitters.clear();
     }
 
-    @Override
-    public void destroy() {
-        shutdown();
+    /** 内部封装类 */
+    private static class WrappedEmitter {
+        final SseEmitter emitter;
+        final AtomicBoolean completed = new AtomicBoolean(false);
+
+        WrappedEmitter(SseEmitter emitter) {
+            this.emitter = emitter;
+        }
+
+        boolean isComplete() {
+            return completed.get();
+        }
+
+        void complete() {
+            if (completed.compareAndSet(false, true)) {
+                try {
+                    emitter.complete();
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 }

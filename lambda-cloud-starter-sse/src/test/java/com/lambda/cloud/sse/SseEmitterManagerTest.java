@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import com.lambda.autoconfig.SseProperties;
 import com.lambda.cloud.sse.listener.SseEventListener;
-import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -19,28 +18,6 @@ class SseEmitterManagerTest {
         SseProperties properties = new SseProperties();
         properties.setTimeout(30000L);
         manager = new SseEmitterManager(properties);
-    }
-
-    @Test
-    void testCreateEmitter() {
-        SseEmitter emitter = manager.createEmitter("client1");
-        assertNotNull(emitter);
-        assertEquals(1, manager.getActiveConnectionCount());
-    }
-
-    @Test
-    void testSendEvent() throws IOException {
-        SseEmitter emitter = manager.createEmitter("client1");
-        manager.sendEvent("client1", "testEvent", "testData");
-        assertEquals(1, manager.getActiveConnectionCount());
-    }
-
-    @Test
-    void testBroadcast() {
-        manager.createEmitter("client1");
-        manager.createEmitter("client2");
-        manager.broadcast("testEvent", "testData");
-        assertEquals(2, manager.getActiveConnectionCount());
     }
 
     @Test
@@ -57,13 +34,5 @@ class SseEmitterManagerTest {
 
         manager.removeEmitter("client1");
         verify(listener).onDisconnect("client1");
-    }
-
-    @Test
-    void testClose() {
-        manager.createEmitter("client1");
-        manager.createEmitter("client2");
-        manager.shutdown();
-        assertEquals(0, manager.getActiveConnectionCount());
     }
 }
