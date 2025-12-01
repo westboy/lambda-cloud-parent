@@ -13,6 +13,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  *
  * @author Jin
  */
+@SuppressWarnings("unused")
 @SuppressFBWarnings("EI_EXPOSE_REP2")
 @Slf4j
 public class SseEmitterManager implements DisposableBean {
@@ -45,12 +47,8 @@ public class SseEmitterManager implements DisposableBean {
     protected void startHeartbeatTask() {
         scheduler.scheduleAtFixedRate(
                 () -> {
-                    try {
-                        broadcast("heartbeat", "ping");
-                        log.debug("Sent heartbeat to {} clients", emitters.size());
-                    } catch (Exception e) {
-                        log.error("Heartbeat task failed", e);
-                    }
+                    broadcast("heartbeat", "ping");
+                    log.debug("Sent heartbeat to {} clients", emitters.size());
                 },
                 properties.getHeartbeatInterval(),
                 properties.getHeartbeatInterval(),
@@ -61,8 +59,7 @@ public class SseEmitterManager implements DisposableBean {
         SseEmitter emitter = new SseEmitter(properties.getTimeout());
         emitter.onCompletion(() -> removeEmitter(clientId));
         emitter.onTimeout(() -> removeEmitter(clientId));
-
-        emitter.onTimeout(() -> removeEmitter(clientId));
+        emitter.onError(ex -> removeEmitter(clientId));
 
         SseEmitter oldEmitter = emitters.put(clientId, emitter);
         if (oldEmitter != null) {
@@ -74,7 +71,7 @@ public class SseEmitterManager implements DisposableBean {
             try {
                 listener.onConnect(clientId);
             } catch (Exception e) {
-                log.error("Listener error on connect", e);
+                log.warn("Listener error on connect clientId:{}", clientId);
             }
         });
 
@@ -91,7 +88,6 @@ public class SseEmitterManager implements DisposableBean {
             if (emitter == null) {
                 return;
             }
-
             int attempts = 0;
             while (attempts <= properties.getMaxRetryAttempts()) {
                 try {
@@ -109,7 +105,6 @@ public class SseEmitterManager implements DisposableBean {
                         failedMessages.incrementAndGet();
                         log.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
                         removeEmitter(clientId);
-                        // Async task, no need to throw exception up
                     }
                 }
             }
@@ -124,13 +119,16 @@ public class SseEmitterManager implements DisposableBean {
                     emitter.send(SseEmitter.event().name(eventName).data(data));
                     totalMessagesSent.incrementAndGet();
                     listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
-                } catch (IOException e) {
+                } catch (AsyncRequestNotUsableException e) {
+                    log.debug("客户端 {} 连接不可用", clientId);
                     failedClients.add(clientId);
                     failedMessages.incrementAndGet();
-                    log.error("Failed to broadcast to client: {}", clientId, e);
+                } catch (IOException e) {
+                    log.warn("客户端 {} IO 异常", clientId);
+                    failedClients.add(clientId);
+                    failedMessages.incrementAndGet();
                 }
             });
-
             failedClients.forEach(this::removeEmitter);
         });
     }
@@ -144,7 +142,7 @@ public class SseEmitterManager implements DisposableBean {
                 try {
                     listener.onDisconnect(clientId);
                 } catch (Exception e) {
-                    log.error("Listener error on disconnect", e);
+                    log.warn("Listener error on disconnect clientId:{}", clientId);
                 }
             });
         }
@@ -184,7 +182,7 @@ public class SseEmitterManager implements DisposableBean {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         shutdown();
     }
 }
