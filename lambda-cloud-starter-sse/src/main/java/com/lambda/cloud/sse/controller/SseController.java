@@ -2,6 +2,7 @@ package com.lambda.cloud.sse.controller;
 
 import com.lambda.cloud.sse.SseEmitterManager;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -21,13 +22,15 @@ public class SseController {
         this.emitterManager = emitterManager;
     }
 
-    @GetMapping("${lambda.sse.subscribe-path:/subscribe}")
-    public SseEmitter subscribe(@RequestParam String clientId) {
+    @GetMapping(
+            value = "${lambda.sse.subscribe-path:/subscribe}/{clientId}",
+            produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@PathVariable String clientId) {
         return emitterManager.createEmitter(clientId);
     }
 
-    @PostMapping("${lambda.sse.send-path:/send}")
-    public void sendEvent(@RequestParam String clientId, @RequestParam String eventName, @RequestBody Object data) {
+    @PostMapping("${lambda.sse.send-path:/send}/{clientId}/{eventName}")
+    public void sendEvent(@PathVariable String clientId, @PathVariable String eventName, @RequestBody Object data) {
         try {
             emitterManager.sendEvent(clientId, eventName, data);
         } catch (Exception e) {
@@ -35,8 +38,8 @@ public class SseController {
         }
     }
 
-    @PostMapping("${lambda.sse.broadcast-path:/broadcast}")
-    public void broadcast(@RequestParam String eventName, @RequestBody Object data) {
+    @PostMapping("${lambda.sse.broadcast-path:/broadcast}/{eventName}")
+    public void broadcast(@PathVariable String eventName, @RequestBody Object data) {
         emitterManager.broadcast(eventName, data);
     }
 }
