@@ -57,9 +57,9 @@ public class SseEmitterManager implements DisposableBean {
 
     public SseEmitter createEmitter(String clientId) {
         SseEmitter emitter = new SseEmitter(properties.getTimeout());
-        emitter.onCompletion(() -> removeEmitter(clientId,true));
-        emitter.onTimeout(() -> removeEmitter(clientId,true));
-        emitter.onError(ex -> removeEmitter(clientId,true));
+        emitter.onCompletion(() -> removeEmitter(clientId, true));
+        emitter.onTimeout(() -> removeEmitter(clientId, true));
+        emitter.onError(ex -> removeEmitter(clientId, true));
 
         SseEmitter oldEmitter = emitters.put(clientId, emitter);
         if (oldEmitter != null) {
@@ -108,7 +108,7 @@ public class SseEmitterManager implements DisposableBean {
                     } else {
                         failedMessages.incrementAndGet();
                         log.error("Failed to send event after {} attempts", properties.getMaxRetryAttempts(), e);
-                        removeEmitter(clientId,true);
+                        removeEmitter(clientId, true);
                     }
                 }
             }
@@ -133,15 +133,15 @@ public class SseEmitterManager implements DisposableBean {
                     failedMessages.incrementAndGet();
                 }
             });
-            failedClients.forEach(clientId -> this.removeEmitter(clientId,true));
+            failedClients.forEach(clientId -> this.removeEmitter(clientId, true));
         });
     }
 
-    public void removeEmitter(String clientId,Boolean complete) {
+    public void removeEmitter(String clientId, Boolean complete) {
         SseEmitter emitter = emitters.remove(clientId);
         if (emitter != null) {
             connectionCount.decrementAndGet();
-            if(complete == false) {
+            if (complete == false) {
                 try {
                     emitter.complete();
                 } catch (Exception e) {
