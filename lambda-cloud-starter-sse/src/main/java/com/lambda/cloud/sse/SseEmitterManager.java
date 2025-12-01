@@ -26,7 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Slf4j
 public class SseEmitterManager implements DisposableBean {
 
-    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private final Map<String, WrappedEmitter> emitters = new ConcurrentHashMap<>();
     private final List<SseEventListener> listeners = new CopyOnWriteArrayList<>();
     protected final SseProperties properties;
     protected final ScheduledExecutorService scheduler;
@@ -61,7 +61,7 @@ public class SseEmitterManager implements DisposableBean {
         emitter.onTimeout(() -> removeEmitter(clientId));
         emitter.onError(ex -> removeEmitter(clientId));
 
-        SseEmitter oldEmitter = emitters.put(clientId, emitter);
+        WrappedEmitter oldEmitter = emitters.put(clientId, new WrappedEmitter(emitter));
         if (oldEmitter != null) {
             try {
                 oldEmitter.complete();
@@ -88,14 +88,15 @@ public class SseEmitterManager implements DisposableBean {
         }
 
         executor.submit(() -> {
-            SseEmitter emitter = emitters.get(clientId);
-            if (emitter == null) {
+            WrappedEmitter wrappedEmitter = emitters.get(clientId);
+            if (wrappedEmitter == null) {
                 return;
             }
             int attempts = 0;
             while (attempts <= properties.getMaxRetryAttempts()) {
                 try {
-                    emitter.send(SseEmitter.event().name(eventName).data(data));
+                    wrappedEmitter.emitter.send(
+                            SseEmitter.event().name(eventName).data(data));
                     totalMessagesSent.incrementAndGet();
                     listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
                     return;
@@ -118,9 +119,14 @@ public class SseEmitterManager implements DisposableBean {
     public void broadcast(String eventName, Object data) {
         executor.submit(() -> {
             List<String> failedClients = new ArrayList<>();
-            emitters.forEach((clientId, emitter) -> {
+            emitters.forEach((clientId, wrappedEmitter) -> {
+                if (wrappedEmitter.isComplete()) {
+                    log.warn("客户端 {} 连接不可用", clientId);
+                    failedClients.add(clientId);
+                }
                 try {
-                    emitter.send(SseEmitter.event().name(eventName).data(data));
+                    wrappedEmitter.emitter.send(
+                            SseEmitter.event().name(eventName).data(data));
                     totalMessagesSent.incrementAndGet();
                     listeners.forEach(listener -> listener.onMessageSent(clientId, eventName));
                 } catch (AsyncRequestNotUsableException e) {
@@ -142,15 +148,11 @@ public class SseEmitterManager implements DisposableBean {
     }
 
     public void removeEmitter(String clientId, Boolean complete) {
-        SseEmitter emitter = emitters.remove(clientId);
-        if (emitter != null) {
+        WrappedEmitter wrappedEmitter = emitters.remove(clientId);
+        if (wrappedEmitter != null) {
             connectionCount.decrementAndGet();
-            if (complete == false) {
-                try {
-                    emitter.complete();
-                } catch (Exception e) {
-                    log.warn("emitter.complete error on disconnect clientId:{}", clientId, e);
-                }
+            if (complete == true) {
+                wrappedEmitter.complete();
             }
             listeners.forEach(listener -> {
                 try {
@@ -191,7 +193,7 @@ public class SseEmitterManager implements DisposableBean {
     public void shutdown() {
         scheduler.shutdown();
         executor.shutdown();
-        emitters.values().forEach(SseEmitter::complete);
+        emitters.values().forEach(wrappedEmitter -> wrappedEmitter.emitter.complete());
         emitters.clear();
     }
 
