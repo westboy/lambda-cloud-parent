@@ -63,7 +63,11 @@ public class SseEmitterManager implements DisposableBean {
 
         SseEmitter oldEmitter = emitters.put(clientId, emitter);
         if (oldEmitter != null) {
-            oldEmitter.complete();
+            try {
+                oldEmitter.complete();
+            } catch (Exception e) {
+                log.warn("oldEmitter.complete error on create clientId:{}", clientId, e);
+            }
         }
         connectionCount.incrementAndGet();
 
@@ -137,7 +141,11 @@ public class SseEmitterManager implements DisposableBean {
         SseEmitter emitter = emitters.remove(clientId);
         if (emitter != null) {
             connectionCount.decrementAndGet();
-            emitter.complete();
+            try {
+                emitter.complete();
+            } catch (Exception e) {
+                log.warn("emitter.complete error on disconnect clientId:{}", clientId, e);
+            }
             listeners.forEach(listener -> {
                 try {
                     listener.onDisconnect(clientId);
