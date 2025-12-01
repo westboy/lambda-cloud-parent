@@ -57,9 +57,9 @@ public class SseEmitterManager implements DisposableBean {
 
     public SseEmitter createEmitter(String clientId) {
         SseEmitter emitter = new SseEmitter(properties.getTimeout());
-        emitter.onCompletion(() -> removeEmitter(clientId, true));
-        emitter.onTimeout(() -> removeEmitter(clientId, true));
-        emitter.onError(ex -> removeEmitter(clientId, true));
+        emitter.onCompletion(() -> removeEmitter(clientId));
+        emitter.onTimeout(() -> removeEmitter(clientId));
+        emitter.onError(ex -> removeEmitter(clientId));
 
         SseEmitter oldEmitter = emitters.put(clientId, emitter);
         if (oldEmitter != null) {
@@ -133,9 +133,13 @@ public class SseEmitterManager implements DisposableBean {
                     failedMessages.incrementAndGet();
                 }
             });
-            failedClients.forEach(clientId -> this.removeEmitter(clientId, true));
+            failedClients.forEach(this::removeEmitter);
         });
     }
+    public void removeEmitter(String clientId) {
+        removeEmitter(clientId, true);
+    }
+
 
     public void removeEmitter(String clientId, Boolean complete) {
         SseEmitter emitter = emitters.remove(clientId);
