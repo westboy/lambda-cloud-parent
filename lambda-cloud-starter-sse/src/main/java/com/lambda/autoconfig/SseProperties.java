@@ -35,5 +35,6 @@ public class SseProperties {
         private String channelPrefix = "sse:channel";
         private long syncTimeout = 5000;
         private boolean syncHeartbeat = true;
+        private String nodeId;
     }
 }
