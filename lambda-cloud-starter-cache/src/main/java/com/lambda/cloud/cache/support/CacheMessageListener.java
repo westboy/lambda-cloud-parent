@@ -4,7 +4,6 @@ import com.lambda.cloud.cache.Cache;
 import com.lambda.cloud.cache.CacheManager;
 import com.lambda.cloud.cache.provider.MultiLevelCache;
 import java.util.Objects;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -23,6 +22,7 @@ public class CacheMessageListener implements MessageListener {
 
     private final CacheManager cacheManager;
     private final RedisTemplate<Object, Object> redisTemplate;
+
     @Getter
     private final String currentNodeId;
 
@@ -72,7 +72,9 @@ public class CacheMessageListener implements MessageListener {
                 case EVICT_ALL:
                     if (msg.getKeys() != null && !msg.getKeys().isEmpty()) {
                         l1Cache.evictAll(msg.getKeys());
-                        log.debug("Evicted L1 cache for {} keys in cache: {}", msg.getKeys().size(),
+                        log.debug(
+                                "Evicted L1 cache for {} keys in cache: {}",
+                                msg.getKeys().size(),
                                 msg.getCacheName());
                     }
                     break;
@@ -85,5 +87,4 @@ public class CacheMessageListener implements MessageListener {
             }
         }
     }
-
 }

@@ -68,14 +68,12 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         return loadValue(key, valueLoader);
     }
 
-
-
     protected V loadValue(K key, Function<K, V> valueLoader) {
         long startTime = System.nanoTime();
 
-        //获取或创建锁对象
+        // 获取或创建锁对象
         Object lock = loaderLocks.computeIfAbsent(key, k -> new Object());
-        //双重检查(Double Check)
+        // 双重检查(Double Check)
         synchronized (lock) {
             try {
 

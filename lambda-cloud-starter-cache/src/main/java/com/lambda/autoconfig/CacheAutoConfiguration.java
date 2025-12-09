@@ -4,6 +4,7 @@ import com.lambda.cloud.cache.CacheManager;
 import com.lambda.cloud.cache.provider.CaffeineCacheManager;
 import com.lambda.cloud.cache.provider.MultiLevelCacheManager;
 import com.lambda.cloud.cache.provider.RedisCacheManager;
+import com.lambda.cloud.cache.spring.SpringCacheManagerAdapter;
 import com.lambda.cloud.cache.support.CacheMessageListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -20,12 +22,34 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 
 /**
  * 缓存自动配置
+ * <p>
+ * 支持三种缓存类型：
+ * <ul>
+ *     <li>CAFFEINE - 本地缓存</li>
+ *     <li>REDIS - 分布式缓存</li>
+ *     <li>MULTI_LEVEL - 多级缓存(L1: Caffeine, L2: Redis)</li>
+ * </ul>
+ * <p>
+ * 同时提供Spring Cache整合，支持@Cacheable, @CacheEvict, @CachePut等注解
  */
 @Slf4j
 @AutoConfiguration
+@EnableCaching
 @EnableConfigurationProperties(CacheProperties.class)
 @ConditionalOnProperty(prefix = "lambda.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class CacheAutoConfiguration {
+
+    /**
+     * Spring CacheManager适配器
+     * <p>
+     * 将Lambda CacheManager适配到Spring CacheManager，支持Spring Cache注解
+     */
+    @Bean
+    @ConditionalOnMissingBean(org.springframework.cache.CacheManager.class)
+    public org.springframework.cache.CacheManager springCacheManager(CacheManager cacheManager, CacheProperties properties) {
+        log.info("Initializing Spring CacheManager adapter");
+        return new SpringCacheManagerAdapter(cacheManager, properties::getCacheConfig);
+    }
 
     /**
      * Caffeine缓存配置
@@ -36,7 +60,7 @@ public class CacheAutoConfiguration {
     static class CaffeineCacheConfiguration {
 
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(CacheManager.class)
         public CacheManager cacheManager(CacheProperties properties) {
             log.info("Initializing Caffeine cache manager");
             return new CaffeineCacheManager();
@@ -52,7 +76,7 @@ public class CacheAutoConfiguration {
     static class RedisCacheConfiguration {
 
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(CacheManager.class)
         public CacheManager cacheManager(RedisTemplate<Object, Object> redisTemplate, CacheProperties properties) {
             log.info("Initializing Redis cache manager");
             return new RedisCacheManager(redisTemplate);
@@ -63,18 +87,19 @@ public class CacheAutoConfiguration {
      * 多级缓存配置
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(name = { "com.github.benmanes.caffeine.cache.Caffeine",
-            "org.springframework.data.redis.core.RedisTemplate" })
+    @ConditionalOnClass(name = {"com.github.benmanes.caffeine.cache.Caffeine",
+            "org.springframework.data.redis.core.RedisTemplate"})
     @ConditionalOnProperty(prefix = "lambda.cache", name = "type", havingValue = "MULTI_LEVEL")
     static class MultiLevelCacheConfiguration {
 
         @Bean
+        @ConditionalOnMissingBean(name = "cacheNodeId")
         public String cacheNodeId() {
             return java.util.UUID.randomUUID().toString();
         }
 
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(CacheManager.class)
         public CacheManager cacheManager(
                 RedisTemplate<Object, Object> redisTemplate,
                 CacheProperties properties,
@@ -84,7 +109,7 @@ public class CacheAutoConfiguration {
         }
 
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(CacheMessageListener.class)
         public CacheMessageListener cacheMessageListener(
                 CacheManager cacheManager,
                 RedisTemplate<Object, Object> redisTemplate,
@@ -93,13 +118,13 @@ public class CacheAutoConfiguration {
         }
 
         @Bean
+        @ConditionalOnMissingBean(RedisMessageListenerContainer.class)
         public RedisMessageListenerContainer redisMessageListenerContainer(
                 RedisConnectionFactory connectionFactory,
                 CacheMessageListener listener) {
-           RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+            RedisMessageListenerContainer container = new RedisMessageListenerContainer();
             container.setConnectionFactory(connectionFactory);
-            container.addMessageListener(listener,
-                    new ChannelTopic("lambda:cache:topic"));
+            container.addMessageListener(listener, new ChannelTopic("lambda:cache:topic"));
             return container;
         }
     }

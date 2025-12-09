@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>lambda-cloud-starter-cache</artifactId>
-    <description>Lambda Cloud Cache Abstraction Layer - Unified caching with Redis, Caffeine, and multi-level support</description>
 
     <dependencies>
         <!-- Core dependency -->

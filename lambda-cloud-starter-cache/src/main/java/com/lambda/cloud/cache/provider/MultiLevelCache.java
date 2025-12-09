@@ -2,12 +2,11 @@ package com.lambda.cloud.cache.provider;
 
 import com.lambda.cloud.cache.Cache;
 import com.lambda.cloud.cache.CacheStats;
+import com.lambda.cloud.cache.support.CacheMessage;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-
-import com.lambda.cloud.cache.support.CacheMessage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,13 +35,18 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
      */
     @Getter
     private final Cache<K, V> l2Cache; // Redis
+
     private final org.springframework.data.redis.core.RedisTemplate<Object, Object> redisTemplate;
     private final String topic;
     private final String currentNodeId;
 
-    public MultiLevelCache(String name, Cache<K, V> l1Cache, Cache<K, V> l2Cache,
+    public MultiLevelCache(
+            String name,
+            Cache<K, V> l1Cache,
+            Cache<K, V> l2Cache,
             org.springframework.data.redis.core.RedisTemplate<Object, Object> redisTemplate,
-            String topic, String currentNodeId) {
+            String topic,
+            String currentNodeId) {
         this.name = name;
         this.l1Cache = l1Cache;
         this.l2Cache = l2Cache;
@@ -57,8 +61,7 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
 
     private void publishMessage(CacheMessage.Type type, Object key, Set<Object> keys) {
         try {
-            CacheMessage message = new CacheMessage(
-                    name, key, currentNodeId, keys, type);
+            CacheMessage message = new CacheMessage(name, key, currentNodeId, keys, type);
             redisTemplate.convertAndSend(topic, message);
         } catch (Exception e) {
             log.error("Failed to publish cache message", e);
@@ -258,7 +261,6 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
 
     @Override
     public Object getNativeCache() {
-        return new Object[] { l1Cache.getNativeCache(), l2Cache.getNativeCache() };
+        return new Object[] {l1Cache.getNativeCache(), l2Cache.getNativeCache()};
     }
-
 }
