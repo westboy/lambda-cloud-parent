@@ -1,5 +1,6 @@
 package com.lambda.cloud.cache.provider;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.lambda.cloud.cache.CacheConfig;
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CaffeineCache<K, V> extends AbstractCache<K, V> {
 
-    private final com.github.benmanes.caffeine.cache.Cache<K, V> cache;
+    private final Cache<K, V> cache;
     private final CacheConfig config;
 
     public CaffeineCache(String name, CacheConfig config) {
@@ -27,7 +28,7 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
         this.cache = buildCache(config);
     }
 
-    private com.github.benmanes.caffeine.cache.Cache<K, V> buildCache(CacheConfig config) {
+    private Cache<K, V> buildCache(CacheConfig config) {
         Caffeine<Object, Object> builder = Caffeine.newBuilder();
 
         // 设置最大容量

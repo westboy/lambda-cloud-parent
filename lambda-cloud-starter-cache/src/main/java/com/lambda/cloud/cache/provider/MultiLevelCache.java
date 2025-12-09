@@ -6,6 +6,9 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+
+import com.lambda.cloud.cache.support.CacheMessage;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -21,13 +24,45 @@ import lombok.extern.slf4j.Slf4j;
 public class MultiLevelCache<K, V> implements Cache<K, V> {
 
     private final String name;
+    /**
+     * -- GETTER --
+     * 获取L1缓存
+     */
+    @Getter
     private final Cache<K, V> l1Cache; // Caffeine
+    /**
+     * -- GETTER --
+     * 获取L2缓存
+     */
+    @Getter
     private final Cache<K, V> l2Cache; // Redis
+    private final org.springframework.data.redis.core.RedisTemplate<Object, Object> redisTemplate;
+    private final String topic;
+    private final String currentNodeId;
 
-    public MultiLevelCache(String name, Cache<K, V> l1Cache, Cache<K, V> l2Cache) {
+    public MultiLevelCache(String name, Cache<K, V> l1Cache, Cache<K, V> l2Cache,
+            org.springframework.data.redis.core.RedisTemplate<Object, Object> redisTemplate,
+            String topic, String currentNodeId) {
         this.name = name;
         this.l1Cache = l1Cache;
         this.l2Cache = l2Cache;
+        this.redisTemplate = redisTemplate;
+        this.topic = topic;
+        this.currentNodeId = currentNodeId;
+    }
+
+    private void publishMessage(CacheMessage.Type type, Object key) {
+        publishMessage(type, key, null);
+    }
+
+    private void publishMessage(CacheMessage.Type type, Object key, Set<Object> keys) {
+        try {
+            CacheMessage message = new CacheMessage(
+                    name, key, currentNodeId, keys, type);
+            redisTemplate.convertAndSend(topic, message);
+        } catch (Exception e) {
+            log.error("Failed to publish cache message", e);
+        }
     }
 
     @Override
@@ -115,12 +150,14 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
         // 同时写入L1和L2
         l1Cache.put(key, value);
         l2Cache.put(key, value);
+        publishMessage(CacheMessage.Type.PUT, key);
     }
 
     @Override
     public void put(K key, V value, Duration duration) {
         l1Cache.put(key, value, duration);
         l2Cache.put(key, value, duration);
+        publishMessage(CacheMessage.Type.PUT, key);
     }
 
     @Override
@@ -130,6 +167,7 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
         if (result) {
             // L2设置成功,同步到L1
             l1Cache.putIfAbsent(key, value);
+            publishMessage(CacheMessage.Type.PUT, key);
         }
         return result;
     }
@@ -139,6 +177,7 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
         boolean result = l2Cache.putIfAbsent(key, value, duration);
         if (result) {
             l1Cache.putIfAbsent(key, value, duration);
+            publishMessage(CacheMessage.Type.PUT, key);
         }
         return result;
     }
@@ -147,12 +186,14 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
     public void putAll(Map<K, V> map) {
         l1Cache.putAll(map);
         l2Cache.putAll(map);
+        publishMessage(CacheMessage.Type.PUT_ALL, null, new java.util.HashSet<>(map.keySet()));
     }
 
     @Override
     public void putAll(Map<K, V> map, Duration duration) {
         l1Cache.putAll(map, duration);
         l2Cache.putAll(map, duration);
+        publishMessage(CacheMessage.Type.PUT_ALL, null, new java.util.HashSet<>(map.keySet()));
     }
 
     @Override
@@ -160,18 +201,21 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
         // 同时清除L1和L2
         l1Cache.evict(key);
         l2Cache.evict(key);
+        publishMessage(CacheMessage.Type.EVICT, key);
     }
 
     @Override
     public void evictAll(Set<K> keys) {
         l1Cache.evictAll(keys);
         l2Cache.evictAll(keys);
+        publishMessage(CacheMessage.Type.EVICT_ALL, null, new java.util.HashSet<>(keys));
     }
 
     @Override
     public void clear() {
         l1Cache.clear();
         l2Cache.clear();
+        publishMessage(CacheMessage.Type.CLEAR, null);
     }
 
     @Override
@@ -214,20 +258,7 @@ public class MultiLevelCache<K, V> implements Cache<K, V> {
 
     @Override
     public Object getNativeCache() {
-        return new Object[] {l1Cache.getNativeCache(), l2Cache.getNativeCache()};
+        return new Object[] { l1Cache.getNativeCache(), l2Cache.getNativeCache() };
     }
 
-    /**
-     * 获取L1缓存
-     */
-    public Cache<K, V> getL1Cache() {
-        return l1Cache;
-    }
-
-    /**
-     * 获取L2缓存
-     */
-    public Cache<K, V> getL2Cache() {
-        return l2Cache;
-    }
 }

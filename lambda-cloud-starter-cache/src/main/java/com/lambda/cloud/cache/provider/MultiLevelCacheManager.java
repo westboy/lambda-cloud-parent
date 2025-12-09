@@ -20,16 +20,23 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
     private final CacheConfig defaultL1Config;
     private final CacheConfig defaultL2Config;
 
-    public MultiLevelCacheManager(RedisTemplate<Object, Object> redisTemplate) {
-        this(redisTemplate, null, null);
+    private final String topic = "lambda:cache:topic";
+    private final String nodeId;
+
+    public MultiLevelCacheManager(RedisTemplate<Object, Object> redisTemplate, String nodeId) {
+        this(redisTemplate, null, null, nodeId);
     }
 
     public MultiLevelCacheManager(
-            RedisTemplate<Object, Object> redisTemplate, CacheConfig defaultL1Config, CacheConfig defaultL2Config) {
+            RedisTemplate<Object, Object> redisTemplate,
+            CacheConfig defaultL1Config,
+            CacheConfig defaultL2Config,
+            String nodeId) {
         super(CacheType.MULTI_LEVEL);
         this.redisTemplate = redisTemplate;
         this.defaultL1Config = defaultL1Config;
         this.defaultL2Config = defaultL2Config;
+        this.nodeId = nodeId;
     }
 
     @Override
@@ -46,6 +53,6 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
         Cache<K, V> l2Cache = new RedisCache<>(name + ":L2", (RedisTemplate<K, V>) redisTemplate, l2Config);
 
         // 创建多级缓存
-        return new MultiLevelCache<>(name, l1Cache, l2Cache);
+        return new MultiLevelCache<>(name, l1Cache, l2Cache, redisTemplate, topic, nodeId);
     }
 }
