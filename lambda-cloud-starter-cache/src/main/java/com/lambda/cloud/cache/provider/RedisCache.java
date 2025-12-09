@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
 
 /**
  * Redis缓存实现
@@ -110,8 +112,8 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     @Override
     public boolean putIfAbsent(K key, V value, Duration duration) {
         K actualKey = buildKey(key);
-        Boolean result =
-                redisTemplate.opsForValue().setIfAbsent(actualKey, value, duration.toMillis(), TimeUnit.MILLISECONDS);
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(actualKey, value, duration.toMillis(),
+                TimeUnit.MILLISECONDS);
         return Boolean.TRUE.equals(result);
     }
 
@@ -158,10 +160,19 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
 
     @Override
     public void clear() {
-        // 清空所有以keyPrefix开头的键
-        Set<K> keys = redisTemplate.keys((K) (keyPrefix + "*"));
-        if (keys != null && !keys.isEmpty()) {
-            redisTemplate.delete(keys);
+        ScanOptions options = ScanOptions.scanOptions().match(keyPrefix + "*").count(1000).build();
+        try (Cursor<K> cursor = redisTemplate.scan(options)) {
+            Set<K> keysBatch = new java.util.HashSet<>();
+            while (cursor.hasNext()) {
+                keysBatch.add(cursor.next());
+                if (keysBatch.size() >= 1000) {
+                    redisTemplate.delete(keysBatch);
+                    keysBatch.clear();
+                }
+            }
+            if (!keysBatch.isEmpty()) {
+                redisTemplate.delete(keysBatch);
+            }
         }
     }
 
@@ -174,8 +185,15 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
 
     @Override
     public long size() {
-        Set<K> keys = redisTemplate.keys((K) (keyPrefix + "*"));
-        return keys != null ? keys.size() : 0;
+        long count = 0;
+        ScanOptions options = ScanOptions.scanOptions().match(keyPrefix + "*").count(1000).build();
+        try (Cursor<K> cursor = redisTemplate.scan(options)) {
+            while (cursor.hasNext()) {
+                cursor.next();
+                count++;
+            }
+        }
+        return count;
     }
 
     @Override
