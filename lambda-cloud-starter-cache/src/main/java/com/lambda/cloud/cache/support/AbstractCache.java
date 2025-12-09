@@ -5,6 +5,7 @@ import com.lambda.cloud.cache.CacheStats;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import lombok.Getter;
@@ -24,6 +25,9 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
 
     protected final String name;
     protected final boolean enableStats;
+
+    // 本地锁Map,用于防止缓存击穿
+    private final ConcurrentHashMap<Object, Object> loaderLocks = new ConcurrentHashMap<>();
 
     // 统计信息
     protected final AtomicLong hitCount = new AtomicLong(0);
@@ -64,25 +68,43 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         return loadValue(key, valueLoader);
     }
 
+
+
     protected V loadValue(K key, Function<K, V> valueLoader) {
         long startTime = System.nanoTime();
-        try {
-            V value = valueLoader.apply(key);
-            if (value != null) {
-                put(key, value);
+
+        //获取或创建锁对象
+        Object lock = loaderLocks.computeIfAbsent(key, k -> new Object());
+        //双重检查(Double Check)
+        synchronized (lock) {
+            try {
+
+                V value = get(key);
+                if (value != null) {
+                    return value;
+                }
+
+                value = valueLoader.apply(key);
+                if (value != null) {
+                    put(key, value);
+                    if (enableStats) {
+                        loadSuccessCount.incrementAndGet();
+                        totalLoadTime.addAndGet(System.nanoTime() - startTime);
+                    }
+                }
+                return value;
+            } catch (Exception e) {
                 if (enableStats) {
-                    loadSuccessCount.incrementAndGet();
+                    loadFailureCount.incrementAndGet();
                     totalLoadTime.addAndGet(System.nanoTime() - startTime);
                 }
+                log.error("Failed to load value for key: {}", key, e);
+                throw e;
+            } finally {
+                // 清理锁对象(尽管无法保证完全无竞争移除,但在高并发下computeIfAbsent能保证返回同一对象)
+                // 注意: 这里不能简单remove(key), 否则可能移除其他线程刚获取的锁 只有当映射值确实是我们持有的lock对象时才移除
+                loaderLocks.remove(key, lock);
             }
-            return value;
-        } catch (Exception e) {
-            if (enableStats) {
-                loadFailureCount.incrementAndGet();
-                totalLoadTime.addAndGet(System.nanoTime() - startTime);
-            }
-            log.error("Failed to load value for key: {}", key, e);
-            throw e;
         }
     }
 
