@@ -51,6 +51,9 @@ public interface Cache<K, V> {
 
     /**
      * 批量获取缓存值
+     * <p>
+     * <strong>注意:</strong> 默认实现可能通过循环调用 {@link #get(Object)} 实现，
+     * 对于远程缓存(如Redis)会导致N+1次网络I/O。
      *
      * @param keys 缓存键集合
      * @return 缓存值映射
@@ -95,6 +98,9 @@ public interface Cache<K, V> {
 
     /**
      * 批量设置缓存值
+     * <p>
+     * <strong>注意:</strong> 默认实现可能通过循环调用 {@link #put(Object, Object)} 实现，
+     * 对于远程缓存(如Redis)会导致N+1次网络I/O。
      *
      * @param map 缓存键值映射
      */
@@ -102,6 +108,9 @@ public interface Cache<K, V> {
 
     /**
      * 批量设置缓存值,带过期时间
+     * <p>
+     * <strong>注意:</strong> 默认实现可能通过循环调用 {@link #put(Object, Object, Duration)} 实现，
+     * 对于远程缓存(如Redis)会导致N+1次网络I/O。
      *
      * @param map      缓存键值映射
      * @param duration 过期时间
@@ -117,6 +126,9 @@ public interface Cache<K, V> {
 
     /**
      * 批量删除缓存
+     * <p>
+     * <strong>注意:</strong> 默认实现可能通过循环调用 {@link #evict(Object)} 实现，
+     * 对于远程缓存(如Redis)会导致N+1次网络I/O。
      *
      * @param keys 缓存键集合
      */
