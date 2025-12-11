@@ -1,6 +1,5 @@
 package com.lambda.cloud.cache.provider;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.lambda.cloud.cache.CacheConfig;
@@ -19,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CaffeineCache<K, V> extends AbstractCache<K, V> {
 
-    private final Cache<K, V> cache;
+    private final com.github.benmanes.caffeine.cache.Cache<K, V> cache;
     private final CacheConfig config;
 
     public CaffeineCache(String name, CacheConfig config) {
@@ -28,7 +27,7 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
         this.cache = buildCache(config);
     }
 
-    private Cache<K, V> buildCache(CacheConfig config) {
+    private com.github.benmanes.caffeine.cache.Cache<K, V> buildCache(CacheConfig config) {
         Caffeine<Object, Object> builder = Caffeine.newBuilder();
 
         // 设置最大容量
@@ -90,7 +89,7 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public V get(K key) {
+    protected V lookupInternal(K key) {
         V value = cache.getIfPresent(key);
         if (value != null) {
             recordHit();
@@ -108,7 +107,7 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public void put(K key, V value) {
+    protected void putInternal(K key, V value) {
         cache.put(key, value);
     }
 
@@ -120,15 +119,24 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public boolean putIfAbsent(K key, V value) {
-        V existingValue = cache.asMap().putIfAbsent(key, value);
-        return existingValue == null;
+    public ValueWrapper putIfAbsent(Object key, Object value) {
+        @SuppressWarnings("unchecked")
+        K k = (K) key;
+        @SuppressWarnings("unchecked")
+        V v = (V) value;
+
+        V existingValue = cache.asMap().putIfAbsent(k, v);
+        System.out.println("Caffeine putIfAbsent: key=" + k + ", existing=" + existingValue); // debug
+        if (existingValue != null) {
+            return toValueWrapper(existingValue);
+        }
+        return null; // Successfully put
     }
 
     @Override
-    public boolean putIfAbsent(K key, V value, Duration duration) {
+    public ValueWrapper putIfAbsent(K key, V value, Duration duration) {
         log.warn("Caffeine cache does not support per-key TTL, using global TTL configuration");
-        return putIfAbsent(key, value);
+        return putIfAbsent((Object) key, (Object) value);
     }
 
     @Override
@@ -137,7 +145,7 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public void evict(K key) {
+    protected void evictInternal(K key) {
         cache.invalidate(key);
         recordEviction();
     }
@@ -151,7 +159,7 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public void clear() {
+    protected void clearInternal() {
         cache.invalidateAll();
     }
 
@@ -178,7 +186,7 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public Object getNativeCache() {
+    protected Object getNativeCacheInternal() {
         return cache;
     }
 }

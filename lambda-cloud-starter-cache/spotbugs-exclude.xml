@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude auto-generated code -->
+    <Match>
+        <Package name="~.*\.generated\..*"/>
+    </Match>
+
+    <!-- Exclude test classes -->
+    <Match>
+        <Class name="~.*Test"/>
+    </Match>
+
+    <!-- Exclude configuration classes -->
+    <Match>
+        <Class name="~.*Configuration"/>
+    </Match>
+
+    <!-- Exclude auto-configuration classes -->
+    <Match>
+        <Class name="~.*AutoConfiguration"/>
+    </Match>
+
+    <!-- Exclude properties classes -->
+    <Match>
+        <Class name="~.*Properties"/>
+    </Match>
+
+    <!-- Exclude EI_EXPOSE_REP warnings - these are intentional for API design -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>

@@ -2,12 +2,11 @@ package com.lambda.cloud.cache.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
 public class AbstractCacheTest {
@@ -17,68 +16,38 @@ public class AbstractCacheTest {
         private final java.util.Map<String, String> store = new java.util.concurrent.ConcurrentHashMap<>();
 
         public TestCache() {
-            super("test", true);
+            super("test", false);
         }
 
         @Override
-        public String get(String key) {
+        protected String lookupInternal(String key) {
             return store.get(key);
         }
 
         @Override
-        public void put(String key, String value) {
+        protected void putInternal(String key, String value) {
             store.put(key, value);
         }
 
         @Override
-        public void put(String key, String value, Duration duration) {
-            store.put(key, value);
-        }
-
-        @Override
-        public boolean putIfAbsent(String key, String value) {
-            return store.putIfAbsent(key, value) == null;
-        }
-
-        @Override
-        public boolean putIfAbsent(String key, String value, Duration duration) {
-            return store.putIfAbsent(key, value) == null;
-        }
-
-        @Override
-        public void evict(String key) {
+        protected void evictInternal(String key) {
             store.remove(key);
         }
 
         @Override
-        public void clear() {
+        protected void clearInternal() {
             store.clear();
         }
 
         @Override
-        public boolean exists(String key) {
-            return store.containsKey(key);
-        }
-
-        @Override
-        public long size() {
-            return store.size();
-        }
-
-        @Override
-        public boolean expire(String key, Duration duration) {
-            return true;
-        }
-
-        @Override
-        public Duration getExpire(String key) {
-            return Duration.ZERO;
-        }
-
-        @Override
-        public Object getNativeCache() {
+        protected Object getNativeCacheInternal() {
             return store;
         }
+
+        // Custom method not in Spring Cache interface but was in AbstractCache?
+        // If AbstractCache doesn't have expire/getExpire anymore, these are just valid
+        // methods of TestCache or should be removed.
+        // Assuming AbstractCache deleted them since they were part of custom interface.
     }
 
     @Test
@@ -90,7 +59,7 @@ public class AbstractCacheTest {
         CountDownLatch doneLatch = new CountDownLatch(threads);
         AtomicInteger loaderCalls = new AtomicInteger(0);
 
-        Function<String, String> loader = k -> {
+        Callable<String> loader = () -> {
             loaderCalls.incrementAndGet();
             try {
                 // Simulate slow loading
@@ -106,7 +75,7 @@ public class AbstractCacheTest {
                 try {
                     startLatch.await();
                     cache.get("key", loader);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     Thread.currentThread().interrupt();
                 } finally {
                     doneLatch.countDown();
@@ -119,6 +88,6 @@ public class AbstractCacheTest {
         executor.shutdown();
 
         assertEquals(1, loaderCalls.get(), "Loader should be called exactly once");
-        assertEquals("value", cache.get("key"));
+        assertEquals("value", cache.get("key").get());
     }
 }

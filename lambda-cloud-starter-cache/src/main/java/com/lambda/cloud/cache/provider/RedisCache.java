@@ -40,7 +40,7 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public V get(K key) {
+    protected V lookupInternal(K key) {
         K actualKey = buildKey(key);
         V value = redisTemplate.opsForValue().get(actualKey);
         if (value != null) {
@@ -80,7 +80,7 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public void put(K key, V value) {
+    protected void putInternal(K key, V value) {
         K actualKey = buildKey(key);
         if (config.getTtl() != null) {
             redisTemplate.opsForValue().set(actualKey, value, config.getTtl().toMillis(), TimeUnit.MILLISECONDS);
@@ -96,25 +96,42 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public boolean putIfAbsent(K key, V value) {
-        K actualKey = buildKey(key);
+    public ValueWrapper putIfAbsent(Object key, Object value) {
+        @SuppressWarnings("unchecked")
+        K k = (K) key;
+        @SuppressWarnings("unchecked")
+        V v = (V) value;
+
+        K actualKey = buildKey(k);
         Boolean result;
         if (config.getTtl() != null) {
             result = redisTemplate
                     .opsForValue()
-                    .setIfAbsent(actualKey, value, config.getTtl().toMillis(), TimeUnit.MILLISECONDS);
+                    .setIfAbsent(actualKey, v, config.getTtl().toMillis(), TimeUnit.MILLISECONDS);
         } else {
-            result = redisTemplate.opsForValue().setIfAbsent(actualKey, value);
+            result = redisTemplate.opsForValue().setIfAbsent(actualKey, v);
         }
-        return Boolean.TRUE.equals(result);
+
+        if (Boolean.TRUE.equals(result)) {
+            return null;
+        } else {
+            V existing = redisTemplate.opsForValue().get(actualKey);
+            return toValueWrapper(existing);
+        }
     }
 
     @Override
-    public boolean putIfAbsent(K key, V value, Duration duration) {
+    public ValueWrapper putIfAbsent(K key, V value, Duration duration) {
         K actualKey = buildKey(key);
-        Boolean result =
-                redisTemplate.opsForValue().setIfAbsent(actualKey, value, duration.toMillis(), TimeUnit.MILLISECONDS);
-        return Boolean.TRUE.equals(result);
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(actualKey, value, duration.toMillis(),
+                TimeUnit.MILLISECONDS);
+
+        if (Boolean.TRUE.equals(result)) {
+            return null;
+        } else {
+            V existing = redisTemplate.opsForValue().get(actualKey);
+            return toValueWrapper(existing);
+        }
     }
 
     @Override
@@ -140,7 +157,7 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public void evict(K key) {
+    protected void evictInternal(K key) {
         K actualKey = buildKey(key);
         redisTemplate.delete(actualKey);
         recordEviction();
@@ -159,9 +176,8 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public void clear() {
-        ScanOptions options =
-                ScanOptions.scanOptions().match(keyPrefix + "*").count(1000).build();
+    protected void clearInternal() {
+        ScanOptions options = ScanOptions.scanOptions().match(keyPrefix + "*").count(1000).build();
         try (Cursor<K> cursor = redisTemplate.scan(options)) {
             Set<K> keysBatch = new java.util.HashSet<>();
             while (cursor.hasNext()) {
@@ -187,8 +203,7 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     @Override
     public long size() {
         long count = 0;
-        ScanOptions options =
-                ScanOptions.scanOptions().match(keyPrefix + "*").count(1000).build();
+        ScanOptions options = ScanOptions.scanOptions().match(keyPrefix + "*").count(1000).build();
         try (Cursor<K> cursor = redisTemplate.scan(options)) {
             while (cursor.hasNext()) {
                 cursor.next();
@@ -219,7 +234,7 @@ public class RedisCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public Object getNativeCache() {
+    protected Object getNativeCacheInternal() {
         return redisTemplate;
     }
 }

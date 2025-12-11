@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.lambda.cloud.cache.Cache;
+import com.lambda.cloud.cache.support.AbstractCache;
 import com.lambda.cloud.cache.support.CacheMessage;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,10 +22,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 public class MultiLevelCacheTest {
 
     @Mock
-    private Cache<String, String> l1Cache;
+    private AbstractCache<String, String> l1Cache;
 
     @Mock
-    private Cache<String, String> l2Cache;
+    private AbstractCache<String, String> l2Cache;
 
     @Mock
     private RedisTemplate<Object, Object> redisTemplate;

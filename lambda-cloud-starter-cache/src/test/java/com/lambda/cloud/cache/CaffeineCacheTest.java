@@ -7,13 +7,14 @@ import java.time.Duration;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.cache.Cache.ValueWrapper;
 
 /**
  * Caffeine缓存测试
  */
 class CaffeineCacheTest {
 
-    private Cache<String, String> cache;
+    private CaffeineCache<String, String> cache;
 
     @BeforeEach
     void setUp() {
@@ -29,21 +30,31 @@ class CaffeineCacheTest {
     @Test
     void testPutAndGet() {
         cache.put("key1", "value1");
-        assertEquals("value1", cache.get("key1"));
+        ValueWrapper wrapper = cache.get("key1");
+        assertNotNull(wrapper);
+        assertEquals("value1", wrapper.get());
     }
 
     @Test
     void testGetWithLoader() {
-        String value = cache.get("key1", k -> "loaded-value");
+        String value = cache.get("key1", () -> "loaded-value");
         assertEquals("loaded-value", value);
-        assertEquals("loaded-value", cache.get("key1"));
+        ValueWrapper wrapper = cache.get("key1");
+        assertNotNull(wrapper);
+        assertEquals("loaded-value", wrapper.get());
     }
 
     @Test
     void testPutIfAbsent() {
-        assertTrue(cache.putIfAbsent("key1", "value1"));
-        assertFalse(cache.putIfAbsent("key1", "value2"));
-        assertEquals("value1", cache.get("key1"));
+        ValueWrapper wrapper1 = cache.putIfAbsent("key1", "value1");
+        assertNull(wrapper1); // First put returns null (or empty wrapper depending on impl, usually null if
+                              // absent)
+
+        ValueWrapper wrapper2 = cache.putIfAbsent("key1", "value2");
+        assertNotNull(wrapper2);
+        assertEquals("value1", wrapper2.get());
+
+        assertEquals("value1", cache.get("key1").get());
     }
 
     @Test
@@ -64,17 +75,16 @@ class CaffeineCacheTest {
         map.put("key2", "value2");
 
         cache.putAll(map);
-        assertEquals("value1", cache.get("key1"));
-        assertEquals("value2", cache.get("key2"));
+        assertEquals("value1", cache.get("key1").get());
+        assertEquals("value2", cache.get("key2").get());
     }
 
     @Test
     void testEvict() {
         cache.put("key1", "value1");
-        assertTrue(cache.exists("key1"));
+        assertNotNull(cache.get("key1"));
 
         cache.evict("key1");
-        assertFalse(cache.exists("key1"));
         assertNull(cache.get("key1"));
     }
 
@@ -85,9 +95,9 @@ class CaffeineCacheTest {
         cache.put("key3", "value3");
 
         cache.evictAll(Set.of("key1", "key2"));
-        assertFalse(cache.exists("key1"));
-        assertFalse(cache.exists("key2"));
-        assertTrue(cache.exists("key3"));
+        assertNull(cache.get("key1"));
+        assertNull(cache.get("key2"));
+        assertNotNull(cache.get("key3"));
     }
 
     @Test
@@ -96,7 +106,6 @@ class CaffeineCacheTest {
         cache.put("key2", "value2");
 
         cache.clear();
-        assertEquals(0, cache.size());
         assertNull(cache.get("key1"));
     }
 

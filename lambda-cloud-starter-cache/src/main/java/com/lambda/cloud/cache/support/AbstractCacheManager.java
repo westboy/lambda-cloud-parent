@@ -1,12 +1,13 @@
 package com.lambda.cloud.cache.support;
 
-import com.lambda.cloud.cache.Cache;
 import com.lambda.cloud.cache.CacheConfig;
-import com.lambda.cloud.cache.CacheManager;
 import com.lambda.cloud.cache.CacheType;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 /**
  * 缓存管理器抽象基类
@@ -14,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractCacheManager implements CacheManager {
 
-    protected final ConcurrentHashMap<String, Cache<?, ?>> cacheMap = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<String, Cache> cacheMap = new ConcurrentHashMap<>();
     protected final CacheType cacheType;
 
     protected AbstractCacheManager(CacheType cacheType) {
@@ -22,20 +23,13 @@ public abstract class AbstractCacheManager implements CacheManager {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <K, V> Cache<K, V> getCache(String name) {
-        return (Cache<K, V>) cacheMap.get(name);
+    public Cache getCache(String name) {
+        return cacheMap.computeIfAbsent(name, key -> createCache(name, CacheConfig.defaultConfig(name)));
     }
 
-    @Override
-    public <K, V> Cache<K, V> getOrCreateCache(String name) {
-        return getOrCreateCache(name, CacheConfig.defaultConfig(name));
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <K, V> Cache<K, V> getOrCreateCache(String name, CacheConfig config) {
-        return (Cache<K, V>) cacheMap.computeIfAbsent(name, key -> {
+    // 扩展方法：允许传递配置
+    public Cache getOrCreateCache(String name, CacheConfig config) {
+        return cacheMap.computeIfAbsent(name, key -> {
             log.info("Creating cache: name={}, type={}", name, cacheType);
             return createCache(name, config);
         });
@@ -43,12 +37,11 @@ public abstract class AbstractCacheManager implements CacheManager {
 
     @Override
     public Collection<String> getCacheNames() {
-        return cacheMap.keySet();
+        return Collections.unmodifiableSet(cacheMap.keySet());
     }
 
-    @Override
     public boolean destroyCache(String name) {
-        Cache<?, ?> cache = cacheMap.remove(name);
+        Cache cache = cacheMap.remove(name);
         if (cache != null) {
             cache.clear();
             log.info("Cache destroyed: name={}", name);
@@ -57,14 +50,12 @@ public abstract class AbstractCacheManager implements CacheManager {
         return false;
     }
 
-    @Override
     public void destroyAll() {
         cacheMap.values().forEach(Cache::clear);
         cacheMap.clear();
         log.info("All caches destroyed");
     }
 
-    @Override
     public CacheType getCacheType() {
         return cacheType;
     }
@@ -76,5 +67,5 @@ public abstract class AbstractCacheManager implements CacheManager {
      * @param config 缓存配置
      * @return 缓存实例
      */
-    protected abstract <K, V> Cache<K, V> createCache(String name, CacheConfig config);
+    protected abstract Cache createCache(String name, CacheConfig config);
 }

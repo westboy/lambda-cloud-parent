@@ -1,15 +1,18 @@
 package com.lambda.cloud.cache.support;
 
-import com.lambda.cloud.cache.Cache;
 import com.lambda.cloud.cache.CacheStats;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.springframework.cache.support.AbstractValueAdaptingCache;
+
 import java.time.Duration;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 缓存抽象基类
@@ -21,8 +24,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Getter
-public abstract class AbstractCache<K, V> implements Cache<K, V> {
+public abstract class AbstractCache<K, V> extends AbstractValueAdaptingCache {
 
+    @Getter
     protected final String name;
     protected final boolean enableStats;
 
@@ -38,37 +42,46 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     protected final AtomicLong evictionCount = new AtomicLong(0);
 
     protected AbstractCache(String name, boolean enableStats) {
+        super(true); // 允许null值
         this.name = name;
         this.enableStats = enableStats;
     }
 
     @Override
-    public V get(K key, Callable<V> valueLoader) {
-        V value = get(key);
-        if (value != null) {
-            return value;
-        }
+    public final String getName() {
+        return this.name;
+    }
 
-        return loadValue(key, k -> {
+    @Override
+    public final Object getNativeCache() {
+        return getNativeCacheInternal();
+    }
+
+    protected abstract Object getNativeCacheInternal();
+
+    @Override
+    protected Object lookup(@NonNull Object key) {
+        // 抽象方法由子类实现实际查找逻辑
+        return lookupInternal((K) key);
+    }
+
+    protected abstract V lookupInternal(K key);
+
+    @Override
+    public <T> T get(@NonNull Object key, @NonNull Callable<T> valueLoader) {
+        // 使用Spring的ValueLoader适配逻辑，或者保留我们的锁逻辑
+        // 因为AbstractValueAdaptingCache没有处理并发锁，我们保留自己的loaderLocks逻辑
+        return (T) loadValue((K) key, k -> {
             try {
                 return valueLoader.call();
             } catch (Exception e) {
-                throw new RuntimeException("Failed to load value for key: " + key, e);
+                throw new ValueRetrievalException(key, valueLoader, e);
             }
         });
     }
 
-    @Override
-    public V get(K key, Function<K, V> valueLoader) {
-        V value = get(key);
-        if (value != null) {
-            return value;
-        }
-
-        return loadValue(key, valueLoader);
-    }
-
-    protected V loadValue(K key, Function<K, V> valueLoader) {
+    @SuppressWarnings("unchecked")
+    protected Object loadValue(K key, Function<K, ?> valueLoader) {
         long startTime = System.nanoTime();
 
         // 获取或创建锁对象
@@ -76,8 +89,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         // 双重检查(Double Check)
         synchronized (lock) {
             try {
-
-                V value = get(key);
+                Object value = lookup(key);
                 if (value != null) {
                     return value;
                 }
@@ -99,36 +111,55 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
                 log.error("Failed to load value for key: {}", key, e);
                 throw e;
             } finally {
-                // 清理锁对象(尽管无法保证完全无竞争移除,但在高并发下computeIfAbsent能保证返回同一对象)
-                // 注意: 这里不能简单remove(key), 否则可能移除其他线程刚获取的锁 只有当映射值确实是我们持有的lock对象时才移除
                 loaderLocks.remove(key, lock);
             }
         }
     }
 
-    @Override
-    public Map<K, V> getAll(Set<K> keys) {
-        Map<K, V> result = new HashMap<>();
-        for (K key : keys) {
-            V value = get(key);
-            if (value != null) {
-                result.put(key, value);
-            }
-        }
-        return result;
-    }
-
-    @Override
     public void putAll(Map<K, V> map) {
         map.forEach(this::put);
     }
 
-    @Override
     public void putAll(Map<K, V> map, Duration duration) {
-        map.forEach((key, value) -> put(key, value, duration));
+        // 默认不支持Duration, 子类覆盖
+        putAll(map);
     }
 
     @Override
+    public void put(Object key, Object value) {
+        putInternal((K) key, (V) value);
+    }
+
+    protected abstract void putInternal(K key, V value);
+
+    // 扩展方法: 支持过期时间 (不是Spring接口的一部分)
+    public void put(K key, V value, Duration duration) {
+        putInternal(key, value);
+    }
+
+    @Override
+    public ValueWrapper putIfAbsent(Object key, Object value) {
+        // Spring 语义：如果存在则返回现有值，否则设置并返回null
+        Object existing = lookup(key);
+        if (existing != null) {
+            return toValueWrapper(existing);
+        }
+        put(key, value);
+        return null;
+    }
+
+    // 扩展方法
+    public ValueWrapper putIfAbsent(K key, V value, Duration duration) {
+        return putIfAbsent(key, value);
+    }
+
+    @Override
+    public void evict(Object key) {
+        evictInternal((K) key);
+    }
+
+    protected abstract void evictInternal(K key);
+
     public void evictAll(Set<K> keys) {
         keys.forEach(key -> {
             evict(key);
@@ -139,6 +170,35 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     }
 
     @Override
+    public boolean evictIfPresent(Object key) {
+        evict(key);
+        return false;
+    }
+
+    @Override
+    public void clear() {
+        clearInternal();
+    }
+
+    protected abstract void clearInternal();
+
+    // 扩展方法
+    public boolean exists(K key) {
+        return lookup(key) != null;
+    }
+
+    public long size() {
+        return 0;
+    }
+
+    public boolean expire(K key, Duration duration) {
+        return false;
+    }
+
+    public Duration getExpire(K key) {
+        return null;
+    }
+
     public CacheStats getStats() {
         return CacheStats.builder()
                 .hitCount(hitCount.get())

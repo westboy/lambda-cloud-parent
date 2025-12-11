@@ -1,10 +1,10 @@
 package com.lambda.cloud.cache.provider;
 
-import com.lambda.cloud.cache.Cache;
 import com.lambda.cloud.cache.CacheConfig;
 import com.lambda.cloud.cache.CacheType;
 import com.lambda.cloud.cache.support.AbstractCacheManager;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -41,16 +41,16 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <K, V> Cache<K, V> createCache(String name, CacheConfig config) {
+    protected Cache createCache(String name, CacheConfig config) {
         // 创建L1缓存(Caffeine)
         CacheConfig l1Config = defaultL1Config != null ? defaultL1Config : config;
         l1Config.setCacheName(name + ":L1");
-        Cache<K, V> l1Cache = new CaffeineCache<>(name + ":L1", l1Config);
+        Cache l1Cache = new CaffeineCache<>(name + ":L1", l1Config);
 
         // 创建L2缓存(Redis)
         CacheConfig l2Config = defaultL2Config != null ? defaultL2Config : config;
         l2Config.setCacheName(name + ":L2");
-        Cache<K, V> l2Cache = new RedisCache<>(name + ":L2", (RedisTemplate<K, V>) redisTemplate, l2Config);
+        Cache l2Cache = new RedisCache<>(name + ":L2", redisTemplate, l2Config);
 
         // 创建多级缓存
         return new MultiLevelCache<>(name, l1Cache, l2Cache, redisTemplate, topic, nodeId);

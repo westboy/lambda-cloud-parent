@@ -1,12 +1,12 @@
 package com.lambda.cloud.cache.support;
 
-import com.lambda.cloud.cache.Cache;
-import com.lambda.cloud.cache.CacheManager;
 import com.lambda.cloud.cache.provider.MultiLevelCache;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -56,9 +56,10 @@ public class CacheMessageListener implements MessageListener {
 
         log.debug("Received cache message: {}", msg);
 
-        Cache<Object, Object> cache = cacheManager.getCache(msg.getCacheName());
-        if (cache instanceof MultiLevelCache<Object, Object> multiLevelCache) {
-            Cache<Object, Object> l1Cache = multiLevelCache.getL1Cache();
+        Cache cache = cacheManager.getCache(msg.getCacheName());
+        if (cache instanceof MultiLevelCache) {
+            MultiLevelCache multiLevelCache = (MultiLevelCache) cache;
+            Cache l1Cache = multiLevelCache.getL1Cache();
 
             switch (msg.getType()) {
                 case PUT:
@@ -71,7 +72,11 @@ public class CacheMessageListener implements MessageListener {
                 case PUT_ALL:
                 case EVICT_ALL:
                     if (msg.getKeys() != null && !msg.getKeys().isEmpty()) {
-                        l1Cache.evictAll(msg.getKeys());
+                        if (l1Cache instanceof AbstractCache) {
+                            ((AbstractCache) l1Cache).evictAll(msg.getKeys());
+                        } else {
+                            msg.getKeys().forEach(l1Cache::evict);
+                        }
                         log.debug(
                                 "Evicted L1 cache for {} keys in cache: {}",
                                 msg.getKeys().size(),
