@@ -21,10 +21,17 @@ public class CacheConfig {
     private String cacheName;
 
     /**
-     * 默认过期时间
+     * 默认过期时间（L2 分布式缓存使用）
      */
     @Builder.Default
     private Duration ttl = Duration.ofHours(1);
+
+    /**
+     * L1 本地缓存过期时间（仅多级缓存有效）
+     * <p>
+     * 如果未设置，则使用 ttl 值
+     */
+    private Duration l1Ttl;
 
     /**
      * 最大缓存条目数(仅本地缓存有效)

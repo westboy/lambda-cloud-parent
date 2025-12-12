@@ -1,53 +1,42 @@
 package com.lambda.cloud.cache.provider;
 
-import com.lambda.cloud.cache.CacheStats;
-import com.lambda.cloud.cache.support.AbstractCache;
 import com.lambda.cloud.cache.support.CacheMessage;
-import java.time.Duration;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.Callable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache.ValueWrapper;
+import org.springframework.cache.Cache;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 多级缓存实现
  * <p>
- * L1: Caffeine本地缓存(快速访问)
- * L2: Redis分布式缓存(共享数据)
- *
- * @param <K> 缓存键类型
- * @param <V> 缓存值类型
+ * L1: 本地缓存 (如 Caffeine)
+ * L2: 分布式缓存 (如 Redis)
  */
 @Slf4j
-public class MultiLevelCache<K, V> extends AbstractCache<K, V> {
+public class MultiLevelCache implements Cache {
 
-    /**
-     * -- GETTER --
-     * 获取L1缓存
-     */
     @Getter
-    private final org.springframework.cache.Cache l1Cache; // Caffeine
-    /**
-     * -- GETTER --
-     * 获取L2缓存
-     */
-    @Getter
-    private final org.springframework.cache.Cache l2Cache; // Redis
+    private final String name;
 
-    private final org.springframework.data.redis.core.RedisTemplate<Object, Object> redisTemplate;
+    @Getter
+    private final Cache l1Cache;
+
+    @Getter
+    private final Cache l2Cache;
+
+    private final RedisTemplate<Object, Object> redisTemplate;
     private final String topic;
     private final String currentNodeId;
 
     public MultiLevelCache(
             String name,
-            org.springframework.cache.Cache l1Cache,
-            org.springframework.cache.Cache l2Cache,
-            org.springframework.data.redis.core.RedisTemplate<Object, Object> redisTemplate,
+            Cache l1Cache,
+            Cache l2Cache,
+            RedisTemplate<Object, Object> redisTemplate,
             String topic,
             String currentNodeId) {
-        super(name, true); // 默认开启统计
+        this.name = name;
         this.l1Cache = l1Cache;
         this.l2Cache = l2Cache;
         this.redisTemplate = redisTemplate;
@@ -55,220 +44,114 @@ public class MultiLevelCache<K, V> extends AbstractCache<K, V> {
         this.currentNodeId = currentNodeId;
     }
 
-    private void publishMessage(CacheMessage.Type type, Object key) {
-        publishMessage(type, key, null);
+    @Override
+    public Object getNativeCache() {
+        return this;
     }
 
-    private void publishMessage(CacheMessage.Type type, Object key, Set<Object> keys) {
+    @Override
+    public ValueWrapper get(Object key) {
+        // 1. 尝试 L1
+        ValueWrapper l1Value = l1Cache.get(key);
+        if (l1Value != null) {
+            log.debug("L1 cache hit for key: {}", key);
+            return l1Value;
+        }
+
+        // 2. 尝试 L2
+        ValueWrapper l2Value = l2Cache.get(key);
+        if (l2Value != null) {
+            log.debug("L2 cache hit for key: {}", key);
+            // 同步到 L1（包括 null 值，避免空值重复穿透到 L2）
+            l1Cache.put(key, l2Value.get());
+            return l2Value;
+        }
+
+        return null;
+    }
+
+    @Override
+    public <T> T get(Object key, Class<T> type) {
+        // 1. 尝试 L1
+        T l1Value = l1Cache.get(key, type);
+        if (l1Value != null) {
+            log.debug("L1 cache hit for key: {}", key);
+            return l1Value;
+        }
+
+        // 2. 尝试 L2
+        T l2Value = l2Cache.get(key, type);
+        if (l2Value != null) {
+            log.debug("L2 cache hit for key: {}", key);
+            // 同步到 L1
+            l1Cache.put(key, l2Value);
+            return l2Value;
+        }
+
+        return null;
+    }
+
+    @Override
+    public <T> T get(Object key, Callable<T> valueLoader) {
+        // 注意: 此实现已简化，可能无法保证跨级别的原子性
+        ValueWrapper l1Value = l1Cache.get(key);
+        if (l1Value != null) {
+            return (T) l1Value.get();
+        }
+
+        // 尝试从 L2 获取或加载
+        // 我们使用 L2 的 get 与加载器来确保 L2 的原子性（如果支持）
         try {
-            CacheMessage message = new CacheMessage(name, key, currentNodeId, keys, type);
-            redisTemplate.convertAndSend(topic, message);
-        } catch (Exception e) {
-            log.error("Failed to publish cache message", e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private V toValue(ValueWrapper wrapper) {
-        return wrapper != null ? (V) wrapper.get() : null;
-    }
-
-    @Override
-    protected V lookupInternal(K key) {
-        // 先从L1缓存获取
-        ValueWrapper l1Wrapper = l1Cache.get(key);
-        V value = toValue(l1Wrapper);
-        if (value != null) {
-            log.debug("Cache hit in L1: key={}", key);
-            recordHit();
+            T value = l2Cache.get(key, valueLoader);
+            // 如果在 L2 中加载/找到，则放入 L1
+            if (value != null) {
+                l1Cache.put(key, value);
+            }
             return value;
-        }
-
-        // L1未命中,从L2获取
-        ValueWrapper l2Wrapper = l2Cache.get(key);
-        value = toValue(l2Wrapper);
-        if (value != null) {
-            log.debug("Cache hit in L2: key={}, syncing to L1", key);
-            // 同步到L1缓存
-            l1Cache.put(key, value);
-            recordHit(); // L2 hit counts as hit for multi-level
-        } else {
-            recordMiss();
-        }
-
-        return value;
-    }
-
-    @Override
-    protected void putInternal(K key, V value) {
-        // 同时写入L1和L2
-        l1Cache.put(key, value);
-        l2Cache.put(key, value);
-        publishMessage(CacheMessage.Type.PUT, key);
-    }
-
-    @Override
-    public void put(K key, V value, Duration duration) {
-        // 扩展支持 Duration
-        // 尝试检查底层是否支持 Duration
-        putToCache(l1Cache, key, value, duration);
-        putToCache(l2Cache, key, value, duration);
-        publishMessage(CacheMessage.Type.PUT, key);
-    }
-
-    private void putToCache(org.springframework.cache.Cache cache, K key, V value, Duration duration) {
-        if (cache instanceof AbstractCache) {
-            ((AbstractCache) cache).put(key, value, duration);
-        } else {
-            cache.put(key, value);
+        } catch (Exception e) {
+            throw new ValueRetrievalException(key, valueLoader, e);
         }
     }
 
     @Override
     public ValueWrapper putIfAbsent(Object key, Object value) {
-        // 先尝试在L2中设置(分布式锁)
-        // Spring Cache 的 putIfAbsent 返回 ValueWrapper
-        ValueWrapper wrapper = l2Cache.putIfAbsent(key, value);
-        if (wrapper == null) {
-            // L2设置成功 (返回null表示之前没有值), 同步到L1
-            l1Cache.putIfAbsent(key, value);
-            @SuppressWarnings("unchecked")
-            K k = (K) key;
-            publishMessage(CacheMessage.Type.PUT, k);
-            return null;
-        }
-        return wrapper;
-    }
-
-    @Override
-    public ValueWrapper putIfAbsent(K key, V value, Duration duration) {
-        // 尝试扩展
-        boolean l2Success = false;
-        ValueWrapper result = null;
-
-        if (l2Cache instanceof AbstractCache) {
-            @SuppressWarnings("unchecked")
-            AbstractCache<Object, Object> l2 = (AbstractCache<Object, Object>) l2Cache;
-            result = l2.putIfAbsent(key, value, duration);
-            l2Success = (result == null);
-        } else {
-            result = l2Cache.putIfAbsent(key, value);
-            l2Success = (result == null);
-        }
-
-        if (l2Success) {
-            if (l1Cache instanceof AbstractCache) {
-                @SuppressWarnings("unchecked")
-                AbstractCache<Object, Object> l1 = (AbstractCache<Object, Object>) l1Cache;
-                l1.putIfAbsent(key, value, duration);
-            } else {
-                l1Cache.putIfAbsent(key, value);
-            }
+        // 使用 L2 的 putIfAbsent 确保分布式原子性
+        ValueWrapper existingValue = l2Cache.putIfAbsent(key, value);
+        if (existingValue == null) {
+            // 新值已放入 L2，同步到 L1 并通知其他节点
+            l1Cache.put(key, value);
             publishMessage(CacheMessage.Type.PUT, key);
-            return null;
         }
-        return result;
+        return existingValue;
     }
 
     @Override
-    public void putAll(Map<K, V> map) {
-        if (l1Cache instanceof AbstractCache)
-            ((AbstractCache) l1Cache).putAll(map);
-        else
-            map.forEach(l1Cache::put);
-
-        if (l2Cache instanceof AbstractCache)
-            ((AbstractCache) l2Cache).putAll(map);
-        else
-            map.forEach(l2Cache::put);
-
-        publishMessage(CacheMessage.Type.PUT_ALL, null, new java.util.HashSet<>(map.keySet()));
+    public void put(Object key, Object value) {
+        l2Cache.put(key, value);
+        l1Cache.put(key, value);
+        publishMessage(CacheMessage.Type.PUT, key);
     }
 
     @Override
-    protected void evictInternal(K key) {
-        l1Cache.evict(key);
+    public void evict(Object key) {
         l2Cache.evict(key);
+        l1Cache.evict(key);
         publishMessage(CacheMessage.Type.EVICT, key);
     }
 
     @Override
-    public void evictAll(Set<K> keys) {
-        if (l1Cache instanceof AbstractCache)
-            ((AbstractCache) l1Cache).evictAll(keys);
-        else
-            keys.forEach(l1Cache::evict);
-
-        if (l2Cache instanceof AbstractCache)
-            ((AbstractCache) l2Cache).evictAll(keys);
-        else
-            keys.forEach(l2Cache::evict);
-
-        publishMessage(CacheMessage.Type.EVICT_ALL, null, new java.util.HashSet<>(keys));
-    }
-
-    @Override
-    protected void clearInternal() {
-        l1Cache.clear();
+    public void clear() {
         l2Cache.clear();
+        l1Cache.clear();
         publishMessage(CacheMessage.Type.CLEAR, null);
     }
 
-    @Override
-    public boolean exists(K key) {
-        // 简单判断 L1 或 L2
-        if (l1Cache instanceof AbstractCache && ((AbstractCache) l1Cache).exists(key))
-            return true;
-        if (l2Cache instanceof AbstractCache && ((AbstractCache) l2Cache).exists(key))
-            return true;
-
-        return l1Cache.get(key) != null || l2Cache.get(key) != null;
-    }
-
-    @Override
-    public long size() {
-        if (l2Cache instanceof AbstractCache) {
-            return ((AbstractCache) l2Cache).size();
+    private void publishMessage(CacheMessage.Type type, Object key) {
+        try {
+            CacheMessage message = new CacheMessage(name, key, currentNodeId, null, type);
+            redisTemplate.convertAndSend(topic, message);
+        } catch (Exception e) {
+            log.error("Failed to publish cache message", e);
         }
-        return 0;
-    }
-
-    @Override
-    public boolean expire(K key, Duration duration) {
-        if (l2Cache instanceof AbstractCache) {
-            return ((AbstractCache) l2Cache).expire(key, duration);
-        }
-        return false;
-    }
-
-    @Override
-    public Duration getExpire(K key) {
-        if (l2Cache instanceof AbstractCache) {
-            return ((AbstractCache) l2Cache).getExpire(key);
-        }
-        return null;
-    }
-
-    @Override
-    public CacheStats getStats() {
-        CacheStats l1Stats = l1Cache instanceof AbstractCache ? ((AbstractCache) l1Cache).getStats()
-                : CacheStats.builder().build();
-        CacheStats l2Stats = l2Cache instanceof AbstractCache ? ((AbstractCache) l2Cache).getStats()
-                : CacheStats.builder().build();
-
-        return CacheStats.builder()
-                .hitCount(l1Stats.getHitCount() + l2Stats.getHitCount())
-                .missCount(l1Stats.getMissCount() + l2Stats.getMissCount())
-                .loadSuccessCount(l1Stats.getLoadSuccessCount() + l2Stats.getLoadSuccessCount())
-                .loadFailureCount(l1Stats.getLoadFailureCount() + l2Stats.getLoadFailureCount())
-                .totalLoadTime(l1Stats.getTotalLoadTime() + l2Stats.getTotalLoadTime())
-                .evictionCount(l1Stats.getEvictionCount() + l2Stats.getEvictionCount())
-                .size(size())
-                .build();
-    }
-
-    @Override
-    protected Object getNativeCacheInternal() {
-        return new Object[] { l1Cache, l2Cache }; // 或者返回 this
     }
 }

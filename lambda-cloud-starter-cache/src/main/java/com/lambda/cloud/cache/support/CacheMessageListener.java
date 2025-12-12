@@ -4,18 +4,18 @@ import com.lambda.cloud.cache.provider.MultiLevelCache;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.lang.NonNull;
 
 /**
  * 缓存消息监听器
  * <p>
- * 监听Redis发布的消息,清理本地L1缓存
+ * 监听 Redis 消息以清理本地 L1 缓存
  */
 @Slf4j
 public class CacheMessageListener implements MessageListener {
@@ -49,7 +49,7 @@ public class CacheMessageListener implements MessageListener {
     }
 
     private void handleMessage(CacheMessage msg) {
-        // 如果是自己发出的消息,忽略
+        // 忽略自己发出的消息
         if (Objects.equals(msg.getSourceNodeId(), currentNodeId)) {
             return;
         }
@@ -63,6 +63,10 @@ public class CacheMessageListener implements MessageListener {
 
             switch (msg.getType()) {
                 case PUT:
+                    // 设计说明：收到 PUT 消息时执行 evict 而非 put，原因：
+                    // 1. CacheMessage 不包含 value 字段，无法直接更新
+                    // 2. evict 后首次访问会从 L2 加载最新值，保证数据一致性
+                    // 3. 避免在消息中传输可能较大的缓存值
                 case EVICT:
                     if (msg.getKey() != null) {
                         l1Cache.evict(msg.getKey());
@@ -72,11 +76,7 @@ public class CacheMessageListener implements MessageListener {
                 case PUT_ALL:
                 case EVICT_ALL:
                     if (msg.getKeys() != null && !msg.getKeys().isEmpty()) {
-                        if (l1Cache instanceof AbstractCache) {
-                            ((AbstractCache) l1Cache).evictAll(msg.getKeys());
-                        } else {
-                            msg.getKeys().forEach(l1Cache::evict);
-                        }
+                        msg.getKeys().forEach(l1Cache::evict);
                         log.debug(
                                 "Evicted L1 cache for {} keys in cache: {}",
                                 msg.getKeys().size(),
