@@ -24,6 +24,8 @@ public class ReflectionFieldAccessor implements FieldAccessor {
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             this.setter = lookup.unreflectSetter(field);
             this.getter = lookup.unreflectGetter(field);
+            this.name = field.getName();
+            this.type = field.getType();
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to create MethodHandle for " + field, e);
         }
