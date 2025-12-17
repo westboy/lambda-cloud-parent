@@ -9,7 +9,6 @@ import com.lambda.cloud.mybatis.purview.support.Parameters;
 import com.lambda.cloud.mybatis.purview.utils.PurviewUtils;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
 import java.io.StringReader;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
@@ -79,7 +78,7 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
         LoginUser operator = parameters.getOperator();
         DynamicPurview purview = parameters.getPurview();
         Set<String> permissions = parameters.getPermissions();
-        
+
         // 显式处理 Replace 模式
         if (purview.isReplace()) {
             try {

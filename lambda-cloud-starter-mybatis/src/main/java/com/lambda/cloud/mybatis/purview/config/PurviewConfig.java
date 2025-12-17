@@ -1,10 +1,9 @@
 package com.lambda.cloud.mybatis.purview.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.Collections;
 import java.util.List;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 数据权限配置属性
@@ -44,7 +43,7 @@ public class PurviewConfig {
      * 权限表别名
      */
     private String purviewTableAlias = "PURV";
-    
+
     /**
      * 权限表辅助别名（用于子查询或去重）
      */
@@ -79,12 +78,12 @@ public class PurviewConfig {
      * 数据视图表名前缀
      */
     private String dataViewTableNamePrefix = "V_DATAVIEW";
-    
+
     /**
      * 数据视图表ID字段名
      */
     private String dataViewIdColumn = "ID";
-    
+
     /**
      * 数据视图表SID字段名
      */

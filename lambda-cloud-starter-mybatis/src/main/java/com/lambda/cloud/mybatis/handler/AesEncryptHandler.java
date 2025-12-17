@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -14,7 +15,8 @@ import org.apache.ibatis.type.JdbcType;
  * @author jpjoo
  */
 @Setter
-public class AesEncryptHandler extends BaseTypeHandler<Object> {
+@Slf4j
+public class AesEncryptHandler extends BaseTypeHandler<String> {
 
     public final String key;
 
@@ -23,51 +25,38 @@ public class AesEncryptHandler extends BaseTypeHandler<Object> {
     }
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType)
+    public void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType)
             throws SQLException {
-        ps.setString(i, AES.encrypt((String) parameter, key));
+        ps.setString(i, AES.encrypt(parameter, key));
     }
 
     @Override
     public String getNullableResult(ResultSet rs, String columnName) throws SQLException {
         String columnValue = rs.getString(columnName);
-        if (StrUtil.isEmpty(columnValue)) {
-            return columnValue;
-        }
-        String value = AES.decrypt(columnValue, key);
-        if (StrUtil.isEmpty(value)) {
-            throw new SQLException("AES decryption failed for column: " + columnName);
-        }
-        return value;
+        return decrypt(columnValue);
     }
 
     @Override
     public String getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
         String columnValue = rs.getString(columnIndex);
-        if (StrUtil.isEmpty(columnValue)) {
-            return columnValue;
-        }
-        String value = AES.decrypt(columnValue, key);
-        if (StrUtil.isEmpty(value)) {
-            throw new SQLException("AES decryption failed for column index: " + columnIndex);
-        }
-        return value;
+        return decrypt(columnValue);
     }
 
     @Override
     public String getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        String columnValue = getColumnValue(cs, columnIndex);
+        String columnValue = cs.getString(columnIndex);
+        return decrypt(columnValue);
+    }
+
+    private String decrypt(String columnValue) {
         if (StrUtil.isEmpty(columnValue)) {
             return columnValue;
         }
         String value = AES.decrypt(columnValue, key);
         if (StrUtil.isEmpty(value)) {
-            throw new SQLException("AES decryption failed for column index: " + columnIndex);
+            log.warn("AES decryption failed or returned empty for value. Returning null.");
+            return null;
         }
         return value;
-    }
-
-    private String getColumnValue(CallableStatement cs, int columnIndex) throws SQLException {
-        return cs.getString(columnIndex);
     }
 }

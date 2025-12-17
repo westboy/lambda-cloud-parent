@@ -6,8 +6,8 @@ import static com.lambda.cloud.mybatis.utils.SQLUtils.toIn;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
-import com.lambda.cloud.mybatis.purview.config.PurviewConfigHolder;
 import com.lambda.cloud.mybatis.purview.config.PurviewConfig;
+import com.lambda.cloud.mybatis.purview.config.PurviewConfigHolder;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
 import java.lang.reflect.Method;
@@ -252,11 +252,21 @@ public final class PurviewUtils {
         PurviewConfig properties = PurviewConfigHolder.getInstance();
         int[] types = purview.getType();
         Set<String> ids = PurviewUtils.getPurviewIds(operator);
-        StringBuilder sql = new StringBuilder("SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName());
-        sql.append(SPACE).append("WHERE ").append(properties.getPurviewTidColumn()).append(toIn(ids));
-        sql.append(SPACE).append("AND ").append(properties.getPurviewTypeColumn()).append(toIn(types));
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName());
+        sql.append(SPACE)
+                .append("WHERE ")
+                .append(properties.getPurviewTidColumn())
+                .append(toIn(ids));
+        sql.append(SPACE)
+                .append("AND ")
+                .append(properties.getPurviewTypeColumn())
+                .append(toIn(types));
         if (purview.getLevel() > -1) {
-            sql.append(SPACE).append("AND ").append(properties.getPurviewRankColumn()).append(" ")
+            sql.append(SPACE)
+                    .append("AND ")
+                    .append(properties.getPurviewRankColumn())
+                    .append(" ")
                     .append(purview.getLevelExp().getComparison())
                     .append(StringPool.SPACE)
                     .append(getLevel(purview));
@@ -276,40 +286,82 @@ public final class PurviewUtils {
         int level = getLevel(purview);
         String condition = purview.getCondition();
         StringBuilder builder = new StringBuilder();
-        builder.append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewTidColumn()).append(toIn(getPurviewIds(operator)));
-        builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewTypeColumn()).append(SQLUtils.toIn(types));
+        builder.append(properties.getPurviewTableAlias())
+                .append(DOT)
+                .append(properties.getPurviewTidColumn())
+                .append(toIn(getPurviewIds(operator)));
+        builder.append(" AND ")
+                .append(properties.getPurviewTableAlias())
+                .append(DOT)
+                .append(properties.getPurviewTypeColumn())
+                .append(SQLUtils.toIn(types));
         Purview.Scheme scheme = purview.getScheme();
         if (Purview.Scheme.ORGAN.equals(scheme)) {
             String orgId = "";
             builder = new StringBuilder();
-            builder.append("SELECT ").append(properties.getOrganizationIdColumn()).append(" FROM ").append(properties.getOrganizationTableName()).append(SPACE).append(properties.getOrganizationTableAlias()).append(" WHERE ").append(properties.getOrganizationTableAlias()).append(DOT).append(properties.getOrganizationIdColumn()).append(" = '")
+            builder.append("SELECT ")
+                    .append(properties.getOrganizationIdColumn())
+                    .append(" FROM ")
+                    .append(properties.getOrganizationTableName())
+                    .append(SPACE)
+                    .append(properties.getOrganizationTableAlias())
+                    .append(" WHERE ")
+                    .append(properties.getOrganizationTableAlias())
+                    .append(DOT)
+                    .append(properties.getOrganizationIdColumn())
+                    .append(" = '")
                     .append(orgId)
                     .append(SINGLE_QUOTE);
-            builder.append(" OR ").append(properties.getOrganizationTableAlias()).append(DOT).append(properties.getOrganizationParentKeysColumn()).append(" LIKE '%").append(orgId).append("%'");
+            builder.append(" OR ")
+                    .append(properties.getOrganizationTableAlias())
+                    .append(DOT)
+                    .append(properties.getOrganizationParentKeysColumn())
+                    .append(" LIKE '%")
+                    .append(orgId)
+                    .append("%'");
             return builder.toString();
         } else if (Purview.Scheme.CASCADE.equals(scheme)) {
             if (level > -1) {
-                builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewRankColumn()).append(" ")
+                builder.append(" AND ")
+                        .append(properties.getPurviewTableAlias())
+                        .append(DOT)
+                        .append(properties.getPurviewRankColumn())
+                        .append(" ")
                         .append(purview.getLevelExp().getComparison())
                         .append(StringPool.SPACE)
                         .append(level);
             }
             int checked = purview.getChecked();
             if (checked > 0) {
-                builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewCheckedColumn()).append(" = ").append(checked);
+                builder.append(" AND ")
+                        .append(properties.getPurviewTableAlias())
+                        .append(DOT)
+                        .append(properties.getPurviewCheckedColumn())
+                        .append(" = ")
+                        .append(checked);
             }
             if (StringUtils.isNotBlank(condition)) {
-                builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(condition);
+                builder.append(" AND ")
+                        .append(properties.getPurviewTableAlias())
+                        .append(DOT)
+                        .append(condition);
             }
-            return builder.insert(0, "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName() + SPACE + properties.getPurviewTableAlias() + " WHERE ")
+            return builder.insert(
+                            0,
+                            "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM "
+                                    + properties.getPurviewTableName() + SPACE + properties.getPurviewTableAlias()
+                                    + " WHERE ")
                     .toString();
         } else {
             if (StringUtils.isNotBlank(condition)) {
                 condition = "AND VDV." + condition;
             }
             String type = purview.getType()[0] > 0 ? String.valueOf(purview.getType()[0]) : "";
-            return "SELECT VDV." + properties.getDataViewSidColumn() + " FROM " + properties.getPurviewTableName() + SPACE + properties.getPurviewTableAlias() + "," + properties.getDataViewTableNamePrefix() + type + " VDV WHERE VDV." + properties.getDataViewIdColumn() + " LIKE"
-                    + " CONCAT(" + properties.getPurviewTableAlias() + DOT + properties.getPurviewIdColumn() + ", '%') " + condition + " AND " + builder;
+            return "SELECT VDV." + properties.getDataViewSidColumn() + " FROM " + properties.getPurviewTableName()
+                    + SPACE + properties.getPurviewTableAlias() + "," + properties.getDataViewTableNamePrefix() + type
+                    + " VDV WHERE VDV." + properties.getDataViewIdColumn() + " LIKE" + " CONCAT("
+                    + properties.getPurviewTableAlias() + DOT + properties.getPurviewIdColumn() + ", '%') " + condition
+                    + " AND " + builder;
         }
     }
 }

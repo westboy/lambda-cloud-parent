@@ -37,9 +37,7 @@ public class LambdaExtendSqlInjector extends DefaultSqlInjector {
                 .add(new SelectMaps())
                 .add(new SelectObjs())
                 .add(new SelectList())
-                .add(new InsertAll())
-                .add(new OracleInsertAllBatch())
-                .add(new MysqlInsertAllBatch());
+                .add(new InsertAll());
         if (tableInfo.havePK()) {
             builder.add(new DeleteById())
                     .add(new DeleteByIds())

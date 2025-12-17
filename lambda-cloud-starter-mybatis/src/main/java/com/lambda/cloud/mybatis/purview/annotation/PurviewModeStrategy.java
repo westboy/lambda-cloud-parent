@@ -6,10 +6,9 @@ import com.lambda.cloud.mybatis.purview.strategy.PurviewModeQueryStrategy;
 import com.lambda.cloud.mybatis.purview.strategy.PurviewModeStatisticsStrategy;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.purview.support.Parameters;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
-import java.util.Set;
 
 /**
  * @author Jin

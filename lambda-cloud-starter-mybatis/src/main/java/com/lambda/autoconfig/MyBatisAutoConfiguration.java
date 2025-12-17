@@ -11,7 +11,6 @@ import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
 import com.lambda.cloud.mybatis.handler.EntityMetaFiller;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
 import com.lambda.cloud.mybatis.injector.LambdaExtendSqlInjector;
-import com.lambda.cloud.mybatis.interceptor.InsertBatchInterceptor;
 import com.lambda.cloud.mybatis.interceptor.TenantExpressionInterceptor;
 import com.lambda.cloud.mybatis.tenant.TenantHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -126,17 +125,6 @@ public class MyBatisAutoConfiguration {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.setInterceptors(innerInterceptors);
         return interceptor;
-    }
-
-    /**
-     * 批量插入攔截器
-     *
-     * @return InsertBatchInterceptor
-     */
-    @Bean
-    @Order(30)
-    public InsertBatchInterceptor insertBatchInterceptor() {
-        return new InsertBatchInterceptor();
     }
 
     /***

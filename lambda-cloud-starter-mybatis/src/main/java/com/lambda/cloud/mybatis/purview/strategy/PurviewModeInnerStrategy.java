@@ -1,10 +1,17 @@
 package com.lambda.cloud.mybatis.purview.strategy;
 
+import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getLevel;
+import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getPurviewIds;
+
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.config.PurviewConfig;
 import com.lambda.cloud.mybatis.purview.config.PurviewConfigHolder;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -17,14 +24,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getLevel;
-import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.getPurviewIds;
 
 /**
  * 内联查询
@@ -60,7 +59,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
      */
     private Expression innerExpressionForOrgan(PlainSelect body, DynamicPurview purview, LoginUser user) {
         String orgId = user.getOrgId();
-        String idOrg = PurviewConfigHolder.getInstance().getOrganizationTableAlias() + "." + PurviewConfigHolder.getInstance().getOrganizationIdColumn();
+        String idOrg = PurviewConfigHolder.getInstance().getOrganizationTableAlias() + "."
+                + PurviewConfigHolder.getInstance().getOrganizationIdColumn();
         Table table = new Table(PurviewConfigHolder.getInstance().getOrganizationTableName());
         table.setAlias(new Alias(PurviewConfigHolder.getInstance().getOrganizationTableAlias(), false));
         EqualsTo expression0 = new EqualsTo();
@@ -77,7 +77,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         joins.add(join);
         body.setJoins(joins);
         // ~~=====================WHERE==================~~//
-        String idParentKeys = PurviewConfigHolder.getInstance().getOrganizationTableAlias() + "." + PurviewConfigHolder.getInstance().getOrganizationParentKeysColumn();
+        String idParentKeys = PurviewConfigHolder.getInstance().getOrganizationTableAlias() + "."
+                + PurviewConfigHolder.getInstance().getOrganizationParentKeysColumn();
         EqualsTo expression1 = new EqualsTo();
         expression1.setLeftExpression(new Column(idOrg));
         expression1.setRightExpression(new StringValue(orgId));
@@ -113,7 +114,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         PurviewConfig properties = PurviewConfigHolder.getInstance();
         select1.setAlias(new Alias(properties.getPurviewTableAlias(), false));
         EqualsTo expression0 = new EqualsTo();
-        expression0.setLeftExpression(new Column(properties.getPurviewTableAlias() + "." + properties.getPurviewIdColumn()));
+        expression0.setLeftExpression(
+                new Column(properties.getPurviewTableAlias() + "." + properties.getPurviewIdColumn()));
         expression0.setRightExpression(new Column(purview.getKey()));
         Join join = new Join();
         join.setInner(true);
@@ -130,7 +132,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
     private Select getDistinctSelect(DynamicPurview purview, LoginUser operator) {
         PurviewConfig properties = PurviewConfigHolder.getInstance();
         PlainSelect body1 = new PlainSelect();
-        body1.addSelectItems(new SelectItem<>(new Column("DISTINCT " + properties.getPurviewTableAlias0() + "." + properties.getPurviewIdColumn())));
+        body1.addSelectItems(new SelectItem<>(
+                new Column("DISTINCT " + properties.getPurviewTableAlias0() + "." + properties.getPurviewIdColumn())));
         Table table = new Table(properties.getPurviewTableName());
         table.setAlias(new Alias(properties.getPurviewTableAlias0(), false));
         body1.setFromItem(table);
@@ -138,7 +141,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         List<Expression> tids =
                 getPurviewIds(operator).stream().map(StringValue::new).collect(Collectors.toList());
         InExpression expression1 = new InExpression();
-        expression1.setLeftExpression(new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTidColumn()));
+        expression1.setLeftExpression(
+                new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTidColumn()));
         expression1.setRightExpression(new ExpressionList<>(tids));
 
         Expression expression = expression1;
@@ -146,12 +150,14 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         if (ArrayUtils.isNotEmpty(types)) {
             if (types.length == 1) {
                 EqualsTo expression2 = new EqualsTo();
-                expression2.setLeftExpression(new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTypeColumn()));
+                expression2.setLeftExpression(
+                        new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTypeColumn()));
                 expression2.setRightExpression(new LongValue(types[0]));
                 expression = new AndExpression(expression1, expression2);
             } else {
                 InExpression expression2 = new InExpression();
-                expression2.setLeftExpression(new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTypeColumn()));
+                expression2.setLeftExpression(
+                        new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTypeColumn()));
                 List<Expression> list = new ArrayList<>();
                 for (int i : types) {
                     list.add(new LongValue(i));
@@ -164,14 +170,16 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         int level = getLevel(purview);
         if (level > -1) {
             ComparisonOperator expression3 = purview.getLevelExp().getComparisonOperator();
-            expression3.setLeftExpression(new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewRankColumn()));
+            expression3.setLeftExpression(
+                    new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewRankColumn()));
             expression3.setRightExpression(new LongValue(level));
             expression = new AndExpression(expression, expression3);
         }
         int checked = purview.getChecked();
         if (checked > 0) {
             EqualsTo expression4 = new EqualsTo();
-            expression4.setLeftExpression(new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewCheckedColumn()));
+            expression4.setLeftExpression(
+                    new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewCheckedColumn()));
             expression4.setRightExpression(new LongValue(checked));
             expression = new AndExpression(expression, expression4);
         }

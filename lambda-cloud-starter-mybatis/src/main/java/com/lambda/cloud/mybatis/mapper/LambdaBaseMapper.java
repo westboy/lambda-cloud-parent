@@ -1,9 +1,9 @@
 package com.lambda.cloud.mybatis.mapper;
 
+import cn.hutool.core.collection.ListUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
-import com.google.common.collect.Lists;
 import io.lettuce.core.dynamic.annotation.Param;
 import java.util.List;
 
@@ -50,25 +50,9 @@ public interface LambdaBaseMapper<T> extends BaseMapper<T> {
             return 0;
         }
         final int size = entity.size();
-        Lists.partition(entity, max).forEach(this::insertAll);
+        ListUtil.partition(entity, max).forEach(this::insertAll);
         return size;
     }
-
-    /**
-     * mysql 形式的全字段批量新增
-     *
-     * @param entity list
-     * @return int
-     */
-    int mysqlInsertAllBatch(List<T> entity);
-
-    /**
-     * oracle 形式的全字段批量新增
-     *
-     * @param entity list
-     * @return int
-     */
-    int oracleInsertAllBatch(List<T> entity);
 
     /**
      * 根据code 查询单条记录 如有多条则只取第一条
