@@ -41,8 +41,11 @@ public class EncryptedRecordTest {
     public void testParseTransactionRecordWithNewProtocol() {
 
         SecretKey key = SecureUtil.generateKey("AES", "0123456789abcdef".getBytes(StandardCharsets.UTF_8));
-        String encryptHex =
-                HexUtil.encodeHexStr(SecureUtil.aes(key.getEncoded()).encrypt(RAW), false);
+
+        byte[] rawBytes = HexUtil.decodeHex(RAW);
+        byte[] encryptedBytes = SecureUtil.aes(key.getEncoded()).encrypt(rawBytes);
+        String encryptHex = HexUtil.encodeHexStr(encryptedBytes, false);
+
         System.out.println("rawHex: " + RAW);
 
         System.out.println("encryptHex: " + encryptHex);

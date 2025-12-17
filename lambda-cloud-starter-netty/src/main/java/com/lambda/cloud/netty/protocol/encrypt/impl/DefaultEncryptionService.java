@@ -37,11 +37,20 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
         }
 
         try {
-            String hexData = HexUtil.encodeHexStr(data).toUpperCase();
-            log.debug("字段 {} 加密前数据: {}", fieldMetadata.getFieldName(), hexData);
-            String result = SecureUtil.aes(defaultKeyBytes).encryptHex(hexData);
-            log.debug("字段 {} 加密后数据: {}", fieldMetadata.getFieldName(), result.toUpperCase());
-            return HexUtil.decodeHex(result);
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "字段 {} 加密前数据(Hex): {}",
+                        fieldMetadata.getFieldName(),
+                        HexUtil.encodeHexStr(data).toUpperCase());
+            }
+            byte[] result = SecureUtil.aes(defaultKeyBytes).encrypt(data);
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "字段 {} 加密后数据(Hex): {}",
+                        fieldMetadata.getFieldName(),
+                        HexUtil.encodeHexStr(result).toUpperCase());
+            }
+            return result;
 
         } catch (Exception e) {
             throw new ProtocolException(
@@ -59,9 +68,14 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
         }
 
         try {
-            String result = SecureUtil.aes(defaultKeyBytes).decryptStr(encryptedData);
-            log.debug("字段 {} 解密后数据: {}", fieldMetadata.getFieldName(), result);
-            return HexUtil.decodeHex(result);
+            byte[] result = SecureUtil.aes(defaultKeyBytes).decrypt(encryptedData);
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "字段 {} 解密后数据(Hex): {}",
+                        fieldMetadata.getFieldName(),
+                        HexUtil.encodeHexStr(result).toUpperCase());
+            }
+            return result;
 
         } catch (Exception e) {
             throw new ProtocolException(
