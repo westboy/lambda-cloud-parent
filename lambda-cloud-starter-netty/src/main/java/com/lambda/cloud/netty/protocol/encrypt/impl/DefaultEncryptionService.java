@@ -2,6 +2,7 @@ package com.lambda.cloud.netty.protocol.encrypt.impl;
 
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.symmetric.AES;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
@@ -14,12 +15,15 @@ import lombok.extern.slf4j.Slf4j;
  * 使用AES-256-GCM算法提供高安全性的加密解密服务，支持字段级别的密钥管理
  * </p>
  *
- * @param defaultKeyBytes 默认密钥（用于演示，生产环境应使用安全的密钥管理）
  * @author Jin
  */
 @Slf4j
 @SuppressFBWarnings("EI_EXPOSE_REP")
-public record DefaultEncryptionService(byte[] defaultKeyBytes) implements EncryptionService {
+public class DefaultEncryptionService implements EncryptionService {
+
+    private final byte[] defaultKeyBytes;
+    private final ThreadLocal<AES> aesThreadLocal;
+
     /**
      * 构造函数（使用指定的默认密钥）
      *
@@ -27,7 +31,14 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
      */
     public DefaultEncryptionService(byte[] defaultKeyBytes) {
         this.defaultKeyBytes = defaultKeyBytes;
+        // 使用ThreadLocal缓存AES实例，避免频繁创建Cipher带来的性能开销
+        // Cipher非线程安全，因此每个线程维护一个独立的AES实例
+        this.aesThreadLocal = ThreadLocal.withInitial(() -> SecureUtil.aes(defaultKeyBytes));
         log.info("默认AES加密服务已初始化（使用指定密钥），算法: {}, 密钥长度: {} 位", "AES", defaultKeyBytes.length);
+    }
+
+    public byte[] defaultKeyBytes() {
+        return defaultKeyBytes;
     }
 
     @Override
@@ -43,7 +54,10 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
                         fieldMetadata.getFieldName(),
                         HexUtil.encodeHexStr(data).toUpperCase());
             }
-            byte[] result = SecureUtil.aes(defaultKeyBytes).encrypt(data);
+
+            // 使用ThreadLocal获取AES实例进行加密
+            byte[] result = aesThreadLocal.get().encrypt(data);
+
             if (log.isDebugEnabled()) {
                 log.debug(
                         "字段 {} 加密后数据(Hex): {}",
@@ -68,7 +82,9 @@ public record DefaultEncryptionService(byte[] defaultKeyBytes) implements Encryp
         }
 
         try {
-            byte[] result = SecureUtil.aes(defaultKeyBytes).decrypt(encryptedData);
+            // 使用ThreadLocal获取AES实例进行解密
+            byte[] result = aesThreadLocal.get().decrypt(encryptedData);
+
             if (log.isDebugEnabled()) {
                 log.debug(
                         "字段 {} 解密后数据(Hex): {}",
