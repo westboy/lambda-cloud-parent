@@ -21,11 +21,6 @@ public class CacheProperties {
     private CacheType type = CacheType.REDIS;
 
     /**
-     * 是否启用缓存
-     */
-    private boolean enabled = true;
-
-    /**
      * 默认缓存配置
      */
     private CacheConfigProperties defaults = new CacheConfigProperties();

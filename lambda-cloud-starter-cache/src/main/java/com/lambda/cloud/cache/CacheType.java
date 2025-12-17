@@ -21,12 +21,7 @@ public enum CacheType {
     /**
      * 多级缓存(L1: Caffeine, L2: Redis)
      */
-    MULTI_LEVEL("multi-level", "多级缓存"),
-
-    /**
-     * 自定义缓存
-     */
-    CUSTOM("custom", "自定义缓存");
+    MULTI_LEVEL("multi-level", "多级缓存");
 
     private final String code;
     private final String description;

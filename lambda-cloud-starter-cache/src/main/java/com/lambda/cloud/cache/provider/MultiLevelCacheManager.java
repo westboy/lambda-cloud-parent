@@ -6,6 +6,7 @@ import com.lambda.cloud.cache.CacheConfig;
 import com.lambda.cloud.cache.CacheConstants;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.support.AbstractCacheManager;
@@ -57,7 +58,7 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
     }
 
     @Override
-    protected Cache getMissingCache(String name) {
+    protected Cache getMissingCache(@NonNull String name) {
         CacheConfig config = properties.getCacheConfig(name);
 
         // 创建 L1 (Caffeine)

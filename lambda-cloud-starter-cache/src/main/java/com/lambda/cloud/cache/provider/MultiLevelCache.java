@@ -1,11 +1,14 @@
 package com.lambda.cloud.cache.provider;
 
 import com.lambda.cloud.cache.support.CacheMessage;
-import java.util.concurrent.Callable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.cache.Cache;
 import org.springframework.data.redis.core.RedisTemplate;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 多级缓存实现
@@ -28,6 +31,7 @@ public class MultiLevelCache implements Cache {
     private final RedisTemplate<Object, Object> redisTemplate;
     private final String topic;
     private final String currentNodeId;
+    private final ConcurrentHashMap<Object, Object> keyLocks = new ConcurrentHashMap<>();
 
     public MultiLevelCache(
             String name,
@@ -45,23 +49,24 @@ public class MultiLevelCache implements Cache {
     }
 
     @Override
+    @NonNull
     public Object getNativeCache() {
         return this;
     }
 
     @Override
-    public ValueWrapper get(Object key) {
+    public ValueWrapper get(@NonNull Object key) {
         // 1. 尝试 L1
         ValueWrapper l1Value = l1Cache.get(key);
         if (l1Value != null) {
-            log.debug("L1 cache hit for key: {}", key);
+            debug(key, "L1");
             return l1Value;
         }
 
         // 2. 尝试 L2
         ValueWrapper l2Value = l2Cache.get(key);
         if (l2Value != null) {
-            log.debug("L2 cache hit for key: {}", key);
+            debug(key, "L2");
             // 同步到 L1（包括 null 值，避免空值重复穿透到 L2）
             l1Cache.put(key, l2Value.get());
             return l2Value;
@@ -70,19 +75,23 @@ public class MultiLevelCache implements Cache {
         return null;
     }
 
+    private static void debug(@NonNull Object key, String cache) {
+        log.debug("{} cache hit for key: {}", key, cache);
+    }
+
     @Override
-    public <T> T get(Object key, Class<T> type) {
+    public <T> T get(@NonNull Object key, Class<T> type) {
         // 1. 尝试 L1
         T l1Value = l1Cache.get(key, type);
         if (l1Value != null) {
-            log.debug("L1 cache hit for key: {}", key);
+            debug(key, "L1");
             return l1Value;
         }
 
         // 2. 尝试 L2
         T l2Value = l2Cache.get(key, type);
         if (l2Value != null) {
-            log.debug("L2 cache hit for key: {}", key);
+            debug(key, "L2");
             // 同步到 L1
             l1Cache.put(key, l2Value);
             return l2Value;
@@ -92,29 +101,31 @@ public class MultiLevelCache implements Cache {
     }
 
     @Override
-    public <T> T get(Object key, Callable<T> valueLoader) {
-        // 注意: 此实现已简化，可能无法保证跨级别的原子性
+    public <T> T get(@NonNull Object key, @NonNull Callable<T> valueLoader) {
         ValueWrapper l1Value = l1Cache.get(key);
         if (l1Value != null) {
+            //noinspection unchecked
             return (T) l1Value.get();
         }
-
-        // 尝试从 L2 获取或加载
-        // 我们使用 L2 的 get 与加载器来确保 L2 的原子性（如果支持）
-        try {
-            T value = l2Cache.get(key, valueLoader);
-            // 如果在 L2 中加载/找到，则放入 L1
-            if (value != null) {
-                l1Cache.put(key, value);
+        Object lock = keyLocks.computeIfAbsent(key, k -> new Object());
+        synchronized (lock) {
+            try {
+                T value = l2Cache.get(key, valueLoader);
+                // 如果在 L2 中加载/找到，则放入 L1
+                if (value != null) {
+                    l1Cache.put(key, value);
+                }
+                return value;
+            } catch (Exception e) {
+                throw new ValueRetrievalException(key, valueLoader, e);
+            } finally {
+                keyLocks.remove(key, lock);
             }
-            return value;
-        } catch (Exception e) {
-            throw new ValueRetrievalException(key, valueLoader, e);
         }
     }
 
     @Override
-    public ValueWrapper putIfAbsent(Object key, Object value) {
+    public ValueWrapper putIfAbsent(@NonNull Object key, Object value) {
         // 使用 L2 的 putIfAbsent 确保分布式原子性
         ValueWrapper existingValue = l2Cache.putIfAbsent(key, value);
         if (existingValue == null) {
@@ -126,14 +137,14 @@ public class MultiLevelCache implements Cache {
     }
 
     @Override
-    public void put(Object key, Object value) {
+    public void put(@NonNull Object key, Object value) {
         l2Cache.put(key, value);
         l1Cache.put(key, value);
         publishMessage(CacheMessage.Type.PUT, key);
     }
 
     @Override
-    public void evict(Object key) {
+    public void evict(@NonNull Object key) {
         l2Cache.evict(key);
         l1Cache.evict(key);
         publishMessage(CacheMessage.Type.EVICT, key);

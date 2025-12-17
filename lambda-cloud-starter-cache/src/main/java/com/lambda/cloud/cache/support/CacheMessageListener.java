@@ -57,8 +57,7 @@ public class CacheMessageListener implements MessageListener {
         log.debug("Received cache message: {}", msg);
 
         Cache cache = cacheManager.getCache(msg.getCacheName());
-        if (cache instanceof MultiLevelCache) {
-            MultiLevelCache multiLevelCache = (MultiLevelCache) cache;
+        if (cache instanceof MultiLevelCache multiLevelCache) {
             Cache l1Cache = multiLevelCache.getL1Cache();
 
             switch (msg.getType()) {

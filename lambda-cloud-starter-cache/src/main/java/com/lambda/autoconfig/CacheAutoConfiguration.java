@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import cn.hutool.core.util.IdUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.lambda.cloud.cache.CacheConstants;
 import com.lambda.cloud.cache.provider.MultiLevelCacheManager;
@@ -105,14 +106,14 @@ public class CacheAutoConfiguration {
      * 多级缓存配置
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass({ Caffeine.class, RedisTemplate.class })
+    @ConditionalOnClass({Caffeine.class, RedisTemplate.class})
     @ConditionalOnProperty(prefix = "lambda.cache", name = "type", havingValue = "MULTI_LEVEL")
     static class MultiLevelCacheConfiguration {
 
         @Bean
         @ConditionalOnMissingBean(name = "cacheNodeId")
         public String cacheNodeId() {
-            return java.util.UUID.randomUUID().toString();
+            return IdUtil.fastSimpleUUID();
         }
 
         @Bean
