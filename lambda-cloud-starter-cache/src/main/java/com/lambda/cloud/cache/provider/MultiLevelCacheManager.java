@@ -5,6 +5,9 @@ import com.lambda.autoconfig.CacheProperties;
 import com.lambda.cloud.cache.CacheConfig;
 import com.lambda.cloud.cache.CacheConstants;
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.cache.Cache;
@@ -16,10 +19,6 @@ import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
-
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * 多级缓存管理器
@@ -133,26 +132,19 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
 
         // 强制 key 使用 string 序列化（避免 Redis CLI 中 key 不可读）
         redisConfig = redisConfig.serializeKeysWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(
-                        RedisSerializer.string()
-                )
-        );
+                RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.string()));
 
         // value 序列化继承自 redisTemplate
         redisConfig = redisConfig.serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(
-                        redisTemplate.getValueSerializer()
-                )
-        );
+                RedisSerializationContext.SerializationPair.fromSerializer(redisTemplate.getValueSerializer()));
 
         // 全局前缀 + cacheName
         String globalPrefix = config.getKeyPrefix();
-        redisConfig = redisConfig.computePrefixWith(cacheName ->
-                (globalPrefix == null || globalPrefix.isEmpty() ? "" :
-                        globalPrefix.endsWith(":") ? globalPrefix : globalPrefix + ":")
-                        + cacheName
-                        + ":"
-        );
+        redisConfig = redisConfig.computePrefixWith(cacheName -> (globalPrefix == null || globalPrefix.isEmpty()
+                        ? ""
+                        : globalPrefix.endsWith(":") ? globalPrefix : globalPrefix + ":")
+                + cacheName
+                + ":");
 
         return new PublicRedisCache(name, cacheWriter, redisConfig);
     }

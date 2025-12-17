@@ -49,9 +49,9 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
     public void calculateAndSetCrc(Object message, ProtocolPayloadMetadata frameMetadata) throws ProtocolException {
 
         // 获取所有CRC字段（存储CRC值的字段）
-        List<ProtocolFieldMetadata> crcFields = getCrcAndLengthFields(frameMetadata);
+        List<ProtocolFieldMetadata> crcAndLengthFields = getCrcAndLengthFields(frameMetadata);
 
-        if (crcFields.isEmpty()) {
+        if (crcAndLengthFields.isEmpty()) {
             log.debug("消息中没有CRC字段，跳过CRC计算");
             return;
         }
@@ -61,7 +61,7 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
             SerializedData serializedData = calculateCrcAndDataLengthForAllComputedFields(message, frameMetadata);
 
             // 将计算出的 CRC 值设置到所有 CRC 字段中
-            for (ProtocolFieldMetadata crcField : crcFields) {
+            for (ProtocolFieldMetadata crcField : crcAndLengthFields) {
                 if (crcField.isCrcField()) {
                     setValueToInstance(message, crcField, serializedData.getCrc());
                     log.debug("设置CRC字段: {} = {}", crcField.getFieldName(), serializedData.getCrc());
@@ -72,7 +72,7 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
                 }
             }
 
-            log.debug("CRC计算和设置完成，共设置 {} 个CRC字段", crcFields.size());
+            log.debug("CRC计算和设置完成，共设置 {} 个CRC字段", crcAndLengthFields.size());
 
         } catch (Exception e) {
             throw new ProtocolException(

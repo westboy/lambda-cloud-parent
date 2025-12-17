@@ -62,10 +62,10 @@ public class CacheMessageListener implements MessageListener {
 
             switch (msg.getType()) {
                 case PUT:
-                    // 设计说明：收到 PUT 消息时执行 evict 而非 put，原因：
-                    // 1. CacheMessage 不包含 value 字段，无法直接更新
-                    // 2. evict 后首次访问会从 L2 加载最新值，保证数据一致性
-                    // 3. 避免在消息中传输可能较大的缓存值
+                // 设计说明：收到 PUT 消息时执行 evict 而非 put，原因：
+                // 1. CacheMessage 不包含 value 字段，无法直接更新
+                // 2. evict 后首次访问会从 L2 加载最新值，保证数据一致性
+                // 3. 避免在消息中传输可能较大的缓存值
                 case EVICT:
                     if (msg.getKey() != null) {
                         l1Cache.evict(msg.getKey());

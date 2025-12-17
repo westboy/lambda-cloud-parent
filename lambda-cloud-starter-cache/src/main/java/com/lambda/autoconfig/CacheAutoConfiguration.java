@@ -86,7 +86,8 @@ public class CacheAutoConfiguration {
 
             RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig();
             if (properties.getDefaults().getTtl() != null) {
-                defaultCacheConfig = defaultCacheConfig.entryTtl(properties.getDefaults().getTtl());
+                defaultCacheConfig =
+                        defaultCacheConfig.entryTtl(properties.getDefaults().getTtl());
             }
             if (properties.getDefaults().getKeyPrefix() != null) {
                 defaultCacheConfig = defaultCacheConfig.prefixCacheNameWith(
