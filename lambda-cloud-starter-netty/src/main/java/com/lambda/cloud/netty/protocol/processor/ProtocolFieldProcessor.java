@@ -334,6 +334,14 @@ public class ProtocolFieldProcessor {
                 }
             }
             if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
+                // 校验后续字段是否存在动态长度，如果存在则无法准确计算当前字段长度
+                if (frameMetadata.hasUnknownLengthFieldsAfter(fieldMetadata.getOrder())) {
+                    throw new ProtocolException(
+                            ProtocolException.ErrorCode.PARSE_ERROR,
+                            "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: 后续存在未知长度字段，无法确定边界",
+                            fieldMetadata.getFieldName());
+                }
+
                 // 加密字段的长度
                 int remaining =
                         byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());

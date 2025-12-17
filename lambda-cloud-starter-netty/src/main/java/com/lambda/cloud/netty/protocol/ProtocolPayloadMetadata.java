@@ -131,6 +131,16 @@ public record ProtocolPayloadMetadata(
     }
 
     /**
+     * 检查指定顺序之后是否存在长度未知的字段
+     *
+     * @param order 当前字段顺序
+     * @return true 表示存在未知长度字段
+     */
+    public boolean hasUnknownLengthFieldsAfter(int order) {
+        return fields.stream().filter(e -> e.getOrder() > order).anyMatch(e -> e.getLength() <= 0);
+    }
+
+    /**
      * 获取所有必填字段
      *
      * @return 必填字段列表
