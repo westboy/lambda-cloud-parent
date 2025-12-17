@@ -1,6 +1,5 @@
 package com.lambda.cloud.netty.protocol.processor;
 
-import cn.hutool.core.util.ArrayUtil;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
@@ -12,7 +11,6 @@ import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import io.netty.buffer.ByteBuf;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -55,7 +53,6 @@ public class ProtocolFieldProcessor {
      * @param fieldMetadata 字段元数据
      * @param frameMetadata 消息元数据
      * @param converter     数据类型转换器
-     * @param outputStream  原始数据
      * @throws ProtocolException 解析异常
      */
     public void parseField(
@@ -64,8 +61,7 @@ public class ProtocolFieldProcessor {
             ProtocolFieldMetadata fieldMetadata,
             ProtocolPayloadMetadata frameMetadata,
             DataTypeConverter converter,
-            boolean isEncryptionEnabled,
-            ByteArrayOutputStream outputStream)
+            boolean isEncryptionEnabled)
             throws ProtocolException, IOException {
 
         // 验证缓冲区数据
@@ -77,25 +73,19 @@ public class ProtocolFieldProcessor {
         // 特殊处理 List 字段
         if (fieldMetadata.isList()) {
             // List 字段需要特殊处理，计算实际需要读取的数据长度
-            Object value = parseListField(
-                    byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, outputStream);
+            Object value =
+                    parseListField(byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
         } else if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
             Object value = parseCompositeFieldWithDynamicLength(
-                    byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, outputStream);
+                    byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
         } else {
             // 普通字段或长度固定复合字段
             byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
             Object value = convertFieldData(fieldData, fieldMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
-            if (frameMetadata.isFrame() && fieldMetadata.isComputed()) {
-                if (fieldMetadata.isLittleEndian()) {
-                    fieldData = ArrayUtil.reverse(fieldData);
-                }
-                outputStream.write(fieldData);
-            }
         }
     }
 
@@ -350,8 +340,7 @@ public class ProtocolFieldProcessor {
             ProtocolFieldMetadata fieldMetadata,
             ProtocolPayloadMetadata frameMetadata,
             DataTypeConverter converter,
-            boolean isEncryptionEnabled,
-            ByteArrayOutputStream outputStream)
+            boolean isEncryptionEnabled)
             throws ProtocolException {
         try {
             Class<?> targetType = fieldMetadata.getFieldType();
@@ -374,7 +363,8 @@ public class ProtocolFieldProcessor {
                 // 读取实际长度的数据
                 byte[] fieldData = new byte[remaining];
                 byteBuf.readBytes(fieldData);
-                fillParsedRawData(fieldMetadata, frameMetadata, outputStream, fieldData);
+                // 移除 outputStream 写入
+                // fillParsedRawData(fieldMetadata, frameMetadata, outputStream, fieldData);
                 return converter.parseWithEncryption(fieldData, fieldMetadata, encryptionService);
             } else {
                 // 获取复合字段的目标类型
@@ -385,7 +375,6 @@ public class ProtocolFieldProcessor {
                 // 读取实际长度的数据
                 byte[] fieldData = new byte[actualLength];
                 byteBuf.readBytes(fieldData);
-                fillParsedRawData(fieldMetadata, frameMetadata, outputStream, fieldData);
                 return converter.parse(fieldData, fieldMetadata);
             }
 
@@ -395,20 +384,6 @@ public class ProtocolFieldProcessor {
                     "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
                     fieldMetadata.getFieldName(),
                     e);
-        }
-    }
-
-    private static void fillParsedRawData(
-            ProtocolFieldMetadata fieldMetadata,
-            ProtocolPayloadMetadata frameMetadata,
-            ByteArrayOutputStream outputStream,
-            byte[] fieldData)
-            throws IOException {
-        if (frameMetadata.isFrame()) {
-            if (fieldMetadata.isLittleEndian()) {
-                fieldData = ArrayUtil.reverse(fieldData);
-            }
-            outputStream.write(fieldData);
         }
     }
 
@@ -462,8 +437,7 @@ public class ProtocolFieldProcessor {
             ProtocolFieldMetadata fieldMetadata,
             ProtocolPayloadMetadata frameMetadata,
             DataTypeConverter converter,
-            boolean isEncryptionEnabled,
-            ByteArrayOutputStream outputStream)
+            boolean isEncryptionEnabled)
             throws ProtocolException {
 
         log.info(
@@ -475,7 +449,7 @@ public class ProtocolFieldProcessor {
 
         if (fieldMetadata.isComposite()) {
             return parseCompositeFieldWithDynamicLength(
-                    byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled, outputStream);
+                    byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
         } else {
             // 计算 List 字段需要读取的总字节数
             int totalBytes = calculateListFieldLength(byteBuf, fieldMetadata);

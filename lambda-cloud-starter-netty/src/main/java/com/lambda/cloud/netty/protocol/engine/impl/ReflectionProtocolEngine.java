@@ -24,7 +24,9 @@ import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.utils.EncryptionUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
-import java.io.ByteArrayOutputStream;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
@@ -106,22 +108,47 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             logProtocolOperation("帧解析", metadata);
             // 创建消息实例
             Object protocolMessage = getConstructor(messageClass).newInstance();
-            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(512)) {
+            // 记录原始readerIndex
+            int readerIndex = byteBuf.readerIndex();
+
+            // 使用 CompositeByteBuf 来收集参与 CRC 计算的数据切片
+            // 这样既避免了内存复制，又能灵活处理不连续的 computed 字段
+            CompositeByteBuf crcDataBuf = Unpooled.compositeBuffer();
+
+            try {
                 // 解析各个字段
                 for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
-                    parseField(byteBuf, protocolMessage, fieldMetadata, metadata, outputStream);
+                    // 记录字段解析前的 readerIndex
+                    int startIndex = byteBuf.readerIndex();
+
+                    // 解析字段
+                    parseField(byteBuf, protocolMessage, fieldMetadata, metadata);
+
+                    // 如果字段参与 CRC 计算，将对应的原始数据切片加入 crcDataBuf
+                    if (metadata.isFrame() && fieldMetadata.isComputed()) {
+                        int length = byteBuf.readerIndex() - startIndex;
+                        if (length > 0) {
+                            // retain slice to ensure it's valid for CRC calculation
+                            crcDataBuf.addComponent(
+                                    true, byteBuf.slice(startIndex, length).retain());
+                        }
+                    }
                 }
                 if (metadata.isFrame()) {
-                    // 获取参与 CRC 计算的原始数据
-                    byte[] bytes = outputStream.toByteArray();
                     // 记录解析的原始数据（调试级别）
                     if (log.isDebugEnabled()) {
-                        log.debug("解析原始数据：{}", HexUtil.encodeHexStr(bytes));
+                        log.debug("解析原始数据(CRC部分)：{}", ByteBufUtil.hexDump(crcDataBuf));
                     }
                     // 验证 CRC 校验和
-                    computedProcessor.validateCrc(protocolMessage, bytes, metadata);
+                    computedProcessor.validateCrc(protocolMessage, crcDataBuf, metadata);
+                }
+            } finally {
+                // 释放 CompositeByteBuf 及其持有的 slices
+                if (crcDataBuf.refCnt() > 0) {
+                    crcDataBuf.release();
                 }
             }
+
             // 记录解析成功和性能指标
             if (log.isDebugEnabled()) {
                 long duration = System.nanoTime() - startTime;
@@ -223,15 +250,10 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
      * @param instance      目标实例
      * @param fieldMetadata 字段元数据
      * @param msgMetadata   消息元数据
-     * @param outputStream  原始数据
      * @throws ProtocolException 解析异常
      */
     private void parseField(
-            ByteBuf byteBuf,
-            Object instance,
-            ProtocolFieldMetadata fieldMetadata,
-            ProtocolPayloadMetadata msgMetadata,
-            ByteArrayOutputStream outputStream)
+            ByteBuf byteBuf, Object instance, ProtocolFieldMetadata fieldMetadata, ProtocolPayloadMetadata msgMetadata)
             throws ProtocolException, IOException {
 
         // 计算是否启用加密
@@ -239,8 +261,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         // 获取合适的转换器（支持复合字段与加密控制）
         DataTypeConverter converter = getConverter(fieldMetadata, encryptionEnabled);
         // 此处设置复合转换器解析
-        protocolFieldProcessor.parseField(
-                byteBuf, instance, fieldMetadata, msgMetadata, converter, encryptionEnabled, outputStream);
+        protocolFieldProcessor.parseField(byteBuf, instance, fieldMetadata, msgMetadata, converter, encryptionEnabled);
     }
 
     /**

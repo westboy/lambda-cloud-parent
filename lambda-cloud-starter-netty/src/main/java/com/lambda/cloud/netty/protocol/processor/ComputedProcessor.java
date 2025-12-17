@@ -88,11 +88,11 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
      * </p>
      *
      * @param instance      Object
-     * @param raw           原始数据列表
+     * @param raw           原始数据（ByteBuf）
      * @param frameMetadata 消息元数据
      * @throws ProtocolException CRC 验证失败
      */
-    public void validateCrc(Object instance, byte[] raw, ProtocolPayloadMetadata frameMetadata)
+    public void validateCrc(Object instance, ByteBuf raw, ProtocolPayloadMetadata frameMetadata)
             throws ProtocolException {
 
         // 获取所有 CRC 字段（存储CRC值的字段）
@@ -121,7 +121,7 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
                             ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,
                             String.format(
                                     "原始报文%s CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
-                                    HexUtil.encodeHexStr(raw), crcField.getFieldName(), expectedCrc, calculatedCrc),
+                                    ByteBufUtil.hexDump(raw), crcField.getFieldName(), expectedCrc, calculatedCrc),
                             crcField.getFieldName());
                 }
 
@@ -139,13 +139,18 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
         }
     }
 
-    private long calculateCrcByParsedDataList(byte[] dataForCrc, ProtocolPayloadMetadata frameMetadata) {
+    private long calculateCrcByParsedDataList(ByteBuf dataForCrc, ProtocolPayloadMetadata frameMetadata) {
         try {
             // 使用 CRC 算法计算校验值
+            // 注意：ByteBuf 需要转为 byte[] 才能被 ChecksumFactory 使用，或者 ChecksumFactory 需要支持 ByteBuf
+            // 考虑到 ChecksumFactory 接口可能只支持 byte[]，这里可能还是需要一次拷贝
+            // 但如果在上层传入的是 slice，那么这里的拷贝也是基于 slice 的，比原来的 ByteArrayOutputStream 重建要好
+            // 如果 ChecksumFactory 能升级支持 ByteBuf 会更好
+            byte[] bytes = ByteBufUtil.getBytes(dataForCrc);
             long crcValue = ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName())
-                    .calculate(dataForCrc);
+                    .calculate(bytes);
 
-            log.debug("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.length, crcValue);
+            log.debug("CRC计算完成，数据长度: {} bytes, CRC值: {}", dataForCrc.readableBytes(), crcValue);
             return crcValue;
 
         } catch (Exception e) {
