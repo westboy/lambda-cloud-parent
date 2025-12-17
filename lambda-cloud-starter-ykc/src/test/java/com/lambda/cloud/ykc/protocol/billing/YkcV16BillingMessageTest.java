@@ -23,9 +23,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * 云快充1.7协议计费模型功能测试
- * <p>
- * 测试登录请求和登录响应消息的序列化和反序列化
- * </p>
  *
  * @author Generated
  */
@@ -39,13 +36,8 @@ public class YkcV16BillingMessageTest {
         ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
     }
 
-    /**
-     * 测试登录请求消息的创建和序列化
-     */
     @Test
     public void test0() {
-        log.info("开始测试登录请求消息的序列化");
-
         try {
             ProtocolEngine<YkcV16BasePayload> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
@@ -69,8 +61,8 @@ public class YkcV16BillingMessageTest {
             String hexString = HexUtil.encodeHexStr(serializedBytes, false);
             System.out.println(hexString);
         } catch (Exception e) {
-            log.error("登录请求序列化测试失败", e);
-            fail("登录请求序列化失败: " + e.getMessage());
+            log.error("计费模型响应序列化测试失败", e);
+            fail("计费模型响应序列化失败: " + e.getMessage());
         }
     }
 
@@ -82,12 +74,8 @@ public class YkcV16BillingMessageTest {
     private static final String TEST_DATA5 =
             "68A2077A003B2037F805A159DE3A41232ECFE8487CF088CF649D2BA64D35CF60F7B6A616FFC52037F805A159DE3A41232ECFE8487CF02E1CBDE1056671A88FF48AA5587144CC21BEF093AB37F25930D97271D43881B0AC0527A95C69C4CB6FE89264E12799EF176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6176C295A595D7193D095F1CE05665AB6F568907040EF2BBCE7D4F0AA1ACBEB8B3FBB18110EFC91A40DD03405BFBFED501FA803585DD09612E42FB4B0A609AC26F7FC1B38D486B8141A8560AE76CAB459A56B1C644A56F7E5C1F8FF3B4BB7CAE410736B960D5A3B99E738958AE83488349FF87AA618203A1FE73408F54CD113378587840255A4C0884F21F698B0BCC1D54733";
 
-    /**
-     * 测试登录请求消息的创建和序列化
-     */
     @Test
     public void test1() {
-        log.info("开始测试登录请求消息的序列化");
         SecretKey key = SecureUtil.generateKey("AES", "0123456789abcdef".getBytes(StandardCharsets.UTF_8));
 
         byte[] rawBytes = HexUtil.decodeHex(RAW);
@@ -128,8 +116,8 @@ public class YkcV16BillingMessageTest {
             String hexString = HexUtil.encodeHexStr(serializedBytes, false);
             System.out.println(hexString);
         } catch (Exception e) {
-            log.error("登录请求序列化测试失败", e);
-            fail("登录请求序列化失败: " + e.getMessage());
+            log.error("计费模型响应序列化测试失败", e);
+            fail("计费模型响应序列化失败: " + e.getMessage());
         }
     }
 }

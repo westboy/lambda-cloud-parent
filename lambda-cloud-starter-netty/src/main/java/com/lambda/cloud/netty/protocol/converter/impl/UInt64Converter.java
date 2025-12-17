@@ -4,6 +4,7 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
+import io.netty.buffer.ByteBuf;
 import java.math.BigInteger;
 
 /**
@@ -19,7 +20,9 @@ public class UInt64Converter implements DataTypeConverter {
     private static final BigInteger MIN_UINT64 = BigInteger.ZERO;
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
         if (data.length != 8) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
@@ -48,9 +51,10 @@ public class UInt64Converter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
-            return new byte[8];
+            buffer.writeBytes(new byte[8]);
+            return;
         }
 
         try {
@@ -89,9 +93,9 @@ public class UInt64Converter implements DataTypeConverter {
 
             byte[] be = toFixedLengthBytes(bigValue);
             if (fieldMetadata.isLittleEndian()) {
-                return reverse(be);
+                buffer.writeBytes(reverse(be));
             } else {
-                return be;
+                buffer.writeBytes(be);
             }
         } catch (ProtocolException e) {
             throw e;

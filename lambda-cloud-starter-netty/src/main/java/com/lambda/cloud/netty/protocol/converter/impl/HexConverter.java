@@ -6,6 +6,8 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.ValidationUtils;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -21,7 +23,10 @@ import java.math.RoundingMode;
 public class HexConverter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
+
         // 基本输入验证
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "十六进制");
 
@@ -79,7 +84,7 @@ public class HexConverter implements DataTypeConverter {
 
     @SuppressWarnings("all")
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         // 基本输入验证
         ValidationUtils.validateSerializeValue(value, fieldMetadata, "十六进制");
 
@@ -191,7 +196,8 @@ public class HexConverter implements DataTypeConverter {
 
             // 修正：先调整长度，再处理字节序（避免双重字节序处理）
             byte[] adjustedResult = adjustLength(result, fieldMetadata.getLength(), false); // 传false避免内部字节序处理
-            return convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
+            byte[] finalResult = convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
+            buffer.writeBytes(finalResult);
 
         } catch (Exception e) {
             throw new ProtocolException(
@@ -225,7 +231,12 @@ public class HexConverter implements DataTypeConverter {
             String hexString = trimmed.replaceAll("\\s+", "");
 
             byte[] data = HexUtil.decodeHex(hexString);
-            return parse(data, fieldMetadata);
+            ByteBuf buffer = Unpooled.wrappedBuffer(data);
+            try {
+                return parse(buffer, data.length, fieldMetadata);
+            } finally {
+                buffer.release();
+            }
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,

@@ -4,6 +4,8 @@ import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 /**
  * 数据类型转换器接口
@@ -18,22 +20,23 @@ public interface DataTypeConverter {
     /**
      * 解析字节数据为对象
      *
-     * @param data          字节数据
+     * @param buffer        字节缓冲区
+     * @param length        读取长度
      * @param fieldMetadata 字段元数据
      * @return 解析后的对象
      * @throws ProtocolException 解析异常
      */
-    Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
+    Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
 
     /**
      * 序列化对象为字节数据
      *
      * @param value         对象值
+     * @param buffer        字节缓冲区
      * @param fieldMetadata 字段元数据
-     * @return 字节数据
      * @throws ProtocolException 序列化异常
      */
-    byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
+    void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException;
 
     /**
      * 从字符串解析对象（用于默认值）
@@ -48,13 +51,13 @@ public interface DataTypeConverter {
     /**
      * 验证数据长度
      *
-     * @param data          字节数据
+     * @param length        数据长度
      * @param fieldMetadata 字段元数据
      */
-    default void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    default void validateLength(int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         Assert.isTrue(
-                data.length == fieldMetadata.getLength(),
-                "ASCII数据长度不匹配，期望: " + fieldMetadata.getLength() + ", 实际: " + data.length);
+                length == fieldMetadata.getLength(),
+                "ASCII数据长度不匹配，期望: " + fieldMetadata.getLength() + ", 实际: " + length);
     }
 
     /**
@@ -73,22 +76,32 @@ public interface DataTypeConverter {
      * 如果字段标记为加密，将先解密再解析
      * </p>
      *
-     * @param data             字节数据
-     * @param fieldMetadata    字段元数据
+     * @param buffer            字节缓冲区
+     * @param length            读取长度
+     * @param fieldMetadata     字段元数据
      * @param encryptionService 加密服务（可选）
      * @return 解析后的对象
      * @throws ProtocolException 解析异常
      */
     default Object parseWithEncryption(
-            byte[] data, ProtocolFieldMetadata fieldMetadata, EncryptionService encryptionService)
+            ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata, EncryptionService encryptionService)
             throws ProtocolException {
         if (fieldMetadata.isEncryptedField() && encryptionService != null) {
-            // 先解密再解析
+            // 先读取数据
+            byte[] data = new byte[length];
+            buffer.readBytes(data);
+            // 解密
             byte[] decryptedData = encryptionService.decrypt(data, fieldMetadata);
-            return parse(decryptedData, fieldMetadata);
+            // 包装解密后的数据
+            ByteBuf decryptedBuf = Unpooled.wrappedBuffer(decryptedData);
+            try {
+                return parse(decryptedBuf, decryptedData.length, fieldMetadata);
+            } finally {
+                decryptedBuf.release();
+            }
         } else {
             // 直接解析
-            return parse(data, fieldMetadata);
+            return parse(buffer, length, fieldMetadata);
         }
     }
 
@@ -98,22 +111,33 @@ public interface DataTypeConverter {
      * 如果字段标记为加密，将先序列化再加密
      * </p>
      *
-     * @param value            对象值
-     * @param fieldMetadata    字段元数据
+     * @param value             对象值
+     * @param buffer            字节缓冲区
+     * @param fieldMetadata     字段元数据
      * @param encryptionService 加密服务（可选）
-     * @return 字节数据
      * @throws ProtocolException 序列化异常
      */
-    default byte[] serializeWithEncryption(
-            Object value, ProtocolFieldMetadata fieldMetadata, EncryptionService encryptionService)
+    default void serializeWithEncryption(
+            Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata, EncryptionService encryptionService)
             throws ProtocolException {
-        // 先序列化
         if (fieldMetadata.isEncryptedField() && encryptionService != null) {
-            byte[] serializedData = serialize(value, fieldMetadata);
-            return encryptionService.encrypt(serializedData, fieldMetadata);
+            // 先序列化到临时缓冲区
+            ByteBuf tempBuf = Unpooled.buffer();
+            try {
+                serialize(value, tempBuf, fieldMetadata);
+                byte[] data = new byte[tempBuf.readableBytes()];
+                tempBuf.readBytes(data);
+
+                // 加密
+                byte[] encryptedData = encryptionService.encrypt(data, fieldMetadata);
+                // 写入加密后的数据
+                buffer.writeBytes(encryptedData);
+            } finally {
+                tempBuf.release();
+            }
         } else {
-            // 直接返回序列化结果
-            return serialize(value, fieldMetadata);
+            // 直接序列化
+            serialize(value, buffer, fieldMetadata);
         }
     }
 }

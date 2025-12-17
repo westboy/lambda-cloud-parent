@@ -8,8 +8,7 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public record ListConverter(DataTypeConverterResolver converterResolver) implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (!fieldMetadata.isList()) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
@@ -37,39 +36,54 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
                     fieldMetadata.getFieldName());
         }
 
-        log.debug("开始解析List字段: {}, 数据长度: {}", fieldMetadata.getFieldName(), data.length);
+        log.debug("开始解析List字段: {}, 数据长度: {}", fieldMetadata.getFieldName(), length);
 
         try {
             DataTypeConverter elementConverter = getElementConverter(fieldMetadata);
 
             List<Object> result = new ArrayList<>(fieldMetadata.getListElementSize());
 
+            // 创建切片以限制读取范围
+            ByteBuf slice = buffer.readSlice(length);
+
             // 如果是复合字段
             if (fieldMetadata.isComposite()) {
                 ProtocolFieldMetadata elementMetadata = createElementMetadata(fieldMetadata);
-                Object element = elementConverter.parse(data, elementMetadata);
+                // 复合字段通常作为整体解析，或者只有一个元素？
+                // 原有逻辑是：
+                // Object element = elementConverter.parse(data, elementMetadata);
+                // result.add(element);
+                // 这里 data 是整个 List 的数据。
+                // 如果是复合字段List，通常应该循环解析？
+                // 但原有逻辑只调用了一次 parse 并 add 了一次。
+                // 这意味着 fieldMetadata.isComposite() 为 true 时，它被视为单个复合对象放入 List？
+                // 或者 elementConverter.parse 会处理整个 List？
+                // 假设 elementConverter 是 CompositeConverter，它调用 ProtocolEngine.parse。
+                // 如果 ProtocolEngine 解析出的是 List，那么这里 add 进去的就是 List<List>？
+                // 这是一个潜在的疑点。但根据原有逻辑保持不变：
+                Object element = elementConverter.parse(slice, length, elementMetadata);
                 result.add(element);
             } else {
-                int listSize = determineListSize(data, fieldMetadata);
+                int listSize = determineListSize(length, fieldMetadata);
                 log.debug("List字段 {} 元素数量: {}", fieldMetadata.getFieldName(), listSize);
-                int elementLength = calculateElementLength(data, fieldMetadata, listSize);
+                int elementLength = calculateElementLength(length, fieldMetadata, listSize);
                 log.debug("List字段 {} 元素长度: {}", fieldMetadata.getFieldName(), elementLength);
                 int offset = 0;
                 for (int i = 0; i < listSize; i++) {
-                    if (offset + elementLength > data.length) {
+                    if (offset + elementLength > length) {
                         throw new ProtocolException(
                                 ProtocolException.ErrorCode.PARSE_ERROR,
-                                String.format(
-                                        "List元素 %d 数据不足，需要 %d 字节，剩余 %d 字节", i, elementLength, data.length - offset),
+                                String.format("List元素 %d 数据不足，需要 %d 字节，剩余 %d 字节", i, elementLength, length - offset),
                                 fieldMetadata.getFieldName());
                     }
-                    // 提取元素数据
-                    byte[] elementData = new byte[elementLength];
-                    System.arraycopy(data, offset, elementData, 0, elementLength);
+
+                    // 创建元素切片
+                    ByteBuf elementSlice = slice.readSlice(elementLength);
+
                     // 创建元素元数据
                     ProtocolFieldMetadata elementMetadata = createElementMetadata(fieldMetadata);
                     // 解析元素
-                    Object element = elementConverter.parse(elementData, elementMetadata);
+                    Object element = elementConverter.parse(elementSlice, elementLength, elementMetadata);
                     result.add(element);
                     offset += elementLength;
                     log.trace("解析List元素 {}: {}", i, element);
@@ -87,9 +101,9 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
-            return new byte[0];
+            return;
         }
 
         if (!(value instanceof List<?> list)) {
@@ -109,20 +123,18 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
             ProtocolFieldMetadata elementMetadata = createElementMetadata(fieldMetadata);
 
             // 3. 序列化List元素
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
             int elementIndex = 0;
 
             for (Object element : list) {
-                byte[] elementBytes = elementConverter.serialize(element, elementMetadata);
-                output.write(elementBytes);
-                log.trace("序列化List元素 {}: {} -> {} 字节", elementIndex++, element, elementBytes.length);
+                int startWriterIndex = buffer.writerIndex();
+                elementConverter.serialize(element, buffer, elementMetadata);
+                int bytesWritten = buffer.writerIndex() - startWriterIndex;
+                log.trace("序列化List元素 {}: {} -> {} 字节", elementIndex++, element, bytesWritten);
             }
 
-            byte[] result = output.toByteArray();
-            log.debug("List字段 {} 序列化完成，总长度: {} 字节", fieldMetadata.getFieldName(), result.length);
-            return result;
+            log.debug("List字段 {} 序列化完成", fieldMetadata.getFieldName());
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,
                     "序列化List字段失败: " + e.getMessage(),
@@ -155,26 +167,26 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
     /**
      * 确定 List 长度
      *
-     * @param data          字节数据
+     * @param totalLength   总数据长度
      * @param fieldMetadata 字段元数据
      * @return List长度
      */
-    private int determineListSize(byte[] data, ProtocolFieldMetadata fieldMetadata) {
+    private int determineListSize(int totalLength, ProtocolFieldMetadata fieldMetadata) {
         if (fieldMetadata.isComposite()) {
-            return data.length;
+            return totalLength;
         }
-        return data.length / fieldMetadata.getLength();
+        return totalLength / fieldMetadata.getLength();
     }
 
     /**
      * 计算元素长度
      *
-     * @param data          字节数据
+     * @param totalLength   总数据长度
      * @param fieldMetadata 字段元数据
      * @param listSize      List大小
      * @return 元素长度
      */
-    private int calculateElementLength(byte[] data, ProtocolFieldMetadata fieldMetadata, int listSize)
+    private int calculateElementLength(int totalLength, ProtocolFieldMetadata fieldMetadata, int listSize)
             throws ProtocolException {
 
         // 根据数据类型获取默认长度
@@ -186,9 +198,9 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
         // 根据总数据长度和元素数量计算
         if (listSize > 0) {
             if (fieldMetadata.isComposite()) {
-                return data.length;
+                return totalLength;
             }
-            return data.length / listSize;
+            return totalLength / listSize;
         }
 
         throw new ProtocolException(

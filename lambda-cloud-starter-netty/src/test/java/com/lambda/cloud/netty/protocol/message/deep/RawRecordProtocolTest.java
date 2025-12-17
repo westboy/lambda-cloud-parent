@@ -66,7 +66,6 @@ public class RawRecordProtocolTest {
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
             log.info("序列化报文： {}", HexUtil.encodeHexStr(serializedBytes, false));
-            //            }
 
         } catch (ProtocolException e) {
             log.error("协议解析异常: {}", e.getMessage(), e);

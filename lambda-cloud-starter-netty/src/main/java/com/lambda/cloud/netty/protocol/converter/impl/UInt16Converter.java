@@ -5,9 +5,9 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import com.lambda.cloud.netty.protocol.validation.impl.NumberRangeValidator;
-import com.lambda.cloud.netty.utils.ByteBufferUtils;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
+import io.netty.buffer.ByteBuf;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -18,20 +18,22 @@ public class UInt16Converter implements DataTypeConverter {
     private final NumberRangeValidator numberRangeValidator = new NumberRangeValidator(0, 65535);
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
 
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "UInt16");
         ValidationUtils.validateDataLength(data, 2, fieldMetadata, "UInt16");
 
         try {
-            ByteBuffer buffer = ByteBuffer.wrap(data);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(data);
             if (fieldMetadata.isLittleEndian()) {
-                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
             } else {
-                buffer.order(ByteOrder.BIG_ENDIAN);
+                byteBuffer.order(ByteOrder.BIG_ENDIAN);
             }
 
-            int value = buffer.getShort() & 0xFFFF; // 转换为无符号
+            int value = byteBuffer.getShort() & 0xFFFF; // 转换为无符号
 
             // 验证范围
             ValidationUtils.validateNumberRange(value, 0, 65535, fieldMetadata, "UInt16");
@@ -62,7 +64,7 @@ public class UInt16Converter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         ValidationUtils.validateSerializeValue(value, fieldMetadata, "UINT16");
 
         int intValue;
@@ -80,10 +82,11 @@ public class UInt16Converter implements DataTypeConverter {
 
         ValidationUtils.validateNumberRange(intValue, 0, 0xFFFF, fieldMetadata, "UINT16");
 
-        ByteBuffer buffer = ByteBufferUtils.createByteBuffer(2, fieldMetadata);
-        buffer.putShort((short) intValue);
-
-        return buffer.array();
+        if (fieldMetadata.isLittleEndian()) {
+            buffer.writeShortLE(intValue);
+        } else {
+            buffer.writeShort(intValue);
+        }
     }
 
     @Override

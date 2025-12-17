@@ -4,6 +4,8 @@ import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -49,17 +51,20 @@ public record EncryptedFieldConverter(
     }
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        if (data == null || data.length == 0) {
-            return nextConverter.parse(data, fieldMetadata);
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        if (length == 0) {
+            return nextConverter.parse(buffer, length, fieldMetadata);
         }
 
         try {
             // 检查是否为加密字段
             if (fieldMetadata.isEncryptedField()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("解析加密字段: {}, 加密数据长度: {}", fieldMetadata.getFieldName(), data.length);
+                    log.debug("解析加密字段: {}, 加密数据长度: {}", fieldMetadata.getFieldName(), length);
                 }
+
+                byte[] data = new byte[length];
+                buffer.readBytes(data);
 
                 // 先解密
                 byte[] decryptedData = encryptionService.decrypt(data, fieldMetadata);
@@ -69,10 +74,15 @@ public record EncryptedFieldConverter(
                 }
 
                 // 再解析
-                return nextConverter.parse(decryptedData, fieldMetadata);
+                ByteBuf decryptedBuf = Unpooled.wrappedBuffer(decryptedData);
+                try {
+                    return nextConverter.parse(decryptedBuf, decryptedData.length, fieldMetadata);
+                } finally {
+                    decryptedBuf.release();
+                }
             } else {
                 // 非加密字段，直接解析
-                return nextConverter.parse(data, fieldMetadata);
+                return nextConverter.parse(buffer, length, fieldMetadata);
             }
         } catch (Exception e) {
             throw new ProtocolException(
@@ -84,32 +94,35 @@ public record EncryptedFieldConverter(
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
-            return nextConverter.serialize(null, fieldMetadata);
+            nextConverter.serialize(null, buffer, fieldMetadata);
+            return;
         }
 
         try {
-            // 先序列化
-            byte[] serializedData = nextConverter.serialize(value, fieldMetadata);
-
             // 检查是否为加密字段
             if (fieldMetadata.isEncryptedField()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("序列化加密字段: {}, 原始数据长度: {}", fieldMetadata.getFieldName(), serializedData.length);
+                // 先序列化到临时缓冲区
+                ByteBuf tempBuf = Unpooled.buffer();
+                try {
+                    nextConverter.serialize(value, tempBuf, fieldMetadata);
+                    byte[] serializedData = new byte[tempBuf.readableBytes()];
+                    tempBuf.readBytes(serializedData);
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("序列化加密字段: {}, 原始数据长度: {}", fieldMetadata.getFieldName(), serializedData.length);
+                    }
+
+                    // 加密
+                    byte[] encryptedData = encryptionService.encrypt(serializedData, fieldMetadata);
+                    buffer.writeBytes(encryptedData);
+                } finally {
+                    tempBuf.release();
                 }
-
-                // 再加密
-                byte[] encryptedData = encryptionService.encrypt(serializedData, fieldMetadata);
-
-                if (log.isDebugEnabled()) {
-                    log.debug("加密完成: {}, 加密后长度: {}", fieldMetadata.getFieldName(), encryptedData.length);
-                }
-
-                return encryptedData;
             } else {
-                // 非加密字段，直接返回序列化结果
-                return serializedData;
+                // 非加密字段，直接序列化
+                nextConverter.serialize(value, buffer, fieldMetadata);
             }
         } catch (Exception e) {
             throw new ProtocolException(

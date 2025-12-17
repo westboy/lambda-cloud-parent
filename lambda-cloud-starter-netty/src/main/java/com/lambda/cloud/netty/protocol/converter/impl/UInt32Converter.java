@@ -3,9 +3,9 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
-import com.lambda.cloud.netty.utils.ByteBufferUtils;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
+import io.netty.buffer.ByteBuf;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -20,18 +20,20 @@ import java.nio.ByteOrder;
 public class UInt32Converter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
         if (data.length != 4) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
                     "UINT32数据长度必须为4字节，实际: " + data.length,
                     fieldMetadata.getFieldName());
         }
-        ByteBuffer buffer = ByteBuffer.wrap(data);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(data);
         try {
-            buffer.order(fieldMetadata.isLittleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
+            byteBuffer.order(fieldMetadata.isLittleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
 
-            int value = buffer.getInt();
+            int value = byteBuffer.getInt();
             long unsignedValue = Integer.toUnsignedLong(value);
 
             // 根据字段类型返回不同的对象
@@ -53,12 +55,12 @@ public class UInt32Converter implements DataTypeConverter {
                     fieldMetadata.getFieldName(),
                     e);
         } finally {
-            buffer.clear();
+            byteBuffer.clear();
         }
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         ValidationUtils.validateSerializeValue(value, fieldMetadata, "UINT32");
 
         try {
@@ -78,10 +80,11 @@ public class UInt32Converter implements DataTypeConverter {
             // 检查范围
             ValidationUtils.validateNumberRange(longValue, 0L, 0xFFFFFFFFL, fieldMetadata, "UINT32");
 
-            ByteBuffer buffer = ByteBufferUtils.createByteBuffer(4, fieldMetadata);
-            buffer.putInt((int) longValue);
-
-            return buffer.array();
+            if (fieldMetadata.isLittleEndian()) {
+                buffer.writeIntLE((int) longValue);
+            } else {
+                buffer.writeInt((int) longValue);
+            }
 
         } catch (ProtocolException e) {
             throw e;

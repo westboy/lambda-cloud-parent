@@ -3,6 +3,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
+import io.netty.buffer.ByteBuf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -11,7 +12,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class BitConverter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
         try {
             StringBuilder result = new StringBuilder();
 
@@ -34,7 +37,7 @@ public class BitConverter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         try {
             String bitString;
             switch (value) {
@@ -83,7 +86,7 @@ public class BitConverter implements DataTypeConverter {
                 result[i] = (byte) byteValue;
             }
 
-            return result;
+            buffer.writeBytes(result);
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,

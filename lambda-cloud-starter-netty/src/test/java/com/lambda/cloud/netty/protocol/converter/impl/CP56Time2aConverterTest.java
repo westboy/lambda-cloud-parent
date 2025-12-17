@@ -12,38 +12,45 @@ class CP56Time2aConverterTest {
     void parse() throws ProtocolException {
         String s = "BEB23402D60B19";
         CP56Time2aConverter converter = new CP56Time2aConverter();
-        Object parse = converter.parse(
-                HexUtil.decodeHex(s),
-                new ProtocolFieldMetadata(
-                        new FieldAccessor() {
-                            @Override
-                            public void setValue(Object target, Object value) {}
+        byte[] bytes = HexUtil.decodeHex(s);
+        io.netty.buffer.ByteBuf buffer = io.netty.buffer.Unpooled.wrappedBuffer(bytes);
+        try {
+            Object parse = converter.parse(
+                    buffer,
+                    bytes.length,
+                    new ProtocolFieldMetadata(
+                            new FieldAccessor() {
+                                @Override
+                                public void setValue(Object target, Object value) {}
 
-                            @Override
-                            public Object getValue(Object target) {
-                                return null;
-                            }
+                                @Override
+                                public Object getValue(Object target) {
+                                    return null;
+                                }
 
-                            @Override
-                            public String getFieldName() {
-                                return "";
-                            }
+                                @Override
+                                public String getFieldName() {
+                                    return "";
+                                }
 
-                            @Override
-                            public Class<?> getFieldType() {
-                                return null;
-                            }
+                                @Override
+                                public Class<?> getFieldType() {
+                                    return null;
+                                }
 
-                            @Override
-                            public void setFieldName(String fieldName) {}
+                                @Override
+                                public void setFieldName(String fieldName) {}
 
-                            @Override
-                            public void setFieldType(Class<?> fieldType) {}
-                        },
-                        null,
-                        null,
-                        null));
+                                @Override
+                                public void setFieldType(Class<?> fieldType) {}
+                            },
+                            null,
+                            null,
+                            null));
 
-        System.out.println(parse);
+            System.out.println(parse);
+        } finally {
+            buffer.release();
+        }
     }
 }

@@ -381,8 +381,7 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
             throws ProtocolException {
         try {
             DataTypeConverter converter = converterResolver.getConverter(fieldMetadata.getDataType());
-            byte[] serializedData = converter.serialize(fieldValue, fieldMetadata);
-            byteBuf.writeBytes(serializedData);
+            converter.serialize(fieldValue, byteBuf, fieldMetadata);
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,

@@ -5,6 +5,7 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
+import io.netty.buffer.ByteBuf;
 
 /**
  * 8位无符号整数转换器
@@ -12,7 +13,10 @@ import com.lambda.cloud.netty.utils.ValidationUtils;
 public class UInt8Converter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
+
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "UINT8");
         ValidationUtils.validateDataLength(data, 1, fieldMetadata, "UINT8");
 
@@ -30,7 +34,7 @@ public class UInt8Converter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         ValidationUtils.validateSerializeValue(value, fieldMetadata, "UINT8");
         int intValue;
 
@@ -47,7 +51,7 @@ public class UInt8Converter implements DataTypeConverter {
 
         ValidationUtils.validateNumberRange(intValue, 0, 0xFF, fieldMetadata, "UINT8");
 
-        return new byte[] {(byte) intValue};
+        buffer.writeByte((byte) intValue);
     }
 
     @Override

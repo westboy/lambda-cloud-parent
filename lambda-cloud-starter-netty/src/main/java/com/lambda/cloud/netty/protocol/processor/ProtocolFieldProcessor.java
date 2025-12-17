@@ -13,7 +13,6 @@ import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import io.netty.buffer.ByteBuf;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
@@ -83,8 +82,8 @@ public class ProtocolFieldProcessor {
             setFieldValue(instance, fieldMetadata, value);
         } else {
             // 普通字段或长度固定复合字段
-            byte[] fieldData = readFieldData(byteBuf, fieldMetadata);
-            Object value = convertFieldData(fieldData, fieldMetadata, converter, isEncryptionEnabled);
+            Object value =
+                    convertFieldData(byteBuf, fieldMetadata.getLength(), fieldMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
         }
     }
@@ -117,8 +116,7 @@ public class ProtocolFieldProcessor {
         }
 
         // 转换并写入数据
-        byte[] fieldData = convertToBytes(value, fieldMetadata, converter, isEncryptionEnabled);
-        writeFieldData(byteBuf, fieldData);
+        serializeValue(value, byteBuf, fieldMetadata, converter, isEncryptionEnabled);
     }
 
     /**
@@ -152,29 +150,18 @@ public class ProtocolFieldProcessor {
     }
 
     /**
-     * 读取字段数据
-     *
-     * @param byteBuf       字节缓冲区
-     * @param fieldMetadata 字段元数据
-     * @return 字段数据
-     */
-    private byte[] readFieldData(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
-        byte[] fieldData = new byte[fieldMetadata.getLength()];
-        byteBuf.readBytes(fieldData);
-        return fieldData;
-    }
-
-    /**
      * 转换字段数据
      *
-     * @param fieldData     字段数据
+     * @param byteBuf       字节缓冲区
+     * @param length        读取长度
      * @param fieldMetadata 字段元数据
      * @param converter     转换器
      * @return 转换后的值
      * @throws ProtocolException 转换异常
      */
     private Object convertFieldData(
-            byte[] fieldData,
+            ByteBuf byteBuf,
+            int length,
             ProtocolFieldMetadata fieldMetadata,
             DataTypeConverter converter,
             boolean isEncryptionEnabled)
@@ -183,11 +170,11 @@ public class ProtocolFieldProcessor {
             // 检查是否需要解密（需要同时满足：字段标记为加密 + 已启用加密控制 + 存在加密服务）
             if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("解密字段数据: {}, 原始长度: {}", fieldMetadata.getFieldName(), fieldData.length);
+                    log.debug("解密字段数据: {}, 长度: {}", fieldMetadata.getFieldName(), length);
                 }
-                return converter.parseWithEncryption(fieldData, fieldMetadata, encryptionService);
+                return converter.parseWithEncryption(byteBuf, length, fieldMetadata, encryptionService);
             } else {
-                return converter.parse(fieldData, fieldMetadata);
+                return converter.parse(byteBuf, length, fieldMetadata);
             }
         } catch (Exception e) {
             throw new ProtocolException(
@@ -260,23 +247,27 @@ public class ProtocolFieldProcessor {
     }
 
     /**
-     * 转换为字节数组
+     * 序列化字段值
      *
      * @param value         字段值
+     * @param buffer        字节缓冲区
      * @param fieldMetadata 字段元数据
      * @param converter     转换器
-     * @return 字节数组
      * @throws ProtocolException 转换异常
      */
-    private byte[] convertToBytes(
-            Object value, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter, boolean isEncryptionEnabled)
+    private void serializeValue(
+            Object value,
+            ByteBuf buffer,
+            ProtocolFieldMetadata fieldMetadata,
+            DataTypeConverter converter,
+            boolean isEncryptionEnabled)
             throws ProtocolException {
 
         try {
             if (isEncryptionEnabled && fieldMetadata.isEncryptedField() && encryptionService != null) {
-                return converter.serializeWithEncryption(value, fieldMetadata, encryptionService);
+                converter.serializeWithEncryption(value, buffer, fieldMetadata, encryptionService);
             } else {
-                return converter.serialize(value, fieldMetadata);
+                converter.serialize(value, buffer, fieldMetadata);
             }
         } catch (Exception e) {
             throw new ProtocolException(
@@ -285,16 +276,6 @@ public class ProtocolFieldProcessor {
                     fieldMetadata.getFieldName(),
                     e);
         }
-    }
-
-    /**
-     * 写入字段数据
-     *
-     * @param byteBuf   字节缓冲区
-     * @param fieldData 字段数据
-     */
-    private void writeFieldData(ByteBuf byteBuf, byte[] fieldData) {
-        byteBuf.writeBytes(fieldData);
     }
 
     /**
@@ -361,11 +342,7 @@ public class ProtocolFieldProcessor {
                         "动态解析复合字段失败: " + fieldMetadata.getFieldName() + ", 原因: " + "计算字段长度异常，使用可读字节长度:"
                                 + byteBuf.readableBytes());
                 // 读取实际长度的数据
-                byte[] fieldData = new byte[remaining];
-                byteBuf.readBytes(fieldData);
-                // 移除 outputStream 写入
-                // fillParsedRawData(fieldMetadata, frameMetadata, outputStream, fieldData);
-                return converter.parseWithEncryption(fieldData, fieldMetadata, encryptionService);
+                return converter.parseWithEncryption(byteBuf, remaining, fieldMetadata, encryptionService);
             } else {
                 // 获取复合字段的目标类型
                 int actualLength = calculateCompositeFieldLength(targetType);
@@ -373,9 +350,7 @@ public class ProtocolFieldProcessor {
                     actualLength = actualLength * fieldMetadata.getListElementSize();
                 }
                 // 读取实际长度的数据
-                byte[] fieldData = new byte[actualLength];
-                byteBuf.readBytes(fieldData);
-                return converter.parse(fieldData, fieldMetadata);
+                return converter.parse(byteBuf, actualLength, fieldMetadata);
             }
 
         } catch (Exception e) {
@@ -455,13 +430,8 @@ public class ProtocolFieldProcessor {
             int totalBytes = calculateListFieldLength(byteBuf, fieldMetadata);
             log.info("计算得到的总字节数: {}", totalBytes);
 
-            // 读取 List 字段的所有数据
-            byte[] listData = new byte[totalBytes];
-            byteBuf.readBytes(listData);
-            log.info("读取的字节数据: {}", Arrays.toString(listData));
-
             // 使用 ListConverter 解析数据
-            Object result = convertFieldData(listData, fieldMetadata, converter, isEncryptionEnabled);
+            Object result = convertFieldData(byteBuf, totalBytes, fieldMetadata, converter, isEncryptionEnabled);
             log.info("解析结果类型: {}, 值: {}", result != null ? result.getClass().getName() : "null", result);
             return result;
         }

@@ -3,6 +3,7 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
+import io.netty.buffer.ByteBuf;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -27,8 +28,11 @@ public class CP56Time2aConverter implements DataTypeConverter {
     private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        validateLength(data, fieldMetadata);
+    public Object parse(io.netty.buffer.ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata)
+            throws ProtocolException {
+        validateLength(length, fieldMetadata);
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
 
         try {
             LocalDateTime dateTime = getLocalDateTime(data, fieldMetadata);
@@ -106,8 +110,9 @@ public class CP56Time2aConverter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        return serialize(value, fieldMetadata, false, false);
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] result = serialize(value, fieldMetadata, false, false);
+        buffer.writeBytes(result);
     }
 
     /**
@@ -187,11 +192,11 @@ public class CP56Time2aConverter implements DataTypeConverter {
     }
 
     @Override
-    public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        if (data.length != EXPECTED_LENGTH) {
+    public void validateLength(int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        if (length != EXPECTED_LENGTH) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
-                    "CP56TIME2A数据长度不匹配，期望: " + EXPECTED_LENGTH + ", 实际: " + data.length,
+                    "CP56TIME2A数据长度不匹配，期望: " + EXPECTED_LENGTH + ", 实际: " + length,
                     fieldMetadata.getFieldName());
         }
     }

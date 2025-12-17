@@ -5,8 +5,6 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -29,8 +27,8 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
      * @throws ProtocolException 解析异常
      */
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        if (data == null || data.length == 0) {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        if (length == 0) {
             return null;
         }
 
@@ -47,11 +45,11 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
             // 验证目标类型
             validateTargetType(targetType, fieldMetadata);
 
-            // 创建ByteBuf用于解析
-            ByteBuf byteBuf = Unpooled.wrappedBuffer(data);
+            // 创建切片以限制读取范围
+            ByteBuf slice = buffer.readSlice(length);
 
             // 使用协议引擎递归解析复合对象
-            Object compositeObject = protocolEngine.parse(byteBuf, targetType);
+            Object compositeObject = protocolEngine.parse(slice, targetType);
 
             log.debug("成功解析复合字段: {}, 类型: {}", fieldMetadata.getFieldName(), targetType.getSimpleName());
 
@@ -70,29 +68,23 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
      * 序列化复合对象为字节数据
      *
      * @param value         复合对象
+     * @param buffer        字节缓冲区
      * @param fieldMetadata 字段元数据
-     * @return 字节数据
      * @throws ProtocolException 序列化异常
      */
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
-            return new byte[0];
+            return;
         }
-        // 创建ByteBuf用于序列化
-        ByteBuf byteBuf = Unpooled.buffer();
         try {
             // 验证对象类型
             validateObjectType(value, fieldMetadata);
 
             // 使用协议引擎递归序列化复合对象
-            protocolEngine.serialize(value, byteBuf);
+            protocolEngine.serialize(value, buffer);
 
-            // 提取字节数据
-            byte[] result = ByteBufUtil.getBytes(byteBuf);
-            log.debug("成功序列化复合字段: {}, 长度: {}", fieldMetadata.getFieldName(), result.length);
-
-            return result;
+            log.debug("成功序列化复合字段: {}", fieldMetadata.getFieldName());
 
         } catch (Exception e) {
             throw new ProtocolException(
@@ -100,8 +92,6 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
                     "复合字段序列化失败: " + fieldMetadata.getFieldName() + ", 原因: " + e.getMessage(),
                     fieldMetadata.getFieldName(),
                     e);
-        } finally {
-            byteBuf.release();
         }
     }
 
@@ -128,7 +118,6 @@ public record CompositeConverter(ProtocolEngine<Object> protocolEngine) implemen
      * @param data          字节数据
      * @param fieldMetadata 字段元数据
      */
-    @Override
     public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) {
         if (data == null) {
             return;

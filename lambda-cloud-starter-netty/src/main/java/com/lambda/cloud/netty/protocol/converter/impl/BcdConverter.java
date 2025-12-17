@@ -5,6 +5,7 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
+import io.netty.buffer.ByteBuf;
 
 /**
  * BCD数据转换器
@@ -12,7 +13,9 @@ import com.lambda.cloud.netty.utils.ValidationUtils;
 public class BcdConverter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
         // 验证输入参数
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "BCD");
 
@@ -65,7 +68,7 @@ public class BcdConverter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         try {
             String bcdString = value.toString();
 
@@ -103,7 +106,10 @@ public class BcdConverter implements DataTypeConverter {
                 result = adjusted;
             }
 
-            return result;
+            buffer.writeBytes(result);
+
+        } catch (ProtocolException e) {
+            throw e;
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,

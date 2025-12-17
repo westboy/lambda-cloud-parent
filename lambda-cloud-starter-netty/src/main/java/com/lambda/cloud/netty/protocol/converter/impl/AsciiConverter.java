@@ -5,6 +5,7 @@ import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.ValidationUtils;
+import io.netty.buffer.ByteBuf;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -20,7 +21,10 @@ import java.util.Arrays;
 public class AsciiConverter implements DataTypeConverter {
 
     @Override
-    public Object parse(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        byte[] data = new byte[length];
+        buffer.readBytes(data);
+
         if (ValidationUtils.isAllZero(data)) {
             return "";
         }
@@ -29,7 +33,7 @@ public class AsciiConverter implements DataTypeConverter {
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "ASCII");
 
         // 验证数据长度
-        validateLength(data, fieldMetadata);
+        validateLength(length, fieldMetadata);
 
         try {
             Charset charset = getCharset(fieldMetadata);
@@ -52,7 +56,7 @@ public class AsciiConverter implements DataTypeConverter {
     }
 
     @Override
-    public byte[] serialize(Object value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null) {
             value = "";
         }
@@ -63,7 +67,8 @@ public class AsciiConverter implements DataTypeConverter {
             byte[] data = stringValue.getBytes(charset);
 
             // 调整长度
-            return adjustLength(data, fieldMetadata.getLength(), fieldMetadata);
+            byte[] result = adjustLength(data, fieldMetadata.getLength(), fieldMetadata);
+            buffer.writeBytes(result);
 
         } catch (Exception e) {
             throw new ProtocolException(
@@ -85,16 +90,16 @@ public class AsciiConverter implements DataTypeConverter {
     /**
      * 验证数据长度
      *
-     * @param data          数据
+     * @param length        数据长度
      * @param fieldMetadata 字段元数据
      * @throws ProtocolException 验证失败时抛出
      */
-    public void validateLength(byte[] data, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    public void validateLength(int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         int expectedLength = fieldMetadata.getLength();
-        if (expectedLength != -1 && data.length != expectedLength) {
+        if (expectedLength != -1 && length != expectedLength) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
-                    "ASCII数据长度不匹配，期望: " + expectedLength + ", 实际: " + data.length,
+                    "ASCII数据长度不匹配，期望: " + expectedLength + ", 实际: " + length,
                     fieldMetadata.getFieldName());
         }
     }
