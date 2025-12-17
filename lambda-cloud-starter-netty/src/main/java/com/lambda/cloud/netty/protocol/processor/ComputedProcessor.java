@@ -17,8 +17,11 @@ import com.lambda.cloud.netty.protocol.model.SerializedData;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -389,5 +392,131 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
                     fieldMetadata.getFieldName(),
                     e);
         }
+    }
+
+    /**
+     * 重置所有CRC和Length字段为0（用于序列化前占位）
+     *
+     * @param message       消息实例
+     * @param frameMetadata 消息元数据
+     * @throws ProtocolException 重置失败
+     */
+    public void resetCrcAndLengthFields(Object message, ProtocolPayloadMetadata frameMetadata)
+            throws ProtocolException {
+        List<ProtocolFieldMetadata> crcAndLengthFields = getCrcAndLengthFields(frameMetadata);
+        for (ProtocolFieldMetadata field : crcAndLengthFields) {
+            setValueToInstance(message, field, 0);
+        }
+    }
+
+    /**
+     * 在序列化后填充CRC和长度字段
+     *
+     * @param buffer          完整消息缓冲区
+     * @param computedRanges  参与CRC计算的数据范围列表 [start, length]
+     * @param crcFieldOffsets CRC/Length字段在缓冲区中的偏移量映射
+     * @param frameMetadata   消息元数据
+     * @param instance        消息实例（用于同步更新字段值，可选）
+     * @throws ProtocolException 填充失败
+     */
+    public void fillCrcAndLength(
+            ByteBuf buffer,
+            List<int[]> computedRanges,
+            Map<ProtocolFieldMetadata, Integer> crcFieldOffsets,
+            ProtocolPayloadMetadata frameMetadata,
+            Object instance)
+            throws ProtocolException {
+
+        if (crcFieldOffsets.isEmpty()) {
+            return;
+        }
+
+        try {
+            // 1. 计算CRC和总长度
+            CompositeByteBuf dataForCrc = Unpooled.compositeBuffer();
+            long totalLength = 0;
+            for (int[] range : computedRanges) {
+                int start = range[0];
+                int length = range[1];
+                if (length > 0) {
+                    // slice() 返回视图，不发生内存拷贝
+                    // retain() 确保引用计数，尽管在这里是在同一个线程栈中使用，Unpooled.compositeBuffer 不会释放底层 slice 除非 release
+                    dataForCrc.addComponent(true, buffer.slice(start, length).retain());
+                    totalLength += length;
+                }
+            }
+
+            long crcValue = 0;
+            try {
+                if (dataForCrc.readableBytes() > 0) {
+                    crcValue = calculateCrcByParsedDataList(dataForCrc, frameMetadata);
+                }
+            } finally {
+                // 释放 CompositeByteBuf 及其持有的 slices 引用
+                dataForCrc.release();
+            }
+
+            // 2. 填充 CRC 和 Length 字段
+            for (Map.Entry<ProtocolFieldMetadata, Integer> entry : crcFieldOffsets.entrySet()) {
+                ProtocolFieldMetadata field = entry.getKey();
+                int offset = entry.getValue();
+
+                if (field.isCrcField()) {
+                    setBufferValue(buffer, offset, field, crcValue);
+                    if (instance != null) {
+                        setValueToInstance(instance, field, crcValue);
+                        log.debug("序列化后更新CRC字段: {} = {}", field.getFieldName(), crcValue);
+                    }
+                }
+                if (field.isLengthFiled()) {
+                    setBufferValue(buffer, offset, field, totalLength);
+                    if (instance != null) {
+                        setValueToInstance(instance, field, totalLength);
+                        log.debug("序列化后更新Length字段: {} = {}", field.getFieldName(), totalLength);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.CRC_ERROR, "填充CRC/Length字段失败: " + e.getMessage(), "CRC处理", e);
+        }
+    }
+
+    /**
+     * 直接在ByteBuf的指定位置设置字段值
+     *
+     * @param buffer 缓冲区
+     * @param offset 写入偏移量
+     * @param field  字段元数据
+     * @param value  数值（long）
+     */
+    private void setBufferValue(ByteBuf buffer, int offset, ProtocolFieldMetadata field, long value)
+            throws ProtocolException {
+        Object valObj = convertLongToFieldType(value, field);
+        int oldWriterIndex = buffer.writerIndex();
+        buffer.writerIndex(offset);
+        try {
+            serializeFieldValue(buffer, valObj, field);
+        } finally {
+            buffer.writerIndex(oldWriterIndex);
+        }
+    }
+
+    /**
+     * 将long值转换为字段对应的类型
+     */
+    private Object convertLongToFieldType(long value, ProtocolFieldMetadata field) {
+        Class<?> type = field.getFieldType();
+        if (type == String.class) {
+            return String.format("%0" + (field.getLength() * 2) + "X", value);
+        } else if (type == Integer.class || type == int.class) {
+            return (int) value;
+        } else if (type == Short.class || type == short.class) {
+            return (short) value;
+        } else if (type == Byte.class || type == byte.class) {
+            return (byte) value;
+        }
+        return value; // Long
     }
 }

@@ -183,13 +183,34 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             // 记录序列化开始
             logProtocolOperation("序列化", metadata);
 
-            // 先计算并设置CRC校验和（在序列化前）
-            computedProcessor.calculateAndSetCrc(message, metadata);
+            // 1. 重置CRC和Length字段（占位）
+            computedProcessor.resetCrcAndLengthFields(message, metadata);
+
+            // 记录参与CRC计算的数据范围和CRC字段位置
+            List<int[]> computedRanges = new ArrayList<>();
+            Map<ProtocolFieldMetadata, Integer> crcFieldOffsets = new HashMap<>();
 
             // 序列化各个字段
             for (ProtocolFieldMetadata fieldMetadata : metadata.fields()) {
+                int start = byteBuf.writerIndex();
+
+                // 记录CRC/Length字段位置
+                if (fieldMetadata.isCrcField() || fieldMetadata.isLengthFiled()) {
+                    crcFieldOffsets.put(fieldMetadata, start);
+                }
+
                 serializeField(message, byteBuf, fieldMetadata, metadata);
+
+                int end = byteBuf.writerIndex();
+
+                // 记录参与CRC计算的数据范围
+                if (fieldMetadata.isComputed()) {
+                    computedRanges.add(new int[] {start, end - start});
+                }
             }
+
+            // 2. 填充CRC和Length字段
+            computedProcessor.fillCrcAndLength(byteBuf, computedRanges, crcFieldOffsets, metadata, message);
 
             // 记录序列化成功和性能指标
             if (log.isDebugEnabled()) {
