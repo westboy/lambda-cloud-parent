@@ -6,6 +6,8 @@ import static com.lambda.cloud.mybatis.utils.SQLUtils.toIn;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
+import com.lambda.cloud.mybatis.purview.config.PurviewConfigHolder;
+import com.lambda.cloud.mybatis.purview.config.PurviewConfig;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
 import java.lang.reflect.Method;
@@ -26,10 +28,10 @@ import org.apache.ibatis.binding.MapperMethod.ParamMap;
  **/
 @Slf4j
 public final class PurviewUtils {
-    private static final String JF_PERMISSIONS = "'jf-permissions(\\|(\\d+)(,\\d+)*+)?(\\|([><])?=?-?\\d*)?'";
-    private static final Pattern PATTERN = Pattern.compile(JF_PERMISSIONS);
+    private static final String PERMISSIONS = "'lambda-permissions(\\|(\\d+)(,\\d+)*+)?(\\|([><])?=?-?\\d*)?'";
+    private static final Pattern PATTERN = Pattern.compile(PERMISSIONS);
     private static final Pattern CLEAR_PATTERN =
-            Pattern.compile("\\s*\\S*\\s*(?i)(IN)\\s*\\(\\s*" + JF_PERMISSIONS + "\\s*\\)");
+            Pattern.compile("\\s*\\S*\\s*(?i)(IN)\\s*\\(\\s*" + PERMISSIONS + "\\s*\\)");
     /**
      * 匹配replace模式下，level的设置，可以匹配数字和带运算符的数字
      */
@@ -43,10 +45,16 @@ public final class PurviewUtils {
     /**
      * 判断当前用户是否是数据的拥有者
      *
-     * @param operator
-     * @return
      */
     public static boolean isOwner(LoginUser operator) {
+        if (operator == null || StringUtils.isBlank(operator.getName())) {
+            return false;
+        }
+        PurviewConfig config = PurviewConfigHolder.getInstance();
+        List<String> superAdmins = config.getSuperAdminUsernames();
+        if (CollectionUtils.isNotEmpty(superAdmins)) {
+            return superAdmins.contains(operator.getName());
+        }
         return false;
     }
 
@@ -55,7 +63,6 @@ public final class PurviewUtils {
      * tid可能是用户名、用户角色、用户组织机构ID
      * 如果当前用户拥有开发人员、后台管理员、租户管理员返回全量数据
      *
-     * @param operator
      * @return java.util.Set<java.lang.String>
      */
     public static Set<String> getPurviewIds(LoginUser operator) {
@@ -63,10 +70,12 @@ public final class PurviewUtils {
             return Collections.emptySet();
         }
         Set<String> ids = new HashSet<>();
-        ids.add("LoginUserid");
-        String orgid = "";
-        if (StringUtils.isNotBlank(orgid)) {
-            ids.add(orgid);
+        if (StringUtils.isNotBlank(operator.getName())) {
+            ids.add(operator.getName());
+        }
+        String orgId = operator.getOrgId();
+        if (StringUtils.isNotBlank(orgId)) {
+            ids.add(orgId);
         }
         return ids;
     }
@@ -153,12 +162,12 @@ public final class PurviewUtils {
         if (!matcher.find()) {
             return null;
         }
-        String purveiewStr = matcher.group();
-        if (StringUtils.isBlank(purveiewStr)) {
+        String group = matcher.group();
+        if (StringUtils.isBlank(group)) {
             return null;
         }
         // 提取和组装数据权限对象
-        String[] tokens = purveiewStr.split("'")[1].split("\\|");
+        String[] tokens = group.split("'")[1].split("\\|");
         DynamicPurview purview = new DynamicPurview();
         purview.setReplace(true);
         purview.setType(new int[] {0});
@@ -231,7 +240,6 @@ public final class PurviewUtils {
     /**
      * 为数据拥有者修改SQL将xxx in ('PURVermissions') 替换为 1 = 1；
      *
-     * @param source
      * @return java.lang.String
      */
     public static String modifySqlForOwner(String source) {
@@ -241,14 +249,14 @@ public final class PurviewUtils {
 
     @Nonnull
     public static String buildSQL01(@Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
+        PurviewConfig properties = PurviewConfigHolder.getInstance();
         int[] types = purview.getType();
         Set<String> ids = PurviewUtils.getPurviewIds(operator);
-        StringBuilder sql = new StringBuilder("SELECT DISTINCT id FROM PURVIEWS");
-        sql.append(SPACE).append("WHERE TID").append(toIn(ids));
-        sql.append(SPACE).append("AND type2").append(toIn(types));
+        StringBuilder sql = new StringBuilder("SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName());
+        sql.append(SPACE).append("WHERE ").append(properties.getPurviewTidColumn()).append(toIn(ids));
+        sql.append(SPACE).append("AND ").append(properties.getPurviewTypeColumn()).append(toIn(types));
         if (purview.getLevel() > -1) {
-            sql.append(SPACE)
-                    .append("AND rank2 ")
+            sql.append(SPACE).append("AND ").append(properties.getPurviewRankColumn()).append(" ")
                     .append(purview.getLevelExp().getComparison())
                     .append(StringPool.SPACE)
                     .append(getLevel(purview));
@@ -263,44 +271,45 @@ public final class PurviewUtils {
      */
     @Nonnull
     public static String buildSQL02(@Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
+        PurviewConfig properties = PurviewConfigHolder.getInstance();
         int[] types = purview.getType();
         int level = getLevel(purview);
         String condition = purview.getCondition();
         StringBuilder builder = new StringBuilder();
-        builder.append("PURV.TID").append(toIn(getPurviewIds(operator)));
-        builder.append(" AND PURV.type2").append(SQLUtils.toIn(types));
+        builder.append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewTidColumn()).append(toIn(getPurviewIds(operator)));
+        builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewTypeColumn()).append(SQLUtils.toIn(types));
         Purview.Scheme scheme = purview.getScheme();
         if (Purview.Scheme.ORGAN.equals(scheme)) {
             String orgId = "";
             builder = new StringBuilder();
-            builder.append("SELECT id FROM ORGANIZATION ORGA WHERE ORGA.id = '")
+            builder.append("SELECT ").append(properties.getOrganizationIdColumn()).append(" FROM ").append(properties.getOrganizationTableName()).append(SPACE).append(properties.getOrganizationTableAlias()).append(" WHERE ").append(properties.getOrganizationTableAlias()).append(DOT).append(properties.getOrganizationIdColumn()).append(" = '")
                     .append(orgId)
                     .append(SINGLE_QUOTE);
-            builder.append(" OR ORGA.parentkeys LIKE '%").append(orgId).append("%'");
+            builder.append(" OR ").append(properties.getOrganizationTableAlias()).append(DOT).append(properties.getOrganizationParentKeysColumn()).append(" LIKE '%").append(orgId).append("%'");
             return builder.toString();
         } else if (Purview.Scheme.CASCADE.equals(scheme)) {
             if (level > -1) {
-                builder.append(" AND PURV.rank2 ")
+                builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewRankColumn()).append(" ")
                         .append(purview.getLevelExp().getComparison())
                         .append(StringPool.SPACE)
                         .append(level);
             }
             int checked = purview.getChecked();
             if (checked > 0) {
-                builder.append(" AND PURV.checked = ").append(checked);
+                builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(properties.getPurviewCheckedColumn()).append(" = ").append(checked);
             }
             if (StringUtils.isNotBlank(condition)) {
-                builder.append(" AND PURV.").append(condition);
+                builder.append(" AND ").append(properties.getPurviewTableAlias()).append(DOT).append(condition);
             }
-            return builder.insert(0, "SELECT DISTINCT id FROM PURVIEWS PURV WHERE ")
+            return builder.insert(0, "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName() + SPACE + properties.getPurviewTableAlias() + " WHERE ")
                     .toString();
         } else {
             if (StringUtils.isNotBlank(condition)) {
                 condition = "AND VDV." + condition;
             }
             String type = purview.getType()[0] > 0 ? String.valueOf(purview.getType()[0]) : "";
-            return "SELECT VDV.sid FROM PURVIEWS PURV,V_DATAVIEW" + type + " VDV WHERE VDV.ID LIKE"
-                    + " CONCAT(PURV.ID, '%') " + condition + " AND " + builder;
+            return "SELECT VDV." + properties.getDataViewSidColumn() + " FROM " + properties.getPurviewTableName() + SPACE + properties.getPurviewTableAlias() + "," + properties.getDataViewTableNamePrefix() + type + " VDV WHERE VDV." + properties.getDataViewIdColumn() + " LIKE"
+                    + " CONCAT(" + properties.getPurviewTableAlias() + DOT + properties.getPurviewIdColumn() + ", '%') " + condition + " AND " + builder;
         }
     }
 }

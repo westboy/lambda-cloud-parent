@@ -1,5 +1,7 @@
 package com.lambda.cloud.mybatis.purview.strategy;
 
+import cn.hutool.cache.Cache;
+import cn.hutool.cache.CacheUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
 import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
@@ -7,8 +9,11 @@ import com.lambda.cloud.mybatis.purview.support.Parameters;
 import com.lambda.cloud.mybatis.purview.utils.PurviewUtils;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
 import java.io.StringReader;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -21,6 +26,17 @@ import net.sf.jsqlparser.statement.select.Select;
  */
 @Slf4j
 public abstract class AbstractStrategy implements PurviewModeStrategy {
+
+    private static final Cache<CacheKey, String> SQL_CACHE = CacheUtil.newLRUCache(1024);
+
+    @EqualsAndHashCode
+    @RequiredArgsConstructor
+    private static class CacheKey {
+        private final String source;
+        private final DynamicPurview purview;
+        private final String userId;
+        private final Set<String> permissions;
+    }
 
     /**
      * 更新Where条件
@@ -47,7 +63,7 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
      */
     @Nonnull
     PlainSelect getBody(Select select) {
-        return (PlainSelect) select.getSelectBody();
+        return select.getPlainSelect();
     }
 
     /**
@@ -63,17 +79,31 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
         LoginUser operator = parameters.getOperator();
         DynamicPurview purview = parameters.getPurview();
         Set<String> permissions = parameters.getPermissions();
+        
+        // 显式处理 Replace 模式
+        if (purview.isReplace()) {
+            try {
+                return replace(source, purview, operator, permissions);
+            } catch (Exception e) {
+                // Replace 模式下的特定回退逻辑（如果是基于正则替换的实现，通常不会抛出 JSQLParserException）
+                // 但为了保险起见，这里可以保留一个最小化的回退或者直接抛出异常
+                log.warn("Replace mode failed, falling back to regex replacement. Error: {}", e.getMessage());
+                return PurviewUtils.getSql(source, permissions);
+            }
+        }
+
         try {
             Select select = getSelect(source);
             PlainSelect body = getBody(select);
-            if (purview.isReplace()) {
-                return replace(source, purview, operator, permissions);
-            } else {
-                update(body, purview, operator, permissions);
-                return select.getPlainSelect().toString();
-            }
+            update(body, purview, operator, permissions);
+            return select.getPlainSelect().toString();
+        } catch (JSQLParserException e) {
+            log.error("Failed to parse SQL: {}. Error: {}", source, e.getMessage());
+            // 解析失败时，不再隐式降级为正则替换，而是抛出异常，暴露问题
+            throw new RuntimeException("Failed to parse SQL for data permission filtering", e);
         } catch (Exception e) {
-            return PurviewUtils.getSql(source, permissions);
+            log.error("Unexpected error during SQL improvement: {}. Error: {}", source, e.getMessage());
+            throw new RuntimeException("Unexpected error during data permission processing", e);
         }
     }
 
