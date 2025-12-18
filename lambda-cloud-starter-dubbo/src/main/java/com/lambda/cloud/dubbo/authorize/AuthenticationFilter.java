@@ -117,6 +117,10 @@ public record AuthenticationFilter(DubboProperties.Security securityProperties) 
                     e.getMessage(),
                     e);
             throw new RpcException("Authentication processing failed: " + e.getMessage(), e);
+        } finally {
+            // 无论执行成功或失败，都必须清理当前线程的上下文信息，防止上下文泄露
+            DubboContextHolder.clearContext();
+            log.trace("认证上下文已清理");
         }
     }
 }

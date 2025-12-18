@@ -81,7 +81,7 @@ public record LoggingFilter(DubboProperties.Monitoring monitoringProperties) imp
         String remoteAddress = extractRemoteAddress();
 
         // 记录调用开始日志
-        log.info("Dubbo调用开始 - service: {}, method: {}, remote: {}", serviceName, methodName, remoteAddress);
+        log.debug("Dubbo调用开始 - service: {}, method: {}, remote: {}", serviceName, methodName, remoteAddress);
 
         try {
             // 执行实际的服务调用
