@@ -1,5 +1,5 @@
-lambdaAuth=com.lambda.cloud.dubbo.filter.AuthenticationFilter
-lambdaLogging=com.lambda.cloud.dubbo.filter.LoggingFilter
-lambdaTenant=com.lambda.cloud.dubbo.filter.TenantFilter
+lambdaAuth=com.lambda.cloud.dubbo.authorize.AuthenticationFilter
+lambdaTenant=com.lambda.cloud.dubbo.authorize.TenantFilter
+lambdaLogging=com.lambda.cloud.dubbo.logging.LoggingFilter
 lambdaMetrics=com.lambda.cloud.dubbo.monitor.MetricsFilter
-lambdaRetry=com.lambda.cloud.dubbo.interceptor.DubboRetryInterceptor
+lambdaRetry=com.lambda.cloud.dubbo.retry.DubboRetryInterceptor
