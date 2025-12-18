@@ -288,8 +288,8 @@ public interface VerifyCodeService {
      *
      * @param request 增强的请求包装器，支持多次读取请求体
      * @return 包含所有请求参数的JSONObject，支持类型安全的参数获取
-     * @see WebHttpUtils#getFormRequest(LambdaHttpServletRequestWrapper)
-     * @see WebHttpUtils#getRequestBody(LambdaHttpServletRequestWrapper)
+     * @see WebHttpUtils#getFormRequest (LambdaHttpServletRequestWrapper)
+     * @see WebHttpUtils#getRequestBody (LambdaHttpServletRequestWrapper)
      */
     default JSONObject getRequestParam(LambdaHttpServletRequestWrapper request) {
         Map<String, Object> formRequest = WebHttpUtils.getFormRequest(request);

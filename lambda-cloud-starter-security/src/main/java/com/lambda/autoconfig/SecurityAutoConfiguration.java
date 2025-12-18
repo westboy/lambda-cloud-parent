@@ -823,6 +823,8 @@ public class SecurityAutoConfiguration {
                 FormLockingStrategy formLockingStrategy,
                 ObjectMapper objectMapper,
                 PasswordEncoder passwordEncoder,
+                @Autowired(required = false)
+                        List<FormAuthenticationProcessingFilter.FormLoginValidator> formLoginValidators,
                 @Autowired(required = false) UserDetailService userDetailService) {
             FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean =
                     new FilterRegistrationBean<>();
@@ -831,6 +833,7 @@ public class SecurityAutoConfiguration {
             processingFilter.setFormLockingStrategy(formLockingStrategy);
             processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            processingFilter.setFormLoginValidators(formLoginValidators);
             processingFilter.setUserDetailService(userDetailService);
             processingFilter.setPasswordEncoder(passwordEncoder);
             filterRegistrationBean.setFilter(processingFilter);

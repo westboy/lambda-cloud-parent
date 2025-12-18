@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.lambda.autoconfig.SecurityProperties;
-import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.LambdaHttpServletRequestWrapper;
 import com.lambda.security.LoginMode;
 import com.lambda.security.exception.VerifyCodeValidationException;
@@ -360,16 +359,14 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
     public void execute(
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain)
             throws ServletException, IOException {
-        LambdaHttpServletRequestWrapper httpServletRequestWrapper =
-                new LambdaHttpServletRequestWrapper(httpServletRequest);
-        Map<String, Object> formRequest = WebHttpUtils.getFormRequest(httpServletRequestWrapper);
-        JSONObject ajaxRequest = (JSONObject) WebHttpUtils.getRequestBody(httpServletRequestWrapper);
-        ajaxRequest.putAll(formRequest);
-        if (MapUtils.isEmpty(ajaxRequest)) {
+        LambdaHttpServletRequestWrapper httpServletRequestWrapper = getRequestWrapper(httpServletRequest);
+        JSONObject requestParam = getRequestParam(httpServletRequestWrapper);
+        if (MapUtils.isEmpty(requestParam)) {
             chain.doFilter(httpServletRequestWrapper, httpServletResponse);
             return;
         }
-        String loginMode = ajaxRequest.getStr("loginMode");
+
+        String loginMode = requestParam.getStr("loginMode");
         if (StrUtil.isEmpty(loginMode)) {
             throw new VerifyCodeValidationException("登录模式不能为空!");
         }
@@ -381,8 +378,8 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
             return;
         }
 
-        String verifyCode = obtainVerifyCode(ajaxRequest);
-        String verifyToken = obtainVerifyToken(ajaxRequest);
+        String verifyCode = obtainVerifyCode(requestParam);
+        String verifyToken = obtainVerifyToken(requestParam);
 
         if (StringUtils.isBlank(verifyCode)) {
             throw new VerifyCodeValidationException("验证码不能为空!");

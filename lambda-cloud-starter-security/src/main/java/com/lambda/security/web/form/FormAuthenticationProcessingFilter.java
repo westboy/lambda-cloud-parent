@@ -12,11 +12,14 @@ import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -85,6 +88,41 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Setter
 @Getter
 public class FormAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
+
+    public interface FormLoginValidator {
+        boolean support(FormLoginContext context);
+
+        void validate(FormLoginContext context) throws AuthenticationException;
+    }
+
+    @Getter
+    public static final class FormLoginContext {
+        private final HttpServletRequest request;
+        private final HttpServletResponse response;
+        private final Map<String, Object> requestBody;
+
+        private final String username;
+        private final String password;
+        private final String device;
+        private final String loginType;
+
+        private FormLoginContext(
+                HttpServletRequest request,
+                HttpServletResponse response,
+                Map<String, Object> requestBody,
+                String username,
+                String password,
+                String device,
+                String loginType) {
+            this.request = request;
+            this.response = response;
+            this.requestBody = requestBody;
+            this.username = username;
+            this.password = password;
+            this.device = device;
+            this.loginType = loginType;
+        }
+    }
     /**
      * 用户名参数名
      * <p>
@@ -167,6 +205,18 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
      */
     private PasswordEncoder passwordEncoder;
 
+    private List<FormLoginValidator> formLoginValidators = new ArrayList<>();
+
+    public void setFormLoginValidators(List<FormLoginValidator> formLoginValidators) {
+        if (formLoginValidators == null) {
+            this.formLoginValidators = new ArrayList<>();
+            return;
+        }
+        List<FormLoginValidator> validators = new ArrayList<>(formLoginValidators);
+        AnnotationAwareOrderComparator.sort(validators);
+        this.formLoginValidators = validators;
+    }
+
     /**
      * 构造表单认证处理过滤器
      * <p>
@@ -241,42 +291,19 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
         if (!RequestMethod.POST.name().equals(request.getMethod())) {
             throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
         }
-        String username = obtainUsername(request);
-        String password = obtainPassword(request);
-        String device = obtainDevice(request);
-        String loginType = obtainLoginType(request);
+        FormLoginContext context = resolveLoginContext(request, response);
 
-        if (username == null) {
-            username = "";
-        }
-
-        if (password == null) {
-            password = "";
-        }
-
-        if (device == null) {
-            device = "";
-        }
-
-        if (loginType == null) {
-            loginType = "";
-        }
-
-        username = username.trim();
-
-        if (StringUtils.isBlank(username) && StringUtils.isBlank(password)) {
-            Map<String, Object> user = getUserLoginForRequestBody(request);
-            if (MapUtils.isNotEmpty(user)) {
-                username = (String) user.getOrDefault(this.getUsernameParameter(), "");
-                password = (String) user.getOrDefault(this.getPasswordParameter(), "");
-                if (StringUtils.isBlank(loginType)) {
-                    loginType = (String) user.getOrDefault(Constants.LOGIN_TYPE, StpUtil.getLoginType());
-                }
-                if (StringUtils.isBlank(device)) {
-                    device = (String) user.getOrDefault(Constants.LOGIN_DEVICE, "default");
-                }
+        for (FormLoginValidator validator : this.formLoginValidators) {
+            if (validator.support(context)) {
+                validator.validate(context);
             }
         }
+
+        String username = context.getUsername();
+        String password = context.getPassword();
+        String device = context.getDevice();
+        String loginType = context.getLoginType();
+
         if (StringUtils.isBlank(username)) {
             throw new UsernameNotFoundException("账号不能为空！");
         }
@@ -310,22 +337,49 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
             throw new UsernameNotFoundException("用户不存在！");
         }
 
-        if (loginUser.getAccountExpired() == null) {
-            throw new VerifyCodeValidationException("the account is expired");
+        if (loginUser.getAccountExpired() == null || Boolean.TRUE.equals(loginUser.getAccountExpired())) {
+            throw new AccountExpireException("账号已过期");
         }
 
-        if (loginUser.getAccountLocked() == null) {
-            throw new VerifyCodeValidationException("the account is locked");
+        if (loginUser.getAccountLocked() == null || Boolean.TRUE.equals(loginUser.getAccountLocked())) {
+            throw new AccountLockedException("账号已锁定");
         }
 
         String credentials = loginUser.getCredentials();
         boolean matches = passwordEncoder.matches(password, credentials);
         if (!matches) {
             formLockingStrategy.loginFailure(username);
-            throw new AuthenticationException("密码错误！");
+            throw new BadCredentialsException("用户名或密码错误！");
         }
         formLockingStrategy.loginSuccess(username);
         return loginUser;
+    }
+
+    private FormLoginContext resolveLoginContext(HttpServletRequest request, HttpServletResponse response) {
+        String username = StringUtils.defaultString(obtainUsername(request)).trim();
+        String password = StringUtils.defaultString(obtainPassword(request));
+        String device = StringUtils.defaultString(obtainDevice(request));
+        String loginType = StringUtils.defaultString(obtainLoginType(request));
+        Map<String, Object> requestBody = null;
+
+        if (StringUtils.isBlank(username) && StringUtils.isBlank(password)) {
+            Map<String, Object> user = getUserLoginForRequestBody(request);
+            if (MapUtils.isNotEmpty(user)) {
+                requestBody = user;
+                username = StringUtils.defaultString((String) user.getOrDefault(this.getUsernameParameter(), ""))
+                        .trim();
+                password = StringUtils.defaultString((String) user.getOrDefault(this.getPasswordParameter(), ""));
+                if (StringUtils.isBlank(loginType)) {
+                    loginType = StringUtils.defaultString(
+                            (String) user.getOrDefault(Constants.LOGIN_TYPE, StpUtil.getLoginType()));
+                }
+                if (StringUtils.isBlank(device)) {
+                    device = StringUtils.defaultString((String) user.getOrDefault(Constants.LOGIN_DEVICE, "default"));
+                }
+            }
+        }
+
+        return new FormLoginContext(request, response, requestBody, username, password, device, loginType);
     }
 
     /**

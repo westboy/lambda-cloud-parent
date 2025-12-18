@@ -4,7 +4,6 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.autoconfig.SecurityProperties;
-import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
@@ -22,13 +21,13 @@ import com.lambda.security.web.verify.service.sms.model.SmsVerifyCodeResponse;
 import com.lambda.security.web.verify.service.sms.store.SmsVerifyCodeStore;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.AntPathMatcher;
 
@@ -514,94 +513,82 @@ public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
      * @param chain 过滤器链，用于请求转发
      * @throws IOException 当响应写入失败时抛出
      * @see SmsVerifyCodeStore#generate(String)
-     * @see SmsMessageSender#sendVerifyCode(String, String, Integer)
-     * @see UserDetailService#loginByMobile(String, String)
+     * @see SmsMessageSender#sendVerifyCode (String, String, Integer)
+     * @see UserDetailService#loginByMobile (String, String)
      */
     @Override
     public void execute(
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain chain)
-            throws IOException {
-        try {
-            LambdaHttpServletRequestWrapper httpServletRequestWrapper = getRequestWrapper(httpServletRequest);
-            JSONObject requestParam = getRequestParam(httpServletRequestWrapper);
+            throws IOException, ServletException {
+        LambdaHttpServletRequestWrapper httpServletRequestWrapper = getRequestWrapper(httpServletRequest);
+        JSONObject requestParam = getRequestParam(httpServletRequestWrapper);
 
-            if (MapUtils.isEmpty(requestParam)) {
-                chain.doFilter(httpServletRequestWrapper, httpServletResponse);
-                return;
-            }
-
-            String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
-
-            if (mobile == null) {
-                throw new VerifyCodeValidationException("手机号不存在！");
-            }
-
-            String loginType = requestParam.getStr(loginTypeParameter);
-
-            boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
-            if (!containsLoginType) {
-                throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
-            }
-
-            LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
-
-            if (loginUser == null) {
-                throw new VerifyCodeValidationException("账号密码错误");
-            }
-
-            if (loginUser.getAccountExpired()) {
-                throw new VerifyCodeValidationException("账号已过期");
-            }
-
-            if (loginUser.getAccountLocked()) {
-                throw new VerifyCodeValidationException("账号已锁定");
-            }
-
-            if (!smsVerifyCodeStore.verifyReSend(mobile)) {
-                throw new VerifyCodeValidationException("短信验证码重复获取!");
-            }
-
-            if (smsLogin.isEnableVerify()) {
-
-                String verifyToken = requestParam.getStr(CaptchaVerifyCodeGenerateImpl.TOKEN_KEY);
-                Assert.isBlank(verifyToken, "__TOKEN不能为空!");
-
-                String verifyCode = requestParam.getStr(CaptchaVerifyCodeGenerateImpl.VERIFY_CODE_PARAMETER);
-                Assert.isBlank(verifyCode, "验证码不能为空!");
-
-                boolean verified = captchaStore.validate(verifyToken, verifyCode);
-                if (!verified) {
-                    throw new VerifyCodeValidationException("验证码不正确!");
-                }
-            }
-
-            httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            String code = smsVerifyCodeStore.generate(mobile);
-            SmsSendResult smsSendResult = smsMessageSender.sendVerifyCode(mobile, code, smsLogin.getValidMinutes());
-            if (smsSendResult == null || !smsSendResult.isSuccess()) {
-                if (smsSendResult != null) {
-                    log.error("短信发送失败, {}", smsSendResult.getMessage());
-                }
-                throw new VerifyCodeValidationException("短信发送失败");
-            }
-            SmsVerifyCodeResponse smsVerifyCodeResponse = new SmsVerifyCodeResponse();
-            smsVerifyCodeResponse.setId(smsSendResult.getId());
-            smsVerifyCodeResponse.setResendSeconds(smsLogin.getResendSeconds());
-            smsVerifyCodeResponse.setValidMinutes(smsLogin.getValidMinutes());
-            if (smsLogin.isMock()) {
-                smsVerifyCodeResponse.setMessage(smsSendResult.getMessage());
-            }
-            objectMapper.writeValue(httpServletResponse.getWriter(), smsVerifyCodeResponse);
-        } catch (Exception ex) {
-            httpServletResponse.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
-            httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            ErrorModel model = new ErrorModel();
-            model.setStatus(httpServletResponse.getStatus());
-            model.setError(HttpStatus.EXPECTATION_FAILED.getReasonPhrase());
-            model.setMessage(ex.getMessage());
-            model.setPath(httpServletRequest.getRequestURI());
-            model.setTimestamp(System.currentTimeMillis());
-            objectMapper.writeValue(httpServletResponse.getWriter(), model);
+        if (MapUtils.isEmpty(requestParam)) {
+            chain.doFilter(httpServletRequestWrapper, httpServletResponse);
+            return;
         }
+
+        String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
+
+        if (mobile == null) {
+            throw new VerifyCodeValidationException("手机号不存在！");
+        }
+
+        String loginType = requestParam.getStr(loginTypeParameter);
+
+        boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
+        if (!containsLoginType) {
+            throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
+        }
+
+        LoginUser loginUser = userDetailService.loginByMobile(mobile, loginType);
+
+        if (loginUser == null) {
+            throw new VerifyCodeValidationException("账号密码错误");
+        }
+
+        if (Boolean.TRUE.equals(loginUser.getAccountExpired())) {
+            throw new VerifyCodeValidationException("账号已过期");
+        }
+
+        if (Boolean.TRUE.equals(loginUser.getAccountLocked())) {
+            throw new VerifyCodeValidationException("账号已锁定");
+        }
+
+        if (!smsVerifyCodeStore.verifyReSend(mobile)) {
+            throw new VerifyCodeValidationException("短信验证码重复获取!");
+        }
+
+        if (smsLogin.isEnableVerify()) {
+
+            String verifyToken = requestParam.getStr(CaptchaVerifyCodeGenerateImpl.TOKEN_KEY);
+            Assert.isBlank(verifyToken, "__TOKEN不能为空!");
+
+            String verifyCode = requestParam.getStr(CaptchaVerifyCodeGenerateImpl.VERIFY_CODE_PARAMETER);
+            Assert.isBlank(verifyCode, "验证码不能为空!");
+
+            boolean verified = captchaStore.validate(verifyToken, verifyCode);
+            if (!verified) {
+                throw new VerifyCodeValidationException("验证码不正确!");
+            }
+        }
+
+        httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        String code = smsVerifyCodeStore.generate(mobile);
+        SmsSendResult smsSendResult = smsMessageSender.sendVerifyCode(mobile, code, smsLogin.getValidMinutes());
+        if (smsSendResult == null || !smsSendResult.isSuccess()) {
+            if (smsSendResult != null) {
+                log.error("短信发送失败, {}", smsSendResult.getMessage());
+            }
+            throw new VerifyCodeValidationException("短信发送失败");
+        }
+        SmsVerifyCodeResponse smsVerifyCodeResponse = new SmsVerifyCodeResponse();
+        smsVerifyCodeResponse.setId(smsSendResult.getId());
+        smsVerifyCodeResponse.setResendSeconds(smsLogin.getResendSeconds());
+        smsVerifyCodeResponse.setValidMinutes(smsLogin.getValidMinutes());
+        if (smsLogin.isMock()) {
+            smsVerifyCodeResponse.setMessage(smsSendResult.getMessage());
+        }
+        objectMapper.writeValue(httpServletResponse.getWriter(), smsVerifyCodeResponse);
     }
 }

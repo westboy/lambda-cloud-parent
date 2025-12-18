@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -115,7 +116,9 @@ public class VerifyCodeFilter extends GenericFilterBean implements InitializingB
         if (CollectionUtils.isEmpty(verifyCodeServices)) {
             this.verifyCodeServices = new ArrayList<>();
         } else {
-            this.verifyCodeServices = verifyCodeServices;
+            List<VerifyCodeService> services = new ArrayList<>(verifyCodeServices);
+            AnnotationAwareOrderComparator.sort(services);
+            this.verifyCodeServices = services;
         }
     }
 
@@ -134,6 +137,11 @@ public class VerifyCodeFilter extends GenericFilterBean implements InitializingB
     public void setAuthenticationFailureHandler(AuthenticationFailureHandler failureHandler) {
         Assert.notNull(failureHandler, "failureHandler cannot be null");
         this.failureHandler = failureHandler;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        Assert.notNull(this.failureHandler, "failureHandler cannot be null");
     }
 
     /**
