@@ -38,6 +38,7 @@ import com.lambda.security.service.ThirdPartyLoginService;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.form.FormAuthenticationProcessingFilter;
 import com.lambda.security.web.form.FormLockingStrategy;
+import com.lambda.security.web.form.FormLoginValidator;
 import com.lambda.security.web.form.FormLogoutFilter;
 import com.lambda.security.web.form.locking.RedisLockingStrategy;
 import com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter;
@@ -823,8 +824,7 @@ public class SecurityAutoConfiguration {
                 FormLockingStrategy formLockingStrategy,
                 ObjectMapper objectMapper,
                 PasswordEncoder passwordEncoder,
-                @Autowired(required = false)
-                        List<FormAuthenticationProcessingFilter.FormLoginValidator> formLoginValidators,
+                @Autowired(required = false) List<FormLoginValidator> formLoginValidators,
                 @Autowired(required = false) UserDetailService userDetailService) {
             FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean =
                     new FilterRegistrationBean<>();

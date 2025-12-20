@@ -9,6 +9,7 @@ import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -91,6 +92,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @see UserDetailService
  */
 @SuppressWarnings("all")
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
     /**

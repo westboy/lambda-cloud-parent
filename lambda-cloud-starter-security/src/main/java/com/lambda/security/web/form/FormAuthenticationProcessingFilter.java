@@ -89,40 +89,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Getter
 public class FormAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    public interface FormLoginValidator {
-        boolean support(FormLoginContext context);
-
-        void validate(FormLoginContext context) throws AuthenticationException;
-    }
-
-    @Getter
-    public static final class FormLoginContext {
-        private final HttpServletRequest request;
-        private final HttpServletResponse response;
-        private final Map<String, Object> requestBody;
-
-        private final String username;
-        private final String password;
-        private final String device;
-        private final String loginType;
-
-        private FormLoginContext(
-                HttpServletRequest request,
-                HttpServletResponse response,
-                Map<String, Object> requestBody,
-                String username,
-                String password,
-                String device,
-                String loginType) {
-            this.request = request;
-            this.response = response;
-            this.requestBody = requestBody;
-            this.username = username;
-            this.password = password;
-            this.device = device;
-            this.loginType = loginType;
-        }
-    }
     /**
      * 用户名参数名
      * <p>
@@ -299,10 +265,10 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
             }
         }
 
-        String username = context.getUsername();
-        String password = context.getPassword();
-        String device = context.getDevice();
-        String loginType = context.getLoginType();
+        String username = context.username();
+        String password = context.password();
+        String device = context.device();
+        String loginType = context.loginType();
 
         if (StringUtils.isBlank(username)) {
             throw new UsernameNotFoundException("账号不能为空！");
