@@ -13,13 +13,6 @@ public final class TenantContextHolder implements AutoCloseable {
     private static final ThreadLocal<String> TENANT_ID_HOLDER = new ThreadLocal<>();
 
     /**
-     * 私有构造函数，防止实例化
-     */
-    private TenantContextHolder() {
-        throw new IllegalStateException("Utility class");
-    }
-
-    /**
      * 静态内部类实现单例
      */
     private static class Holder {
