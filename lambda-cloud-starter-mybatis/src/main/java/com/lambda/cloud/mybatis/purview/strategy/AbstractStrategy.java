@@ -3,16 +3,15 @@ package com.lambda.cloud.mybatis.purview.strategy;
 import cn.hutool.cache.Cache;
 import cn.hutool.cache.CacheUtil;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.mybatis.purview.PurviewContext;
 import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
-import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
-import com.lambda.cloud.mybatis.purview.support.Parameters;
-import com.lambda.cloud.mybatis.purview.utils.PurviewUtils;
+import com.lambda.cloud.mybatis.purview.support.CacheKey;
+import com.lambda.cloud.mybatis.purview.support.PurviewProfile;
+import com.lambda.cloud.mybatis.purview.support.PurviewSqlHelper;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
 import java.io.StringReader;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -27,15 +26,6 @@ import net.sf.jsqlparser.statement.select.Select;
 public abstract class AbstractStrategy implements PurviewModeStrategy {
 
     private static final Cache<CacheKey, String> SQL_CACHE = CacheUtil.newLRUCache(1024);
-
-    @EqualsAndHashCode
-    @RequiredArgsConstructor
-    private static class CacheKey {
-        private final String source;
-        private final DynamicPurview purview;
-        private final String userId;
-        private final Set<String> permissions;
-    }
 
     /**
      * 更新Where条件
@@ -69,15 +59,15 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
      * 增强SQL语句
      *
      * @param source
-     * @param parameters
+     * @param purviewProfile
      * @return org.apache.ibatis.mapping.MappedStatement
      * @throws JSQLParserException
      */
     @Override
-    public String improve(String source, Parameters parameters) {
-        LoginUser operator = parameters.getOperator();
-        DynamicPurview purview = parameters.getPurview();
-        Set<String> permissions = parameters.getPermissions();
+    public String improve(String source, PurviewProfile purviewProfile) {
+        LoginUser operator = purviewProfile.getOperator();
+        PurviewContext purview = purviewProfile.getPurview();
+        Set<String> permissions = purviewProfile.getPermissions();
 
         // 显式处理 Replace 模式
         if (purview.isReplace()) {
@@ -87,7 +77,7 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
                 // Replace 模式下的特定回退逻辑（如果是基于正则替换的实现，通常不会抛出 JSQLParserException）
                 // 但为了保险起见，这里可以保留一个最小化的回退或者直接抛出异常
                 log.warn("Replace mode failed, falling back to regex replacement. Error: {}", e.getMessage());
-                return PurviewUtils.getSql(source, permissions);
+                return PurviewSqlHelper.getSql(source, permissions);
             }
         }
 

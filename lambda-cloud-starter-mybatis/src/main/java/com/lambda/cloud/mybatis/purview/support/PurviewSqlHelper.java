@@ -1,14 +1,14 @@
-package com.lambda.cloud.mybatis.purview.utils;
+package com.lambda.cloud.mybatis.purview.support;
 
 import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
 import static com.lambda.cloud.mybatis.utils.SQLUtils.toIn;
 
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
+import com.lambda.autoconfig.PurviewProperties;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.mybatis.purview.PurviewContext;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
-import com.lambda.cloud.mybatis.purview.config.PurviewConfig;
-import com.lambda.cloud.mybatis.purview.config.PurviewConfigHolder;
-import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
+import com.lambda.cloud.mybatis.purview.config.PurviewPropertiesHolder;
 import com.lambda.cloud.mybatis.utils.SQLUtils;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -27,7 +27,7 @@ import org.apache.ibatis.binding.MapperMethod.ParamMap;
  * @author Jin
  **/
 @Slf4j
-public final class PurviewUtils {
+public final class PurviewSqlHelper {
     private static final String PERMISSIONS = "'lambda-permissions(\\|(\\d+)(,\\d+)*+)?(\\|([><])?=?-?\\d*)?'";
     private static final Pattern PATTERN = Pattern.compile(PERMISSIONS);
     private static final Pattern CLEAR_PATTERN =
@@ -40,7 +40,7 @@ public final class PurviewUtils {
     private static final Integer ONE = 1;
     private static final Integer TWO = 2;
 
-    private PurviewUtils() {}
+    private PurviewSqlHelper() {}
 
     /**
      * 判断当前用户是否是数据的拥有者
@@ -50,7 +50,7 @@ public final class PurviewUtils {
         if (operator == null || StringUtils.isBlank(operator.getName())) {
             return false;
         }
-        PurviewConfig config = PurviewConfigHolder.getInstance();
+        PurviewProperties config = PurviewPropertiesHolder.getInstance();
         List<String> superAdmins = config.getSuperAdminUsernames();
         if (CollectionUtils.isNotEmpty(superAdmins)) {
             return superAdmins.contains(operator.getName());
@@ -86,7 +86,7 @@ public final class PurviewUtils {
      * @param purview
      * @return int
      */
-    public static int getLevel(DynamicPurview purview) {
+    public static int getLevel(PurviewContext purview) {
         int level = purview.getLevel();
         if (level == 0) {
             return Integer.MAX_VALUE;
@@ -128,11 +128,11 @@ public final class PurviewUtils {
      * @param method 当前方法
      * @param sql
      */
-    public static DynamicPurview getDynamicPurview(Method method, String sql) {
+    public static PurviewContext getDynamicPurview(Method method, String sql) {
         if (method != null) {
             Purview actual = method.getAnnotation(Purview.class);
             if (Objects.nonNull(actual)) {
-                DynamicPurview purview = new DynamicPurview();
+                PurviewContext purview = new PurviewContext();
                 purview.setKey(actual.key());
                 purview.setLevel(actual.level());
                 purview.setLevelExp(actual.levelExp());
@@ -154,7 +154,7 @@ public final class PurviewUtils {
      * @param sql
      * @return
      */
-    public static DynamicPurview getReplacePurview(String sql) {
+    public static PurviewContext getReplacePurview(String sql) {
         if (StringUtils.isBlank(sql)) {
             return null;
         }
@@ -168,7 +168,7 @@ public final class PurviewUtils {
         }
         // 提取和组装数据权限对象
         String[] tokens = group.split("'")[1].split("\\|");
-        DynamicPurview purview = new DynamicPurview();
+        PurviewContext purview = new PurviewContext();
         purview.setReplace(true);
         purview.setType(new int[] {0});
         // 解析type
@@ -248,10 +248,10 @@ public final class PurviewUtils {
     }
 
     @Nonnull
-    public static String buildSQL01(@Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
-        PurviewConfig properties = PurviewConfigHolder.getInstance();
+    public static String buildSQL01(@Nonnull PurviewContext purview, @Nonnull LoginUser operator) {
+        PurviewProperties properties = PurviewPropertiesHolder.getInstance();
         int[] types = purview.getType();
-        Set<String> ids = PurviewUtils.getPurviewIds(operator);
+        Set<String> ids = PurviewSqlHelper.getPurviewIds(operator);
         StringBuilder sql = new StringBuilder(
                 "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName());
         sql.append(SPACE)
@@ -280,8 +280,8 @@ public final class PurviewUtils {
      * @return java.lang.String
      */
     @Nonnull
-    public static String buildSQL02(@Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
-        PurviewConfig properties = PurviewConfigHolder.getInstance();
+    public static String buildSQL02(@Nonnull PurviewContext purview, @Nonnull LoginUser operator) {
+        PurviewProperties properties = PurviewPropertiesHolder.getInstance();
         int[] types = purview.getType();
         int level = getLevel(purview);
         String condition = purview.getCondition();

@@ -1,5 +1,6 @@
-package com.lambda.cloud.mybatis.purview.config;
+package com.lambda.autoconfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collections;
 import java.util.List;
 import lombok.Data;
@@ -11,8 +12,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Jin
  */
 @Data
-@ConfigurationProperties(prefix = "lambda.cloud.mybatis.purview")
-public class PurviewConfig {
+@SuppressFBWarnings("EI_EXPOSE_REP")
+@ConfigurationProperties(prefix = "lambda.purview")
+public class PurviewProperties {
 
     /**
      * 组织表名

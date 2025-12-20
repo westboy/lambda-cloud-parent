@@ -4,26 +4,25 @@ import static cn.hutool.core.text.CharSequenceUtil.EMPTY;
 
 import cn.hutool.core.lang.Assert;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
-import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
 
 /**
  * 动态数据权限管理器
  *
  * @author Jin
  */
-public final class PurviewHelper implements AutoCloseable {
+public final class PurviewContextHolder implements AutoCloseable {
 
-    private static final ThreadLocal<DynamicPurview> CONTEXT = new ThreadLocal<>();
+    private static final ThreadLocal<PurviewContext> CONTEXT = new ThreadLocal<>();
 
-    private static final PurviewHelper HELPER = new PurviewHelper();
+    private static final PurviewContextHolder HELPER = new PurviewContextHolder();
 
-    private PurviewHelper() {}
+    private PurviewContextHolder() {}
 
-    public static PurviewHelper getInstance() {
+    public static PurviewContextHolder getInstance() {
         return HELPER;
     }
 
-    public DynamicPurview getPurview() {
+    public PurviewContext getPurview() {
         return CONTEXT.get();
     }
 
@@ -40,7 +39,7 @@ public final class PurviewHelper implements AutoCloseable {
     }
 
     public static void setPurview(int[] type, String key, int level, Purview.Mode mode, Purview.Scheme scheme) {
-        DynamicPurview purview = new DynamicPurview();
+        PurviewContext purview = new PurviewContext();
         purview.setType(type);
         purview.setKey(key);
         purview.setLevel(level);
@@ -52,10 +51,10 @@ public final class PurviewHelper implements AutoCloseable {
         setPurview(purview);
     }
 
-    public static void setPurview(DynamicPurview dynamicPurview) {
-        Assert.notNull(dynamicPurview.getType(), "purview type can not be null!");
-        Assert.notNull(dynamicPurview.getKey(), "purview key can not be null!");
-        CONTEXT.set(dynamicPurview);
+    public static void setPurview(PurviewContext purviewContext) {
+        Assert.notNull(purviewContext.getType(), "purview type can not be null!");
+        Assert.notNull(purviewContext.getKey(), "purview key can not be null!");
+        CONTEXT.set(purviewContext);
     }
 
     @Override

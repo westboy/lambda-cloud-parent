@@ -1,16 +1,16 @@
 package com.lambda.cloud.mybatis.interceptor;
 
-import static com.lambda.cloud.mybatis.purview.utils.PurviewUtils.*;
+import static com.lambda.cloud.mybatis.purview.support.PurviewSqlHelper.*;
 import static com.lambda.cloud.mybatis.utils.MybatisUtils.getCurrentMethod;
 import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
 
 import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Sets;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.mybatis.purview.PurviewContext;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
-import com.lambda.cloud.mybatis.purview.support.DynamicPurview;
-import com.lambda.cloud.mybatis.purview.support.Parameters;
+import com.lambda.cloud.mybatis.purview.support.PurviewProfile;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -59,7 +59,7 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
         Method method = getCurrentMethod(statement);
         BoundSql boundSql = statement.getBoundSql(parameter);
         String sql = boundSql.getSql();
-        DynamicPurview purview = getDynamicPurview(method, sql);
+        PurviewContext purview = getDynamicPurview(method, sql);
         if (purview == null) {
             return invocation.proceed();
         }
@@ -104,9 +104,9 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
                     return emptyResult(method);
                 }
             }
-            Parameters parameters = new Parameters(operator, purview, permissions);
+            PurviewProfile purviewProfile = new PurviewProfile(operator, purview, permissions);
             PurviewModeStrategy strategy = PurviewModeStrategy.getInstance(purview.getMode());
-            updated = strategy.improve(sql, parameters);
+            updated = strategy.improve(sql, purviewProfile);
         }
         args[0] = newMappedStatement(statement, boundSql, updated);
         return invocation.proceed();
@@ -139,7 +139,7 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
             Executor executor,
             MappedStatement statement,
             RowBounds rowBounds,
-            DynamicPurview purview,
+            PurviewContext purview,
             LoginUser operator)
             throws SQLException {
         final Configuration configuration = statement.getConfiguration();
@@ -155,7 +155,7 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
     }
 
     private MappedStatement buildPurviewMappedStatement(
-            @Nonnull Configuration configuration, @Nonnull DynamicPurview purview, @Nonnull LoginUser operator) {
+            @Nonnull Configuration configuration, @Nonnull PurviewContext purview, @Nonnull LoginUser operator) {
         String sql = buildSQL01(purview, operator);
         SqlSource sqlSource = new StaticSqlSource(configuration, sql);
         MappedStatement.Builder builder =

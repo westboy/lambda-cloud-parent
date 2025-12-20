@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.purview.support;
+package com.lambda.cloud.mybatis.purview;
 
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
@@ -13,7 +13,7 @@ import lombok.Data;
  */
 @Data
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2", "EI_EXPOSE_REP"})
-public class DynamicPurview implements Serializable {
+public class PurviewContext implements Serializable {
 
     /**
      * 数据权限关联的字段名
@@ -61,7 +61,7 @@ public class DynamicPurview implements Serializable {
 
     private boolean replace;
 
-    public DynamicPurview() {
+    public PurviewContext() {
         this.key = "T.id";
         this.level = Integer.MAX_VALUE;
         this.mode = Purview.Mode.SUB_QUERY;

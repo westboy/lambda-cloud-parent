@@ -1,7 +1,6 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.mybatis.purview.config.PurviewConfig;
-import com.lambda.cloud.mybatis.purview.config.PurviewConfigHolder;
+import com.lambda.cloud.mybatis.purview.config.PurviewPropertiesHolder;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -12,17 +11,17 @@ import org.springframework.context.annotation.Bean;
  * @author Jin
  */
 @AutoConfiguration
-@EnableConfigurationProperties(PurviewConfig.class)
+@EnableConfigurationProperties(PurviewProperties.class)
 public class PurviewAutoConfiguration {
 
     @Bean
-    public PurviewConfigInitializer purviewConfigInitializer(PurviewConfig properties) {
+    public PurviewConfigInitializer purviewConfigInitializer(PurviewProperties properties) {
         return new PurviewConfigInitializer(properties);
     }
 
     public static class PurviewConfigInitializer {
-        public PurviewConfigInitializer(PurviewConfig properties) {
-            PurviewConfigHolder.setInstance(properties);
+        public PurviewConfigInitializer(PurviewProperties properties) {
+            PurviewPropertiesHolder.initialize(properties);
         }
     }
 }

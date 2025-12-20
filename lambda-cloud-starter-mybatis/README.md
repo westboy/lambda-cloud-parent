@@ -39,12 +39,6 @@ int insertAll(List<T> entity);
 // 分批批量插入（默认 1000 条一批）
 int insertAllBatch(List<T> entity);
 int insertAllBatch(List<T> entity, int max);
-
-// MySQL 专用批量插入
-int mysqlInsertAllBatch(List<T> entity);
-
-// Oracle 专用批量插入
-int oracleInsertAllBatch(List<T> entity);
 ```
 
 #### 基于编码字段的操作
