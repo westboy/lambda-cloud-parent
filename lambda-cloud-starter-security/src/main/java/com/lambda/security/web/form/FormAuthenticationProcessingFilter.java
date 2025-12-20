@@ -10,6 +10,7 @@ import com.lambda.security.LoginErrorCode;
 import com.lambda.security.exception.*;
 import com.lambda.security.service.UserDetailService;
 import com.lambda.security.web.AbstractAuthenticationProcessingFilter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -87,6 +88,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 @Setter
 @Getter
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class FormAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
     /**

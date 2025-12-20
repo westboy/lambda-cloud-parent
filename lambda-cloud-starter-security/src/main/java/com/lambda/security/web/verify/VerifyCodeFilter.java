@@ -2,7 +2,6 @@ package com.lambda.security.web.verify;
 
 import com.lambda.security.handler.AuthenticationFailureHandler;
 import com.lambda.security.web.verify.service.VerifyCodeService;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -111,7 +110,6 @@ public class VerifyCodeFilter extends GenericFilterBean implements InitializingB
      *
      * @param verifyCodeServices 验证码服务列表，可以为空
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "VerifyCodeFilter is thread safe")
     public VerifyCodeFilter(List<VerifyCodeService> verifyCodeServices) {
         if (CollectionUtils.isEmpty(verifyCodeServices)) {
             this.verifyCodeServices = new ArrayList<>();

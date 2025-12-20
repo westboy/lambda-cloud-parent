@@ -125,7 +125,6 @@ import org.springframework.util.AntPathMatcher;
  * @see UserDetailService
  * @since 1.0.0
  */
-@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION")
 @Slf4j
 public class SmsVerifyCodeGenerateImpl implements VerifyCodeService {
     /**
