@@ -14,7 +14,7 @@ public class TenantHandler implements TenantLineHandler {
     private MybatisPlusExtendProperties.TenantConfig tenantConfig;
 
     public TenantHandler(MybatisPlusExtendProperties mybatisProperties) {
-        this.tenantConfig = mybatisProperties.getTenantConfig();
+        this.tenantConfig = mybatisProperties.getTenant();
     }
 
     @Override

@@ -31,7 +31,7 @@ public class MybatisPlusExtendProperties {
     private Map<String, String> databaseIdMap = new HashMap<>();
 
     @NestedConfigurationProperty
-    private TenantConfig tenantConfig = new TenantConfig();
+    private TenantConfig tenant = new TenantConfig();
 
     @Data
     public static class EncryptConfig {

@@ -187,7 +187,7 @@ public class MyBatisAutoConfiguration {
         @Bean
         @Order(Short.MAX_VALUE)
         public TenantExpressionInterceptor tenantExpressionInterceptor(MybatisPlusExtendProperties mybatisProperties) {
-            String name = mybatisProperties.getTenantConfig().getTenantColumn();
+            String name = mybatisProperties.getTenant().getTenantColumn();
             return new TenantExpressionInterceptor(name);
         }
     }
