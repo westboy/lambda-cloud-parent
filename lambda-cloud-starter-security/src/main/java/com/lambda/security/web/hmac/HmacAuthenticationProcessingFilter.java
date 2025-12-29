@@ -10,7 +10,7 @@ import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.LoginErrorCode;
-import com.lambda.security.encoder.HmacShaEncoder;
+import com.lambda.security.encode.HmacShaEncoder;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.exception.UsernameNotFoundException;

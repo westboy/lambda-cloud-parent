@@ -20,8 +20,8 @@ import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.redis.helper.RedisHelper;
 import com.lambda.cloud.sms.SmsMessageSender;
-import com.lambda.security.encoder.HmacShaEncoder;
-import com.lambda.security.encoder.StandardPasswordEncoder;
+import com.lambda.security.encode.HmacShaEncoder;
+import com.lambda.security.encode.StandardPasswordEncoder;
 import com.lambda.security.handler.LogoutHandler;
 import com.lambda.security.handler.LogoutSuccessHandler;
 import com.lambda.security.handler.impl.CommonAuthenticationFailureHandler;
@@ -36,11 +36,14 @@ import com.lambda.security.provider.wx.WxMaLoginProvider;
 import com.lambda.security.service.HmacClientService;
 import com.lambda.security.service.ThirdPartyLoginService;
 import com.lambda.security.service.UserDetailService;
+import com.lambda.security.web.form.CaptchaTriggerStrategy;
 import com.lambda.security.web.form.FormAuthenticationProcessingFilter;
 import com.lambda.security.web.form.FormLockingStrategy;
 import com.lambda.security.web.form.FormLoginValidator;
 import com.lambda.security.web.form.FormLogoutFilter;
+import com.lambda.security.web.form.locking.RedisCaptchaTriggerStrategy;
 import com.lambda.security.web.form.locking.RedisLockingStrategy;
+import com.lambda.security.web.form.validator.DynamicCaptchaValidator;
 import com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter;
 import com.lambda.security.web.hmac.handler.HmacAuthenticationSuccessHandler;
 import com.lambda.security.web.hmac.service.MemoryHmacClientService;
@@ -772,6 +775,44 @@ public class SecurityAutoConfiguration {
                     lockStrategy.getDuration(),
                     lockStrategy.getTimeUnit(),
                     stringRedisTemplate);
+        }
+
+        /**
+         * 验证码动态触发策略
+         * <p>
+         * 当启用动态验证码触发时，创建基于Redis的触发策略实例。
+         * 复用 FormLockingStrategy 的 Redis 存储。
+         * </p>
+         */
+        @Bean
+        @ConditionalOnProperty(prefix = "lambda.security.form.captcha-trigger", name = "enabled")
+        @ConditionalOnMissingBean
+        public CaptchaTriggerStrategy captchaTriggerStrategy(StringRedisTemplate stringRedisTemplate) {
+            SecurityProperties.Form.CaptchaTrigger captchaTrigger =
+                    securityProperties.getForm().getCaptchaTrigger();
+            return new RedisCaptchaTriggerStrategy(
+                    stringRedisTemplate,
+                    captchaTrigger.getFailureTriggerTimes()
+            );
+        }
+
+        /**
+         * 动态验证码验证器
+         * <p>
+         * 当启用动态验证码触发时，创建验证器并注入到表单登录过滤器中。
+         * </p>
+         */
+        @Bean
+        @ConditionalOnProperty(prefix = "lambda.security.form.captcha-trigger", name = "enabled")
+        @ConditionalOnBean({CaptchaTriggerStrategy.class, CaptchaStore.class})
+        public FormLoginValidator dynamicCaptchaValidator(
+                CaptchaTriggerStrategy captchaTriggerStrategy,
+                CaptchaStore captchaStore) {
+            return new DynamicCaptchaValidator(
+                    captchaTriggerStrategy,
+                    captchaStore,
+                    securityProperties
+            );
         }
 
         /**

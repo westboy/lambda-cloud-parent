@@ -316,6 +316,15 @@ public class SecurityProperties {
         Parameters parameters = new Parameters();
 
         /**
+         * 验证码动态触发配置
+         * <p>
+         * 配置基于登录失败次数的验证码动态触发策略。
+         * </p>
+         */
+        @NestedConfigurationProperty
+        CaptchaTrigger captchaTrigger = new CaptchaTrigger();
+
+        /**
          * 锁定策略配置
          * <p>
          * 配置登录失败时的账户锁定策略，用于防止暴力破解攻击。
@@ -414,6 +423,56 @@ public class SecurityProperties {
              * @default "password"
              */
             private String password = "password";
+        }
+
+        /**
+         * 验证码动态触发配置类
+         * <p>
+         * 定义基于登录失败次数的验证码动态触发策略配置。
+         * </p>
+         */
+        @Getter
+        @Setter
+        public static class CaptchaTrigger {
+            /**
+             * 是否启用动态验证码触发
+             * <p>
+             * 启用后，当用户登录失败次数达到 failureTriggerTimes 时，
+             * 会动态要求用户输入验证码，而不是全局强制验证码。
+             * </p>
+             *
+             * @default false
+             */
+            private boolean enabled = false;
+
+            /**
+             * 触发验证码的失败次数阈值
+             * <p>
+             * 当用户连续登录失败达到此次数时，开始要求输入验证码。
+             * 此值必须小于 lockStrategy.failureMaxTimes。
+             * </p>
+             *
+             * @default 2
+             */
+            private int failureTriggerTimes = 2;
+
+            /**
+             * 触发状态持续时间
+             * <p>
+             * 与锁定策略共享计时周期，在此时间内失败计数会累积。
+             * 时间到期后，失败计数会重置。
+             * </p>
+             *
+             * @default 30
+             */
+            private int duration = 30;
+
+            /**
+             * 触发状态时间单位
+             *
+             * @default TimeUnit.MINUTES
+             */
+            private TimeUnit timeUnit = TimeUnit.MINUTES;
         }
 
         /**
