@@ -1,4 +1,4 @@
-package com.lambda.security.encoder;
+package com.lambda.security.encode;
 
 import com.lambda.cloud.core.utils.Assert;
 import java.nio.charset.StandardCharsets;

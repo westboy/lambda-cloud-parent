@@ -1,4 +1,4 @@
-package com.lambda.security.encoder;
+package com.lambda.security.encode;
 
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.digest.DigestUtils;

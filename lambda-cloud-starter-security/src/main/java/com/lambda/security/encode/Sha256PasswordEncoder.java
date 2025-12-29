@@ -1,4 +1,4 @@
-package com.lambda.security.encoder;
+package com.lambda.security.encode;
 
 import static org.springframework.security.crypto.util.EncodingUtils.concatenate;
 import static org.springframework.security.crypto.util.EncodingUtils.subArray;
