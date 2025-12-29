@@ -455,24 +455,6 @@ public class SecurityProperties {
              * @default 2
              */
             private int failureTriggerTimes = 2;
-
-            /**
-             * 触发状态持续时间
-             * <p>
-             * 与锁定策略共享计时周期，在此时间内失败计数会累积。
-             * 时间到期后，失败计数会重置。
-             * </p>
-             *
-             * @default 30
-             */
-            private int duration = 30;
-
-            /**
-             * 触发状态时间单位
-             *
-             * @default TimeUnit.MINUTES
-             */
-            private TimeUnit timeUnit = TimeUnit.MINUTES;
         }
 
         /**
