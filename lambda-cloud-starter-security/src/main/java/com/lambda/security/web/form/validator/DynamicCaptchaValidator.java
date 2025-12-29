@@ -9,6 +9,7 @@ import com.lambda.security.web.form.FormLoginContext;
 import com.lambda.security.web.form.FormLoginValidator;
 import com.lambda.security.web.verify.service.captcha.CaptchaVerifyCodeGenerateImpl;
 import com.lambda.security.web.verify.service.captcha.store.CaptchaStore;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.apache.commons.collections4.MapUtils;
@@ -34,6 +35,7 @@ import org.springframework.core.annotation.Order;
  * @see FormLoginValidator
  * @see CaptchaTriggerStrategy
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Order(Ordered.HIGHEST_PRECEDENCE) // 最高优先级，在其他验证之前执行
 public class DynamicCaptchaValidator implements FormLoginValidator {
 

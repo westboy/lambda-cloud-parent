@@ -1,6 +1,7 @@
 package com.lambda.security.web.form.locking;
 
 import com.lambda.security.web.form.CaptchaTriggerStrategy;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.text.MessageFormat;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -26,6 +27,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class RedisCaptchaTriggerStrategy implements CaptchaTriggerStrategy {
 
     private static final String COMMON = "LAMBDA-CLOUD:USER:LOGIN_FAILURE:";
