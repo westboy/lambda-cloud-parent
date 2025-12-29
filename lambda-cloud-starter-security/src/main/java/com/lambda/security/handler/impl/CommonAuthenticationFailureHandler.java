@@ -5,12 +5,15 @@ import cn.dev33.satoken.exception.SaTokenException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
+import com.lambda.security.exception.CaptchaRequiredException;
 import com.lambda.security.handler.AuthenticationFailureHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -58,9 +61,9 @@ import org.springframework.http.MediaType;
  *
  * @author jpjoo
  * @author Lambda Cloud Team
- * @since 1.0.0
  * @see AuthenticationFailureHandler
  * @see ErrorModel
+ * @since 1.0.0
  */
 @SuppressFBWarnings(
         value = {"EI_EXPOSE_REP2"},
@@ -118,8 +121,8 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
      *   <li>默认重定向到/401页面</li>
      * </ul>
      *
-     * @param request HTTP请求对象，用于获取请求信息
-     * @param response HTTP响应对象，用于设置响应内容
+     * @param request   HTTP请求对象，用于获取请求信息
+     * @param response  HTTP响应对象，用于设置响应内容
      * @param exception 认证失败异常，包含失败原因
      * @throws IOException 当I/O操作失败时抛出
      */
@@ -146,18 +149,12 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
                 } else if (exception instanceof SaTokenException saTokenException) {
                     errorModel.setError(String.valueOf(saTokenException.getCode()));
                 } else if (exception instanceof CaptchaRequiredException captchaRequiredException) {
-                    errorModel.setError("CAPTCHA_REQUIRED");
-                    // 扩展错误信息，将验证码需求详情放入data字段（假设ErrorModel有data字段或扩展ErrorModel）
-                    // 由于ErrorModel定义未知，这里假设需要返回特定结构，或者ErrorModel是通用的
-                    // 这里我们尝试将额外信息放入message或作为自定义处理
-                    // 如果ErrorModel没有data字段，可能需要修改ErrorModel或在此处构建Map
-                    // 假设ErrorModel没有data字段，我们这里先保留标准处理，
-                    // 但为了满足前端需求，我们可能需要使用Map来构建响应
-                    // 让我们检查ErrorModel的定义，但现在先假设我们可以扩展它或它是灵活的
-                    // 查看ErrorModel定义，它是一个简单的POJO。
-                    // 为了支持data字段，我们可能需要修改ErrorModel，或者在这里直接用Map返回
-                    // 为了安全起见，这里我们直接用Map重写writer逻辑，或者假设ErrorModel有扩展性
-                    // 由于不能修改ErrorModel (它在 core 包里)，我们在这里构建一个Map
+                    errorModel.setError(String.valueOf(captchaRequiredException.getCode()));
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("captchaRequired", true);
+                    data.put("currentFailureTimes", captchaRequiredException.getCurrentFailureTimes());
+                    data.put("triggerTimes", captchaRequiredException.getTriggerTimes());
+                    errorModel.setDetails(data);
                 } else {
                     errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
                 }
@@ -167,25 +164,8 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
                 errorModel.setPath(request.getRequestURI());
                 errorModel.setTimestamp(System.currentTimeMillis());
 
-                if (exception instanceof CaptchaRequiredException captchaRequiredException) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("status", errorModel.getStatus());
-                    result.put("error", errorModel.getError());
-                    result.put("message", errorModel.getMessage());
-                    result.put("path", errorModel.getPath());
-                    result.put("timestamp", errorModel.getTimestamp());
-                    
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("captchaRequired", true);
-                    data.put("currentFailureTimes", captchaRequiredException.getCurrentFailureTimes());
-                    data.put("triggerTimes", captchaRequiredException.getTriggerTimes());
-                    result.put("data", data);
-                    
-                    objectMapper.writeValue(writer, result);
-                } else {
-                    // 序列化并返回JSON响应
-                    objectMapper.writeValue(writer, errorModel);
-                }
+                // 序列化并返回JSON响应
+                objectMapper.writeValue(writer, errorModel);
             }
         } else {
             // 普通请求处理：页面重定向

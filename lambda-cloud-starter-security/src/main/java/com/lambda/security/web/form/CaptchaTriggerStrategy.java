@@ -44,5 +44,4 @@ public interface CaptchaTriggerStrategy {
      * @return 触发阈值
      */
     int getTriggerTimes();
-
 }

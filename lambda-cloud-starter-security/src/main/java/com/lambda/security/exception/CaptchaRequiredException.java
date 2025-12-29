@@ -1,5 +1,9 @@
 package com.lambda.security.exception;
 
+import static com.lambda.security.LoginErrorCode.CODE_20006;
+
+import lombok.Getter;
+
 /**
  * 验证码必需异常
  *
@@ -15,22 +19,15 @@ package com.lambda.security.exception;
  *
  * @author jpjoo
  */
+@Getter
 public class CaptchaRequiredException extends AuthenticationException {
 
     private final int currentFailureTimes;
     private final int triggerTimes;
 
     public CaptchaRequiredException(String message, int currentFailureTimes, int triggerTimes) {
-        super(message);
+        super(CODE_20006, message);
         this.currentFailureTimes = currentFailureTimes;
         this.triggerTimes = triggerTimes;
-    }
-
-    public int getCurrentFailureTimes() {
-        return currentFailureTimes;
-    }
-
-    public int getTriggerTimes() {
-        return triggerTimes;
     }
 }

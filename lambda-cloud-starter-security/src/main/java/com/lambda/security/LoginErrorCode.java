@@ -75,4 +75,12 @@ public interface LoginErrorCode extends SaErrorCode {
      * </p>
      */
     int CODE_20005 = 20005;
+
+    /**
+     * 缺少验证码
+     * <p>
+     * 请求中未包含验证码参数，无法进行校验。
+     * </p>
+     */
+    int CODE_20006 = 20006;
 }

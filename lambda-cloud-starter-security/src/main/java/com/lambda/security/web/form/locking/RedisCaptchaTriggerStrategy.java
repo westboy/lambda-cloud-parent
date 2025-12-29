@@ -2,7 +2,6 @@ package com.lambda.security.web.form.locking;
 
 import com.lambda.security.web.form.CaptchaTriggerStrategy;
 import java.text.MessageFormat;
-import java.util.Objects;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
@@ -42,7 +41,7 @@ public class RedisCaptchaTriggerStrategy implements CaptchaTriggerStrategy {
     @Override
     public boolean isCaptchaRequired(String username) {
         if (triggerTimes <= 0) {
-            return false;  // 0表示不启用动态触发
+            return false; // 0表示不启用动态触发
         }
         return getFailureTimes(username) >= triggerTimes;
     }

@@ -62,6 +62,15 @@ public class ErrorModel {
     private String path;
 
     /**
+     * 错误明细（扩展信息）
+     * <p>
+     * 用于携带与错误相关的补充上下文数据，如业务状态、约束条件、
+     * 冲突资源信息或调试辅助信息等。
+     * </p>
+     */
+    private Object details;
+
+    /**
      * 设置参数错误列表
      * <p>
      * 使用不可变集合来确保错误列表的安全性，防止外部修改。

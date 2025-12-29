@@ -790,10 +790,7 @@ public class SecurityAutoConfiguration {
         public CaptchaTriggerStrategy captchaTriggerStrategy(StringRedisTemplate stringRedisTemplate) {
             SecurityProperties.Form.CaptchaTrigger captchaTrigger =
                     securityProperties.getForm().getCaptchaTrigger();
-            return new RedisCaptchaTriggerStrategy(
-                    stringRedisTemplate,
-                    captchaTrigger.getFailureTriggerTimes()
-            );
+            return new RedisCaptchaTriggerStrategy(stringRedisTemplate, captchaTrigger.getFailureTriggerTimes());
         }
 
         /**
@@ -806,13 +803,8 @@ public class SecurityAutoConfiguration {
         @ConditionalOnProperty(prefix = "lambda.security.form.captcha-trigger", name = "enabled")
         @ConditionalOnBean({CaptchaTriggerStrategy.class, CaptchaStore.class})
         public FormLoginValidator dynamicCaptchaValidator(
-                CaptchaTriggerStrategy captchaTriggerStrategy,
-                CaptchaStore captchaStore) {
-            return new DynamicCaptchaValidator(
-                    captchaTriggerStrategy,
-                    captchaStore,
-                    securityProperties
-            );
+                CaptchaTriggerStrategy captchaTriggerStrategy, CaptchaStore captchaStore) {
+            return new DynamicCaptchaValidator(captchaTriggerStrategy, captchaStore, securityProperties);
         }
 
         /**

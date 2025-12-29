@@ -34,7 +34,7 @@ import org.springframework.core.annotation.Order;
  * @see FormLoginValidator
  * @see CaptchaTriggerStrategy
  */
-@Order(Ordered.HIGHEST_PRECEDENCE)  // 最高优先级，在其他验证之前执行
+@Order(Ordered.HIGHEST_PRECEDENCE) // 最高优先级，在其他验证之前执行
 public class DynamicCaptchaValidator implements FormLoginValidator {
 
     private final CaptchaTriggerStrategy captchaTriggerStrategy;
@@ -73,7 +73,7 @@ public class DynamicCaptchaValidator implements FormLoginValidator {
 
         // 检查是否需要验证码
         if (!captchaTriggerStrategy.isCaptchaRequired(username)) {
-            return;  // 不需要验证码，直接通过
+            return; // 不需要验证码，直接通过
         }
 
         // 需要验证码，从请求中获取验证码参数
@@ -85,10 +85,7 @@ public class DynamicCaptchaValidator implements FormLoginValidator {
         if (StringUtils.isBlank(verifyCode)) {
             int failureTimes = captchaTriggerStrategy.getFailureTimes(username);
             throw new CaptchaRequiredException(
-                "登录失败次数过多，请输入验证码",
-                failureTimes,
-                captchaTriggerStrategy.getTriggerTimes()
-            );
+                    "登录失败次数过多，请输入验证码", failureTimes, captchaTriggerStrategy.getTriggerTimes());
         }
 
         if (StringUtils.isBlank(verifyToken)) {
