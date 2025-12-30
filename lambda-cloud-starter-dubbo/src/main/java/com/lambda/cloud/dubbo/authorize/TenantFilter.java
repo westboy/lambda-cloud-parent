@@ -52,9 +52,9 @@ import org.apache.dubbo.rpc.*;
  * </pre>
  *
  * @author Lambda Cloud Team
- * @since 1.0.0
  * @see DubboProperties.Tenant
  * @see DubboContextHolder
+ * @since 1.0.0
  */
 @Slf4j
 @Activate(group = {CommonConstants.PROVIDER, CommonConstants.CONSUMER})
@@ -93,7 +93,9 @@ public record TenantFilter(DubboProperties.Tenant tenantProperties) implements F
             log.error("Tenant filter error", e);
             throw new RpcException("Tenant context processing failed: " + e.getMessage());
         } finally {
-            if (RpcContext.getServerAttachment().getAttachment(tenantProperties.getTenantIdHeader()) != null) {
+            if (RpcContext
+                    .getServerAttachment()
+                    .getAttachment(tenantProperties.getTenantIdHeader()) != null || DubboContextHolder.getCurrentTenantId() != null) {
                 DubboContextHolder.clearCurrentTenantId();
             }
         }
