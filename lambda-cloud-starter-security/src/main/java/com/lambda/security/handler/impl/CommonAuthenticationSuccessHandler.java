@@ -10,6 +10,7 @@ import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.cloud.web.RequestTimeHolder;
+import com.lambda.security.LoginResponse;
 import com.lambda.security.events.UserLoginEvent;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -178,6 +179,12 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
         // 获取完整的令牌信息
         SaTokenInfo tokenInfo = stpLogic.getTokenInfo();
 
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setAccessToken(tokenInfo.getTokenValue());
+        loginResponse.setExpiresIn(tokenInfo.getTokenTimeout());
+        loginResponse.setDeviceType(tokenInfo.getLoginDeviceType());
+        loginResponse.setSubject(tokenInfo.getLoginId());
+
         // ========== 响应处理 ==========
 
         if (WebHttpUtils.isAjaxRequest(request)) {
@@ -194,7 +201,7 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
                 // 序列化令牌信息并返回
-                objectMapper.writeValue(writer, tokenInfo);
+                objectMapper.writeValue(writer, loginResponse);
             } finally {
                 // 确保资源正确释放
                 if (writer != null) {

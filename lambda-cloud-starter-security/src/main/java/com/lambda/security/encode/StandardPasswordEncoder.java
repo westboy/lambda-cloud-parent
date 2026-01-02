@@ -115,10 +115,5 @@ public class StandardPasswordEncoder implements PasswordEncoder {
      *
      * @param args 命令行参数
      */
-    public static void main(String[] args) {
-        StandardPasswordEncoder standardPasswordEncoder = new StandardPasswordEncoder();
-        System.out.println(standardPasswordEncoder.encode("123456"));
-        System.out.println(standardPasswordEncoder.matches(
-                "123456", "dd8b4d24b2aff492b1c893894af1f54fe610435d8152678697e055307029e509ebd6ff9dfb1e1e71"));
-    }
+    public static void main(String[] args) {}
 }
