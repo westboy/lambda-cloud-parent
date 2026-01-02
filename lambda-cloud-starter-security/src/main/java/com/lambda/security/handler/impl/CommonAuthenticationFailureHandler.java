@@ -142,21 +142,20 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
                 // 构建错误模型
                 ErrorModel errorModel = new ErrorModel();
                 errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+                errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
 
                 // 根据异常类型设置错误码
                 if (exception instanceof NotLoginException NotLoginException) {
-                    errorModel.setError(NotLoginException.getType());
-                } else if (exception instanceof SaTokenException saTokenException) {
-                    errorModel.setError(String.valueOf(saTokenException.getCode()));
+                    errorModel.setCode(Integer.valueOf(NotLoginException.getType()));
                 } else if (exception instanceof CaptchaRequiredException captchaRequiredException) {
-                    errorModel.setError(String.valueOf(captchaRequiredException.getCode()));
+                    errorModel.setCode(captchaRequiredException.getCode());
                     Map<String, Object> data = new HashMap<>();
                     data.put("captchaRequired", true);
                     data.put("currentFailureTimes", captchaRequiredException.getCurrentFailureTimes());
                     data.put("triggerTimes", captchaRequiredException.getTriggerTimes());
                     errorModel.setDetails(data);
-                } else {
-                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                } else if (exception instanceof SaTokenException saTokenException) {
+                    errorModel.setCode(saTokenException.getCode());
                 }
 
                 // 设置错误详细信息

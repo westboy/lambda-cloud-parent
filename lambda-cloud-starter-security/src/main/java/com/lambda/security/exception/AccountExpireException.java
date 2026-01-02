@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginErrorCode;
+import com.lambda.security.LoginError;
 
 /**
  * 账户过期异常
@@ -35,7 +35,7 @@ import com.lambda.security.LoginErrorCode;
  * @author Lambda Cloud Team
  * @since 1.0.0
  * @see AuthenticationException
- * @see LoginErrorCode#CODE_20003
+ * @see LoginError#ACCOUNT_EXPIRED
  */
 public class AccountExpireException extends AuthenticationException {
 
@@ -49,6 +49,6 @@ public class AccountExpireException extends AuthenticationException {
      * @param message 异常详细消息，描述账户过期的具体原因
      */
     public AccountExpireException(String message) {
-        super(LoginErrorCode.CODE_20003, message);
+        super(LoginError.ACCOUNT_EXPIRED.getCode(), message);
     }
 }

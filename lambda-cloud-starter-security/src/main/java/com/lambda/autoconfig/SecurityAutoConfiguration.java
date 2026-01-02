@@ -1,5 +1,7 @@
 package com.lambda.autoconfig;
 
+import static com.lambda.cloud.core.Constants.GSON;
+
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
 import cn.binarywang.wx.miniapp.config.impl.WxMaRedissonConfigImpl;
@@ -314,19 +316,20 @@ public class SecurityAutoConfiguration {
                             SaSameUtil.checkCurrentRequestToken();
                         }
                     })
-                    .setError(exception -> {
-                        ErrorModel errorModel = new ErrorModel();
-                        errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
-                        if (exception instanceof SaTokenException saTokenException) {
-                            errorModel.setError(String.valueOf(saTokenException.getCode()));
-                        } else {
-                            errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
-                        }
-                        errorModel.setTimestamp(System.currentTimeMillis());
-                        errorModel.setMessage(exception.getMessage());
-                        return errorModel.toJsonString();
-                    });
+                    .setError(SecurityAutoConfiguration::toErrorModel);
         }
+    }
+
+    private static String toErrorModel(Throwable exception) {
+        ErrorModel errorModel = new ErrorModel();
+        errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
+        errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+        if (exception instanceof SaTokenException saTokenException) {
+            errorModel.setCode(saTokenException.getCode());
+        }
+        errorModel.setTimestamp(System.currentTimeMillis());
+        errorModel.setMessage(exception.getMessage());
+        return GSON.toJson(errorModel);
     }
 
     @Bean
@@ -336,17 +339,7 @@ public class SecurityAutoConfiguration {
                 .addInclude("/**")
                 .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
                 .setAuth(run -> StpLogicUtils.getActiveStpLogic().checkLogin())
-                .setError(e -> {
-                    ErrorModel errorModel = new ErrorModel();
-                    errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
-                    if (e instanceof SaTokenException saTokenException) {
-                        errorModel.setError(String.valueOf(saTokenException.getCode()));
-                    }
-                    errorModel.setTimestamp(System.currentTimeMillis());
-                    errorModel.setMessage(e.getMessage());
-                    return errorModel.toJsonString();
-                });
+                .setError(SecurityAutoConfiguration::toErrorModel);
     }
 
     /**
@@ -1053,17 +1046,14 @@ public class SecurityAutoConfiguration {
              * </ol>
              *
              * @param thirdPartyLoginService 第三方登录服务
-             * @param wxMaService            微信小程序服务
              * @param wxMaLoginHandler       微信小程序登录处理器
              * @return 微信小程序登录提供者
              */
             @Bean
             @ConditionalOnMissingBean
             public WxMaLoginProvider<WxMaLoginHandler> wxMaLoginProvider(
-                    ThirdPartyLoginService thirdPartyLoginService,
-                    WxMaService wxMaService,
-                    WxMaLoginHandler wxMaLoginHandler) {
-                return new WxMaLoginProvider<>(thirdPartyLoginService, wxMaService, wxMaLoginHandler);
+                    ThirdPartyLoginService thirdPartyLoginService, WxMaLoginHandler wxMaLoginHandler) {
+                return new WxMaLoginProvider<>(thirdPartyLoginService, wxMaLoginHandler);
             }
 
             /**

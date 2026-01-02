@@ -106,7 +106,7 @@ import com.lambda.security.exception.AuthenticationException;
  * @author jpjoo
  * @see LoginUser
  * @see AuthenticationException
- * @see com.lambda.security.web.hmac.HmacAuthenticationFilter
+ * @see com.lambda.security.web.hmac.HmacAuthenticationProcessingFilter
  */
 public interface HmacClientService {
 

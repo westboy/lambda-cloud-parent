@@ -1,6 +1,7 @@
 package com.lambda.autoconfig;
 
 import static cn.dev33.satoken.SaManager.log;
+import static com.lambda.cloud.core.Constants.GSON;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
@@ -147,7 +148,8 @@ public class GatewayAutoConfiguration {
                     }
                     errorModel.setTimestamp(System.currentTimeMillis());
                     errorModel.setMessage(e.getMessage());
-                    return errorModel.toJsonString();
+
+                    return GSON.toJson(errorModel);
                 });
     }
 

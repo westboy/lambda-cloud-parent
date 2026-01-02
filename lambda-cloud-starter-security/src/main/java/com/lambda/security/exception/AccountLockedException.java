@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginErrorCode;
+import com.lambda.security.LoginError;
 
 /**
  * 账户锁定异常
@@ -43,7 +43,7 @@ import com.lambda.security.LoginErrorCode;
  * @author Lambda Cloud Team
  * @since 1.0.0
  * @see AuthenticationException
- * @see LoginErrorCode#CODE_20002
+ * @see LoginError#ACCOUNT_LOCKED
  */
 public class AccountLockedException extends AuthenticationException {
 
@@ -57,6 +57,6 @@ public class AccountLockedException extends AuthenticationException {
      * @param message 异常详细消息，描述账户锁定的具体原因
      */
     public AccountLockedException(String message) {
-        super(LoginErrorCode.CODE_20002, message);
+        super(LoginError.ACCOUNT_LOCKED.getCode(), message);
     }
 }

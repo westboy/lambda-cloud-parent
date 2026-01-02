@@ -1,7 +1,6 @@
 package com.lambda.security.exception;
 
-import static com.lambda.security.LoginErrorCode.CODE_20006;
-
+import com.lambda.security.LoginError;
 import lombok.Getter;
 
 /**
@@ -26,7 +25,7 @@ public class CaptchaRequiredException extends AuthenticationException {
     private final int triggerTimes;
 
     public CaptchaRequiredException(String message, int currentFailureTimes, int triggerTimes) {
-        super(CODE_20006, message);
+        super(LoginError.CAPTCHA_REQUIRED.getCode(), message);
         this.currentFailureTimes = currentFailureTimes;
         this.triggerTimes = triggerTimes;
     }

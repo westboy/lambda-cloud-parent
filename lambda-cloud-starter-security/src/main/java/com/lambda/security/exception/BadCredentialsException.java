@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginErrorCode;
+import com.lambda.security.LoginError;
 
 /**
  * 凭据错误异常
@@ -43,7 +43,7 @@ import com.lambda.security.LoginErrorCode;
  * @author Lambda Cloud Team
  * @since 1.0.0
  * @see AuthenticationException
- * @see LoginErrorCode#CODE_20001
+ * @see LoginError#ACCOUNT_PASSWORD_ERROR
  */
 public class BadCredentialsException extends AuthenticationException {
 
@@ -57,6 +57,6 @@ public class BadCredentialsException extends AuthenticationException {
      * @param message 异常详细消息，建议使用通用的错误提示避免信息泄露
      */
     public BadCredentialsException(String message) {
-        super(LoginErrorCode.CODE_20001, message);
+        super(LoginError.ACCOUNT_PASSWORD_ERROR.getCode(), message);
     }
 }

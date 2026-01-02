@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginErrorCode;
+import com.lambda.security.LoginError;
 
 /**
  * 验证码验证异常
@@ -44,7 +44,7 @@ import com.lambda.security.LoginErrorCode;
  * @author Lambda Cloud Team
  * @since 1.0.0
  * @see AuthenticationException
- * @see LoginErrorCode#CODE_20004
+ * @see LoginError#CAPTCHA_ERROR
  */
 public class VerifyCodeValidationException extends AuthenticationException {
 
@@ -58,6 +58,6 @@ public class VerifyCodeValidationException extends AuthenticationException {
      * @param message 异常详细消息，描述验证码验证失败的具体原因
      */
     public VerifyCodeValidationException(String message) {
-        super(LoginErrorCode.CODE_20004, message);
+        super(LoginError.CAPTCHA_ERROR.getCode(), message);
     }
 }

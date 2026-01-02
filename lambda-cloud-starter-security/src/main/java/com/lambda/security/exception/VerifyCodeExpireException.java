@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginErrorCode;
+import com.lambda.security.LoginError;
 
 /**
  * 验证码过期异常
@@ -44,7 +44,7 @@ import com.lambda.security.LoginErrorCode;
  * @author Lambda Cloud Team
  * @since 1.0.0
  * @see AuthenticationException
- * @see LoginErrorCode#CODE_20005
+ * @see LoginError#CAPTCHA_EXPIRED
  */
 public class VerifyCodeExpireException extends AuthenticationException {
 
@@ -58,6 +58,6 @@ public class VerifyCodeExpireException extends AuthenticationException {
      * @param message 异常详细消息，描述验证码过期的具体情况
      */
     public VerifyCodeExpireException(String message) {
-        super(LoginErrorCode.CODE_20005, message);
+        super(LoginError.CAPTCHA_EXPIRED.getCode(), message);
     }
 }

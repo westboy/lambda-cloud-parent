@@ -1,6 +1,6 @@
 package com.lambda.security.exception;
 
-import com.lambda.security.LoginErrorCode;
+import com.lambda.security.LoginError;
 
 /**
  * 用户名未找到异常
@@ -44,7 +44,7 @@ import com.lambda.security.LoginErrorCode;
  * @author Lambda Cloud Team
  * @since 1.0.0
  * @see AuthenticationException
- * @see LoginErrorCode#CODE_20001
+ * @see LoginError#ACCOUNT_PASSWORD_ERROR
  */
 public class UsernameNotFoundException extends AuthenticationException {
 
@@ -58,6 +58,6 @@ public class UsernameNotFoundException extends AuthenticationException {
      * @param message 异常详细消息，建议使用通用错误提示避免信息泄露
      */
     public UsernameNotFoundException(String message) {
-        super(LoginErrorCode.CODE_20001, message);
+        super(LoginError.ACCOUNT_PASSWORD_ERROR.getCode(), message);
     }
 }

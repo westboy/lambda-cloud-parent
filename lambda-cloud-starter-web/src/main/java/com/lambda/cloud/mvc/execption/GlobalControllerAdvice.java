@@ -171,8 +171,9 @@ public class GlobalControllerAdvice {
         model.setPath(request.getRequestURI());
         model.setTimestamp(System.currentTimeMillis());
         model.setStatus(HttpStatus.NOT_IMPLEMENTED.value());
+        model.setError(HttpStatus.NOT_IMPLEMENTED.getReasonPhrase());
         model.setMessage(exception.getMessage());
-        model.setError(exception.getCode());
+        model.setCode(exception.getCode());
         return model;
     }
 

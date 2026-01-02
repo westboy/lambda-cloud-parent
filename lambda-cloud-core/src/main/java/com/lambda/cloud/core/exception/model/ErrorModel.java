@@ -1,7 +1,5 @@
 package com.lambda.cloud.core.exception.model;
 
-import static com.lambda.cloud.core.Constants.GSON;
-
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import lombok.Getter;
@@ -71,6 +69,14 @@ public class ErrorModel {
     private Object details;
 
     /**
+     * 错误代码
+     * <p>
+     * 用于表示具体的错误代码，通常与 {@link ErrorCode} 接口中的错误码相对应。
+     * 该字段可以用于进一步细化错误类型，便于系统内部错误处理和日志记录。
+     */
+    private Integer code = 20000;
+
+    /**
      * 设置参数错误列表
      * <p>
      * 使用不可变集合来确保错误列表的安全性，防止外部修改。
@@ -84,17 +90,5 @@ public class ErrorModel {
         } else {
             this.errors = ImmutableList.copyOf(errors);
         }
-    }
-
-    /**
-     * 将错误模型转换为JSON字符串
-     * <p>
-     * 使用Gson将当前错误模型对象序列化为JSON格式的字符串，
-     * 便于API响应和日志记录。
-     *
-     * @return JSON格式的错误信息字符串
-     */
-    public String toJsonString() {
-        return GSON.toJson(this);
     }
 }

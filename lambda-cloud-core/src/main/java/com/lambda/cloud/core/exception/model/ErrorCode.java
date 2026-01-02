@@ -37,7 +37,7 @@ public interface ErrorCode extends Serializable {
      *
      * @return 错误码字符串，不应为null
      */
-    String getCode();
+    Integer getCode();
 
     /**
      * 获取错误信息

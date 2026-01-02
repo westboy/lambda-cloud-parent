@@ -4,7 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.StpLogicUtils;
-import com.lambda.security.LoginErrorCode;
+import com.lambda.security.LoginError;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.exception.BadCredentialsException;
 import com.lambda.security.service.UserDetailService;
@@ -289,7 +289,7 @@ public class SmsAuthenticationProcessingFilter extends AbstractAuthenticationPro
 
         boolean containsLoginType = StpLogicUtils.containsLoginType(loginType);
         if (!containsLoginType) {
-            throw new AuthenticationException(LoginErrorCode.CODE_20000, "登录类型错误！");
+            throw new AuthenticationException(LoginError.LOGIN_TYPE_ERROR.getCode(), "登录类型错误！");
         }
 
         if (StrUtil.isNotBlank(device)) {

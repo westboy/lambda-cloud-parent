@@ -2,7 +2,7 @@ package com.lambda.security.provider.wx;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
-import me.chanjar.weixin.common.error.WxErrorException;
+import com.lambda.cloud.core.exception.NotSupportedException;
 
 /**
  * 微信小程序登录处理器接口
@@ -80,47 +80,6 @@ import me.chanjar.weixin.common.error.WxErrorException;
  * @see WxMaJscode2SessionResult
  */
 public interface WxMaLoginHandler {
-    /**
-     * 此方法已过期,新方法 {@link WxMaLoginHandler#handle(String)}
-     * <p>
-     *
-     * 处理微信小程序登录逻辑
-     * <p>
-     * 该方法是微信小程序登录处理的核心方法，负责将微信小程序的登录参数（code）
-     * 转换为系统可用的用户标识信息。默认实现会调用微信API获取用户的openid。
-     * </p>
-     *
-     * <h3>默认处理流程：</h3>
-     * <ol>
-     *   <li><strong>API调用：</strong>调用微信jsCode2SessionInfo接口</li>
-     *   <li><strong>Session获取：</strong>获取包含openid、session_key等信息的结果</li>
-     *   <li><strong>返回Openid：</strong>提取并返回用户的openid作为唯一标识</li>
-     * </ol>
-     *
-     * <h3>可扩展的处理逻辑：</h3>
-     * <ul>
-     *   <li><strong>用户信息解密：</strong>使用session_key解密用户敏感信息</li>
-     *   <li><strong>Unionid处理：</strong>处理微信开放平台的unionid</li>
-     *   <li><strong>自定义返回：</strong>返回包含更多信息的自定义对象</li>
-     *   <li><strong>业务逻辑：</strong>添加特定的业务处理逻辑</li>
-     * </ul>
-     *
-     * <h3>返回值说明：</h3>
-     * <p>
-     * 默认实现返回用户的openid字符串，但实现类可以返回任何类型的对象，
-     * 如Map、自定义POJO等，以满足不同的业务需求。
-     * </p>
-     *
-     * @param loginParam 微信小程序登录参数，通常是通过wx.login()获取的code
-     * @param wxMaService 微信小程序API服务，用于调用微信相关接口
-     * @return 处理后的用户标识信息，默认返回openid，可自定义返回其他类型
-     * @throws WxErrorException 当微信API调用失败时抛出，包含具体的错误信息
-     */
-    @Deprecated(since = "2025.1")
-    default Object handle(String loginParam, WxMaService wxMaService) throws WxErrorException {
-        WxMaJscode2SessionResult wxMaJscode2SessionResult = wxMaService.jsCode2SessionInfo(loginParam);
-        return wxMaJscode2SessionResult.getOpenid();
-    }
 
     /**
      * 处理微信小程序登录逻辑
@@ -152,9 +111,8 @@ public interface WxMaLoginHandler {
      *
      * @param loginParam 微信小程序登录参数，通常是通过wx.login()获取的code
      * @return 处理后的用户标识信息，默认返回openid，可自定义返回其他类型
-     * @throws WxErrorException 当微信API调用失败时抛出，包含具体的错误信息
      */
-    default Object handle(String loginParam) throws WxErrorException {
-        return null;
+    default Object handle(String loginParam) {
+        throw new NotSupportedException("当前方法的未实现: " + loginParam);
     }
 }

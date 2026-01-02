@@ -5,8 +5,6 @@ import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.provider.AbstractThirdPartLoginProvider;
 import com.lambda.security.provider.ThirdPartLoginResult;
 import com.lambda.security.service.ThirdPartyLoginService;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import me.chanjar.weixin.common.error.WxErrorException;
 
 /**
  * 微信小程序登录提供者
@@ -90,17 +88,7 @@ import me.chanjar.weixin.common.error.WxErrorException;
  * @see ThirdPartLoginResult
  * @see WxMaService
  */
-@SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
 public class WxMaLoginProvider<T extends WxMaLoginHandler> extends AbstractThirdPartLoginProvider {
-
-    /**
-     * 微信小程序API服务
-     * <p>
-     * 用于调用微信小程序相关的API，包括code换取session_key、
-     * 用户信息解密、手机号解密等功能。
-     * </p>
-     */
-    protected final WxMaService wxMaService;
 
     /**
      * 微信小程序登录处理器
@@ -118,12 +106,10 @@ public class WxMaLoginProvider<T extends WxMaLoginHandler> extends AbstractThird
      * </p>
      *
      * @param thirdPartService 第三方登录服务，用于处理通用的第三方登录逻辑
-     * @param wxMaService 微信小程序API服务，用于调用微信相关接口
      * @param wxMaLoginHandler 微信小程序登录处理器，处理具体的登录业务逻辑
      */
-    public WxMaLoginProvider(ThirdPartyLoginService thirdPartService, WxMaService wxMaService, T wxMaLoginHandler) {
+    public WxMaLoginProvider(ThirdPartyLoginService thirdPartService, T wxMaLoginHandler) {
         super(thirdPartService);
-        this.wxMaService = wxMaService;
         this.WxMaLoginHandler = wxMaLoginHandler;
     }
 
@@ -157,9 +143,9 @@ public class WxMaLoginProvider<T extends WxMaLoginHandler> extends AbstractThird
     @Override
     public ThirdPartLoginResult getThirdLoginParam(String loginParam) {
         try {
-            Object result = WxMaLoginHandler.handle(loginParam, wxMaService);
+            Object result = WxMaLoginHandler.handle(loginParam);
             return new ThirdPartLoginResult(getThirdType(), result);
-        } catch (WxErrorException e) {
+        } catch (Exception e) {
             throw new AuthenticationException(e.getMessage());
         }
     }
