@@ -223,8 +223,8 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
      * }</pre>
      *
      * @param securityProperties 安全配置属性，包含验证码相关配置
-     * @param objectMapper JSON对象映射器，用于序列化响应数据
-     * @param captchaStore 验证码存储接口，用于存储验证码答案
+     * @param objectMapper       JSON对象映射器，用于序列化响应数据
+     * @param captchaStore       验证码存储接口，用于存储验证码答案
      */
     @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "RedisHelper is thread safe")
     public CaptchaVerifyCodeGenerateImpl(
@@ -275,7 +275,9 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
     @Override
     public boolean support(HttpServletRequest request) {
         final SecurityProperties.Verify verify = securityProperties.getVerify();
-        boolean captchaEnabled = securityProperties.getForm().isEnableVerify();
+        boolean captchaEnabled = securityProperties.getForm().isEnableVerify()
+                || securityProperties.getForm().getCaptchaTrigger().isEnabled()
+                || securityProperties.getSms().isEnableVerify();
         return captchaEnabled && matcher.match(verify.getUrl(), request.getRequestURI());
     }
 
@@ -304,9 +306,9 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
      *   <li>资源清理：及时关闭输出流等资源</li>
      * </ul>
      *
-     * @param request HTTP请求对象
+     * @param request  HTTP请求对象
      * @param response HTTP响应对象
-     * @param chain 过滤器链（此方法中不会调用）
+     * @param chain    过滤器链（此方法中不会调用）
      * @throws IOException 写入响应数据时可能抛出的IO异常
      */
     @Override
@@ -395,9 +397,9 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
      * }
      * }</pre>
      *
-     * @param request HTTP请求对象，用于判断请求类型
+     * @param request  HTTP请求对象，用于判断请求类型
      * @param response HTTP响应对象，用于输出验证码数据
-     * @throws IOException 写入响应数据时可能抛出的IO异常
+     * @throws IOException                   写入响应数据时可能抛出的IO异常
      * @throws VerifyCodeValidationException JSON序列化失败时抛出
      */
     public void writeCaptcha(HttpServletRequest request, HttpServletResponse response) throws IOException {

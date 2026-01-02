@@ -93,9 +93,8 @@ public record TenantFilter(DubboProperties.Tenant tenantProperties) implements F
             log.error("Tenant filter error", e);
             throw new RpcException("Tenant context processing failed: " + e.getMessage());
         } finally {
-            if (RpcContext
-                    .getServerAttachment()
-                    .getAttachment(tenantProperties.getTenantIdHeader()) != null || DubboContextHolder.getCurrentTenantId() != null) {
+            if (RpcContext.getServerAttachment().getAttachment(tenantProperties.getTenantIdHeader()) != null
+                    || DubboContextHolder.getCurrentTenantId() != null) {
                 DubboContextHolder.clearCurrentTenantId();
             }
         }

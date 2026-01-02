@@ -77,6 +77,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -800,8 +801,8 @@ public class SecurityAutoConfiguration {
          * </p>
          */
         @Bean
+        @Order(10)
         @ConditionalOnProperty(prefix = "lambda.security.form.captcha-trigger", name = "enabled")
-        @ConditionalOnBean({CaptchaTriggerStrategy.class, CaptchaStore.class})
         public FormLoginValidator dynamicCaptchaValidator(
                 CaptchaTriggerStrategy captchaTriggerStrategy, CaptchaStore captchaStore) {
             return new DynamicCaptchaValidator(captchaTriggerStrategy, captchaStore, securityProperties);
@@ -853,6 +854,7 @@ public class SecurityAutoConfiguration {
          * @return 表单认证过滤器注册Bean
          */
         @Bean
+        @Order(30)
         public FilterRegistrationBean<FormAuthenticationProcessingFilter> defaultAuthenticationProcessingFilter(
                 FormLockingStrategy formLockingStrategy,
                 ObjectMapper objectMapper,
