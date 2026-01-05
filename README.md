@@ -182,3 +182,7 @@ lambda-cloud-parent
 ## License
 
 Lambda Cloud 采用 Apache License 2.0 协议，详见 [LICENSE](LICENSE) 文件。
+
+## 交流群
+
+QQ交流群：47736663 [点击加入](https://qm.qq.com/q/EBIJVZBVGE) 
