@@ -3,7 +3,7 @@
 </p>
 <p align="center">
   <a href="https://gitee.com/lamuda-cloud/lamuda-cloud-parent">
-    <img src="https://img.shields.io/badge/lambda--cloud-2025.1.1--SNAPSHOT-brightgreen" alt="Lambda Fusion">
+    <img src="https://img.shields.io/badge/lambda--cloud-2025.1.1--SNAPSHOT-brightgreen" alt="Lambda Cloud">
   </a>
   <a href="https://spring.io/projects/spring-boot">
     <img src="https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen" alt="Spring Boot">
@@ -16,7 +16,7 @@
   </a>
 </p>
 
-**Lambda Fusion** 是一个基于 **Spring Cloud 2025.0.0** 和 **Spring Boot 3.5.3** 构建的企业级微服务开发框架，构建的企业级微服务开发框架。它旨在帮助中小型企业降低微服务架构的开发与运维成本。框架对多种主流中间件进行了统一封装与自动化配置，具备 开箱即用、高度模块化、易于扩展 等特性，是快速搭建稳定、可维护的企业级分布式系统的理想选择。
+**Lambda Cloud** 是一个基于 **Spring Cloud 2025.0.0** 和 **Spring Boot 3.5.3** 构建的企业级微服务开发框架，构建的企业级微服务开发框架。它旨在帮助中小型企业降低微服务架构的开发与运维成本。框架对多种主流中间件进行了统一封装与自动化配置，具备 开箱即用、高度模块化、易于扩展 等特性，是快速搭建稳定、可维护的企业级分布式系统的理想选择。
 
 ## 核心优势
 
