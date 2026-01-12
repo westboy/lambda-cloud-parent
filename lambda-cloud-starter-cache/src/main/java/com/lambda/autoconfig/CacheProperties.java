@@ -2,11 +2,12 @@ package com.lambda.autoconfig;
 
 import com.lambda.cloud.cache.CacheConfig;
 import com.lambda.cloud.cache.CacheType;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 缓存配置属性
@@ -14,6 +15,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "lambda.cache")
 public class CacheProperties {
+
+    /**
+     * 启用缓存
+     */
+    private Boolean enabled;
 
     /**
      * 缓存类型
