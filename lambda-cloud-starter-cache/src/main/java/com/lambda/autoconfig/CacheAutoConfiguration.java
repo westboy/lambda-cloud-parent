@@ -24,6 +24,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
 import java.util.Map;
 
@@ -87,8 +89,10 @@ public class CacheAutoConfiguration {
         public CacheManager cacheManager(RedisConnectionFactory connectionFactory, CacheProperties properties) {
             log.info("Initializing Redis cache manager");
 
+            // 构造默认配置
             RedisCacheConfiguration defaultCacheConfig = createRedisCacheConfiguration(properties.getDefaults());
 
+            // 构造多缓存配置
             Map<String, RedisCacheConfiguration> initialCacheConfigurations = new java.util.HashMap<>();
             properties.getCaches().forEach((name, config) -> {
                 initialCacheConfigurations.put(name, createRedisCacheConfiguration(config));
@@ -102,6 +106,15 @@ public class CacheAutoConfiguration {
 
         private RedisCacheConfiguration createRedisCacheConfiguration(CacheProperties.CacheConfigProperties properties) {
             RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
+            
+            // 统一序列化策略：Key 使用 String，Value 使用 GenericJackson2Json
+            config = config.serializeKeysWith(
+                    RedisSerializationContext.SerializationPair.fromSerializer(
+                            RedisSerializer.string()))
+                    .serializeValuesWith(
+                            RedisSerializationContext.SerializationPair.fromSerializer(
+                                    RedisSerializer.json()));
+
             if (properties.getTtl() != null) {
                 config = config.entryTtl(properties.getTtl());
             }
