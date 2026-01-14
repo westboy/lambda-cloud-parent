@@ -61,17 +61,33 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
     protected Cache getMissingCache(@NonNull String name) {
         CacheConfig config = properties.getCacheConfig(name);
 
-        // 创建 L1 (Caffeine)
-        Cache l1Cache = createCaffeineCache(name, config);
-
-        // 创建 L2 (Redis)
+        // 创建 L2 (Redis) - 必须先创建L2，因为L1的CacheLoader可能需要依赖L2
         Cache l2Cache = createRedisCache(name, config);
+
+        // 创建 L1 (Caffeine)
+        Cache l1Cache = createCaffeineCache(name, config, l2Cache);
 
         return new MultiLevelCache(name, l1Cache, l2Cache, redisTemplate, CacheConstants.CACHE_SYNC_TOPIC, nodeId);
     }
 
-    private Cache createCaffeineCache(String name, CacheConfig config) {
+    private Cache createCaffeineCache(String name, CacheConfig config, Cache l2Cache) {
         Caffeine<Object, Object> builder = CaffeineFactory.createCaffeine(config);
+        
+        // 如果配置了 refreshAfterWrite，则必须提供 CacheLoader
+        // 这里使用 L2CacheLoader 从 Redis 中加载数据
+        if (config.getRefreshAfterWrite() != null) {
+            com.github.benmanes.caffeine.cache.CacheLoader<Object, Object> loader = key -> {
+                try {
+                    Cache.ValueWrapper wrapper = l2Cache.get(key);
+                    return wrapper != null ? wrapper.get() : null;
+                } catch (Exception e) {
+                    log.warn("Failed to load key from L2 cache: {}", key, e);
+                    return null;
+                }
+            };
+            return new CaffeineCache(name, builder.build(loader), config.isAllowNullValues());
+        }
+        
         return new CaffeineCache(name, builder.build(), config.isAllowNullValues());
     }
 
