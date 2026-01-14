@@ -53,7 +53,7 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
     }
 
     @Override
-    protected Collection<? extends Cache> loadCaches() {
+    protected @NonNull Collection<? extends Cache> loadCaches() {
         return Collections.emptyList();
     }
 

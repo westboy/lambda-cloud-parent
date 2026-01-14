@@ -94,14 +94,4 @@ public class CacheConfig {
      */
     @Builder.Default
     private boolean weakKeys = false;
-
-    /**
-     * 创建默认配置
-     *
-     * @param cacheName 缓存名称
-     * @return 缓存配置
-     */
-    public static CacheConfig defaultConfig(String cacheName) {
-        return CacheConfig.builder().cacheName(cacheName).build();
-    }
 }

@@ -25,6 +25,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 
+import java.util.Map;
+
 /**
  * 缓存自动配置
  * <p>
@@ -55,11 +57,19 @@ public class CacheAutoConfiguration {
             CaffeineCacheManager cacheManager = new CaffeineCacheManager();
             
             // 使用默认配置构建Caffeine
-            CacheConfig config = properties.getDefaults().toCacheConfig("default");
-            Caffeine<Object, Object> caffeineBuilder = CaffeineFactory.createCaffeine(config);
+            CacheConfig defaultConfig = properties.getDefaults().toCacheConfig("default");
+            Caffeine<Object, Object> defaultBuilder = CaffeineFactory.createCaffeine(defaultConfig);
             
-            cacheManager.setCaffeine(caffeineBuilder);
+            cacheManager.setCaffeine(defaultBuilder);
             cacheManager.setAllowNullValues(properties.getDefaults().isAllowNullValues());
+
+            // 注册自定义配置的缓存
+            properties.getCaches().forEach((name, configProperties) -> {
+                CacheConfig config = configProperties.toCacheConfig(name);
+                Caffeine<Object, Object> builder = CaffeineFactory.createCaffeine(config);
+                cacheManager.registerCustomCache(name, builder.build());
+            });
+
             return cacheManager;
         }
     }
@@ -77,22 +87,31 @@ public class CacheAutoConfiguration {
         public CacheManager cacheManager(RedisConnectionFactory connectionFactory, CacheProperties properties) {
             log.info("Initializing Redis cache manager");
 
-            RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig();
-            if (properties.getDefaults().getTtl() != null) {
-                defaultCacheConfig =
-                        defaultCacheConfig.entryTtl(properties.getDefaults().getTtl());
-            }
-            if (properties.getDefaults().getKeyPrefix() != null) {
-                defaultCacheConfig = defaultCacheConfig.prefixCacheNameWith(
-                        properties.getDefaults().getKeyPrefix());
-            }
-            if (!properties.getDefaults().isAllowNullValues()) {
-                defaultCacheConfig = defaultCacheConfig.disableCachingNullValues();
-            }
+            RedisCacheConfiguration defaultCacheConfig = createRedisCacheConfiguration(properties.getDefaults());
+
+            Map<String, RedisCacheConfiguration> initialCacheConfigurations = new java.util.HashMap<>();
+            properties.getCaches().forEach((name, config) -> {
+                initialCacheConfigurations.put(name, createRedisCacheConfiguration(config));
+            });
 
             return RedisCacheManager.builder(connectionFactory)
                     .cacheDefaults(defaultCacheConfig)
+                    .withInitialCacheConfigurations(initialCacheConfigurations)
                     .build();
+        }
+
+        private RedisCacheConfiguration createRedisCacheConfiguration(CacheProperties.CacheConfigProperties properties) {
+            RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
+            if (properties.getTtl() != null) {
+                config = config.entryTtl(properties.getTtl());
+            }
+            if (properties.getKeyPrefix() != null) {
+                config = config.prefixCacheNameWith(properties.getKeyPrefix());
+            }
+            if (!properties.isAllowNullValues()) {
+                config = config.disableCachingNullValues();
+            }
+            return config;
         }
     }
 
