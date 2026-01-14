@@ -57,7 +57,7 @@ public class KafkaDelayLevel {
             this.level = delay;
         } else {
             int i = Math.min((int) Math.log10(delay), 5);
-            // 分区从0开始，1-9秒占用分区0-8，10秒以上从分区9开始
+            // 1-9秒占用分区0-8，10秒以上从分区9开始
             // log10(10)=1 -> 8+1=9
             // log10(100000)=5 -> 8+5=13
             this.partition = 8 + i;

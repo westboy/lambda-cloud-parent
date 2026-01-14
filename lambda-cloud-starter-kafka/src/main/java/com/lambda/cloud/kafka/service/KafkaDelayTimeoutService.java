@@ -83,7 +83,7 @@ public class KafkaDelayTimeoutService {
                 long offset = delayed.getOffset();
                 log.trace("Expired: {}, Offset: {}", consumerRecord.value(), offset);
                 kafkaDelayTemplate.send(new KafkaDelayRecord(consumerRecord).producerRecord());
-                // Mark as processed
+                // 标记为已处理
                 kafkaDelayPartition.removePendingOffset(offset);
                 counter.getAndDecrement();
             }

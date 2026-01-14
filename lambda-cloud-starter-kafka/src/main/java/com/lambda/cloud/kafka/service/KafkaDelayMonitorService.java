@@ -98,7 +98,7 @@ public class KafkaDelayMonitorService {
                     new TopicPartition(KafkaDelayRecord.DELAY_TOPIC, kafkaDelayPartition.getPartition())));
             do {
                 try {
-                    // Flow control: pause if queue is full
+                    // 流量控制：如果队列满了则暂停
                     while (kafkaDelayPartition.isFull()) {
                         try {
                             Thread.sleep(50);
@@ -115,11 +115,23 @@ public class KafkaDelayMonitorService {
                         continue;
                     }
                     for (ConsumerRecord<String, String> record0 : records) {
-                        execute0(record0, kafkaDelayPartition);
+                        try {
+                            execute0(record0, kafkaDelayPartition);
+                        } catch (Exception e) {
+                            log.error(
+                                    "Failed to process record in monitor service. Topic: {}, Partition: {}, Offset: {}",
+                                    record0.topic(),
+                                    record0.partition(),
+                                    record0.offset(),
+                                    e);
+                            // 即使处理失败，我们也必须跟踪偏移量，以避免永远卡在这个消息上。
+                            // 无论如何，我们都应该从 pending 中移除它，以便它可以被提交（跳过）。
+                            kafkaDelayPartition.removePendingOffset(record0.offset());
+                        }
                     }
                 } catch (Exception e) {
                     log.error("Error in monitor loop for partition {}", kafkaDelayPartition.getPartition(), e);
-                    // Prevent tight loop on persistent errors
+                    // 防止在持续错误时出现紧密循环
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ie) {
@@ -155,36 +167,26 @@ public class KafkaDelayMonitorService {
         long offset = record0.offset();
         TopicPartition topicPartition = new TopicPartition(topic, partition);
 
-        // Track this offset as pending
+        // 立即将此偏移量跟踪为待处理，以免稍后发生异常时丢失跟踪
         kafkaDelayPartition.addPendingOffset(offset);
 
         KafkaDelayRecord kafkaDelayRecord = new KafkaDelayRecord(record0);
         if (kafkaDelayRecord.isExpired()) {
             kafkaDelayTemplate.send(kafkaDelayRecord.producerRecord());
-            // Processed immediately, remove from pending
+            // 立即处理，从 pending 中移除
             kafkaDelayPartition.removePendingOffset(offset);
         } else {
             int remaining = kafkaDelayRecord.getDelayTime();
             long active = kafkaDelayRecord.getTopicExpireTime();
             KafkaDelayEntry delayed = new KafkaDelayEntry(active, record0, topicPartition, offset);
-            if (queue.offer(delayed)) {
-                counter.getAndIncrement();
-                log.trace(
-                        "Message are fetched from the topic! [{}-{}], remaining: {}s, active: {}",
-                        topic,
-                        partition,
-                        remaining,
-                        active);
-            } else {
-                // Should not happen if isFull check works, but if it does, we must handle it.
-                // If we can't queue it, we can't process it later.
-                // For now, log error. Ideally we should block or retry.
-                log.error(
-                        "Queue full! Dropping message (offset {}) from memory. It will be re-consumed on restart.",
-                        offset);
-                // We do NOT remove pending offset, so commit will not advance past this.
-                // This ensures at-least-once delivery on restart.
-            }
+            queue.offer(delayed);
+            counter.getAndIncrement();
+            log.trace(
+                    "Message are fetched from the topic! [{}-{}], remaining: {}s, active: {}",
+                    topic,
+                    partition,
+                    remaining,
+                    active);
         }
     }
 

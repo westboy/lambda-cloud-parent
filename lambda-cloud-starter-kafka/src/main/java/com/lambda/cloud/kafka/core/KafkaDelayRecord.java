@@ -92,7 +92,7 @@ public class KafkaDelayRecord {
      */
     private Long calculateTopicExpireTime() {
         Header header = this.consumerRecord.headers().lastHeader(EXPIRE_TIME_IN_TOPIC);
-        return header != null ? Long.parseLong(new String(header.value(), UTF_8)) : null;
+        return header != null && header.value() != null ? Long.parseLong(new String(header.value(), UTF_8)) : null;
     }
 
     /**
@@ -102,7 +102,7 @@ public class KafkaDelayRecord {
      */
     private Long calculateMessageExpireTime() {
         Header header = this.consumerRecord.headers().lastHeader(MESSAGE_EXPIRE_TIME);
-        return header != null ? Long.parseLong(new String(header.value(), UTF_8)) : null;
+        return header != null && header.value() != null ? Long.parseLong(new String(header.value(), UTF_8)) : null;
     }
 
     /**
