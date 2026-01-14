@@ -1,6 +1,9 @@
 package com.lambda.cloud.cache.provider;
 
 import com.lambda.cloud.cache.support.CacheMessage;
+
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
@@ -149,6 +152,42 @@ public class MultiLevelCache implements Cache {
         publishMessage(CacheMessage.Type.EVICT, key);
     }
 
+    /**
+     * 批量放入
+     *
+     * @param map 键值对映射
+     */
+    public void putAll(Map<?, ?> map) {
+        if (map.isEmpty()) {
+            return;
+        }
+        // 分别放入 L2 和 L1
+        map.forEach((key, value) -> {
+            l2Cache.put(key, value);
+            l1Cache.put(key, value);
+        });
+        // 发布批量 PUT 消息
+        publishBatchMessage(CacheMessage.Type.PUT_ALL, map.keySet());
+    }
+
+    /**
+     * 批量驱逐
+     *
+     * @param keys 键集合
+     */
+    public void evictAll(Collection<?> keys) {
+        if (keys.isEmpty()) {
+            return;
+        }
+        // 分别从 L2 和 L1 驱逐
+        keys.forEach(key -> {
+            l2Cache.evict(key);
+            l1Cache.evict(key);
+        });
+        // 发布批量 EVICT 消息
+        publishBatchMessage(CacheMessage.Type.EVICT_ALL, new java.util.HashSet<>(keys));
+    }
+
     @Override
     public void clear() {
         l2Cache.clear();
@@ -157,8 +196,15 @@ public class MultiLevelCache implements Cache {
     }
 
     private void publishMessage(CacheMessage.Type type, Object key) {
+        publishBatchMessage(type, key != null ? java.util.Collections.singleton(key) : null);
+    }
+
+    private void publishBatchMessage(CacheMessage.Type type, java.util.Collection<?> keys) {
         try {
-            CacheMessage message = new CacheMessage(name, key, currentNodeId, null, type);
+            Object key = (keys != null && keys.size() == 1) ? keys.iterator().next() : null;
+            java.util.Set<Object> keySet = (keys != null && keys.size() > 1) ? new java.util.HashSet<>(keys) : null;
+
+            CacheMessage message = new CacheMessage(name, key, currentNodeId, keySet, type);
             redisTemplate.convertAndSend(topic, message);
         } catch (Exception e) {
             log.error("Failed to publish cache message", e);
