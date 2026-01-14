@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.lambda.autoconfig.CacheProperties;
 import com.lambda.cloud.cache.CacheConfig;
 import com.lambda.cloud.cache.CacheConstants;
+import com.lambda.cloud.cache.support.CaffeineFactory;
 import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Collection;
@@ -70,55 +71,8 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
     }
 
     private Cache createCaffeineCache(String name, CacheConfig config) {
-        Caffeine<Object, Object> builder = getCaffeine(config);
-
-        // 访问后过期
-        if (config.getExpireAfterAccess() != null) {
-            builder.expireAfterAccess(config.getExpireAfterAccess());
-        }
-
-        // 软引用值
-        if (config.isSoftValues()) {
-            builder.softValues();
-        }
-
-        // 弱引用值（与软引用互斥）
-        if (config.isWeakValues() && !config.isSoftValues()) {
-            builder.weakValues();
-        }
-
-        // 弱引用键
-        if (config.isWeakKeys()) {
-            builder.weakKeys();
-        }
-
-        // 统计信息
-        if (config.isEnableStats()) {
-            builder.recordStats();
-        }
-
+        Caffeine<Object, Object> builder = CaffeineFactory.createCaffeine(config);
         return new CaffeineCache(name, builder.build(), config.isAllowNullValues());
-    }
-
-    private static Caffeine<Object, Object> getCaffeine(CacheConfig config) {
-        Caffeine<Object, Object> builder = Caffeine.newBuilder();
-
-        // 初始容量
-        if (config.getInitialCapacity() > 0) {
-            builder.initialCapacity(config.getInitialCapacity());
-        }
-
-        // 最大缓存大小
-        if (config.getMaxSize() > 0) {
-            builder.maximumSize(config.getMaxSize());
-        }
-
-        // L1 TTL: 优先使用 l1Ttl，否则回退到 ttl
-        Duration l1Ttl = config.getL1Ttl() != null ? config.getL1Ttl() : config.getTtl();
-        if (l1Ttl != null) {
-            builder.expireAfterWrite(l1Ttl);
-        }
-        return builder;
     }
 
     private Cache createRedisCache(String name, CacheConfig config) {

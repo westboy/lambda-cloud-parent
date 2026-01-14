@@ -2,9 +2,11 @@ package com.lambda.autoconfig;
 
 import cn.hutool.core.util.IdUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.lambda.cloud.cache.CacheConfig;
 import com.lambda.cloud.cache.CacheConstants;
 import com.lambda.cloud.cache.provider.MultiLevelCacheManager;
 import com.lambda.cloud.cache.support.CacheMessageListener;
+import com.lambda.cloud.cache.support.CaffeineFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -51,22 +53,13 @@ public class CacheAutoConfiguration {
         public CacheManager cacheManager(CacheProperties properties) {
             log.info("Initializing Caffeine cache manager");
             CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-            Caffeine<Object, Object> caffeineBuilder = Caffeine.newBuilder();
-
-            if (properties.getDefaults().getTtl() != null) {
-                caffeineBuilder.expireAfterWrite(properties.getDefaults().getTtl());
-            }
-            if (properties.getDefaults().getMaxSize() > 0) {
-                caffeineBuilder.maximumSize(properties.getDefaults().getMaxSize());
-            }
-            if (properties.getDefaults().getInitialCapacity() > 0) {
-                caffeineBuilder.initialCapacity(properties.getDefaults().getInitialCapacity());
-            }
-            if (properties.getDefaults().isEnableStats()) {
-                caffeineBuilder.recordStats();
-            }
-
+            
+            // 使用默认配置构建Caffeine
+            CacheConfig config = properties.getDefaults().toCacheConfig("default");
+            Caffeine<Object, Object> caffeineBuilder = CaffeineFactory.createCaffeine(config);
+            
             cacheManager.setCaffeine(caffeineBuilder);
+            cacheManager.setAllowNullValues(properties.getDefaults().isAllowNullValues());
             return cacheManager;
         }
     }
