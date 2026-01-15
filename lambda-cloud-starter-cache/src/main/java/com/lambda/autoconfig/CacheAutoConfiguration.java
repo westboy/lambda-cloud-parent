@@ -7,6 +7,7 @@ import com.lambda.cloud.cache.CacheConstants;
 import com.lambda.cloud.cache.provider.MultiLevelCacheManager;
 import com.lambda.cloud.cache.support.CacheMessageListener;
 import com.lambda.cloud.cache.support.CaffeineFactory;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -26,8 +27,6 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
-
-import java.util.Map;
 
 /**
  * 缓存自动配置
@@ -57,11 +56,11 @@ public class CacheAutoConfiguration {
         public CacheManager cacheManager(CacheProperties properties) {
             log.info("Initializing Caffeine cache manager");
             CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-            
+
             // 使用默认配置构建Caffeine
             CacheConfig defaultConfig = properties.getDefaults().toCacheConfig("default");
             Caffeine<Object, Object> defaultBuilder = CaffeineFactory.createCaffeine(defaultConfig);
-            
+
             cacheManager.setCaffeine(defaultBuilder);
             cacheManager.setAllowNullValues(properties.getDefaults().isAllowNullValues());
 
@@ -104,16 +103,15 @@ public class CacheAutoConfiguration {
                     .build();
         }
 
-        private RedisCacheConfiguration createRedisCacheConfiguration(CacheProperties.CacheConfigProperties properties) {
+        private RedisCacheConfiguration createRedisCacheConfiguration(
+                CacheProperties.CacheConfigProperties properties) {
             RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
-            
+
             // 统一序列化策略：Key 使用 String，Value 使用 GenericJackson2Json
             config = config.serializeKeysWith(
-                    RedisSerializationContext.SerializationPair.fromSerializer(
-                            RedisSerializer.string()))
+                            RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.string()))
                     .serializeValuesWith(
-                            RedisSerializationContext.SerializationPair.fromSerializer(
-                                    RedisSerializer.json()));
+                            RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()));
 
             if (properties.getTtl() != null) {
                 config = config.entryTtl(properties.getTtl());

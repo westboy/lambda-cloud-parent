@@ -72,7 +72,7 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
 
     private Cache createCaffeineCache(String name, CacheConfig config, Cache l2Cache) {
         Caffeine<Object, Object> builder = CaffeineFactory.createCaffeine(config);
-        
+
         // 如果配置了 refreshAfterWrite，则必须提供 CacheLoader
         // 这里使用 L2CacheLoader 从 Redis 中加载数据
         if (config.getRefreshAfterWrite() != null) {
@@ -87,7 +87,7 @@ public class MultiLevelCacheManager extends AbstractCacheManager {
             };
             return new CaffeineCache(name, builder.build(loader), config.isAllowNullValues());
         }
-        
+
         return new CaffeineCache(name, builder.build(), config.isAllowNullValues());
     }
 
