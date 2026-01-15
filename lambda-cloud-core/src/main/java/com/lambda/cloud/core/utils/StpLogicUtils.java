@@ -225,4 +225,14 @@ public class StpLogicUtils {
         }
         throw new SaTokenException(SaErrorCode.CODE_10011, "不支持的登陆类型");
     }
+
+    public static void logoutByTokenValue(String accessToken) {
+        for (String loginType : LOGIN_TYPE_SET) {
+            try {
+                StpLogic stpLogic = getStpLogic(loginType);
+                stpLogic.logoutByTokenValue(accessToken);
+            } catch (SaTokenException ignored) {
+            }
+        }
+    }
 }
