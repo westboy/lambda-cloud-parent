@@ -9,9 +9,8 @@ import com.lambda.security.handler.LogoutSuccessHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
-
 import java.io.IOException;
+import org.springframework.http.HttpStatus;
 
 /**
  * 通用登出成功处理器

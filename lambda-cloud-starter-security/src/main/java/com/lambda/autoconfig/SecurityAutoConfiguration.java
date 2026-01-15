@@ -896,7 +896,8 @@ public class SecurityAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         public LogoutSuccessHandler formLogoutSuccessHandler() {
-            return new CommonLogoutSuccessHandler(securityProperties.getForm().getLogout().getLogoutSuccessUrl());
+            return new CommonLogoutSuccessHandler(
+                    securityProperties.getForm().getLogout().getLogoutSuccessUrl());
         }
 
         /**
@@ -923,7 +924,9 @@ public class SecurityAutoConfiguration {
                 LogoutHandler formLogoutHandler, LogoutSuccessHandler formLogoutSuccessHandler) {
             FilterRegistrationBean<FormLogoutFilter> filterRegistrationBean = new FilterRegistrationBean<>();
             FormLogoutFilter formLogoutFilter = new FormLogoutFilter(
-                    securityProperties.getForm().getLogout().getLogoutUrl(), formLogoutSuccessHandler, formLogoutHandler);
+                    securityProperties.getForm().getLogout().getLogoutUrl(),
+                    formLogoutSuccessHandler,
+                    formLogoutHandler);
             filterRegistrationBean.setFilter(formLogoutFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(40);
