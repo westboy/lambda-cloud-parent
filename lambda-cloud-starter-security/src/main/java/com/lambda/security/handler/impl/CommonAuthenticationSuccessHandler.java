@@ -3,15 +3,11 @@ package com.lambda.security.handler.impl;
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.hutool.extra.servlet.JakartaServletUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.cloud.web.RequestTimeHolder;
 import com.lambda.security.LoginResponse;
-import com.lambda.security.events.UserLoginEvent;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
@@ -80,7 +76,6 @@ import org.springframework.http.MediaType;
  *
  * @author jpjoo
  * @see AuthenticationSuccessHandler
- * @see UserLoginEvent
  * @see cn.dev33.satoken.stp.StpLogic
  */
 @Slf4j
@@ -151,8 +146,8 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
      *   <li>防止IP伪造攻击</li>
      * </ul>
      *
-     * @param request HTTP请求对象，包含登录上下文信息
-     * @param response HTTP响应对象，用于返回登录结果
+     * @param request   HTTP请求对象，包含登录上下文信息
+     * @param response  HTTP响应对象，用于返回登录结果
      * @param loginUser 已认证的用户对象，包含用户详细信息
      * @throws IOException 当I/O操作失败时抛出
      */
@@ -227,19 +222,5 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
                 WebHttpUtils.sendRedirect(request, response, "/");
             }
         }
-
-        // ========== 登录统计和事件发布 ==========
-
-        // 获取用户真实IP地址（需要Nginx做相关配置防止IP伪造）
-        String remoteAddr = JakartaServletUtil.getClientIP(request);
-
-        // 获取用户登录端口
-        int remotePort = request.getRemotePort();
-
-        // 计算登录处理耗时
-        long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
-
-        // 发布用户登录事件（供其他组件监听处理）
-        SpringUtil.publishEvent(new UserLoginEvent(loginUser, cast, remoteAddr, remotePort));
     }
 }

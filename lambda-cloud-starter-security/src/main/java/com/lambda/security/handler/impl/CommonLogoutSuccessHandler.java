@@ -1,10 +1,7 @@
 package com.lambda.security.handler.impl;
 
-import cn.hutool.extra.spring.SpringUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.cloud.web.RequestTimeHolder;
-import com.lambda.security.events.UserLogoutEvent;
 import com.lambda.security.handler.LogoutSuccessHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,19 +65,8 @@ import org.springframework.http.HttpStatus;
  * // 重定向到首页或指定页面
  * }</pre>
  *
- * <h3>事件发布：</h3>
- * <p>
- * 登出成功后会发布{@link UserLogoutEvent}事件，包含以下信息：
- * </p>
- * <ul>
- *   <li>登出用户信息</li>
- *   <li>登出处理耗时</li>
- *   <li>登出时间戳</li>
- * </ul>
- *
  * @author jpjoo
  * @see LogoutSuccessHandler
- * @see UserLogoutEvent
  * @see com.lambda.security.handler.LogoutHandler
  */
 @SuppressWarnings("all")
@@ -123,12 +109,6 @@ public class CommonLogoutSuccessHandler implements LogoutSuccessHandler {
      *   </li>
      * </ul>
      *
-     * <h3>事件发布：</h3>
-     * <p>
-     * 发布{@link UserLogoutEvent}事件，包含登出用户信息和处理耗时，
-     * 供审计日志、统计分析等组件进行后续处理。
-     * </p>
-     *
      * @param request   HTTP请求对象，用于判断请求类型和获取重定向参数
      * @param response  HTTP响应对象，用于设置响应状态和内容
      * @param loginUser 已登出的用户对象，包含用户详细信息
@@ -145,8 +125,5 @@ public class CommonLogoutSuccessHandler implements LogoutSuccessHandler {
         } else {
             WebHttpUtils.sendRedirect(request, response, redirectUrl);
         }
-
-        long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
-        SpringUtil.publishEvent(new UserLogoutEvent(loginUser, cast));
     }
 }

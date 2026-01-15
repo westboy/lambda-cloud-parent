@@ -1,11 +1,15 @@
 package com.lambda.security.handler.impl;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpLogic;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.security.handler.LogoutHandler;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 通用登出处理器
@@ -65,6 +69,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * @see cn.dev33.satoken.stp.StpLogic
  * @see StpLogicUtils
  */
+@Slf4j
 public class CommonLogoutHandler implements LogoutHandler {
 
     /**
@@ -94,16 +99,27 @@ public class CommonLogoutHandler implements LogoutHandler {
      * 对应的StpLogic实例，支持多用户类型的登出处理。
      * </p>
      *
-     * @param request HTTP请求对象，包含登出上下文信息
-     * @param response HTTP响应对象（本方法中未使用）
+     * @param request   HTTP请求对象，包含登出上下文信息
+     * @param response  HTTP响应对象（本方法中未使用）
      * @param loginUser 当前登录用户对象（本方法中未使用，但保持接口一致性）
      */
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
-        // 获取当前活跃的StpLogic实例（自动识别用户类型）
-        StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
-
-        // 执行用户登出操作（清理会话和令牌）
-        stpLogic.logout();
+        try {
+            StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
+            stpLogic.logout();
+        } catch (NotLoginException e) {
+            // 用户未登录，尝试通过 Cookie 登出
+            Cookie cookie = JakartaServletUtil.getCookie(request, "Authorization");
+            if (cookie != null) {
+                String cookieValue = cookie.getValue();
+                StpLogicUtils.logoutByTokenValue(cookieValue);
+            } else {
+                log.info("用户未登录，无需登出");
+            }
+        } catch (Exception e) {
+            log.error("用户 {} 登出失败", loginUser != null ? loginUser.getName() : "未知用户", e);
+            throw e;
+        }
     }
 }
