@@ -9,8 +9,9 @@ import com.lambda.security.handler.LogoutSuccessHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import org.springframework.http.HttpStatus;
+
+import java.io.IOException;
 
 /**
  * 通用登出成功处理器
@@ -85,6 +86,13 @@ import org.springframework.http.HttpStatus;
  */
 @SuppressWarnings("all")
 public class CommonLogoutSuccessHandler implements LogoutSuccessHandler {
+
+    private final String redirectUrl;
+
+    public CommonLogoutSuccessHandler(String redirectUrl) {
+        this.redirectUrl = redirectUrl;
+    }
+
     /**
      * 处理登出成功事件
      * <p>
@@ -122,33 +130,24 @@ public class CommonLogoutSuccessHandler implements LogoutSuccessHandler {
      * 供审计日志、统计分析等组件进行后续处理。
      * </p>
      *
-     * @param request HTTP请求对象，用于判断请求类型和获取重定向参数
-     * @param response HTTP响应对象，用于设置响应状态和内容
+     * @param request   HTTP请求对象，用于判断请求类型和获取重定向参数
+     * @param response  HTTP响应对象，用于设置响应状态和内容
      * @param loginUser 已登出的用户对象，包含用户详细信息
-     * @throws IOException 当I/O操作失败时抛出
+     * @throws IOException      当I/O操作失败时抛出
      * @throws ServletException 当Servlet处理失败时抛出
      */
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser)
             throws IOException, ServletException {
 
-        // ========== 响应处理 ==========
-
         if (WebHttpUtils.isAjaxRequest(request)) {
-            // Ajax请求：返回简单的成功状态
             response.setStatus(HttpStatus.OK.value());
             response.getWriter().flush();
         } else {
-            // 普通请求：重定向处理（注意：这里可能存在bug，应该是sendRedirect）
-            WebHttpUtils.getRedirectParameter(request, "/");
+            WebHttpUtils.sendRedirect(request, response, redirectUrl);
         }
 
-        // ========== 统计和事件发布 ==========
-
-        // 计算登出处理耗时
         long cast = System.currentTimeMillis() - RequestTimeHolder.getTime();
-
-        // 发布用户登出事件（供其他组件监听处理）
         SpringUtil.publishEvent(new UserLogoutEvent(loginUser, cast));
     }
 }
