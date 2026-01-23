@@ -8,6 +8,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import lombok.experimental.UtilityClass;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * @author w
@@ -37,6 +38,24 @@ public class DataSourceUtils {
      * @return boolean
      */
     public static boolean test(DataSourceProperty property) {
+        try {
+            HikariConfig configuration = getHikariConfig(property);
+            try (HikariDataSource dataSource = new HikariDataSource(configuration);
+                    Connection connection = dataSource.getConnection()) {
+                boolean verified = connection.isValid(1000);
+                if (verified) {
+                    DatabaseMetaData meta = connection.getMetaData();
+                    property.setSchema(connection.getSchema());
+                    property.setDatabaseId(meta.getDatabaseProductName().toLowerCase());
+                }
+                return verified;
+            }
+        } catch (SQLException | RuntimeException e) {
+            return false;
+        }
+    }
+
+    private static @NonNull HikariConfig getHikariConfig(DataSourceProperty property) {
         HikariConfig configuration = new HikariConfig();
         configuration.setJdbcUrl(property.getUrl());
         configuration.setUsername(property.getUsername());
@@ -46,18 +65,7 @@ public class DataSourceUtils {
         configuration.setMinimumIdle(1);
         configuration.setConnectionTimeout(3000);
         configuration.setReadOnly(property.isReadOnly());
-        try (HikariDataSource dataSource = new HikariDataSource(configuration);
-                Connection connection = dataSource.getConnection()) {
-            boolean verified = connection.isValid(1000);
-            if (verified) {
-                DatabaseMetaData meta = connection.getMetaData();
-                property.setSchema(connection.getSchema());
-                property.setDatabaseId(meta.getDatabaseProductName().toLowerCase());
-            }
-            return verified;
-        } catch (SQLException | RuntimeException e) {
-            return false;
-        }
+        return configuration;
     }
 
     /**
