@@ -16,20 +16,16 @@ public class ConvertUtils {
         return converter.convertTo(source);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T, S> Object convertSmart(S source) {
+    public static <T, S> List<T> convertList(List<S> source) {
         if (source == null) {
             return null;
         }
-        if (source instanceof List<?> list) {
-            if (list.isEmpty()) {
-                return List.of();
-            }
-            BaseConverter<S, T> converter =
-                    ConverterResolver.getConverter(list.getFirst().getClass());
-
-            return converter.convertToList((List<S>) list);
+        if (source.isEmpty()) {
+            return List.of();
         }
-        return convert(source);
+        S sourceFirst = source.getFirst();
+        BaseConverter<S, T> converter = ConverterResolver.getConverter(sourceFirst.getClass());
+
+        return converter.convertToList(source);
     }
 }
