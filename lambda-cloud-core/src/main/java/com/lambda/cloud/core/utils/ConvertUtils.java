@@ -12,6 +12,9 @@ import java.util.List;
 public class ConvertUtils {
 
     public static <T, S> T convert(S source) {
+        if (source == null) {
+            return null;
+        }
         BaseConverter<S, T> converter = ConverterResolver.getConverter(source.getClass());
         return converter.convertTo(source);
     }
