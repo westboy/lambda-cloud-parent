@@ -242,6 +242,14 @@ public class SecurityAutoConfiguration {
             return new SaTokenConfig();
         }
 
+        @Bean
+        @ConditionalOnMissingBean
+        public SecureInterceptor secureInterceptor() {
+            return (handler, stpLogic, operator) -> {
+                stpLogic.checkLogin();
+            };
+        }
+
         /**
          * Sa-Token安全拦截器
          * <p>
@@ -253,7 +261,6 @@ public class SecurityAutoConfiguration {
          * @return Sa-Token拦截器实例
          */
         @Bean
-        @ConditionalOnBean(SecureInterceptor.class)
         public SaInterceptor saInterceptor(SecureInterceptor secureInterceptor) {
             return new SaInterceptor(new SaTokenInterceptor(secureInterceptor))
                     .isAnnotation(securityProperties.getSaToken().getEnableMethodAuthentication());

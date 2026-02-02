@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mvc.WebHttpUtils;
-import com.lambda.security.LoginResponse;
+import com.lambda.security.LoginResult;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
@@ -174,11 +174,11 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
         // 获取完整的令牌信息
         SaTokenInfo tokenInfo = stpLogic.getTokenInfo();
 
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setAccessToken(tokenInfo.getTokenValue());
-        loginResponse.setExpiresIn(tokenInfo.getTokenTimeout());
-        loginResponse.setDeviceType(tokenInfo.getLoginDeviceType());
-        loginResponse.setSubject(tokenInfo.getLoginId());
+        LoginResult loginResult = new LoginResult();
+        loginResult.setAccessToken(tokenInfo.getTokenValue());
+        loginResult.setExpiresIn(tokenInfo.getTokenTimeout());
+        loginResult.setDeviceType(tokenInfo.getLoginDeviceType());
+        loginResult.setSubject(tokenInfo.getLoginId());
 
         // ========== 响应处理 ==========
 
@@ -196,7 +196,7 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
                 // 序列化令牌信息并返回
-                objectMapper.writeValue(writer, loginResponse);
+                objectMapper.writeValue(writer, loginResult);
             } finally {
                 // 确保资源正确释放
                 if (writer != null) {
