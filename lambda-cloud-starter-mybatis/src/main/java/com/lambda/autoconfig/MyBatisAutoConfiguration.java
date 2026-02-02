@@ -1,6 +1,5 @@
 package com.lambda.autoconfig;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
@@ -8,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
+import com.lambda.autoconfig.condition.MapperPackageConfiguredCondition;
 import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
 import com.lambda.cloud.mybatis.handler.EntityMetaFiller;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.apache.ibatis.type.JdbcType;
-import org.mybatis.spring.annotation.MapperScan;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -41,7 +40,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 @Slf4j
 @Configuration
-@MapperScan({"${mybatis-plus.mapper-package:${mybatis-plus.mapperPackage:}}"})
 @Import({MybatisPlusAutoConfiguration.class})
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
@@ -68,11 +66,8 @@ public class MyBatisAutoConfiguration {
      * @return MapperScannerConfigurer 或 null（如果未配置 mapper 包路径）
      */
     @Bean
+    @Conditional(MapperPackageConfiguredCondition.class)
     public MapperScannerConfigurer mapperScannerConfigurer(MybatisPlusExtendProperties mybatisPlusExtendProperties) {
-        if (StrUtil.isEmpty(mybatisPlusExtendProperties.getMapperPackage())) {
-            log.warn("未配置 mybatis-plus 的 mapper 包路径，MapperScannerConfigurer 将不会被注册");
-            return null;
-        }
         MapperScannerConfigurer configurer = new MapperScannerConfigurer();
         configurer.setBasePackage(mybatisPlusExtendProperties.getMapperPackage());
         log.info("注册 MapperScannerConfigurer，扫描包：{}", mybatisPlusExtendProperties.getMapperPackage());
