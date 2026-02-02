@@ -22,7 +22,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @ConfigurationProperties(prefix = "mybatis-plus")
 public class MybatisPlusExtendProperties {
 
-    private String mapperPackage = "com.lambda.cloud.**.mapper";
+    private String mapperPackage;
 
     @NestedConfigurationProperty
     private EncryptConfig encrypt = new EncryptConfig();

@@ -1,5 +1,6 @@
 package com.lambda.autoconfig;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
@@ -22,6 +23,7 @@ import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.apache.ibatis.type.JdbcType;
 import org.mybatis.spring.annotation.MapperScan;
+import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -57,6 +59,24 @@ public class MyBatisAutoConfiguration {
     @Bean
     public ConfigurationCustomizer setJdbcTypeForNull() {
         return configuration -> configuration.setJdbcTypeForNull(JdbcType.NULL);
+    }
+
+    /**
+     * 动态注册 MapperScannerConfigurer Bean
+     *
+     * @param mybatisPlusExtendProperties 自定义属性类，绑定 mybatis-plus 配置
+     * @return MapperScannerConfigurer 或 null（如果未配置 mapper 包路径）
+     */
+    @Bean
+    public MapperScannerConfigurer mapperScannerConfigurer(MybatisPlusExtendProperties mybatisPlusExtendProperties) {
+        if (StrUtil.isEmpty(mybatisPlusExtendProperties.getMapperPackage())) {
+            log.warn("未配置 mybatis-plus 的 mapper 包路径，MapperScannerConfigurer 将不会被注册");
+            return null;
+        }
+        MapperScannerConfigurer configurer = new MapperScannerConfigurer();
+        configurer.setBasePackage(mybatisPlusExtendProperties.getMapperPackage());
+        log.info("注册 MapperScannerConfigurer，扫描包：{}", mybatisPlusExtendProperties.getMapperPackage());
+        return configurer;
     }
 
     /**
