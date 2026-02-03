@@ -43,7 +43,9 @@ public class SseAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SseService sseService(SseEmitterManager emitterManager, @Autowired(required = false) SseEmitterInitializer sseEmitterInitializer) {
+    public SseService sseService(
+            SseEmitterManager emitterManager,
+            @Autowired(required = false) SseEmitterInitializer sseEmitterInitializer) {
         return new SseServiceImpl(emitterManager, sseEmitterInitializer);
     }
 }

@@ -1,5 +1,7 @@
 package com.lambda.cloud.core.utils;
 
+import static com.lambda.cloud.core.Constants.ANONYMOUS_USER;
+
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.session.SaSession;
@@ -7,8 +9,6 @@ import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import lombok.extern.slf4j.Slf4j;
-
-import static com.lambda.cloud.core.Constants.ANONYMOUS_USER;
 
 /**
  * 操作员工具类
@@ -77,7 +77,7 @@ public class OperatorUtils {
             StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
             return getLoginUser(stpLogic);
         } catch (Exception e) {
-            log.error("获取用户失败，用户未登录！",e);
+            log.error("获取用户失败，用户未登录！", e);
             throw e;
         }
     }

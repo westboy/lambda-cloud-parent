@@ -7,5 +7,4 @@ public interface SseEmitterInitializer {
     <T> void initialize(SseEmitter emitter);
 
     <T> void initialize(SseEmitter emitter, T payload);
-
 }

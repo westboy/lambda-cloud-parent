@@ -1,7 +1,6 @@
 package com.lambda.cloud.sse.controller;
 
 import com.lambda.cloud.sse.service.SseService;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -10,7 +9,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  *
  * @author Jin
  */
-@SuppressFBWarnings("EI_EXPOSE_REP2")
 @RestController
 @RequestMapping("${lambda.sse.endpoint-prefix:/sse}")
 public class SseController {

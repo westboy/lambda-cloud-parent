@@ -1,10 +1,9 @@
 package com.lambda.cloud.core;
 
 import com.google.gson.Gson;
-import java.time.format.DateTimeFormatter;
-
 import com.lambda.cloud.core.principal.AnonymousUser;
 import com.lambda.cloud.core.principal.LoginUser;
+import java.time.format.DateTimeFormatter;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -48,7 +47,6 @@ public final class Constants {
      * <p>例如 web、mobile、miniApp 等。</p>
      */
     public static final String LOGIN_DEVICE = "loginDevice";
-
 
     /**
      * 默认游客用户/匿名用户。

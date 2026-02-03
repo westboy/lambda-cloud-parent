@@ -2,9 +2,11 @@ package com.lambda.cloud.sse.service;
 
 import com.lambda.cloud.sse.SseEmitterManager;
 import com.lambda.cloud.sse.initializer.SseEmitterInitializer;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @RequiredArgsConstructor
 public class SseServiceImpl implements SseService {
 
