@@ -31,6 +31,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -61,16 +62,14 @@ public class MyBatisAutoConfiguration {
 
     /**
      * 动态注册 MapperScannerConfigurer Bean
-     *
-     * @param mybatisPlusExtendProperties 自定义属性类，绑定 mybatis-plus 配置
-     * @return MapperScannerConfigurer 或 null（如果未配置 mapper 包路径）
      */
     @Bean
     @Conditional(MapperPackageConfiguredCondition.class)
-    public MapperScannerConfigurer mapperScannerConfigurer(MybatisPlusExtendProperties mybatisPlusExtendProperties) {
+    public MapperScannerConfigurer mapperScannerConfigurer(Environment env) {
         MapperScannerConfigurer configurer = new MapperScannerConfigurer();
-        configurer.setBasePackage(mybatisPlusExtendProperties.getMapperPackage());
-        log.info("注册 MapperScannerConfigurer，扫描包：{}", mybatisPlusExtendProperties.getMapperPackage());
+        String property = env.getProperty("mybatis-plus.mapper-package");
+        configurer.setBasePackage(property);
+        log.info("注册 MapperScannerConfigurer，扫描包：{}", property);
         return configurer;
     }
 

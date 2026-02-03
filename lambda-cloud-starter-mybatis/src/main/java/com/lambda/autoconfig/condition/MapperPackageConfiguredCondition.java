@@ -10,8 +10,7 @@ public class MapperPackageConfiguredCondition implements Condition {
 
     @Override
     public boolean matches(ConditionContext context, @NonNull AnnotatedTypeMetadata metadata) {
-        String kebab = context.getEnvironment().getProperty("mybatis-plus.mapper-package");
-        String camel = context.getEnvironment().getProperty("mybatis-plus.mapperPackage");
-        return StrUtil.isNotEmpty(kebab) || StrUtil.isNotEmpty(camel);
+        String property = context.getEnvironment().getProperty("mybatis-plus.mapper-package");
+        return StrUtil.isNotEmpty(property);
     }
 }
