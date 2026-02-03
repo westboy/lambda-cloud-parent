@@ -2,6 +2,9 @@ package com.lambda.cloud.core;
 
 import com.google.gson.Gson;
 import java.time.format.DateTimeFormatter;
+
+import com.lambda.cloud.core.principal.AnonymousUser;
+import com.lambda.cloud.core.principal.LoginUser;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -41,9 +44,27 @@ public final class Constants {
     public static final String LOGIN_TYPE = "loginType";
 
     /**
-     * 登录设备标识
+     * 登录设备标识，用于标识用户登录的终端类型。
+     * <p>例如 web、mobile、miniApp 等。</p>
      */
     public static final String LOGIN_DEVICE = "loginDevice";
+
+
+    /**
+     * 默认游客用户/匿名用户。
+     *
+     * <p>当用户未登录或获取用户信息失败时返回该对象，
+     * 权限最小，所有敏感操作被限制，账户锁定且过期。</p>
+     *
+     * <h3>特征：</h3>
+     * <ul>
+     *   <li>用户名：anonymous</li>
+     *   <li>账户状态：已锁定且已过期</li>
+     *   <li>组织ID：anonymous</li>
+     *   <li>租户ID：-1（无效租户）</li>
+     * </ul>
+     */
+    public static final LoginUser ANONYMOUS_USER = new AnonymousUser();
 
     // ==================== JSON处理常量 ====================
 
@@ -132,13 +153,18 @@ public final class Constants {
     // ========== 分页相关常量 ==========
     /** 页码不能为空的错误消息 */
     public static final String MSG_PAGE_NUM_NOT_NULL = "pageNum不能为空";
+
     /** 页面大小不能为空的错误消息 */
     public static final String MSG_PAGE_SIZE_NOT_NULL = "pageSize不能为空";
 
     // ========== Websocket 相关常量 ==========
     public static final String SYSTEM = "system";
+
     public static final String IP_ADDRESS = "ip";
+
     public static final String SIMPE_CONNECT_MESSAGE = "simpConnectMessage";
+
     public static final String X_WEBSOCKET_FRAMEWORK = "X-Websocket-Framework";
+
     public static final String COLON = ":";
 }

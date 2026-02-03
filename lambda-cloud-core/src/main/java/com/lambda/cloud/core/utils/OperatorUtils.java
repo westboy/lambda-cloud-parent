@@ -1,11 +1,14 @@
 package com.lambda.cloud.core.utils;
 
 import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.Constants;
 import com.lambda.cloud.core.principal.LoginUser;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.lambda.cloud.core.Constants.ANONYMOUS_USER;
 
 /**
  * 操作员工具类
@@ -54,82 +57,62 @@ import lombok.extern.slf4j.Slf4j;
 public class OperatorUtils {
 
     /**
-     * 默认游客用户
-     * <p>
-     * 当用户未登录或获取用户信息失败时返回的默认用户对象。
-     * 该用户具有最小权限，所有敏感操作都被限制。
-     * </p>
+     * 获取当前登录用户信息。
      *
-     * <h3>默认用户特征：</h3>
-     * <ul>
-     *   <li>用户名：guest</li>
-     *   <li>账户状态：已锁定且已过期</li>
-     *   <li>租户ID：-1（表示无效租户）</li>
-     *   <li>组织ID：guest</li>
-     * </ul>
-     */
-    private static final LoginUser DEFAULT_USER = new LoginUser() {
-        @Override
-        public String getName() {
-            return "anonymous";
-        }
-
-        @Override
-        public String getCredentials() {
-            return "anonymous";
-        }
-
-        @Override
-        public String getOrgId() {
-            return "anonymous";
-        }
-
-        @Override
-        public Boolean getAccountLocked() {
-            return true;
-        }
-
-        @Override
-        public Boolean getAccountExpired() {
-            return true;
-        }
-
-        @Override
-        public String getTenantId() {
-            return "-1";
-        }
-    };
-
-    /**
-     * 获取当前操作员信息
-     * <p>
-     * 获取当前登录用户的详细信息。该方法会自动处理异常情况，
-     * 当用户未登录或获取失败时，返回安全的默认游客用户。
-     * </p>
+     * <p>直接从当前活跃的 StpLogic 会话中提取用户信息。
+     * 如果用户未登录或会话异常，将抛出异常，由调用方处理。</p>
      *
      * <h3>执行流程：</h3>
      * <ol>
-     *   <li>获取当前活跃的登录逻辑</li>
-     *   <li>从会话中提取用户信息</li>
-     *   <li>异常时返回默认游客用户</li>
+     *     <li>获取当前活跃的登录逻辑（StpLogic）。</li>
+     *     <li>从会话中提取 LoginUser 对象。</li>
+     *     <li>如果未登录或获取失败，抛出异常。</li>
      * </ol>
      *
-     * <h3>异常处理：</h3>
-     * <ul>
-     *   <li>用户未登录：返回DEFAULT_USER</li>
-     *   <li>会话过期：返回DEFAULT_USER</li>
-     *   <li>其他异常：记录警告日志并返回DEFAULT_USER</li>
-     * </ul>
-     *
-     * @return 当前登录用户信息，永不为null
+     * @return 当前登录用户信息
+     * @throws NotLoginException 用户未登录或会话失效
      */
     public static LoginUser getOperator() {
         try {
             StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
             return getLoginUser(stpLogic);
         } catch (Exception e) {
-            log.warn("获取用户失败，用户未登录！");
-            return DEFAULT_USER;
+            log.error("获取用户失败，用户未登录！",e);
+            throw e;
+        }
+    }
+
+    /**
+     * 安全获取当前登录用户信息。
+     *
+     * <p>从当前活跃 StpLogic 会话中提取用户信息，
+     * 当用户未登录或获取失败时，返回默认游客用户</p>
+     *
+     * <h3>执行流程：</h3>
+     * <ol>
+     *     <li>获取当前活跃的登录逻辑（StpLogic）。</li>
+     *     <li>尝试从会话中获取 LoginUser 对象。</li>
+     *     <li>异常时记录日志并返回默认用户。</li>
+     * </ol>
+     *
+     * <h3>异常处理：</h3>
+     * <ul>
+     *     <li>用户未登录或会话过期：返回 ANONYMOUS_USER 并记录 warn 日志。</li>
+     *     <li>其他异常：记录 error 日志并返回 ANONYMOUS_USER。</li>
+     * </ul>
+     *
+     * @return 当前登录用户信息，永不为 null
+     */
+    public static LoginUser getSafeOperator() {
+        try {
+            StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
+            return getLoginUser(stpLogic);
+        } catch (NotLoginException e) {
+            log.warn("获取用户失败，返回默认用户", e);
+            return ANONYMOUS_USER;
+        } catch (Exception e) {
+            log.error("获取用户出现未知异常", e);
+            return ANONYMOUS_USER;
         }
     }
 
@@ -164,11 +147,12 @@ public class OperatorUtils {
 
     /**
      * 获取当前登录用户
+     *
      * @param clazz 期望的用户类型
-     * @param <T> LoginUser的子类型
+     * @param <T>   LoginUser 的子类型
      * @return 指定类型的登录用户实例
      * @throws IllegalStateException 当用户未登录时
-     * @throws ClassCastException 当类型转换失败时
+     * @throws ClassCastException    当类型转换失败时
      */
     public static <T extends LoginUser> T getLoginUser(Class<T> clazz) {
         try {
