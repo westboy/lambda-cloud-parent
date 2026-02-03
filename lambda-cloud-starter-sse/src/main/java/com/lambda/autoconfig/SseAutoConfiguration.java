@@ -3,7 +3,12 @@ package com.lambda.autoconfig;
 import com.lambda.cloud.sse.SseEmitterManager;
 import com.lambda.cloud.sse.cluster.ClusterSseEmitterManager;
 import com.lambda.cloud.sse.controller.SseController;
+import com.lambda.cloud.sse.initializer.SseEmitterInitializer;
+import com.lambda.cloud.sse.service.SseService;
+import com.lambda.cloud.sse.service.SseServiceImpl;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +37,13 @@ public class SseAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(name = "lambda.sse.enable-controller", havingValue = "true", matchIfMissing = true)
-    public SseController sseController(SseEmitterManager emitterManager) {
-        return new SseController(emitterManager);
+    public SseController sseController(SseService sseService) {
+        return new SseController(sseService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SseService sseService(SseEmitterManager emitterManager, @Autowired(required = false) SseEmitterInitializer sseEmitterInitializer) {
+        return new SseServiceImpl(emitterManager, sseEmitterInitializer);
     }
 }
