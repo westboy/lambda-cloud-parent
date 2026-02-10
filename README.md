@@ -16,17 +16,20 @@
   </a>
 </p>
 
-**Lambda Cloud** 是一个基于 **Spring Cloud 2025.0.0** 和 **Spring Boot 3.5.3** 构建的企业级微服务开发框架，构建的企业级微服务开发框架。它旨在帮助中小型企业降低微服务架构的开发与运维成本。框架对多种主流中间件进行了统一封装与自动化配置，具备 开箱即用、高度模块化、易于扩展 等特性，是快速搭建稳定、可维护的企业级分布式系统的理想选择。
+**Lambda Cloud** 是一个基于 **Spring Cloud 2025.0.0** 和 **Spring Boot 3.5.3** 构建的企业级微服务开发框架。它旨在帮助中小型企业降低微服务架构的开发与运维成本。框架对多种主流中间件进行了统一封装与自动化配置，具备 开箱即用、高度模块化、易于扩展 等特性，是快速搭建稳定、可维护的企业级分布式系统的理想选择。
 
 ## 核心优势
 
-- 🚀 **现代化技术栈**：基于 Spring Boot 3.5.3、Spring Cloud 2025.0.0、Spring Cloud Alibaba 2025.0.0.0
-- 🧩 **高度模块化**：25+ 个独立模块，支持灵活组合，按需引入，避免依赖膨胀
-- 🔐 **企业级安全**：集成 Sa-Token，支持表单登录、短信登录、HMAC 签名认证、第三方登录等多种认证方式
-- 💾 **MyBatis Plus 增强**：扩展 Mapper、自动填充、多租户、字段加密、数据权限等企业级功能开箱即用
+- 🚀 **现代化技术栈**：基于 Spring Boot 3.5.3、Spring Cloud 2025.0.0、Spring Cloud Alibaba 2025.0.0.0、JDK 21
+- 🧩 **高度模块化**：27 个独立模块，支持灵活组合，按需引入，避免依赖膨胀
+- 🔐 **企业级安全**：集成 Sa-Token，支持表单登录、短信登录、HMAC 签名认证、微信小程序登录等多种认证方式
+- 💾 **MyBatis Plus 增强**：扩展 Mapper（批量插入、编码字段操作）、自动填充、多租户、字段加密、数据权限等企业级功能
 - 🔧 **自动化配置**：所有中间件均提供自动配置，零配置即可快速启动，支持细粒度定制
 - 🌐 **微服务全栈支持**：Dubbo、OpenFeign 双 RPC、Nacos 注册中心、Gateway 网关、Kafka/RocketMQ 消息队列
 - 📦 **统一依赖管理**：通过 `lambda-cloud-starter-dependencies` 管理所有组件版本，避免依赖冲突
+- 🎯 **协议引擎**：基于 Netty 的高性能协议解析引擎，支持注解驱动的协议定义和 List 字段解析
+- 💡 **智能对象转换**：基于 MapStruct 的编译期对象转换，支持注解驱动和自定义转换函数
+- 📊 **多级缓存**：统一缓存抽象层，支持 Redis、Caffeine 和多级缓存架构
 
 ## 技术栈
 
@@ -41,18 +44,19 @@
 | | Dynamic Datasource | 4.3.1 | 动态数据源管理 |
 | | MySQL | 8.2.0 | 关系型数据库 |
 | | Liquibase | 4.29.1 | 数据库版本管理 |
-| | Apache IoTDB | 2.0.3 | 时序数据库 |
+| | Apache IoTDB | 2.0.3 | 时序数据库，支持 Tree/Table 模型和订阅功能 |
 | | P6Spy | 3.9.1 | SQL 性能监控 |
 | **缓存** | Redis | - | 分布式缓存 |
 | | Redisson | 3.34.1 | Redis 客户端，支持分布式锁 |
 | | Caffeine | 2.9.3 | 本地缓存 |
-| **消息队列** | Kafka | - | 高吞吐量消息中间件 |
+| | Lambda Cache | - | 统一缓存抽象层，支持多级缓存 |
+| **消息队列** | Kafka | - | 高吞吐量消息中间件，支持延迟消息 |
 | | RocketMQ | 2.3.4 | 分布式消息中间件 |
 | **RPC 框架** | Dubbo | 3.3.5 | 高性能 RPC 框架 |
 | | OpenFeign | - | 声明式 HTTP 客户端 |
-| **安全认证** | Sa-Token | 1.43.0 | 权限认证框架，支持多种登录方式 |
+| **安全认证** | Sa-Token | 1.43.0 | 权限认证框架，支持表单登录、短信登录、HMAC 签名认证、微信小程序登录 |
 | | BouncyCastle | 1.77 | 加密算法库 |
-| **网络通信** | Netty | - | 高性能网络框架，支持协议引擎 |
+| **网络通信** | Netty | - | 高性能网络框架，支持协议引擎和 List 字段解析 |
 | | OkHttp | 4.12.0 | HTTP 客户端 |
 | **对象映射** | MapStruct | 1.6.0.RC1 | Java Bean 映射工具，编译期代码生成 |
 | **API 文档** | Knife4j | 4.5.0 | Swagger 增强工具 |
@@ -81,13 +85,14 @@ lambda-cloud-parent
 ├── lambda-cloud-starter-mybatis         # MyBatis Plus 集成（扩展 Mapper、多租户、字段加密、数据权限）
 ├── lambda-cloud-starter-datasource      # 多数据源与数据库连接池管理
 ├── lambda-cloud-starter-liquibase       # 数据库版本管理工具集成
-├── lambda-cloud-starter-iotdb           # IoTDB 时序数据库集成
-├── lambda-cloud-starter-redis           # Redis 缓存与分布式锁支持（Redisson、Caffeine）
-├── lambda-cloud-starter-kafka           # Kafka 消息队列集成
+├── lambda-cloud-starter-iotdb           # IoTDB 时序数据库集成（Tree/Table 模型、订阅功能）
+├── lambda-cloud-starter-cache           # 统一缓存抽象层（Redis、Caffeine、多级缓存）
+├── lambda-cloud-starter-redis           # Redis 缓存与分布式锁支持（Redisson）
+├── lambda-cloud-starter-kafka           # Kafka 消息队列集成（延迟消息、监控管理）
 ├── lambda-cloud-starter-rocketmq        # RocketMQ 消息队列集成
 ├── lambda-cloud-starter-dubbo           # Dubbo RPC 集成支持
 ├── lambda-cloud-starter-feign           # 声明式 HTTP 客户端支持（OpenFeign）
-├── lambda-cloud-starter-security        # 安全认证模块（表单登录、短信登录、HMAC、第三方登录）
+├── lambda-cloud-starter-security        # 安全认证模块（表单登录、短信登录、HMAC、微信小程序登录）
 ├── lambda-cloud-starter-netty           # Netty 网络通信框架（协议引擎、TCP 长连接、性能监控）
 ├── lambda-cloud-starter-websocket       # WebSocket 通信支持
 ├── lambda-cloud-starter-sse             # Server-Sent Events 支持
@@ -95,7 +100,6 @@ lambda-cloud-parent
 ├── lambda-cloud-starter-logger          # 日志统一采集与追踪
 ├── lambda-cloud-starter-oss             # 对象存储（MinIO、OSS）支持
 ├── lambda-cloud-starter-sms             # 短信网关支持
-├── lambda-cloud-starter-wxjava          # 微信开发 SDK 集成
 ├── lambda-cloud-starter-ykc             # 云快充协议支持（基于 Netty 协议引擎）
 ├── lambda-cloud-starter-webclient       # WebClient HTTP 客户端支持
 ├── lambda-cloud-starter-nacos           # Nacos 服务注册与配置中心集成
