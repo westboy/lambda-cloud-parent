@@ -220,11 +220,9 @@ public class OssClient implements OssService {
             // 执行上传
             client.putObject(putObjectRequest);
 
-            log.debug("文件上传成功: {}", objectKey);
-
             // 构建返回结果
             return UploadObjectResult.builder()
-                    .url(buildObjectUrl(objectKey))
+                    .url(buildPublicUrl(objectKey))
                     .key(objectKey)
                     .build();
 
@@ -378,7 +376,7 @@ public class OssClient implements OssService {
             log.debug("文件上传成功: {}", objectKey);
 
             return UploadObjectResult.builder()
-                    .url(buildObjectUrl(objectKey))
+                    .url(buildPublicUrl(objectKey))
                     .key(objectKey)
                     .build();
 
@@ -506,8 +504,8 @@ public class OssClient implements OssService {
      * @param objectKey 对象键
      * @return 完整的对象 URL
      */
-    private String buildObjectUrl(String objectKey) {
-        String endpoint = config.getEndpoint();
+    private String buildPublicUrl(String objectKey) {
+        String endpoint = config.getCdn();
         if (!endpoint.endsWith("/")) {
             endpoint += "/";
         }

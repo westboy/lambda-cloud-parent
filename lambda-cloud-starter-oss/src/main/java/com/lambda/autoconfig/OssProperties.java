@@ -57,6 +57,11 @@ public class OssProperties {
         private String type = OssType.MINIO.name();
 
         /**
+         * cdn 域名
+         */
+        private String cdn;
+
+        /**
          * OSS 服务端点
          */
         @NotBlank(message = "OSS 端点不能为空")
@@ -95,12 +100,12 @@ public class OssProperties {
         /**
          * 访问策略
          */
-        private String accessPolicy;
+        private String accessPolicy = "private";
 
         /**
          *  AWS S3 的 path-style 和 bucket virtual hosting 两种访问方式
          */
-        private Boolean enablePathStyleAccess;
+        private Boolean enablePathStyleAccess = false;
 
         /**
          * HTTP 客户端配置
