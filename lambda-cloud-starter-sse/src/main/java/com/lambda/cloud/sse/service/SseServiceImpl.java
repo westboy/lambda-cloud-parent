@@ -16,14 +16,18 @@ public class SseServiceImpl implements SseService {
     @Override
     public SseEmitter createEmitter(String clientId) {
         SseEmitter emitter = emitterManager.createEmitter(clientId);
-        sseEmitterInitializer.initialize(emitter);
+        if (sseEmitterInitializer != null) {
+            sseEmitterInitializer.initialize(emitter);
+        }
         return emitter;
     }
 
     @Override
     public SseEmitter createEmitter(String clientId, Object payload) {
         SseEmitter emitter = emitterManager.createEmitter(clientId);
-        sseEmitterInitializer.initialize(emitter, payload);
+        if (sseEmitterInitializer != null) {
+            sseEmitterInitializer.initialize(emitter, payload);
+        }
         return emitter;
     }
 
