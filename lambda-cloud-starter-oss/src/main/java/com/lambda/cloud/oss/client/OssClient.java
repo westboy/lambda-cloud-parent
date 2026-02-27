@@ -72,9 +72,9 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author westboy
  * @author jpjoo
- * @since 2025.1.1
  * @see OssService
  * @see com.lambda.cloud.oss.manager.OssClientManager
+ * @since 2025.1.1
  */
 @Slf4j
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
@@ -114,15 +114,16 @@ public class OssClient implements OssService {
         clientConfig.setClientExecutionTimeout(config.getHttpClientConfig().getClientExecutionTimeout());
         clientConfig.setConnectionTTL(config.getHttpClientConfig().getConnectionTTL());
         clientConfig.setConnectionMaxIdleMillis(config.getHttpClientConfig().getConnectionMaxIdleMillis());
-
         AmazonS3ClientBuilder build = AmazonS3Client.builder()
                 .withEndpointConfiguration(endpointConfig)
                 .withClientConfiguration(clientConfig)
                 .withCredentials(credentialsProvider)
+                .enablePathStyleAccess()
                 .disableChunkedEncoding();
-        if (OssType.MINIO.name().equalsIgnoreCase(config.getType())) {
+        if (OssType.MINIO.name().equalsIgnoreCase(config.getType()) || config.getEnablePathStyleAccess()) {
             build.enablePathStyleAccess();
         }
+
         return build.build();
     }
 
@@ -161,12 +162,12 @@ public class OssClient implements OssService {
     /**
      * 上传文件（字节数组）
      *
-     * @param data 文件数据
-     * @param objectKey 对象键
+     * @param data        文件数据
+     * @param objectKey   对象键
      * @param contentType 内容类型
      * @return 上传结果
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 上传失败
+     * @throws OssException             上传失败
      */
     @Override
     public UploadObjectResult upload(byte[] data, String objectKey, String contentType) {
@@ -178,11 +179,11 @@ public class OssClient implements OssService {
      * 上传文件（输入流）
      *
      * @param inputStream 文件输入流
-     * @param objectKey 对象键
+     * @param objectKey   对象键
      * @param contentType 内容类型
      * @return 上传结果
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 上传失败
+     * @throws OssException             上传失败
      */
     @Override
     public UploadObjectResult upload(InputStream inputStream, String objectKey, String contentType) {
@@ -239,12 +240,12 @@ public class OssClient implements OssService {
     /**
      * 分片上传
      *
-     * @param file 文件对象
-     * @param objectKey 对象键
-     * @param partNumber 当前分片号（从 1 开始）
+     * @param file            文件对象
+     * @param objectKey       对象键
+     * @param partNumber      当前分片号（从 1 开始）
      * @param partTotalNumber 总分片数
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 上传失败
+     * @throws OssException             上传失败
      */
     @Override
     public void uploadPart(File file, String objectKey, int partNumber, int partTotalNumber) {
@@ -254,13 +255,13 @@ public class OssClient implements OssService {
     /**
      * 分片上传
      *
-     * @param file 文件对象
-     * @param contentType 内容类型
-     * @param objectKey 对象键
-     * @param partNumber 当前分片号（从 1 开始）
+     * @param file            文件对象
+     * @param contentType     内容类型
+     * @param objectKey       对象键
+     * @param partNumber      当前分片号（从 1 开始）
      * @param partTotalNumber 总分片数
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 上传失败
+     * @throws OssException             上传失败
      */
     @Override
     public void uploadPart(File file, String contentType, String objectKey, int partNumber, int partTotalNumber) {
@@ -351,11 +352,11 @@ public class OssClient implements OssService {
     /**
      * 上传文件（文件对象）
      *
-     * @param file 文件对象
+     * @param file      文件对象
      * @param objectKey 对象键
      * @return 上传结果
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 上传失败
+     * @throws OssException             上传失败
      */
     @Override
     public UploadObjectResult upload(File file, String objectKey) {
@@ -393,7 +394,7 @@ public class OssClient implements OssService {
      *
      * @param objectKey 对象键
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 删除失败
+     * @throws OssException             删除失败
      */
     @Override
     public void delete(String objectKey) {
@@ -415,7 +416,7 @@ public class OssClient implements OssService {
      * @param objectKey 对象键
      * @return S3 对象
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 获取失败
+     * @throws OssException             获取失败
      */
     @Override
     public S3Object getObject(String objectKey) {
@@ -433,10 +434,10 @@ public class OssClient implements OssService {
     /**
      * 下载文件到输出流
      *
-     * @param objectKey 对象键
+     * @param objectKey    对象键
      * @param outputStream 输出流
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 下载失败
+     * @throws OssException             下载失败
      */
     @Override
     public void outStream(String objectKey, OutputStream outputStream) {
@@ -461,11 +462,11 @@ public class OssClient implements OssService {
     /**
      * 获取私有 URL 链接
      *
-     * @param objectKey 对象键
+     * @param objectKey         对象键
      * @param expirationSeconds 授权时间（秒）
      * @return 预签名 URL
      * @throws IllegalArgumentException 参数校验失败
-     * @throws OssException 生成失败
+     * @throws OssException             生成失败
      */
     @Override
     public String getPrivateUrl(String objectKey, Integer expirationSeconds) {

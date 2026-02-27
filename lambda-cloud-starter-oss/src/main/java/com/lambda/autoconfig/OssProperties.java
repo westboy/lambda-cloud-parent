@@ -98,6 +98,11 @@ public class OssProperties {
         private String accessPolicy;
 
         /**
+         *  AWS S3 的 path-style 和 bucket virtual hosting 两种访问方式
+         */
+        private Boolean enablePathStyleAccess;
+
+        /**
          * HTTP 客户端配置
          */
         @Valid
