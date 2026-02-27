@@ -505,11 +505,18 @@ public class OssClient implements OssService {
      * @return 完整的对象 URL
      */
     private String buildPublicUrl(String objectKey) {
+        if (StrUtil.isEmpty(config.getCdn())) {
+            String endpoint = config.getEndpoint();
+            if (!endpoint.endsWith("/")) {
+                endpoint += "/";
+            }
+            return endpoint + config.getBucket() + "/" + objectKey;
+        }
         String endpoint = config.getCdn();
         if (!endpoint.endsWith("/")) {
             endpoint += "/";
         }
-        return endpoint + config.getBucket() + "/" + objectKey;
+        return endpoint + objectKey;
     }
 
     private static String getPolicy(String bucketName, PolicyType policyType) {
