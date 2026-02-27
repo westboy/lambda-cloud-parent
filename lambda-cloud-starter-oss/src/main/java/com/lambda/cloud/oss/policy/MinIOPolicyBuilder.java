@@ -4,6 +4,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.lambda.cloud.oss.enums.PolicyType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * MinIO 策略构建器
@@ -27,6 +28,7 @@ public class MinIOPolicyBuilder {
      * @param bucketName 存储桶名称
      * @param policyType 策略类型
      */
+    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public MinIOPolicyBuilder(String bucketName, PolicyType policyType) {
         if (bucketName == null || bucketName.trim().isEmpty()) {
             throw new IllegalArgumentException("存储桶名称不能为空");

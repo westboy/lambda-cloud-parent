@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.amazonaws.services.s3.model.PartETag;
 import com.lambda.cloud.oss.upload.MultipartUploadStateManager;
 import com.lambda.cloud.redis.helper.RedisHelper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author jpjoo
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Slf4j
 public class RedisMultipartUploadStateManager implements MultipartUploadStateManager {
 
@@ -22,6 +24,7 @@ public class RedisMultipartUploadStateManager implements MultipartUploadStateMan
 
     private final RedisHelper redisHelper;
 
+    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public RedisMultipartUploadStateManager(RedisHelper redisHelper) {
         if (redisHelper == null) {
             throw new IllegalArgumentException("RedisHelper 不能为 null");
