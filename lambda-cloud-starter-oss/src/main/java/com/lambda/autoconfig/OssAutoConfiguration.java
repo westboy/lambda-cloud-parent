@@ -63,26 +63,29 @@ public class OssAutoConfiguration {
     @Bean
     public OssClientManager getOssClientManager(MultipartUploadStateManager stateManager) {
         OssClientManager ossClientManager = new OssClientManager();
-        
+
         log.info("开始初始化 OSS 客户端，配置数量: {}", ossProperties.getClients().size());
-        
+
         for (OssProperties.Config config : ossProperties.getClients()) {
             try {
                 OssClient ossClient = new OssClient(config);
                 ossClient.setMultipartUploadStateManager(stateManager);
                 ossClient.createBucket();
-                
+
                 // 使用新的 register 方法替代已废弃的 set 方法
                 ossClientManager.register(config.getName(), ossClient);
-                
-                log.info("OSS 客户端初始化成功: name={}, type={}, endpoint={}", 
-                        config.getName(), config.getType(), config.getEndpoint());
+
+                log.info(
+                        "OSS 客户端初始化成功: name={}, type={}, endpoint={}",
+                        config.getName(),
+                        config.getType(),
+                        config.getEndpoint());
             } catch (Exception e) {
                 log.error("OSS 客户端初始化失败: name={}, error={}", config.getName(), e.getMessage(), e);
                 throw new IllegalStateException("Failed to initialize OSS client: " + config.getName(), e);
             }
         }
-        
+
         log.info("所有 OSS 客户端初始化完成，总数: {}", ossClientManager.size());
         return ossClientManager;
     }

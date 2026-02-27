@@ -2,7 +2,6 @@ package com.lambda.cloud.oss.client;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
@@ -40,10 +39,10 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * OSS 客户端实现
  * 提供对象存储的核心操作功能
- * 
+ *
  * <p>该类实现了 {@link OssService} 接口，基于 AWS S3 SDK 提供统一的对象存储操作。
  * 支持多种 OSS 类型：MinIO、阿里云 OSS、腾讯云 COS、七牛云等。
- * 
+ *
  * <p>主要功能：
  * <ul>
  *   <li>文件上传（支持字节数组、输入流、文件对象）</li>
@@ -53,20 +52,20 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>预签名 URL 生成</li>
  *   <li>存储桶管理（创建、设置策略）</li>
  * </ul>
- * 
+ *
  * <p>使用示例：
  * <pre>{@code
  * // 通过 OssClientManager 获取客户端
  * OssClient client = ossClientManager.get("default");
- * 
+ *
  * // 上传文件
  * UploadObjectResult result = client.upload(inputStream, "path/to/file.txt", "text/plain");
- * 
+ *
  * // 下载文件
  * try (FileOutputStream fos = new FileOutputStream("local.txt")) {
  *     client.outStream("path/to/file.txt", fos);
  * }
- * 
+ *
  * // 生成预签名 URL（有效期 1 小时）
  * String url = client.getPrivateUrl("path/to/file.txt", 3600);
  * }</pre>
@@ -129,7 +128,7 @@ public class OssClient implements OssService {
 
     /**
      * 创建存储桶
-     * 
+     *
      * <p>如果存储桶已存在，不会重复创建
      * <p>仅 MinIO 类型的 OSS 支持此操作
      * <p>自动设置访问策略（根据配置）
@@ -152,20 +151,16 @@ public class OssClient implements OssService {
                 client.setBucketPolicy(bucketName, getPolicy(bucketName, accessPolicy.getPolicyType()));
                 log.info("存储桶创建成功: {}", bucketName);
             } catch (AmazonServiceException e) {
-                throw new OssException(
-                    String.format("创建存储桶失败: %s, 错误码: %s", config.getBucket(), e.getErrorCode()), 
-                    e
-                );
+                throw new OssException(String.format("创建存储桶失败: %s, 错误码: %s", config.getBucket(), e.getErrorCode()), e);
             } catch (Exception e) {
                 throw new OssException("创建存储桶异常: " + config.getBucket(), e);
             }
         }
     }
 
-
     /**
      * 上传文件（字节数组）
-     * 
+     *
      * @param data 文件数据
      * @param objectKey 对象键
      * @param contentType 内容类型
@@ -181,7 +176,7 @@ public class OssClient implements OssService {
 
     /**
      * 上传文件（输入流）
-     * 
+     *
      * @param inputStream 文件输入流
      * @param objectKey 对象键
      * @param contentType 内容类型
@@ -195,12 +190,12 @@ public class OssClient implements OssService {
         ValidationUtils.validateInputStream(inputStream);
         ValidationUtils.validateObjectKey(objectKey);
         ValidationUtils.validateContentType(contentType);
-        
+
         try {
             // 计算内容长度
             long contentLength;
-            byte[] bytes = null;
-            
+            byte[] bytes;
+
             if (inputStream instanceof ByteArrayInputStream) {
                 contentLength = inputStream.available();
             } else {
@@ -210,33 +205,32 @@ public class OssClient implements OssService {
                 inputStream = new ByteArrayInputStream(bytes);
                 contentLength = bytes.length;
             }
-            
+
             // 创建元数据
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(contentType);
             metadata.setContentLength(contentLength);
-            
+
             // 创建上传请求
-            PutObjectRequest putObjectRequest = new PutObjectRequest(config.getBucket(), objectKey, inputStream, metadata);
+            PutObjectRequest putObjectRequest =
+                    new PutObjectRequest(config.getBucket(), objectKey, inputStream, metadata);
             putObjectRequest.setCannedAcl(getAccessPolicy().getAcl());
-            
+
             // 执行上传
             client.putObject(putObjectRequest);
-            
+
             log.debug("文件上传成功: {}", objectKey);
-            
+
             // 构建返回结果
             return UploadObjectResult.builder()
                     .url(buildObjectUrl(objectKey))
                     .key(objectKey)
                     .build();
-                    
+
         } catch (AmazonS3Exception e) {
             throw new OssException(
-                String.format("上传文件失败: %s, 错误码: %s, 错误信息: %s", 
-                    objectKey, e.getErrorCode(), e.getErrorMessage()), 
-                e
-            );
+                    String.format("上传文件失败: %s, 错误码: %s, 错误信息: %s", objectKey, e.getErrorCode(), e.getErrorMessage()),
+                    e);
         } catch (Exception e) {
             throw new OssException("上传文件失败: " + objectKey, e);
         }
@@ -244,7 +238,7 @@ public class OssClient implements OssService {
 
     /**
      * 分片上传
-     * 
+     *
      * @param file 文件对象
      * @param objectKey 对象键
      * @param partNumber 当前分片号（从 1 开始）
@@ -259,7 +253,7 @@ public class OssClient implements OssService {
 
     /**
      * 分片上传
-     * 
+     *
      * @param file 文件对象
      * @param contentType 内容类型
      * @param objectKey 对象键
@@ -275,31 +269,28 @@ public class OssClient implements OssService {
         ValidationUtils.validateContentType(contentType);
         ValidationUtils.validateObjectKey(objectKey);
         ValidationUtils.validatePartNumbers(partNumber, partTotalNumber);
-        
+
         if (!file.exists()) {
             throw new IllegalArgumentException("文件不存在: " + file.getAbsolutePath());
         }
         if (!file.isFile()) {
             throw new IllegalArgumentException("不是有效的文件: " + file.getAbsolutePath());
         }
-        
+
         // 检查状态管理器是否已注入
         if (multipartUploadStateManager == null) {
-            throw new IllegalStateException(
-                "MultipartUploadStateManager 未注入，无法使用分片上传功能！" +
-                "请确保已配置 Redis 或使用内存状态管理器。"
-            );
+            throw new IllegalStateException("MultipartUploadStateManager 未注入，无法使用分片上传功能！" + "请确保已配置 Redis 或使用内存状态管理器。");
         }
-        
+
         try {
             String stateKey = objectKey + ":" + partTotalNumber;
-            
+
             // 第一个分片时，清理可能存在的旧数据
             if (partNumber == 1 && multipartUploadStateManager.exists(stateKey)) {
                 multipartUploadStateManager.deleteState(stateKey);
                 log.debug("清理旧的分片上传状态: {}", stateKey);
             }
-            
+
             // 获取或初始化上传 ID
             String uploadId = multipartUploadStateManager.getUploadId(stateKey);
             if (uploadId == null) {
@@ -331,13 +322,13 @@ public class OssClient implements OssService {
 
             UploadPartResult uploadResult = client.uploadPart(uploadRequest);
             partETags.add(uploadResult.getPartETag());
-            
+
             log.debug("分片上传成功: objectKey={}, part={}/{}", objectKey, partNumber, partTotalNumber);
 
             // 如果是最后一个分片，完成上传
             if (partNumber == partTotalNumber) {
-                CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(
-                        config.getBucket(), objectKey, uploadId, partETags);
+                CompleteMultipartUploadRequest compRequest =
+                        new CompleteMultipartUploadRequest(config.getBucket(), objectKey, uploadId, partETags);
                 client.completeMultipartUpload(compRequest);
                 multipartUploadStateManager.deleteState(stateKey);
                 log.info("分片上传完成: objectKey={}, totalParts={}", objectKey, partTotalNumber);
@@ -348,21 +339,18 @@ public class OssClient implements OssService {
 
         } catch (AmazonS3Exception e) {
             throw new OssException(
-                String.format("分片上传失败: %s, part=%d/%d, 错误码: %s", 
-                    objectKey, partNumber, partTotalNumber, e.getErrorCode()), 
-                e
-            );
+                    String.format(
+                            "分片上传失败: %s, part=%d/%d, 错误码: %s",
+                            objectKey, partNumber, partTotalNumber, e.getErrorCode()),
+                    e);
         } catch (Exception e) {
-            throw new OssException(
-                String.format("分片上传失败: %s, part=%d/%d", objectKey, partNumber, partTotalNumber), 
-                e
-            );
+            throw new OssException(String.format("分片上传失败: %s, part=%d/%d", objectKey, partNumber, partTotalNumber), e);
         }
     }
 
     /**
      * 上传文件（文件对象）
-     * 
+     *
      * @param file 文件对象
      * @param objectKey 对象键
      * @return 上传结果
@@ -373,31 +361,28 @@ public class OssClient implements OssService {
     public UploadObjectResult upload(File file, String objectKey) {
         ValidationUtils.validateNotNull(file, "file");
         ValidationUtils.validateObjectKey(objectKey);
-        
+
         if (!file.exists()) {
             throw new IllegalArgumentException("文件不存在: " + file.getAbsolutePath());
         }
         if (!file.isFile()) {
             throw new IllegalArgumentException("不是有效的文件: " + file.getAbsolutePath());
         }
-        
+
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(config.getBucket(), objectKey, file);
             putObjectRequest.setCannedAcl(getAccessPolicy().getAcl());
             client.putObject(putObjectRequest);
-            
+
             log.debug("文件上传成功: {}", objectKey);
-            
+
             return UploadObjectResult.builder()
                     .url(buildObjectUrl(objectKey))
                     .key(objectKey)
                     .build();
-                    
+
         } catch (AmazonS3Exception e) {
-            throw new OssException(
-                String.format("上传文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), 
-                e
-            );
+            throw new OssException(String.format("上传文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
         } catch (Exception e) {
             throw new OssException("上传文件失败: " + objectKey, e);
         }
@@ -405,7 +390,7 @@ public class OssClient implements OssService {
 
     /**
      * 删除文件
-     * 
+     *
      * @param objectKey 对象键
      * @throws IllegalArgumentException 参数校验失败
      * @throws OssException 删除失败
@@ -413,15 +398,12 @@ public class OssClient implements OssService {
     @Override
     public void delete(String objectKey) {
         ValidationUtils.validateObjectKey(objectKey);
-        
+
         try {
             client.deleteObject(config.getBucket(), objectKey);
             log.debug("文件删除成功: {}", objectKey);
         } catch (AmazonS3Exception e) {
-            throw new OssException(
-                String.format("删除文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), 
-                e
-            );
+            throw new OssException(String.format("删除文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
         } catch (Exception e) {
             throw new OssException("删除文件失败: " + objectKey, e);
         }
@@ -429,7 +411,7 @@ public class OssClient implements OssService {
 
     /**
      * 获取文件对象
-     * 
+     *
      * @param objectKey 对象键
      * @return S3 对象
      * @throws IllegalArgumentException 参数校验失败
@@ -438,14 +420,11 @@ public class OssClient implements OssService {
     @Override
     public S3Object getObject(String objectKey) {
         ValidationUtils.validateObjectKey(objectKey);
-        
+
         try {
             return client.getObject(config.getBucket(), objectKey);
         } catch (AmazonS3Exception e) {
-            throw new OssException(
-                String.format("获取文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), 
-                e
-            );
+            throw new OssException(String.format("获取文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
         } catch (Exception e) {
             throw new OssException("获取文件失败: " + objectKey, e);
         }
@@ -453,7 +432,7 @@ public class OssClient implements OssService {
 
     /**
      * 下载文件到输出流
-     * 
+     *
      * @param objectKey 对象键
      * @param outputStream 输出流
      * @throws IllegalArgumentException 参数校验失败
@@ -463,20 +442,17 @@ public class OssClient implements OssService {
     public void outStream(String objectKey, OutputStream outputStream) {
         ValidationUtils.validateObjectKey(objectKey);
         ValidationUtils.validateNotNull(outputStream, "outputStream");
-        
+
         try (S3Object s3Object = client.getObject(config.getBucket(), objectKey);
-             S3ObjectInputStream s3is = s3Object.getObjectContent()) {
-            
+                S3ObjectInputStream s3is = s3Object.getObjectContent()) {
+
             IoUtil.copy(s3is, outputStream);
             outputStream.flush();
-            
+
             log.debug("文件下载成功: {}", objectKey);
-            
+
         } catch (AmazonS3Exception e) {
-            throw new OssException(
-                String.format("下载文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), 
-                e
-            );
+            throw new OssException(String.format("下载文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
         } catch (Exception e) {
             throw new OssException("下载文件失败: " + objectKey, e);
         }
@@ -495,22 +471,19 @@ public class OssClient implements OssService {
     public String getPrivateUrl(String objectKey, Integer expirationSeconds) {
         ValidationUtils.validateObjectKey(objectKey);
         ValidationUtils.validateExpirationSeconds(expirationSeconds);
-        
+
         try {
             GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
                             config.getBucket(), objectKey)
                     .withMethod(HttpMethod.GET)
                     .withExpiration(new Date(System.currentTimeMillis() + 1000L * expirationSeconds));
             URL url = client.generatePresignedUrl(generatePresignedUrlRequest);
-            
+
             log.debug("生成预签名 URL: objectKey={}, expiration={}s", objectKey, expirationSeconds);
-            
+
             return url.toString();
         } catch (AmazonS3Exception e) {
-            throw new OssException(
-                String.format("生成预签名 URL 失败: %s, 错误码: %s", objectKey, e.getErrorCode()), 
-                e
-            );
+            throw new OssException(String.format("生成预签名 URL 失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
         } catch (Exception e) {
             throw new OssException("生成预签名 URL 失败: " + objectKey, e);
         }
@@ -525,10 +498,10 @@ public class OssClient implements OssService {
     public AccessPolicyType getAccessPolicy() {
         return AccessPolicyType.getByType(config.getAccessPolicy());
     }
-    
+
     /**
      * 构建对象 URL
-     * 
+     *
      * @param objectKey 对象键
      * @return 完整的对象 URL
      */
