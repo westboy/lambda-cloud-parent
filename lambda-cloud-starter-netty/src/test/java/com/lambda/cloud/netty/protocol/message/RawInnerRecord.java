@@ -310,9 +310,35 @@ public class RawInnerRecord {
     //    private BigDecimal deepValleyAmount;
 
     /**
+     * 谷金额 (4字节，4位小数)
+     */
+    @ProtocolField(
+            order = 22,
+            length = 5,
+            computed = true,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 5,
+            description = "电表总起值")
+    private BigDecimal s1;
+
+    /**
+     * 谷金额 (4字节，4位小数)
+     */
+    @ProtocolField(
+            order = 23,
+            length = 5,
+            computed = true,
+            dataType = ProtocolDataType.HEX,
+            littleEndian = true,
+            precision = 5,
+            description = "电表总止值")
+    private BigDecimal s2;
+
+    /**
      * 预留字段 (18字节)
      */
-    @ProtocolField(order = 26, length = 18, computed = true, dataType = ProtocolDataType.HEX, description = "预留字段")
+    @ProtocolField(order = 26, length = 8, computed = true, dataType = ProtocolDataType.HEX, description = "预留字段")
     private String reserved;
 
     /**
