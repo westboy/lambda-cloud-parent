@@ -30,7 +30,6 @@ public class OssProperties {
      * OSS 客户端配置列表
      */
     @Valid
-    @NestedConfigurationProperty
     private List<Config> clients = new ArrayList<>();
 
     /**
