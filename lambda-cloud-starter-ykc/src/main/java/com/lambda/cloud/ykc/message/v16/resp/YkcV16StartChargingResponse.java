@@ -3,11 +3,10 @@ package com.lambda.cloud.ykc.message.v16.resp;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
  * 云快充1.6协议运营平台确认启动充电消息体

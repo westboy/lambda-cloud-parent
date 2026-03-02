@@ -66,6 +66,7 @@ public class YkcV16BillingMessageTest {
             fail("计费模型响应序列化失败: " + e.getMessage());
         }
     }
+
     @Test
     public void test2() {
         try {
@@ -75,9 +76,10 @@ public class YkcV16BillingMessageTest {
             // 将十六进制字符串转换为字节数组
             byte[] bytes = HexUtil.decodeHex(
                     "682a21BF00321812000000104902239326785321369618120000001049020000000000000000701101000100E810");
-     // 将十六进制字符串转换为字节数组
-//            byte[] bytes = HexUtil.decodeHex(
-//                    "682a164500321812000000104901239610290538086418120000001049010000000000000000701101000100346D");
+            // 将十六进制字符串转换为字节数组
+            //            byte[] bytes = HexUtil.decodeHex(
+            //
+            // "682a164500321812000000104901239610290538086418120000001049010000000000000000701101000100346D");
 
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
             ProtocolPayloadRegistry.register("32", YkcV16StartChargingResponse.class);

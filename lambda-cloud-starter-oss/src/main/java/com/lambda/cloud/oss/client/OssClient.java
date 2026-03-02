@@ -120,7 +120,7 @@ public class OssClient implements OssService {
                 .withCredentials(credentialsProvider)
                 .enablePathStyleAccess()
                 .disableChunkedEncoding();
-        if (OssType.MINIO.name().equalsIgnoreCase(config.getType()) || config.getEnablePathStyleAccess()) {
+        if (OssType.MINIO.equals(config.getType()) || config.getEnablePathStyleAccess()) {
             build.enablePathStyleAccess();
         }
 
@@ -138,7 +138,7 @@ public class OssClient implements OssService {
      */
     @Override
     public void createBucket() {
-        if (OssType.MINIO.name().equalsIgnoreCase(config.getType())) {
+        if (OssType.MINIO.equals(config.getType())) {
             try {
                 String bucketName = config.getBucket();
                 if (client.doesBucketExistV2(bucketName)) {

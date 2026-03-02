@@ -53,7 +53,7 @@ public class OssProperties {
         @Pattern(
                 regexp = "^(MINIO|ALIYUN|QCLOUD|QINIU|OTHER)$",
                 message = "OSS 类型必须是 MINIO、ALIYUN、QCLOUD、QINIU 或 OTHER")
-        private String type = OssType.MINIO.name();
+        private OssType type = OssType.MINIO;
 
         /**
          * cdn 域名
