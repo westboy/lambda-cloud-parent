@@ -50,9 +50,6 @@ public class OssProperties {
          * OSS 类型（MINIO、ALIYUN、QCLOUD、QINIU、OTHER）
          */
         @NotNull(message = "OSS 类型不能为空")
-        @Pattern(
-                regexp = "^(MINIO|ALIYUN|QCLOUD|QINIU|OTHER)$",
-                message = "OSS 类型必须是 MINIO、ALIYUN、QCLOUD、QINIU 或 OTHER")
         private OssType type = OssType.MINIO;
 
         /**
