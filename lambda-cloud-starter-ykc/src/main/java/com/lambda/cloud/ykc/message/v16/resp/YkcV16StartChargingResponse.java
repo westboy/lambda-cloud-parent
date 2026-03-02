@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * 云快充1.6协议运营平台确认启动充电消息体
  * <p>
@@ -57,10 +59,11 @@ public class YkcV16StartChargingResponse {
             order = 5,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
+            precision = 2,
             littleEndian = true,
             description = "账户余额")
-    private Long accountBalance;
+    private BigDecimal accountBalance;
 
     /**
      * 鉴权成功标志 (1字节)

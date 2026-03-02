@@ -13,6 +13,7 @@ import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
 import com.lambda.cloud.ykc.message.v16.resp.YkcV16BillingModelResponse;
+import com.lambda.cloud.ykc.message.v16.resp.YkcV16StartChargingResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.nio.charset.StandardCharsets;
@@ -48,6 +49,38 @@ public class YkcV16BillingMessageTest {
 
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
             ProtocolPayloadRegistry.register("58", YkcV16BillingModelResponse.class);
+            // 使用协议引擎解析消息
+            YkcV16BasePayload record = engine.parse(byteBuf, YkcV16BasePayload.class);
+
+            System.out.println(record);
+
+            ByteBuf serializeBuffer = Unpooled.buffer();
+            engine.serialize(record, serializeBuffer);
+
+            byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
+            serializeBuffer.readBytes(serializedBytes);
+            String hexString = HexUtil.encodeHexStr(serializedBytes, false);
+            System.out.println(hexString);
+        } catch (Exception e) {
+            log.error("计费模型响应序列化测试失败", e);
+            fail("计费模型响应序列化失败: " + e.getMessage());
+        }
+    }
+    @Test
+    public void test2() {
+        try {
+            ProtocolEngine<YkcV16BasePayload> engine =
+                    ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+
+            // 将十六进制字符串转换为字节数组
+            byte[] bytes = HexUtil.decodeHex(
+                    "682a21BF00321812000000104902239326785321369618120000001049020000000000000000701101000100E810");
+     // 将十六进制字符串转换为字节数组
+//            byte[] bytes = HexUtil.decodeHex(
+//                    "682a164500321812000000104901239610290538086418120000001049010000000000000000701101000100346D");
+
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+            ProtocolPayloadRegistry.register("32", YkcV16StartChargingResponse.class);
             // 使用协议引擎解析消息
             YkcV16BasePayload record = engine.parse(byteBuf, YkcV16BasePayload.class);
 
