@@ -49,7 +49,7 @@ public class OssProperties {
         /**
          * OSS 类型（MINIO、ALIYUN、QCLOUD、QINIU、OTHER）
          */
-        @NotBlank(message = "OSS 类型不能为空")
+        @NotNull(message = "OSS 类型不能为空")
         @Pattern(
                 regexp = "^(MINIO|ALIYUN|QCLOUD|QINIU|OTHER)$",
                 message = "OSS 类型必须是 MINIO、ALIYUN、QCLOUD、QINIU 或 OTHER")
