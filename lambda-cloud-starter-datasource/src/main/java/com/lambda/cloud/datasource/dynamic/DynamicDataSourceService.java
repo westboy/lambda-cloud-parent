@@ -1,7 +1,6 @@
 package com.lambda.cloud.datasource.dynamic;
 
 import com.lambda.cloud.datasource.property.DataSourceProperty;
-
 import javax.sql.DataSource;
 
 /**
