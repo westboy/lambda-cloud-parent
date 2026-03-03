@@ -93,6 +93,7 @@ public class AutoConverterProcessor extends AbstractProcessor {
 
             if (sourceMirror == null) {
                 AutoConverter anno = typeElement.getAnnotation(AutoConverter.class);
+                assert anno != null;
                 ParameterizedTypeName superInterface;
                 if (!anno.isReverse()) {
                     superInterface = ParameterizedTypeName.get(
