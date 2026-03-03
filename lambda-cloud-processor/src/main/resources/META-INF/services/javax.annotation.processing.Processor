@@ -1,2 +1,3 @@
-com.lambda.cloud.processor.converter.AutoConverterProcessor
 com.lambda.cloud.processor.permission.PermissionProcessor
+com.lambda.cloud.processor.converter.AutoConverterProcessor
+

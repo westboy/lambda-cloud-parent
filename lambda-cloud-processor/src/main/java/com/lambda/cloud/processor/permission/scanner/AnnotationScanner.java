@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -110,7 +109,8 @@ public class AnnotationScanner {
         }
 
         // 检查 @RequestMapping 的 method 属性
-        List<String> methods = getAnnotationArrayValue(element, "org.springframework.web.bind.annotation.RequestMapping", "method");
+        List<String> methods =
+                getAnnotationArrayValue(element, "org.springframework.web.bind.annotation.RequestMapping", "method");
         if (!methods.isEmpty()) {
             String method = methods.get(0);
             // 提取枚举值，如 RequestMethod.GET -> GET

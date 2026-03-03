@@ -3,7 +3,6 @@ package com.lambda.cloud.processor.permission;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.lambda.cloud.processor.permission.cache.PermissionCache;
 import com.lambda.cloud.processor.permission.config.ProcessorConfig;
 import com.lambda.cloud.processor.permission.extractor.MetadataExtractor;
 import com.lambda.cloud.processor.permission.model.ApiPermissionMetadata;
@@ -51,8 +50,10 @@ public class PermissionProcessor extends AbstractProcessor {
     private ObjectMapper objectMapper;
     private MetadataExtractor extractor;
     private AnnotationScanner scanner;
-    private PermissionCache cache;
     private long startTime;
+
+    // 用于收集所有轮次的权限信息
+    private final List<ApiPermissionMetadata> collectedPermissions = new ArrayList<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -60,6 +61,9 @@ public class PermissionProcessor extends AbstractProcessor {
         this.filer = processingEnv.getFiler();
         this.messager = processingEnv.getMessager();
         this.startTime = System.currentTimeMillis();
+
+        // 确保每次初始化时清空收集列表，防止在 Reactor 构建中实例复用导致数据污染
+        this.collectedPermissions.clear();
 
         // 加载配置
         this.config = loadConfig();
@@ -73,76 +77,73 @@ public class PermissionProcessor extends AbstractProcessor {
         this.extractor = new MetadataExtractor();
         this.scanner = new AnnotationScanner();
 
-        // 初始化缓存（优先使用配置路径，其次尝试探测输出目录，最后回退到 user.dir）
-        String buildDir = processingEnv.getOptions().get("permission.build.dir");
-        if (buildDir == null || buildDir.isEmpty()) {
-            try {
-                // 尝试创建一个临时资源文件来定位输出目录
-                FileObject resource = filer.createResource(StandardLocation.CLASS_OUTPUT, "", ".permission-cache-probe");
-                // 转换为 File 对象并获取父目录
-                java.io.File file = new java.io.File(resource.toUri());
-                buildDir = file.getParent();
-                // 尝试删除探测文件（如果支持）
-                resource.delete();
-            } catch (Exception e) {
-                // 如果失败，回退到 user.dir + /target (可能不准确)
-                buildDir = System.getProperty("user.dir") + "/target";
-                printWarning("Failed to determine build directory, fallback to user.dir: " + buildDir);
-            }
-        }
-        this.cache = new PermissionCache(buildDir);
-
-        printNote("Permission processor initialized, cache dir: " + buildDir);
+        printNote("Permission processor initialized");
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         // 检查是否启用
         if (!config.isEnabled()) {
-            printNote("Permission extraction is disabled");
             return false;
         }
 
-        // 只在最后一轮处理
+        // 1. 在每一轮（非结束轮）扫描并处理注解
         if (!roundEnv.processingOver()) {
-            return false;
+            processRound(roundEnv);
+            return false; // 继续让其他处理器处理
         }
 
-        try {
-            // 收集所有 API 权限信息
-            List<ApiPermissionMetadata> allApis = new ArrayList<>();
+        // 2. 在结束轮生成文件
+        generateFiles();
+        return false;
+    }
 
+    /**
+     * 处理每一轮的扫描
+     */
+    private void processRound(RoundEnvironment roundEnv) {
+        try {
             // 扫描所有 Controller 类
             Set<TypeElement> controllers = findControllers(roundEnv);
-            printNote("Found " + controllers.size() + " controller classes");
-
-            for (TypeElement controller : controllers) {
-                List<ApiPermissionMetadata> apis = processController(controller);
-                allApis.addAll(apis);
+            if (!controllers.isEmpty()) {
+                printNote("Found " + controllers.size() + " controller classes in this round");
+                for (TypeElement controller : controllers) {
+                    List<ApiPermissionMetadata> apis = processController(controller);
+                    if (!apis.isEmpty()) {
+                        collectedPermissions.addAll(apis);
+                    }
+                }
             }
+        } catch (Exception e) {
+            printError("Failed to process permissions in round: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
+    /**
+     * 生成最终文件
+     */
+    private void generateFiles() {
+        try {
             // 生成 JSON 文件
-            if (!allApis.isEmpty()) {
-                generateJsonFile(allApis);
-                printNote("Generated permission file with " + allApis.size() + " APIs");
+            if (!collectedPermissions.isEmpty()) {
+                generateJsonFile(collectedPermissions);
+                printNote("Generated permission file with " + collectedPermissions.size() + " APIs");
+            } else {
+                printWarning();
             }
-
-            // 保存缓存
-            cache.saveCache();
 
             // 输出性能统计
             long duration = System.currentTimeMillis() - startTime;
             printNote("Permission extraction completed in " + duration + "ms");
 
-            // 输出缓存统计
-            Map<String, Object> cacheStats = cache.getStatistics();
-            printNote("Cache statistics: " + cacheStats.get("totalEntries") + " entries");
-
         } catch (Exception e) {
-            printError("Failed to process permissions: " + e.getMessage());
+            printError("Failed to generate permission files: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            // 生成文件后清空收集列表，防止实例复用导致数据累积到下一个模块
+            collectedPermissions.clear();
         }
-
-        return false;
     }
 
     /**
@@ -179,16 +180,6 @@ public class PermissionProcessor extends AbstractProcessor {
      */
     private List<ApiPermissionMetadata> processController(TypeElement controller) {
         String className = controller.getQualifiedName().toString();
-
-        // 检查缓存，如果类未变更则使用缓存
-        if (!cache.isClassChanged(controller)) {
-            List<ApiPermissionMetadata> cached = cache.getCachedPermissions(className);
-            if (!cached.isEmpty()) {
-                printNote("Using cached permissions for " + className + " (" + cached.size() + " APIs)");
-                return cached;
-            }
-        }
-
         List<ApiPermissionMetadata> apis = new ArrayList<>();
 
         // 提取类级别的 @RequestMapping
@@ -204,9 +195,7 @@ public class PermissionProcessor extends AbstractProcessor {
             }
         }
 
-        // 更新缓存
         if (!apis.isEmpty()) {
-            cache.updateCache(controller, apis);
             printNote("Processed " + className + " (" + apis.size() + " APIs)");
         }
 
@@ -342,8 +331,9 @@ public class PermissionProcessor extends AbstractProcessor {
     /**
      * 输出警告信息
      */
-    private void printWarning(String message) {
-        messager.printMessage(Diagnostic.Kind.WARNING, "[PermissionProcessor] " + message);
+    private void printWarning() {
+        messager.printMessage(
+                Diagnostic.Kind.WARNING, "[PermissionProcessor] " + "No APIs found to generate permission file");
     }
 
     /**

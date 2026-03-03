@@ -2,7 +2,6 @@ package com.lambda.cloud.processor.permission.extractor;
 
 import com.lambda.cloud.processor.permission.model.ApiPermissionMetadata;
 import com.lambda.cloud.processor.permission.scanner.AnnotationScanner;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 import javax.lang.model.element.*;
 
@@ -13,7 +12,6 @@ import javax.lang.model.element.*;
  *
  * @author Jin
  */
-@SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
 public class MetadataExtractor {
 
     private final AnnotationScanner scanner;
