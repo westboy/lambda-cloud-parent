@@ -62,6 +62,11 @@ public record DynamicDataSourceServiceImpl(DynamicRoutingDataSource dynamicRouti
     }
 
     @Override
+    public DataSource getDataSource(String id) {
+        return dynamicRoutingDataSource.getDataSource(id);
+    }
+
+    @Override
     public boolean test(DataSourceProperty property) {
         if (property == null) {
             return false;
