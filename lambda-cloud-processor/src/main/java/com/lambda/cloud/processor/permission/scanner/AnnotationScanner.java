@@ -1,7 +1,14 @@
 package com.lambda.cloud.processor.permission.scanner;
 
-import java.util.*;
-import javax.lang.model.element.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * 注解扫描器
@@ -103,8 +110,9 @@ public class AnnotationScanner {
         }
 
         // 检查 @RequestMapping 的 method 属性
-        String method = getAnnotationValue(element, "org.springframework.web.bind.annotation.RequestMapping", "method");
-        if (method != null) {
+        List<String> methods = getAnnotationArrayValue(element, "org.springframework.web.bind.annotation.RequestMapping", "method");
+        if (!methods.isEmpty()) {
+            String method = methods.get(0);
             // 提取枚举值，如 RequestMethod.GET -> GET
             if (method.contains(".")) {
                 method = method.substring(method.lastIndexOf('.') + 1);
@@ -190,7 +198,18 @@ public class AnnotationScanner {
         if (mode != null && mode.contains("OR")) {
             return "OR";
         }
-        return "AND";
+        return mode != null ? "AND" : null;
+    }
+
+    /**
+     * 扫描 @SaCheckPermission 的 mode 属性
+     */
+    public String scanSaCheckPermissionMode(Element element) {
+        String mode = getAnnotationValue(element, "cn.dev33.satoken.annotation.SaCheckPermission", "mode");
+        if (mode != null && mode.contains("OR")) {
+            return "OR";
+        }
+        return mode != null ? "AND" : null;
     }
 
     /**

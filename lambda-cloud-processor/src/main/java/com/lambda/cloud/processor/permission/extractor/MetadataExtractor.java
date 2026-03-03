@@ -120,8 +120,20 @@ public class MetadataExtractor {
             return mode;
         }
 
+        // 检查方法级别的 @SaCheckPermission mode
+        mode = scanner.scanSaCheckPermissionMode(method);
+        if (mode != null) {
+            return mode;
+        }
+
         // 检查类级别的 @SaCheckRole mode
         mode = scanner.scanSaCheckRoleMode(controller);
+        if (mode != null) {
+            return mode;
+        }
+
+        // 检查类级别的 @SaCheckPermission mode
+        mode = scanner.scanSaCheckPermissionMode(controller);
         if (mode != null) {
             return mode;
         }

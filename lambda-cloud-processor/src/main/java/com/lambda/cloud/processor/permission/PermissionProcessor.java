@@ -17,6 +17,9 @@ import java.util.*;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -70,11 +73,26 @@ public class PermissionProcessor extends AbstractProcessor {
         this.extractor = new MetadataExtractor();
         this.scanner = new AnnotationScanner();
 
-        // 初始化缓存（使用 target 目录）
-        String buildDir = System.getProperty("user.dir") + "/target";
+        // 初始化缓存（优先使用配置路径，其次尝试探测输出目录，最后回退到 user.dir）
+        String buildDir = processingEnv.getOptions().get("permission.build.dir");
+        if (buildDir == null || buildDir.isEmpty()) {
+            try {
+                // 尝试创建一个临时资源文件来定位输出目录
+                FileObject resource = filer.createResource(StandardLocation.CLASS_OUTPUT, "", ".permission-cache-probe");
+                // 转换为 File 对象并获取父目录
+                java.io.File file = new java.io.File(resource.toUri());
+                buildDir = file.getParent();
+                // 尝试删除探测文件（如果支持）
+                resource.delete();
+            } catch (Exception e) {
+                // 如果失败，回退到 user.dir + /target (可能不准确)
+                buildDir = System.getProperty("user.dir") + "/target";
+                printWarning("Failed to determine build directory, fallback to user.dir: " + buildDir);
+            }
+        }
         this.cache = new PermissionCache(buildDir);
 
-        printNote("Permission processor initialized");
+        printNote("Permission processor initialized, cache dir: " + buildDir);
     }
 
     @Override
@@ -177,14 +195,12 @@ public class PermissionProcessor extends AbstractProcessor {
         String classPath = extractClassPath(controller);
         String classGroup = extractClassGroup(controller);
 
-        // 遍历所有方法
-        for (Element element : controller.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD) {
-                ExecutableElement method = (ExecutableElement) element;
-                ApiPermissionMetadata api = processMethod(controller, method, classPath, classGroup);
-                if (api != null) {
-                    apis.add(api);
-                }
+        // 遍历所有方法（包括父类方法）
+        List<ExecutableElement> methods = getAllMethods(controller);
+        for (ExecutableElement method : methods) {
+            ApiPermissionMetadata api = processMethod(controller, method, classPath, classGroup);
+            if (api != null) {
+                apis.add(api);
             }
         }
 
@@ -219,6 +235,41 @@ public class PermissionProcessor extends AbstractProcessor {
 
         // 使用提取器提取完整的元数据（带模块名称）
         return extractor.extract(controller, method);
+    }
+
+    /**
+     * 获取类及其父类的所有方法
+     */
+    private List<ExecutableElement> getAllMethods(TypeElement controller) {
+        List<ExecutableElement> methods = new ArrayList<>();
+        TypeElement current = controller;
+
+        while (current != null && !current.getQualifiedName().toString().equals("java.lang.Object")) {
+            for (Element element : current.getEnclosedElements()) {
+                if (element.getKind() == ElementKind.METHOD) {
+                    ExecutableElement method = (ExecutableElement) element;
+                    // Check if overridden by any method already collected
+                    boolean isOverridden = false;
+                    for (ExecutableElement existing : methods) {
+                        if (processingEnv.getElementUtils().overrides(existing, method, controller)) {
+                            isOverridden = true;
+                            break;
+                        }
+                    }
+                    if (!isOverridden) {
+                        methods.add(method);
+                    }
+                }
+            }
+
+            TypeMirror superclass = current.getSuperclass();
+            if (superclass.getKind() == TypeKind.DECLARED) {
+                current = (TypeElement) ((DeclaredType) superclass).asElement();
+            } else {
+                current = null;
+            }
+        }
+        return methods;
     }
 
     /**

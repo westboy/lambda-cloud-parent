@@ -1,4 +1,4 @@
-package com.lambda.cloud.processor;
+package com.lambda.cloud.processor.converter;
 
 import com.lambda.cloud.core.annotation.AutoConverter;
 import com.lambda.cloud.core.annotation.FieldMapping;
@@ -296,12 +296,18 @@ public class AutoConverterProcessor extends AbstractProcessor {
     private void generateMappingAnnotation(
             FieldMapping fieldMapping, AnnotationSpec.Builder builder, String methodName) {
         try {
-            Class<?>[] conditionQualifiedBy = fieldMapping.conditionQualifiedBy(); // 编译期调用可能触发异常
-            if (conditionQualifiedBy.length > 0) {
+            Class<?>[] classes;
+            if ("conditionQualifiedBy".equals(methodName)) {
+                classes = fieldMapping.conditionQualifiedBy();
+            } else {
+                classes = fieldMapping.qualifiedBy();
+            }
+
+            if (classes.length > 0) {
                 CodeBlock.Builder cb = CodeBlock.builder().add("{");
-                for (int i = 0; i < conditionQualifiedBy.length; i++) {
+                for (int i = 0; i < classes.length; i++) {
                     if (i > 0) cb.add(", ");
-                    cb.add("$T.class", ClassName.get(conditionQualifiedBy[i]));
+                    cb.add("$T.class", ClassName.get(classes[i]));
                 }
                 cb.add("}");
                 builder.addMember(methodName, "$L", cb.build());
@@ -312,8 +318,13 @@ public class AutoConverterProcessor extends AbstractProcessor {
                 CodeBlock.Builder cb = CodeBlock.builder().add("{");
                 for (int i = 0; i < mirrors.size(); i++) {
                     if (i > 0) cb.add(", ");
-                    TypeElement te = (TypeElement) ((DeclaredType) mirrors.get(i)).asElement();
-                    cb.add("$T.class", ClassName.get(te));
+                    TypeMirror tm = mirrors.get(i);
+                    if (tm.getKind() == TypeKind.DECLARED) {
+                        TypeElement te = (TypeElement) ((DeclaredType) tm).asElement();
+                        cb.add("$T.class", ClassName.get(te));
+                    } else {
+                        cb.add("$T.class", tm);
+                    }
                 }
                 cb.add("}");
                 builder.addMember(methodName, "$L", cb.build());
