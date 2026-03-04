@@ -355,6 +355,7 @@ public class AutoConverterProcessor extends AbstractProcessor {
         // 添加 convertTo 方法（源对象 -> 目标对象）
         MethodSpec.Builder convertToBuilder = MethodSpec.methodBuilder("convertTo");
         AutoConverter anno = typeElement.getAnnotation(AutoConverter.class);
+        assert anno != null;
         if (!anno.isReverse()) {
             convertToBuilder
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)

@@ -112,7 +112,7 @@ public class AnnotationScanner {
         List<String> methods =
                 getAnnotationArrayValue(element, "org.springframework.web.bind.annotation.RequestMapping", "method");
         if (!methods.isEmpty()) {
-            String method = methods.get(0);
+            String method = methods.getFirst();
             // 提取枚举值，如 RequestMethod.GET -> GET
             if (method.contains(".")) {
                 method = method.substring(method.lastIndexOf('.') + 1);
