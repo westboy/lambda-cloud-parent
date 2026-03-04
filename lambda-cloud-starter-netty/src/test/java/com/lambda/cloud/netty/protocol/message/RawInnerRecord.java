@@ -338,8 +338,18 @@ public class RawInnerRecord {
     /**
      * 预留字段 (18字节)
      */
-    @ProtocolField(order = 26, length = 8, computed = true, dataType = ProtocolDataType.HEX, description = "预留字段")
-    private String reserved;
+    @ProtocolField(order = 24, length = 4, computed = true,
+            littleEndian = true,
+            precision = 4, dataType = ProtocolDataType.HEX, description = "预留字段")
+    private BigDecimal reserved0;
+
+    /**
+     * 预留字段 (18字节)
+     */
+    @ProtocolField(order = 25, length = 4, computed = true,
+            littleEndian = true,
+            precision = 4,  dataType = ProtocolDataType.HEX, description = "预留字段")
+    private BigDecimal reserved1;
 
     /**
      * 消费金额 (4字节，4位小数)
