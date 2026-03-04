@@ -19,7 +19,7 @@ public class SseProperties {
     private long timeout = 30000L;
     private long heartbeatInterval = 15000L;
     private int maxRetryAttempts = 3;
-    private boolean enableController = true;
+    private boolean enableEndpoint = true;
     private boolean enableLoggingListener = true;
     private String endpointPrefix = "/sse";
     private String subscribePath = "/subscribe";

@@ -36,7 +36,7 @@ public class SseAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "lambda.sse.enable-controller", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(name = "lambda.sse.enable-endpoint", havingValue = "true", matchIfMissing = true)
     public SseController sseController(SseService sseService) {
         return new SseController(sseService);
     }
