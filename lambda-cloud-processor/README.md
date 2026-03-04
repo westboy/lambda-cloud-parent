@@ -1,13 +1,32 @@
 # Lambda Cloud Processor
 
-编译时注解处理器，用于自动生成 MapStruct 转换器接口。
+`lambda-cloud-processor` 是编译期注解处理器模块，当前 `src/main` 内实际包含 2 个处理器：
 
-## 功能特性
+- `AutoConverterProcessor`：为 `@AutoConverter` 生成 MapStruct Converter 接口
+- `PermissionProcessor`：扫描 Controller 与权限注解，生成接口权限 JSON
 
-- 基于 `@AutoConverter` 注解自动生成 MapStruct 转换器
-- 支持字段映射配置
-- 支持自定义转换器接口
-- 编译时代码生成，无运行时性能损耗
+## 模块结构（基于 src/main）
+
+```text
+src/main/java/com/lambda/cloud/processor/
+├─ converter/AutoConverterProcessor.java
+└─ permission/
+   ├─ PermissionProcessor.java
+   ├─ config/ProcessorConfig.java
+   ├─ extractor/MetadataExtractor.java
+   ├─ model/
+   │  ├─ ApiPermissionMetadata.java
+   │  └─ PermissionFileMetadata.java
+   └─ scanner/AnnotationScanner.java
+src/main/resources/META-INF/services/javax.annotation.processing.Processor
+```
+
+SPI 注册文件当前包含：
+
+```text
+com.lambda.cloud.processor.permission.PermissionProcessor
+com.lambda.cloud.processor.converter.AutoConverterProcessor
+```
 
 ## 依赖
 
@@ -19,288 +38,160 @@
 </dependency>
 ```
 
-## 使用方式
+## AutoConverterProcessor 行为说明
 
-### 基本用法
+### 触发条件
 
-在需要生成转换器的类上添加 `@AutoConverter` 注解：
+- 仅处理 `@AutoConverter` 标注的 `class`
+- 注解类型：`com.lambda.cloud.core.annotation.AutoConverter`
 
-```java
-@AutoConverter(target = UserEntity.class)
-public class UserDTO {
-    private String name;
-    private Integer age;
-    // getter/setter...
-}
+### 生成接口基础规则
+
+- 接口名：`{源类名}Converter`
+- 包名：与源类同包
+- 固定添加 `@Mapper` 属性：
+  - `componentModel = "spring"`
+  - `nullValuePropertyMappingStrategy = IGNORE`
+  - `nullValueCheckStrategy = ALWAYS`
+  - `unmappedTargetPolicy = IGNORE`
+- `uses` 总会包含 `com.lambda.cloud.core.convert.ConvertFunctions.class`
+- 如果 `@AutoConverter(config = X.class)` 存在，则写入 `@Mapper(config = X.class)`
+
+### 继承接口规则（以当前处理器实现为准）
+
+- `converter` 未指定（默认 `Void.class`）时：
+  - `isReverse = false`：`BaseConverter<Source, Target>`，`convertTo(Source source) -> Target`
+  - `isReverse = true`：`BaseConverter<Target, Source>`，`convertTo(Target source) -> Source`
+- `converter` 指定时：
+  - 直接继承 `converter` 指定接口
+
+### 字段映射来源
+
+处理器会按以下来源收集 `FieldMapping`，并全部转换为 `@Mapping`：
+
+1. `@AutoConverter(fieldMappings = {...})`
+2. 类上的 `@FieldMapping`
+3. 类上的 `@FieldMappings`
+4. 字段上的 `@FieldMapping` / `@FieldMappings`
+
+### 何时生成显式 `convertTo` 方法
+
+- 仅当收集到至少一个字段映射时，处理器会在生成接口中显式声明 `convertTo(...)` 并附加全部 `@Mapping`
+- 未收集到字段映射时，不额外声明 `convertTo(...)`，由父接口抽象方法与 MapStruct 处理
+
+### FieldMapping 支持写入的属性
+
+`target`、`source`、`ignore`、`dateFormat`、`numberFormat`、`locale`、`expression`、`defaultExpression`、`defaultValue`、`qualifiedByName`、`conditionExpression`、`conditionQualifiedByName`、`qualifiedBy`、`conditionQualifiedBy`
+
+## PermissionProcessor 行为说明
+
+### 生命周期与轮次
+
+- `init` 阶段：
+  - 初始化 `Filer`、`Messager`、`ObjectMapper`
+  - 读取编译参数到 `ProcessorConfig`
+  - 初始化 `MetadataExtractor`、`AnnotationScanner`
+  - 清空 `collectedPermissions`
+- `process` 阶段：
+  - 非结束轮：扫描 Controller 并收集接口元数据
+  - 结束轮：统一写出 JSON 文件，然后清空收集列表
+
+### 扫描范围与方法选择
+
+- Controller 类来源：
+  - `@RestController`
+  - `@Controller`
+- 方法入选条件：
+  - 方法存在 Spring 路由注解之一：`@RequestMapping` / `@GetMapping` / `@PostMapping` / `@PutMapping` / `@DeleteMapping` / `@PatchMapping`
+- 方法遍历包含父类方法，并通过 `Elements#overrides` 去重
+
+### 元数据提取规则
+
+- 路径：类路径 + 方法路径，使用 `/` 规范化并去重斜杠
+- HTTP Method：
+  - 优先 `@GetMapping/@PostMapping/...`
+  - 否则取 `@RequestMapping(method=...)` 第一个值
+  - 都没有时默认 `"GET"`
+- 权限：类 + 方法上的 `@SaCheckPermission` 合并去重
+- 角色：类 + 方法上的 `@SaCheckRole` 合并去重
+- 权限逻辑优先级：
+  1. 方法 `@SaCheckRole.mode`
+  2. 方法 `@SaCheckPermission.mode`
+  3. 类 `@SaCheckRole.mode`
+  4. 类 `@SaCheckPermission.mode`
+  5. 默认 `"AND"`
+- 认证要求：
+  - 有 `@SaCheckLogin` 则为 `true`
+  - 否则只要存在权限或角色约束也为 `true`
+  - 否则为 `false`
+- 描述：`@Operation(summary)`
+- 分组：`@Tag(name)`
+- 废弃：
+  - `@Deprecated`，或
+  - `@Operation(deprecated = true)`
+
+### 输出文件
+
+- 输出位置：`CLASS_OUTPUT` + `permission.output.path`
+- 默认路径：`META-INF/permissions/api-permissions.json`
+- JSON 根对象字段：
+  - `version`（固定写入 `1.0.0`）
+  - `generatedAt`（`Instant.now().toString()`）
+  - `module`（`permission.module.name`）
+  - `basePackage`（`permission.base.package`）
+  - `totalApis`
+  - `apis`
+
+## 编译参数（代码已读取）
+
+```text
+permission.enabled
+permission.output.path
+permission.output.format
+permission.base.package
+permission.module.name
+permission.include.patterns
+permission.exclude.patterns
 ```
 
-编译后会自动生成 `UserDTOConverter` 接口：
+其中当前 `src/main` 代码中的实际使用状态如下：
 
-```java
-@Mapper(
-    componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-    unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    uses = { ConvertFunction.class }
-)
-public interface UserDTOConverter extends BaseConverter<UserDTO, UserEntity> {
-}
-```
+- 已直接参与流程：
+  - `permission.enabled`
+  - `permission.output.path`
+  - `permission.base.package`（写入输出 JSON）
+  - `permission.module.name`（写入输出 JSON）
+- 已读取但当前未用于扫描/输出分支控制：
+  - `permission.output.format`
+  - `permission.include.patterns`
+  - `permission.exclude.patterns`
 
-### 字段映射配置
-
-#### 在注解中配置
-
-```java
-@AutoConverter(
-    target = UserEntity.class,
-    fieldMappings = {
-        @FieldMapping(target = "userName", source = "name"),
-        @FieldMapping(target = "userAge", source = "age")
-    }
-)
-# Lambda Cloud Processor
-
-编译时注解处理器，用于自动生成 MapStruct 转换器接口。
-
-## 功能特性
-
-- 基于 `@AutoConverter` 注解自动生成 MapStruct 转换器
-- 支持字段映射配置
-- 支持自定义转换器接口
-- 编译时代码生成，无运行时性能损耗
-
-## 依赖
+## Maven 编译参数示例
 
 ```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-processor</artifactId>
-    <scope>provided</scope>
-</dependency>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <annotationProcessorPaths>
+            <path>
+                <groupId>com.lambda.cloud</groupId>
+                <artifactId>lambda-cloud-processor</artifactId>
+                <version>${lambda.cloud.version}</version>
+            </path>
+        </annotationProcessorPaths>
+        <compilerArgs>
+            <arg>-Apermission.enabled=true</arg>
+            <arg>-Apermission.output.path=META-INF/permissions/api-permissions.json</arg>
+            <arg>-Apermission.module.name=${project.artifactId}</arg>
+            <arg>-Apermission.base.package=com.lambda.fusion</arg>
+        </compilerArgs>
+    </configuration>
+</plugin>
 ```
 
-## 使用方式
+## 当前代码事实边界
 
-### 基本用法
-
-在需要生成转换器的类上添加 `@AutoConverter` 注解：
-
-```java
-@AutoConverter(target = UserEntity.class)
-public class UserDTO {
-    private String name;
-    private Integer age;
-    // getter/setter...
-}
-```
-
-编译后会自动生成 `UserDTOConverter` 接口：
-
-```java
-@Mapper(
-    componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-    unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    uses = { ConvertFunction.class }
-)
-public interface UserDTOConverter extends BaseConverter<UserDTO, UserEntity> {
-}
-```
-
-### 字段映射配置
-
-#### 在注解中配置
-
-```java
-@AutoConverter(
-    target = UserEntity.class,
-    fieldMappings = {
-        @FieldMapping(target = "userName", source = "name"),
-        @FieldMapping(target = "userAge", source = "age")
-    }
-)
-public class UserDTO {
-    private String name;
-    private Integer age;
-}
-```
-
-#### 在类上配置
-
-```java
-@AutoConverter(target = UserEntity.class)
-@FieldMapping(target = "userName", source = "name")
-@FieldMappings({
-    @FieldMapping(target = "userAge", source = "age"),
-    @FieldMapping(target = "createTime", ignore = true)
-})
-public class UserDTO {
-    // ...
-}
-```
-> 支持 `@FieldMappings` 容器注解，可同时配置多个映射规则。
-
-#### 在字段上配置
-
-```java
-@AutoConverter(target = UserEntity.class)
-public class UserDTO {
-    
-    @FieldMapping(target = "userName")
-    private String name;
-    
-    @FieldMapping(target = "userAge")
-    private Integer age;
-    
-    @FieldMapping(target = "createTime", ignore = true)
-    private Date createTime;
-}
-```
-
-### 继承关系与参数反转
-
-#### 重要说明：BaseVO 继承的特殊处理
-
-当类继承 `BaseVO` 时，生成的转换器接口会**自动反转泛型参数顺序**，这会影响 `@FieldMapping` 注解的使用：
-
-##### 1. BaseDTO 继承（标准情况）
-```java
-@AutoConverter(target = UserEntity.class)
-public class UserCreateDTO extends BaseDTO<UserEntity> {
-    @FieldMapping(target = "userName", source = "name")  // DTO字段 -> Entity字段
-    private String name;
-}
-
-// 生成：BaseConverter<UserCreateDTO, UserEntity>
-// 转换方向：DTO -> Entity
-```
-
-##### 2. BaseVO 继承（参数反转）
-```java
-@AutoConverter(target = UserEntity.class)
-public class UserVO extends BaseVO<UserEntity> {
-    @FieldMapping(target = "name", source = "userName")  // Entity字段 -> VO字段
-    private String name;
-}
-
-// 生成：BaseConverter<UserEntity, UserVO>  ← 注意参数顺序反转
-// 转换方向：Entity -> VO
-```
-
-#### FieldMapping 注解使用差异
-
-| 继承类型 | 泛型参数 | 转换方向 | source 含义 | target 含义 |
-|---------|---------|---------|------------|------------|
-| BaseDTO | `<DTO, Entity>` | DTO → Entity | DTO字段名 | Entity字段名 |
-| BaseVO | `<Entity, VO>` | Entity → VO | Entity字段名 | VO字段名 |
-| 普通类 | `<源类, 目标类>` | 源 → 目标 | 源类字段名 | 目标类字段名 |
-
-#### 实际应用场景
-
-```java
-// 场景1：接收前端数据，保存到数据库
-@AutoConverter(target = UserEntity.class)
-public class UserCreateDTO extends BaseDTO<UserEntity> {
-    @FieldMapping(target = "userName", source = "name")  // DTO.name -> Entity.userName
-    private String name;
-    
-    @FieldMapping(target = "userAge", source = "age")    // DTO.age -> Entity.userAge
-    private Integer age;
-}
-
-// 场景2：从数据库查询，返回给前端
-@AutoConverter(target = UserEntity.class)
-public class UserVO extends BaseVO<UserEntity> {
-    @FieldMapping(target = "name", source = "userName")  // Entity.userName -> VO.name
-    private String name;
-    
-    @FieldMapping(target = "age", source = "userAge")    // Entity.userAge -> VO.age
-    private Integer age;
-}
-```
-
-### 高级配置
-
-#### 自定义转换器接口
-
-```java
-@AutoConverter(
-    target = UserEntity.class,
-    converter = CustomConverter.class
-)
-public class UserDTO {
-    // ...
-}
-```
-
-#### 使用其他转换器
-
-```java
-@AutoConverter(
-    target = UserEntity.class,
-    uses = { DateConverter.class, StringConverter.class }
-)
-public class UserDTO {
-    // ...
-}
-```
-
-#### 自定义 MapStruct 配置
-
-```java
-@AutoConverter(
-    target = UserEntity.class,
-    config = CustomMapperConfig.class
-)
-public class UserDTO {
-    // ...
-}
-```
-
-### 字段映射选项
-
-`@FieldMapping` 注解支持以下属性：
-
-- `target` - 目标字段名（必需）
-- `source` - 源字段名
-- `ignore` - 是否忽略该字段
-- `dateFormat` - 日期格式
-- `numberFormat` - 数字格式
-- `expression` - 自定义表达式
-- `defaultValue` - 默认值
-- `qualifiedByName` - 指定转换方法名
-- `conditionExpression` - 条件表达式
-- `conditionQualifiedByName` - 条件限定方法名
-- `qualifiedBy` - 限定注解类
-- `conditionQualifiedBy` - 条件限定注解类
-
-示例：
-
-```java
-@FieldMapping(target = "createTime", dateFormat = "yyyy-MM-dd HH:mm:ss")
-@FieldMapping(target = "status", defaultValue = "ACTIVE")
-@FieldMapping(target = "fullName", expression = "java(source.getFirstName() + ' ' + source.getLastName())")
-```
-
-## 生成规则
-
-1. 生成的转换器接口名为：`{原类名}Converter`
-2. 生成的接口位于与原类相同的包下
-3. **泛型生成规则**：
-   - `isReverse = false` (默认): 生成 `BaseConverter<DTO, Entity>`
-   - `isReverse = true`: 生成 `BaseConverter<Entity, DTO>`
-   - 若指定 `converter` 属性，则继承指定的接口
-4. **依赖注入**：
-   - 自动添加 `ConvertFunctions.class` 到 `uses` 属性
-   - `@AutoConverter` 中配置的 `uses` 类会被追加到列表
-   - 支持 `config` 属性指定 MapStruct 配置类
-
-## 注意事项
-
-- 该模块仅在编译时使用，建议设置 `scope` 为 `provided`
-- 需要配合 `lambda-cloud-core` 模块使用
-- 生成的转换器需要 MapStruct 运行时支持
-- 确保目标类在编译路径中可访问
+- `AutoConverterProcessor` 当前没有基于 `BaseDTO/BaseVO` 继承关系自动反转泛型，反转仅由 `isReverse` 控制
+- `PermissionProcessor` 当前没有使用 `include/exclude/basePackage` 做扫描过滤
+- `ApiPermissionMetadata` 中的 `tags`、`module` 字段在当前提取流程中未赋值
