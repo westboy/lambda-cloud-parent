@@ -25,15 +25,6 @@ public class ApiPermissionMetadata {
     /** 权限标识列表 */
     private List<String> permissions = new ArrayList<>();
 
-    /** 权限逻辑（AND/OR），默认 AND */
-    private String permissionLogic = "AND";
-
-    /** 角色标识列表 */
-    private List<String> roles = new ArrayList<>();
-
-    /** 是否需要认证，默认 true */
-    private boolean requiresAuth = true;
-
     /** 接口描述 */
     private String description;
 

@@ -338,17 +338,27 @@ public class RawInnerRecord {
     /**
      * 预留字段 (18字节)
      */
-    @ProtocolField(order = 24, length = 4, computed = true,
+    @ProtocolField(
+            order = 24,
+            length = 4,
+            computed = true,
             littleEndian = true,
-            precision = 4, dataType = ProtocolDataType.HEX, description = "预留字段")
+            precision = 4,
+            dataType = ProtocolDataType.HEX,
+            description = "预留字段")
     private BigDecimal reserved0;
 
     /**
      * 预留字段 (18字节)
      */
-    @ProtocolField(order = 25, length = 4, computed = true,
+    @ProtocolField(
+            order = 25,
+            length = 4,
+            computed = true,
             littleEndian = true,
-            precision = 4,  dataType = ProtocolDataType.HEX, description = "预留字段")
+            precision = 4,
+            dataType = ProtocolDataType.HEX,
+            description = "预留字段")
     private BigDecimal reserved1;
 
     /**

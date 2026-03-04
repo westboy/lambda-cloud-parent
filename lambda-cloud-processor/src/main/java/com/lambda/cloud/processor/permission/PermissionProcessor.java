@@ -116,7 +116,6 @@ public class PermissionProcessor extends AbstractProcessor {
             }
         } catch (Exception e) {
             printError("Failed to process permissions in round: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -139,7 +138,6 @@ public class PermissionProcessor extends AbstractProcessor {
 
         } catch (Exception e) {
             printError("Failed to generate permission files: " + e.getMessage());
-            e.printStackTrace();
         } finally {
             // 生成文件后清空收集列表，防止实例复用导致数据累积到下一个模块
             collectedPermissions.clear();
@@ -205,6 +203,7 @@ public class PermissionProcessor extends AbstractProcessor {
     /**
      * 处理单个方法
      */
+    @SuppressWarnings("unused")
     private ApiPermissionMetadata processMethod(
             TypeElement controller, ExecutableElement method, String classPath, String classGroup) {
         // 检查方法是否有路径映射注解

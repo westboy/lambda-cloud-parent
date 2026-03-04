@@ -184,32 +184,10 @@ public class AnnotationScanner {
     }
 
     /**
-     * 扫描 @SaCheckRole 注解
+     * 扫描 @SaCheckPermission 注解
      */
-    public List<String> scanSaCheckRole(Element element) {
-        return getAnnotationArrayValue(element, "cn.dev33.satoken.annotation.SaCheckRole", "value");
-    }
-
-    /**
-     * 扫描 @SaCheckRole 的 mode 属性
-     */
-    public String scanSaCheckRoleMode(Element element) {
-        String mode = getAnnotationValue(element, "cn.dev33.satoken.annotation.SaCheckRole", "mode");
-        if (mode != null && mode.contains("OR")) {
-            return "OR";
-        }
-        return mode != null ? "AND" : null;
-    }
-
-    /**
-     * 扫描 @SaCheckPermission 的 mode 属性
-     */
-    public String scanSaCheckPermissionMode(Element element) {
-        String mode = getAnnotationValue(element, "cn.dev33.satoken.annotation.SaCheckPermission", "mode");
-        if (mode != null && mode.contains("OR")) {
-            return "OR";
-        }
-        return mode != null ? "AND" : null;
+    public boolean hasPermission(Element element) {
+        return hasAnnotation(element, "cn.dev33.satoken.annotation.SaCheckPermission");
     }
 
     /**

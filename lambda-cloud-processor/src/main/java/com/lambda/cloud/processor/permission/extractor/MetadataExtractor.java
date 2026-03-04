@@ -1,5 +1,6 @@
 package com.lambda.cloud.processor.permission.extractor;
 
+import cn.hutool.core.collection.CollUtil;
 import com.lambda.cloud.processor.permission.model.ApiPermissionMetadata;
 import com.lambda.cloud.processor.permission.scanner.AnnotationScanner;
 import java.util.*;
@@ -24,6 +25,12 @@ public class MetadataExtractor {
      * 提取完整的 API 权限元数据
      */
     public ApiPermissionMetadata extract(TypeElement controller, ExecutableElement method) {
+        boolean hasPermission = scanner.hasPermission(controller) || scanner.hasPermission(method);
+
+        if (!hasPermission) {
+            return null;
+        }
+
         ApiPermissionMetadata metadata = new ApiPermissionMetadata();
 
         // 提取路径
@@ -34,21 +41,14 @@ public class MetadataExtractor {
         // 提取 HTTP 方法
         metadata.setMethod(extractHttpMethod(method));
 
-        // 提取权限信息
-        metadata.setPermissions(extractPermissions(controller, method));
-        metadata.setPermissionLogic(extractPermissionLogic(controller, method));
-
-        // 提取角色信息
-        metadata.setRoles(extractRoles(controller, method));
-
-        // 提取认证要求
-        metadata.setRequiresAuth(extractRequiresAuth(controller, method));
-
         // 提取描述信息
         metadata.setDescription(extractDescription(method));
 
         // 提取分组信息
         metadata.setGroup(extractGroup(controller));
+
+        // 提取权限信息
+        metadata.setPermissions(extractPermissions(controller, method));
 
         // 提取 Controller 和方法名
         metadata.setController(controller.getQualifiedName().toString());
@@ -95,79 +95,13 @@ public class MetadataExtractor {
      * 提取权限标识列表
      */
     public List<String> extractPermissions(TypeElement controller, ExecutableElement method) {
-        Set<String> permissions = new LinkedHashSet<>();
-
         // 提取类级别的权限
-        permissions.addAll(scanner.scanSaCheckPermission(controller));
-
-        // 提取方法级别的权限
-        permissions.addAll(scanner.scanSaCheckPermission(method));
-
-        // TODO: 支持自定义 @RequiresPermission 注解
-
-        return new ArrayList<>(permissions);
-    }
-
-    /**
-     * 提取权限逻辑（AND/OR）
-     */
-    public String extractPermissionLogic(TypeElement controller, ExecutableElement method) {
-        // 检查方法级别的 @SaCheckRole mode
-        String mode = scanner.scanSaCheckRoleMode(method);
-        if (mode != null) {
-            return mode;
+        List<String> permissions = scanner.scanSaCheckPermission(controller);
+        if (CollUtil.isNotEmpty(permissions)) {
+            return permissions;
         }
-
-        // 检查方法级别的 @SaCheckPermission mode
-        mode = scanner.scanSaCheckPermissionMode(method);
-        if (mode != null) {
-            return mode;
-        }
-
-        // 检查类级别的 @SaCheckRole mode
-        mode = scanner.scanSaCheckRoleMode(controller);
-        if (mode != null) {
-            return mode;
-        }
-
-        // 检查类级别的 @SaCheckPermission mode
-        mode = scanner.scanSaCheckPermissionMode(controller);
-        if (mode != null) {
-            return mode;
-        }
-
-        return "AND";
-    }
-
-    /**
-     * 提取角色标识列表
-     */
-    public List<String> extractRoles(TypeElement controller, ExecutableElement method) {
-        Set<String> roles = new LinkedHashSet<>();
-
-        // 提取类级别的角色
-        roles.addAll(scanner.scanSaCheckRole(controller));
-
-        // 提取方法级别的角色
-        roles.addAll(scanner.scanSaCheckRole(method));
-
-        return new ArrayList<>(roles);
-    }
-
-    /**
-     * 提取认证要求
-     */
-    public boolean extractRequiresAuth(TypeElement controller, ExecutableElement method) {
-        // 如果方法或类上有 @SaCheckLogin，则需要认证
-        if (scanner.requiresAuth(method) || scanner.requiresAuth(controller)) {
-            return true;
-        }
-
-        // 如果有权限或角色要求，默认需要认证
-        List<String> permissions = extractPermissions(controller, method);
-        List<String> roles = extractRoles(controller, method);
-
-        return !permissions.isEmpty() || !roles.isEmpty();
+        // 提取方法别的权限
+        return scanner.scanSaCheckPermission(method);
     }
 
     /**
