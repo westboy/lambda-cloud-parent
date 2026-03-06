@@ -97,7 +97,7 @@ public record TenantExpressionInterceptor(String name) implements Interceptor {
     }
 
     private String getTenantFromUser() {
-        return OperatorUtils.getOperator().getTenantId();
+        return OperatorUtils.getSafeOperator().getTenantId();
     }
 
     @Override
