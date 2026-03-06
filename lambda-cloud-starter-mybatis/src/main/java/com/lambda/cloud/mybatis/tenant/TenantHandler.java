@@ -34,6 +34,6 @@ public class TenantHandler implements TenantLineHandler {
 
     @Override
     public boolean ignoreTable(String tableName) {
-        return tenantConfig.getIgnoreTables().contains(tableName);
+        return tenantConfig.getIgnoreTables().contains(tableName.toLowerCase());
     }
 }
