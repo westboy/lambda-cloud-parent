@@ -4,6 +4,7 @@ import static com.lambda.cloud.core.Constants.ANONYMOUS_USER;
 
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.SaTokenContextException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.Constants;
@@ -107,11 +108,11 @@ public class OperatorUtils {
         try {
             StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
             return getLoginUser(stpLogic);
-        } catch (NotLoginException e) {
-            log.warn("获取用户失败，返回默认用户", e);
+        } catch (SaTokenContextException e) {
+            log.debug("SaTokenContext 未初始化，使用匿名用户");
             return ANONYMOUS_USER;
         } catch (Exception e) {
-            log.error("获取用户出现未知异常", e);
+            log.warn("获取当前操作人失败，降级为匿名用户: {}", e.getMessage());
             return ANONYMOUS_USER;
         }
     }

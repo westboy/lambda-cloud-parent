@@ -90,22 +90,6 @@ public interface SecureInterceptor {
      * 会接收请求处理器、Sa-Token逻辑实例和当前登录用户信息作为参数。
      * </p>
      *
-     * <h3>参数说明：</h3>
-     * <ul>
-     *   <li><strong>handler：</strong>请求处理器对象，通常是HandlerMethod类型</li>
-     *   <li><strong>stpLogic：</strong>Sa-Token的逻辑处理实例，用于权限检查</li>
-     *   <li><strong>operator：</strong>当前登录的用户对象，包含用户信息和权限</li>
-     * </ul>
-     *
-     * <h3>处理建议：</h3>
-     * <ul>
-     *   <li><strong>类型检查：</strong>建议先检查handler的具体类型</li>
-     *   <li><strong>注解解析：</strong>解析方法或类上的安全相关注解</li>
-     *   <li><strong>权限验证：</strong>根据注解和用户信息进行权限验证</li>
-     *   <li><strong>异常处理：</strong>权限不足时抛出相应的安全异常</li>
-     *   <li><strong>日志记录：</strong>记录安全检查的相关日志</li>
-     * </ul>
-     *
      * <h3>常见实现模式：</h3>
      * <pre>{@code
      * public void handle(Object handler, StpLogic stpLogic, LoginUser operator) {

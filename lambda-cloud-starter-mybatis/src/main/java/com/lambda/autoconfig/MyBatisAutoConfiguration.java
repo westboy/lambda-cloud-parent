@@ -12,7 +12,7 @@ import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
 import com.lambda.cloud.mybatis.handler.EntityMetaFiller;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
 import com.lambda.cloud.mybatis.injector.LambdaExtendSqlInjector;
-import com.lambda.cloud.mybatis.interceptor.TenantExpressionInterceptor;
+import com.lambda.cloud.mybatis.tenant.TenantExpressionInterceptor;
 import com.lambda.cloud.mybatis.tenant.TenantHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;

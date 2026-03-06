@@ -56,6 +56,7 @@ public class MybatisPlusExtendProperties {
                 "la_config_options",
                 "la_client_resources",
                 "la_area",
+                "la_datasources",
                 "la_api_resources",
                 "la_api_token",
                 "la_user_password_logs");

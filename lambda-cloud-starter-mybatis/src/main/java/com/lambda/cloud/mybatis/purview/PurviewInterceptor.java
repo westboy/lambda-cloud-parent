@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.interceptor;
+package com.lambda.cloud.mybatis.purview;
 
 import static com.lambda.cloud.mybatis.purview.support.PurviewSqlHelper.*;
 import static com.lambda.cloud.mybatis.utils.MybatisUtils.getCurrentMethod;
@@ -7,7 +7,6 @@ import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
 import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Sets;
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.mybatis.purview.PurviewContext;
 import com.lambda.cloud.mybatis.purview.annotation.Purview;
 import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
 import com.lambda.cloud.mybatis.purview.support.PurviewProfile;
