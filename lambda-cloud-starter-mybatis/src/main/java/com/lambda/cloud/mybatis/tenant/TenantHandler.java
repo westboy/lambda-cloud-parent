@@ -1,5 +1,6 @@
 package com.lambda.cloud.mybatis.tenant;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.lambda.autoconfig.MybatisPlusExtendProperties;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -19,7 +20,11 @@ public class TenantHandler implements TenantLineHandler {
 
     @Override
     public Expression getTenantId() {
-        return new StringValue(TenantContextHolder.getCurrentTenantId());
+        String currentTenantId = TenantContextHolder.getCurrentTenantId();
+        if (StrUtil.isEmpty(currentTenantId)) {
+            return null;
+        }
+        return new StringValue(currentTenantId);
     }
 
     @Override
