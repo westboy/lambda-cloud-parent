@@ -1,11 +1,8 @@
 package com.lambda.autoconfig;
 
+import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import lombok.Data;
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -33,16 +30,44 @@ public class MybatisPlusExtendProperties {
     @NestedConfigurationProperty
     private TenantConfig tenant = new TenantConfig();
 
-    @Data
+    @Getter
+    @Setter
     public static class EncryptConfig {
         private Boolean enabled = false;
         private String key = "1234567890123456";
     }
 
-    @Data
+    @Getter
+    @Setter
     public static class TenantConfig {
+
+        private final Set<String> DEFAULTS = Sets.newHashSet(
+                "DUAL",
+                "TABLES",
+                "la_tenant",
+                "la_tenant_datasource",
+                "la_role_resources",
+                "la_resources",
+                "la_user_online_logs",
+                "la_dict_type",
+                "la_dict_info",
+                "la_organization_roles",
+                "la_configs",
+                "la_config_options",
+                "la_client_resources",
+                "la_area",
+                "la_api_resources",
+                "la_api_token",
+                "la_user_password_logs");
+
         private Boolean enabled = false;
+
         private String tenantColumn = "tenant_id";
-        private List<String> ignoreTables = new ArrayList<>();
+
+        private Set<String> ignoreTables = new HashSet<>();
+
+        public Set<String> getIgnoreTables() {
+            return Sets.union(DEFAULTS, this.ignoreTables);
+        }
     }
 }
