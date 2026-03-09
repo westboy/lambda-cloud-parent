@@ -5,7 +5,7 @@ import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.utils.OperatorUtils;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
+import org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
@@ -42,7 +42,6 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
  *
  * <h3>过滤策略：</h3>
  * <ul>
- *   <li><strong>错误控制器：</strong>跳过{@link BasicErrorController}的处理</li>
  *   <li><strong>静态资源：</strong>跳过{@link ResourceHttpRequestHandler}的处理</li>
  *   <li><strong>业务处理器：</strong>只处理{@link HandlerMethod}类型的业务处理器</li>
  * </ul>

@@ -1,6 +1,5 @@
 package com.lambda.cloud.rocketmq.listener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.utils.ClassTypeUtils;
 import com.lambda.cloud.rocketmq.message.LambdaMessageView;
 import java.io.IOException;
@@ -16,6 +15,7 @@ import org.apache.rocketmq.client.apis.message.MessageView;
 import org.apache.rocketmq.client.core.RocketMQListener;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import tools.jackson.databind.ObjectMapper;
 
 public abstract class LambdaRocketMQListener<T extends Serializable>
         implements RocketMQListener, ApplicationContextAware {

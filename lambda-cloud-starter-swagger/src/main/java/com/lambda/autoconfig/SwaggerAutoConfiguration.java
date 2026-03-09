@@ -1,6 +1,5 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.swagger.converter.PageConverter;
 import com.lambda.cloud.swagger.filter.SwaggerDisabledFilter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -39,11 +38,6 @@ public class SwaggerAutoConfiguration {
                 .pathsToMatch("/**")
                 .addOpenApiMethodFilter(method -> method.isAnnotationPresent(Operation.class))
                 .build();
-    }
-
-    @Bean
-    public PageConverter pageconverter() {
-        return new PageConverter();
     }
 
     @Bean

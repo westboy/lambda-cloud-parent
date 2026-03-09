@@ -1,6 +1,5 @@
 package com.lambda.cloud.sse.cluster;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.autoconfig.SseProperties;
 import com.lambda.cloud.sse.MessageType;
 import com.lambda.cloud.sse.SseEmitterManager;
@@ -10,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 public class ClusterSseEmitterManager extends SseEmitterManager {

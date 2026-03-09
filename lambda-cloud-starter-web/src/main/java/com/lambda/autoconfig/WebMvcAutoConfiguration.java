@@ -1,11 +1,6 @@
 package com.lambda.autoconfig;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lambda.cloud.core.jackson.JacksonModuleConfigurer;
 import com.lambda.cloud.core.jackson.LambdaObjectMapper;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
@@ -23,9 +18,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
-import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.thymeleaf.autoconfigure.ThymeleafProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -34,9 +28,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -48,6 +40,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * WebMvcAutoConfiguration
@@ -106,9 +104,9 @@ public class WebMvcAutoConfiguration {
     @Primary
     @Bean("jacksonObjectMapper")
     @ConditionalOnMissingBean(name = "jacksonObjectMapper")
-    public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder) {
-        return builder.createXmlMapper(false)
-                .serializationInclusion(Include.NON_NULL)
+    public ObjectMapper jacksonObjectMapper() {
+        return JsonMapper.builder()
+                .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(Include.NON_NULL))
                 .build();
     }
 
@@ -119,15 +117,16 @@ public class WebMvcAutoConfiguration {
     }
 
     @Bean
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(
-            Jackson2ObjectMapperBuilder builder, List<Module> modules) {
-        ObjectMapper mapper = builder.dateFormat(new ExtendDateFormat())
-                .featuresToDisable(SerializationFeature.INDENT_OUTPUT)
-                .serializationInclusion(Include.NON_NULL)
-                .featuresToEnable(Feature.ALLOW_UNQUOTED_FIELD_NAMES, MapperFeature.PROPAGATE_TRANSIENT_MARKER)
-                .modules(modules)
+    public JacksonJsonHttpMessageConverter jacksonJsonHttpMessageConverter(List<JacksonModule> modules) {
+        JsonMapper mapper = JsonMapper.builder()
+                .defaultDateFormat(new ExtendDateFormat())
+                .disable(SerializationFeature.INDENT_OUTPUT)
+                .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(Include.NON_NULL))
+                .enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES)
+                .enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
+                .addModules(modules)
                 .build();
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(mapper);
+        JacksonJsonHttpMessageConverter converter = new JacksonJsonHttpMessageConverter(mapper);
         List<MediaType> supportedMediaTypes = new ArrayList<>();
         supportedMediaTypes.add(MediaType.APPLICATION_JSON);
         supportedMediaTypes.add(MediaType.APPLICATION_FORM_URLENCODED);
@@ -135,12 +134,12 @@ public class WebMvcAutoConfiguration {
         return converter;
     }
 
-    @Bean
-    public HttpMessageConverters httpMessageConverters(
-            MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter,
-            StringHttpMessageConverter stringHttpMessageConverter) {
-        return new HttpMessageConverters(mappingJackson2HttpMessageConverter, stringHttpMessageConverter);
-    }
+    //    @Bean
+    //    public HttpMessageConverters httpMessageConverters(
+    //            JacksonJsonHttpMessageConverter mappingJackson2HttpMessageConverter,
+    //            StringHttpMessageConverter stringHttpMessageConverter) {
+    //        return new HttpMessageConverters(mappingJackson2HttpMessageConverter, stringHttpMessageConverter);
+    //    }
 
     @Bean
     public LocaleResolver localeResolver() {
@@ -162,9 +161,7 @@ public class WebMvcAutoConfiguration {
             resolver.setPrefix(properties.getPrefix());
             resolver.setSuffix(properties.getSuffix());
             resolver.setTemplateMode("HTML");
-            if (properties.getEncoding() != null) {
-                resolver.setCharacterEncoding(properties.getEncoding().name());
-            }
+            resolver.setCharacterEncoding(properties.getEncoding().name());
             resolver.setCacheable(properties.isCache());
             Integer order = properties.getTemplateResolverOrder();
             if (order != null) {

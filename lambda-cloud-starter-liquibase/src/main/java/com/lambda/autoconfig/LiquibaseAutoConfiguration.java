@@ -9,7 +9,6 @@ import liquibase.integration.spring.SpringLiquibase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,10 +32,10 @@ import org.springframework.util.StringUtils;
  *
  * @author westboy
  * @version 1.0.0
- * @since 2024-01-01
  * @see LiquibaseProperties
  * @see LiquibaseFinishedPublisher
  * @see SpringLiquibase
+ * @since 2024-01-01
  */
 @Slf4j
 @Configuration(proxyBeanMethods = false)

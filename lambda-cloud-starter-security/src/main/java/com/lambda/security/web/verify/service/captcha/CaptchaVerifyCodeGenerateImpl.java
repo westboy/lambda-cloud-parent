@@ -5,7 +5,6 @@ import cn.hutool.captcha.CircleCaptcha;
 import cn.hutool.core.math.Calculator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.mvc.WebHttpUtils;
@@ -24,6 +23,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.util.AntPathMatcher;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * 图形验证码生成服务实现

@@ -1,8 +1,6 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.core.jackson.LambdaObjectMapper;
-import com.lambda.cloud.redis.RedisConnectionConfiguration;
-import com.lambda.cloud.redis.customize.RedissonConfigurationCustomizer;
 import com.lambda.cloud.redis.helper.RedisHelper;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.ReadFrom;
@@ -18,39 +16,29 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
-import org.redisson.codec.JsonJacksonCodec;
-import org.redisson.config.ClusterServersConfig;
-import org.redisson.config.Config;
-import org.redisson.config.SentinelServersConfig;
-import org.redisson.config.SingleServerConfig;
 import org.redisson.spring.data.connection.RedissonConnectionFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.data.redis.ClientResourcesBuilderCustomizer;
-import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.boot.data.redis.autoconfigure.ClientResourcesBuilderCustomizer;
+import org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Description;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.support.collections.RedisProperties;
 
 /**
  * @author Jin
  */
 @Slf4j
 @Configuration
-@Import({RedisConnectionConfiguration.class})
 @EnableConfigurationProperties({RedissonProperties.class, RedisProperties.class, RedisExtendProperties.class})
 public class RedisAutoConfiguration {
 
@@ -149,7 +137,7 @@ public class RedisAutoConfiguration {
     @Bean(STRING_REDIS_TEMPLATE)
     public StringRedisTemplate stringRedisTemplate(
             RedisConnectionFactory redisConnectionFactory, LambdaObjectMapper objectMapper) {
-        RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        RedisSerializer<?> serializer = new GenericJacksonJsonRedisSerializer(objectMapper);
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(redisConnectionFactory);
         template.setDefaultSerializer(STRING_REDIS_SERIALIZER);
@@ -162,7 +150,7 @@ public class RedisAutoConfiguration {
     @Bean(POJO_REDIS_TEMPLATE)
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory redisConnectionFactory, LambdaObjectMapper objectMapper) {
-        RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        RedisSerializer<?> serializer = new GenericJacksonJsonRedisSerializer(objectMapper);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setDefaultSerializer(STRING_REDIS_SERIALIZER);
@@ -172,104 +160,9 @@ public class RedisAutoConfiguration {
         return redisTemplate;
     }
 
-    @Configuration
-    @ConditionalOnClass(RedissonClient.class)
-    @ConditionalOnProperty(prefix = "spring.data.redis.redisson", name = "enabled", matchIfMissing = true)
-    static class RedissonAutoConfiguration {
-
-        @Lazy
-        @Bean(destroyMethod = "shutdown")
-        @ConditionalOnMissingBean({RedissonClient.class})
-        public RedissonClient redisson(
-                RedisProperties properties,
-                RedissonProperties redissonProperties,
-                RedisExtendProperties redisExtendProperties,
-                List<RedissonConfigurationCustomizer> redissonConfigurationCustomizers,
-                LambdaObjectMapper objectMapper) {
-            Config config = new Config();
-            config.setCodec(new JsonJacksonCodec(objectMapper));
-            int timeout = getTimeout(properties.getTimeout());
-            RedisExtendProperties.Mode mode = redisExtendProperties.getMode();
-            switch (mode) {
-                case SENTINEL:
-                    RedisProperties.Sentinel sentinel = properties.getSentinel();
-                    List<String> nodes = sentinel.getNodes();
-                    SentinelServersConfig sentinelServersConfig = config.useSentinelServers()
-                            .setMasterName(sentinel.getMaster())
-                            .setDatabase(properties.getDatabase())
-                            .setConnectTimeout(timeout)
-                            .setKeepAlive(true)
-                            .setPingConnectionInterval(redissonProperties.getPingConnectionInterval())
-                            .setMasterConnectionMinimumIdleSize(redissonProperties.getConnectionMinimumIdleSize())
-                            .setMasterConnectionPoolSize(redissonProperties.getConnectionPoolSize())
-                            .setSlaveConnectionMinimumIdleSize(redissonProperties.getConnectionMinimumIdleSize())
-                            .setSlaveConnectionPoolSize(redissonProperties.getConnectionPoolSize())
-                            .addSentinelAddress(convert(nodes));
-                    if (StringUtils.isNotBlank(sentinel.getPassword())) {
-                        sentinelServersConfig.setPassword(sentinel.getPassword());
-                    }
-                    break;
-                case CLUSTER:
-                    RedisProperties.Cluster cluster = properties.getCluster();
-                    ClusterServersConfig clusterServersConfig = config.useClusterServers()
-                            .setConnectTimeout(timeout)
-                            .setKeepAlive(true)
-                            .setPingConnectionInterval(redissonProperties.getPingConnectionInterval())
-                            .setMasterConnectionMinimumIdleSize(redissonProperties.getConnectionMinimumIdleSize())
-                            .setMasterConnectionPoolSize(redissonProperties.getConnectionPoolSize())
-                            .setSlaveConnectionMinimumIdleSize(redissonProperties.getConnectionMinimumIdleSize())
-                            .setSlaveConnectionPoolSize(redissonProperties.getConnectionPoolSize())
-                            .addNodeAddress(convert(cluster.getNodes()));
-
-                    if (StringUtils.isNotBlank(properties.getPassword())) {
-                        clusterServersConfig.setPassword(properties.getPassword());
-                    }
-                    break;
-                default:
-                    String prefix = properties.getSsl().isEnabled() ? REDISS_PROTOCOL_PREFIX : REDIS_PROTOCOL_PREFIX;
-                    SingleServerConfig singleServerConfig = config.useSingleServer()
-                            .setAddress(prefix + properties.getHost() + ":" + properties.getPort())
-                            .setConnectTimeout(timeout)
-                            .setKeepAlive(true)
-                            .setPingConnectionInterval(redissonProperties.getPingConnectionInterval())
-                            .setConnectionMinimumIdleSize(redissonProperties.getConnectionMinimumIdleSize())
-                            .setConnectionPoolSize(redissonProperties.getConnectionPoolSize())
-                            .setDatabase(redissonProperties.getDatabase());
-                    if (StringUtils.isNotBlank(properties.getPassword())) {
-                        singleServerConfig.setPassword(properties.getPassword());
-                    }
-            }
-            if (redissonConfigurationCustomizers != null) {
-                for (RedissonConfigurationCustomizer customizer : redissonConfigurationCustomizers) {
-                    customizer.customize(config);
-                }
-            }
-            return Redisson.create(config);
-        }
-
-        @Bean
-        @ConditionalOnMissingBean({RedisConnectionFactory.class})
-        public RedissonConnectionFactory redissonConnectionFactory(RedissonClient redisson) {
-            return new RedissonConnectionFactory(redisson);
-        }
-
-        private static int getTimeout(Duration timeout) {
-            if (timeout != null && timeout.toMillis() < Integer.MAX_VALUE) {
-                return (int) timeout.toMillis();
-            }
-            return 10000;
-        }
-
-        private static String[] convert(List<String> nodesObject) {
-            List<String> nodes = new ArrayList<>(nodesObject.size());
-            for (String node : nodesObject) {
-                if (!node.startsWith(REDIS_PROTOCOL_PREFIX) && !node.startsWith(REDISS_PROTOCOL_PREFIX)) {
-                    nodes.add(REDIS_PROTOCOL_PREFIX + node);
-                } else {
-                    nodes.add(node);
-                }
-            }
-            return nodes.toArray(new String[0]);
-        }
+    @Bean
+    @ConditionalOnMissingBean({RedisConnectionFactory.class})
+    public RedissonConnectionFactory redissonConnectionFactory(RedissonClient redisson) {
+        return new RedissonConnectionFactory(redisson);
     }
 }

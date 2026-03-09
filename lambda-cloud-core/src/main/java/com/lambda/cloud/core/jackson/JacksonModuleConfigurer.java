@@ -1,13 +1,9 @@
 package com.lambda.cloud.core.jackson;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.lambda.cloud.core.jackson.deserializer.LambdaLocalDateTimeDeserializer;
-import com.lambda.cloud.core.jackson.serializer.LambdaLocalDateTimeSerializer;
-import java.time.LocalDateTime;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Jackson模块配置类
@@ -27,22 +23,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration(proxyBeanMethods = false)
 public class JacksonModuleConfigurer {
-
-    /**
-     * 配置Java时间模块
-     * <p>
-     * 创建并配置JavaTimeModule，用于处理Java 8时间类型的序列化和反序列化。
-     * 使用自定义的序列化器和反序列化器来确保时间格式的一致性。
-     *
-     * @return 配置好的JavaTimeModule实例
-     */
-    @Bean
-    public JavaTimeModule javaTimeModule() {
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new LambdaLocalDateTimeSerializer());
-        javaTimeModule.addDeserializer(LocalDateTime.class, new LambdaLocalDateTimeDeserializer());
-        return javaTimeModule;
-    }
 
     /**
      * 配置简单模块

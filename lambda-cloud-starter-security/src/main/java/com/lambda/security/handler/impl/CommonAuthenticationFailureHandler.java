@@ -2,7 +2,6 @@ package com.lambda.security.handler.impl;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.SaTokenException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.exception.CaptchaRequiredException;
@@ -17,6 +16,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * 通用认证失败处理器实现

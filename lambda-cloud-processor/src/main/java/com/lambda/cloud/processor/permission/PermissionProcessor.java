@@ -1,8 +1,5 @@
 package com.lambda.cloud.processor.permission;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lambda.cloud.processor.permission.config.ProcessorConfig;
 import com.lambda.cloud.processor.permission.extractor.MetadataExtractor;
 import com.lambda.cloud.processor.permission.model.ApiPermissionMetadata;
@@ -15,13 +12,18 @@ import java.time.Instant;
 import java.util.*;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
 
 /**
  * 权限注解处理器
@@ -70,8 +72,7 @@ public class PermissionProcessor extends AbstractProcessor {
 
         // 初始化 JSON 序列化器
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT);
 
         // 初始化提取器和扫描器
         this.extractor = new MetadataExtractor();

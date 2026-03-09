@@ -2,7 +2,6 @@ package com.lambda.security.web.verify.service.sms;
 
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.json.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.autoconfig.SecurityProperties;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
@@ -30,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.AntPathMatcher;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * 短信验证码生成服务实现类

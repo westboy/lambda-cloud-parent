@@ -40,7 +40,7 @@
 
         <dependency>
             <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-data-33</artifactId>
+            <artifactId>redisson-spring-data-40</artifactId>
             <optional>true</optional>
         </dependency>
 
@@ -53,7 +53,7 @@
 
         <!-- Jackson for serialization -->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
 

@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
  */
 @Slf4j
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureBefore(org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class)
+@AutoConfigureBefore(org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration.class)
 @Import({StandardDataSourceConfigurer.class, DynamicDataSourceConfigurer.class})
 public class DataSourceAutoConfiguration {
 

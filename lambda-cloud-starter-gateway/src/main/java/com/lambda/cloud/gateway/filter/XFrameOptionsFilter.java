@@ -21,7 +21,7 @@ public class XFrameOptionsFilter implements GlobalFilter {
                 .then(Mono.just(exchange))
                 .map(serverWebExchange -> {
                     HttpHeaders headers = serverWebExchange.getResponse().getHeaders();
-                    headers.addIfAbsent("X-Frame-Options", "SAMEORIGIN");
+                    headers.add("X-Frame-Options", "SAMEORIGIN");
                     return serverWebExchange;
                 })
                 .then();

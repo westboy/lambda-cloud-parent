@@ -1,10 +1,9 @@
 package com.lambda.cloud.mvc.serializer;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import java.io.IOException;
 import java.math.BigDecimal;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 /**
  * BigDecimal系列化成String，防止保留2位小数时，尾数丢失0的为问题。
@@ -25,8 +24,8 @@ public class BigDecimalSerializer extends StdSerializer<BigDecimal> {
     }
 
     @Override
-    public void serialize(BigDecimal bigDecimal, JsonGenerator generator, SerializerProvider provider)
-            throws IOException {
-        generator.writeString(bigDecimal.toPlainString());
+    public void serialize(BigDecimal value, tools.jackson.core.JsonGenerator gen, SerializationContext provider)
+            throws JacksonException {
+        gen.writeString(value.toPlainString());
     }
 }

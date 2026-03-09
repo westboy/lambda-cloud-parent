@@ -1,6 +1,5 @@
 package com.lambda.autoconfig;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambda.cloud.rocketmq.support.LambdaRocketMQMessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.support.RocketMQMessageConverter;
@@ -21,7 +20,7 @@ public class RocketMqAutoConfiguration {
     }
 
     @Bean
-    public RocketMQMessageConverter rocketMQMessageConverter(ObjectMapper objectMapper) {
-        return new LambdaRocketMQMessageConverter(objectMapper);
+    public RocketMQMessageConverter rocketMQMessageConverter() {
+        return new LambdaRocketMQMessageConverter();
     }
 }

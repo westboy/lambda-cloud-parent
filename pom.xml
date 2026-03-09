@@ -16,12 +16,12 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
-        <spring-ai.version>1.0.0</spring-ai.version>
-        <spring-boot.version>3.5.3</spring-boot.version>
-        <spring-cloud.version>2025.0.0</spring-cloud.version>
-        <spring-cloud-alibaba.version>2025.0.0.0</spring-cloud-alibaba.version>
+        <spring-ai.version>1.1.2</spring-ai.version>
+        <spring-boot.version>4.0.2</spring-boot.version>
+        <spring-cloud.version>2025.1.1</spring-cloud.version>
+        <spring-cloud-alibaba.version>2025.1.0.0</spring-cloud-alibaba.version>
         <gson.version>2.11.0</gson.version>
-        <langchain4j.version>1.10.0</langchain4j.version>
+        <langchain4j.version>1.12.1</langchain4j.version>
         <slf4j.version>2.0.16</slf4j.version>
         <mysql.version>8.2.0</mysql.version>
         <bcpkix.version>1.77</bcpkix.version>
@@ -30,24 +30,24 @@
         <quartz.version>2.3.2</quartz.version>
         <okhttp.version>4.12.0</okhttp.version>
         <lombok.version>1.18.34</lombok.version>
-        <swagger.version>2.2.30</swagger.version>
-        <springdoc.version>2.8.9</springdoc.version>
+        <swagger.version>2.2.43</swagger.version>
+        <springdoc.version>3.0.2</springdoc.version>
         <calcite.version>1.35.0</calcite.version>
         <guava.version>33.2.1-jre</guava.version>
-        <redisson.version>3.34.1</redisson.version>
+        <redisson.version>4.3.0</redisson.version>
         <fastjson.version>1.2.83</fastjson.version>
-        <liquibase.version>4.29.1</liquibase.version>
-        <jackson-bom.version>2.17.2</jackson-bom.version>
-        <mapstruct.version>1.6.0.RC1</mapstruct.version>
-        <mybatis-plus.version>3.5.12</mybatis-plus.version>
+        <liquibase.version>5.0.2</liquibase.version>
+        <jackson-bom.version>3.0.4</jackson-bom.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <mybatis-plus.version>3.5.15</mybatis-plus.version>
         <google-collections.version>1.0</google-collections.version>
-        <dynamic-datasource.version>4.3.1</dynamic-datasource.version>
+        <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
         <lucene.version>7.3.0</lucene.version>
         <satoken.version>1.43.0</satoken.version>
         <wxjava.version>4.7.0</wxjava.version>
         <p6spy.version>3.9.1</p6spy.version>
         <knife4j.version>4.5.0</knife4j.version>
-        <dubbo.version>3.3.5</dubbo.version>
+        <dubbo.version>3.3.6</dubbo.version>
         <rocketmq.version>2.3.4</rocketmq.version>
         <iotdb.version>2.0.3</iotdb.version>
         <iotdb-jdbc.version>1.3.1</iotdb-jdbc.version>
@@ -91,7 +91,6 @@
         <module>lambda-cloud-starter-datasource</module>
         <module>lambda-cloud-starter-liquibase</module>
         <module>lambda-cloud-starter-websocket</module>
-        <module>lambda-cloud-starter-kafka</module>
         <module>lambda-cloud-starter-gateway</module>
         <module>lambda-cloud-starter-test</module>
         <module>lambda-cloud-starter-dubbo</module>
@@ -150,7 +149,7 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
+                <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson-bom.version}</version>
                 <type>pom</type>
@@ -313,7 +312,7 @@
             </dependency>
             <dependency>
                 <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
             <dependency>
@@ -349,7 +348,12 @@
             </dependency>
             <dependency>
                 <groupId>org.redisson</groupId>
-                <artifactId>redisson-spring-data-33</artifactId>
+                <artifactId>redisson-spring-data-40</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
                 <version>${redisson.version}</version>
             </dependency>
             <dependency>
