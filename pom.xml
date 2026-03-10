@@ -46,7 +46,6 @@
         <satoken.version>1.45.0</satoken.version>
         <wxjava.version>4.7.0</wxjava.version>
         <p6spy.version>3.9.1</p6spy.version>
-        <knife4j.version>4.5.0</knife4j.version>
         <dubbo.version>3.3.6</dubbo.version>
         <rocketmq.version>2.3.4</rocketmq.version>
         <iotdb.version>2.0.3</iotdb.version>
@@ -468,11 +467,6 @@
                 <version>${p6spy.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
-                <version>${knife4j.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-annotations</artifactId>
                 <version>${swagger.version}</version>
@@ -614,11 +608,11 @@
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
-                        <path>
-                            <groupId>com.lambda.cloud</groupId>
-                            <artifactId>lambda-cloud-processor</artifactId>
-                            <version>${lambda-cloud.version}</version>
-                        </path>
+<!--                        <path>-->
+<!--                            <groupId>com.lambda.cloud</groupId>-->
+<!--                            <artifactId>lambda-cloud-processor</artifactId>-->
+<!--                            <version>${lambda-cloud.version}</version>-->
+<!--                        </path>-->
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
