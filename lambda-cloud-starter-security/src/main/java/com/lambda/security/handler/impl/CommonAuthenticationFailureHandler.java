@@ -7,10 +7,10 @@ import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.exception.CaptchaRequiredException;
 import com.lambda.security.handler.AuthenticationFailureHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
@@ -131,12 +131,13 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
             throws IOException {
         if (WebHttpUtils.isAjaxRequest(request)) {
             // Ajax请求处理：返回JSON格式错误信息
-            try (PrintWriter writer = response.getWriter()) {
+            try (ServletOutputStream out = response.getOutputStream()) {
                 // 设置HTTP状态码和响应头
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setHeader("Expires", "0");
                 response.setHeader("Pragma", "No-cache");
                 response.setHeader("Cache-Control", "no-cache");
+                response.setCharacterEncoding("UTF-8");
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
                 // 构建错误模型
@@ -164,7 +165,7 @@ public class CommonAuthenticationFailureHandler implements AuthenticationFailure
                 errorModel.setTimestamp(System.currentTimeMillis());
 
                 // 序列化并返回JSON响应
-                objectMapper.writeValue(writer, errorModel);
+                objectMapper.writeValue(out, errorModel);
             }
         } else {
             // 普通请求处理：页面重定向

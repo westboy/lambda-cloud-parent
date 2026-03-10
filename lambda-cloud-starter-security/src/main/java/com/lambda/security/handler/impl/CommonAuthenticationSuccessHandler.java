@@ -9,6 +9,7 @@ import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.LoginResult;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -184,9 +185,7 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (WebHttpUtils.isAjaxRequest(request)) {
             // Ajax请求：返回JSON格式的令牌信息
-            java.io.PrintWriter writer = null;
-            try {
-                writer = response.getWriter();
+            try (ServletOutputStream out = response.getOutputStream()) {
 
                 // 设置响应状态和头信息
                 response.setStatus(HttpServletResponse.SC_OK);
@@ -196,13 +195,7 @@ public class CommonAuthenticationSuccessHandler implements AuthenticationSuccess
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
                 // 序列化令牌信息并返回
-                objectMapper.writeValue(writer, loginResult);
-            } finally {
-                // 确保资源正确释放
-                if (writer != null) {
-                    writer.flush();
-                    writer.close();
-                }
+                objectMapper.writeValue(out, loginResult);
             }
         } else {
             // 普通请求：页面重定向处理
