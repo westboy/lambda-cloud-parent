@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.lambda.cloud</groupId>
         <artifactId>lambda-cloud-parent</artifactId>
-        <version>2025.1.1-SNAPSHOT</version>
+        <version>2026.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>lambda-cloud-starter-security</artifactId>
@@ -40,16 +40,16 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.15.3</version>
+            <version>1.18.1</version>
         </dependency>
         <dependency>
             <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-spring-boot3-starter</artifactId>
+            <artifactId>sa-token-spring-boot4-starter</artifactId>
             <version>${satoken.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
+            <artifactId>sa-token-reactor-spring-boot4-starter</artifactId>
             <version>${satoken.version}</version>
         </dependency>
         <!-- Sa-Token 整合 Redis （使用 jackson 序列化方式） -->

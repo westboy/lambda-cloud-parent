@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.lambda.cloud</groupId>
         <artifactId>lambda-cloud-parent</artifactId>
-        <version>2025.1.1-SNAPSHOT</version>
+        <version>2026.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>lambda-cloud-starter-mybatis</artifactId>
@@ -26,7 +26,7 @@
         <!-- spring boot3 引入可选模块 -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
         </dependency>
         <!-- jdk 11+ 引入可选模块 -->
         <dependency>

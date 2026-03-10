@@ -3,7 +3,8 @@ package com.lambda.cloud.processor.permission.config;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 权限处理器配置
@@ -12,7 +13,8 @@ import lombok.Data;
  *
  * @author Jin
  */
-@Data
+@Getter
+@Setter
 @SuppressFBWarnings("EI_EXPOSE_REP")
 public class ProcessorConfig {
 
@@ -39,68 +41,4 @@ public class ProcessorConfig {
 
     /** 模块名称（从 pom.xml 或配置中获取） */
     private String moduleName;
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getOutputPath() {
-        return outputPath;
-    }
-
-    public void setOutputPath(String outputPath) {
-        this.outputPath = outputPath;
-    }
-
-    public String getOutputFormat() {
-        return outputFormat;
-    }
-
-    public void setOutputFormat(String outputFormat) {
-        this.outputFormat = outputFormat;
-    }
-
-    public String getBasePackage() {
-        return basePackage;
-    }
-
-    public void setBasePackage(String basePackage) {
-        this.basePackage = basePackage;
-    }
-
-    public List<String> getIncludePatterns() {
-        return includePatterns;
-    }
-
-    public void setIncludePatterns(List<String> includePatterns) {
-        this.includePatterns = includePatterns;
-    }
-
-    public List<String> getExcludePatterns() {
-        return excludePatterns;
-    }
-
-    public void setExcludePatterns(List<String> excludePatterns) {
-        this.excludePatterns = excludePatterns;
-    }
-
-    public List<String> getCustomAnnotations() {
-        return customAnnotations;
-    }
-
-    public void setCustomAnnotations(List<String> customAnnotations) {
-        this.customAnnotations = customAnnotations;
-    }
-
-    public String getModuleName() {
-        return moduleName;
-    }
-
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
-    }
 }

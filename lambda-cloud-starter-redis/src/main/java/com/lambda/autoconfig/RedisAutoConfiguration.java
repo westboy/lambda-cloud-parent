@@ -1,6 +1,6 @@
 package com.lambda.autoconfig;
 
-import com.lambda.cloud.core.jackson.LambdaObjectMapper;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lambda.cloud.redis.helper.RedisHelper;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.ReadFrom;
@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.redisson.spring.data.connection.RedissonConnectionFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.data.redis.autoconfigure.ClientResourcesBuilderCustomizer;
 import org.springframework.boot.data.redis.autoconfigure.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -32,19 +31,17 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.data.redis.support.collections.RedisProperties;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * @author Jin
  */
 @Slf4j
 @Configuration
-@EnableConfigurationProperties({RedissonProperties.class, RedisProperties.class, RedisExtendProperties.class})
 public class RedisAutoConfiguration {
 
     private static final StringRedisSerializer STRING_REDIS_SERIALIZER = new StringRedisSerializer();
-    private static final String REDIS_PROTOCOL_PREFIX = "redis://";
-    private static final String REDISS_PROTOCOL_PREFIX = "rediss://";
     /**
      * 使用JDK序列化的模板
      */
@@ -60,12 +57,6 @@ public class RedisAutoConfiguration {
 
     public RedisAutoConfiguration() {
         log.trace("initializing...");
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public LambdaObjectMapper objectMapper() {
-        return new LambdaObjectMapper();
     }
 
     @Bean
@@ -125,6 +116,14 @@ public class RedisAutoConfiguration {
         });
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public ObjectMapper objectMapper() {
+        return JsonMapper.builder()
+                .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
+                .build();
+    }
+
     @Bean(JDK_REDIS_TEMPLATE)
     public RedisTemplate<String, Object> jdkRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -136,7 +135,7 @@ public class RedisAutoConfiguration {
 
     @Bean(STRING_REDIS_TEMPLATE)
     public StringRedisTemplate stringRedisTemplate(
-            RedisConnectionFactory redisConnectionFactory, LambdaObjectMapper objectMapper) {
+            RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
         RedisSerializer<?> serializer = new GenericJacksonJsonRedisSerializer(objectMapper);
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(redisConnectionFactory);
@@ -149,7 +148,7 @@ public class RedisAutoConfiguration {
 
     @Bean(POJO_REDIS_TEMPLATE)
     public RedisTemplate<String, Object> redisTemplate(
-            RedisConnectionFactory redisConnectionFactory, LambdaObjectMapper objectMapper) {
+            RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
         RedisSerializer<?> serializer = new GenericJacksonJsonRedisSerializer(objectMapper);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);

@@ -30,7 +30,6 @@ public class RedisDelayedWorker<T> implements Runnable {
     }
 
     @Override
-    @SuppressWarnings("squid:S2189")
     public void run() {
         try {
             T obj = blockingFairQueue.take();
@@ -50,7 +49,7 @@ public class RedisDelayedWorker<T> implements Runnable {
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(Short.MAX_VALUE),
                 new ThreadFactoryBuilder()
-                        .setNameFormat("JingFangCloud DelayedQueueWork-%d")
+                        .setNameFormat("Lambda-Cloud DelayedQueueWork-%d")
                         .setDaemon(true)
                         .build(),
                 new ThreadPoolExecutor.CallerRunsPolicy());

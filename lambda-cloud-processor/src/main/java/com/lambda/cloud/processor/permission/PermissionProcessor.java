@@ -1,5 +1,6 @@
 package com.lambda.cloud.processor.permission;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lambda.cloud.processor.permission.config.ProcessorConfig;
 import com.lambda.cloud.processor.permission.extractor.MetadataExtractor;
 import com.lambda.cloud.processor.permission.model.ApiPermissionMetadata;
@@ -24,6 +25,7 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * 权限注解处理器
@@ -71,8 +73,10 @@ public class PermissionProcessor extends AbstractProcessor {
         this.config = loadConfig();
 
         // 初始化 JSON 序列化器
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT);
+        this.objectMapper = JsonMapper.builder()
+                .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                .build();
 
         // 初始化提取器和扫描器
         this.extractor = new MetadataExtractor();

@@ -6,12 +6,12 @@
 
     <groupId>com.lambda.cloud</groupId>
     <artifactId>lambda-cloud-parent</artifactId>
-    <version>2025.1.1-SNAPSHOT</version>
+    <version>2026.1.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <properties>
-        <lambda-cloud.version>2025.1.1-SNAPSHOT</lambda-cloud.version>
+        <lambda-cloud.version>2026.1.1-SNAPSHOT</lambda-cloud.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -43,7 +43,7 @@
         <google-collections.version>1.0</google-collections.version>
         <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
         <lucene.version>7.3.0</lucene.version>
-        <satoken.version>1.43.0</satoken.version>
+        <satoken.version>1.45.0</satoken.version>
         <wxjava.version>4.7.0</wxjava.version>
         <p6spy.version>3.9.1</p6spy.version>
         <knife4j.version>4.5.0</knife4j.version>
@@ -322,7 +322,7 @@
             </dependency>
             <dependency>
                 <groupId>com.baomidou</groupId>
-                <artifactId>dynamic-datasource-spring-boot3-starter</artifactId>
+                <artifactId>dynamic-datasource-spring-boot4-starter</artifactId>
                 <version>${dynamic-datasource.version}</version>
             </dependency>
             <dependency>

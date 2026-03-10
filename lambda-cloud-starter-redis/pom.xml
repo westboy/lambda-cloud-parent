@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.lambda.cloud</groupId>
         <artifactId>lambda-cloud-parent</artifactId>
-        <version>2025.1.1-SNAPSHOT</version>
+        <version>2026.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>lambda-cloud-starter-redis</artifactId>
@@ -36,11 +36,6 @@
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -94,7 +94,7 @@ spring:
 该模块包含以下关键依赖：
 
 - `spring-boot-starter-jdbc`: JDBC 支持
-- `dynamic-datasource-spring-boot3-starter`: 动态数据源
+- `dynamic-datasource-spring-boot4-starter`: 动态数据源
 - `mysql-connector-j`: MySQL 驱动
 - `ojdbc8`: Oracle 驱动
 - `trino-jdbc`: Trino 驱动

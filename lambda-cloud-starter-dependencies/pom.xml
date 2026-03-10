@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.lambda.cloud</groupId>
         <artifactId>lambda-cloud-parent</artifactId>
-        <version>2025.1.1-SNAPSHOT</version>
+        <version>2026.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>lambda-cloud-starter-dependencies</artifactId>

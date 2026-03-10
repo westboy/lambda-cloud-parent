@@ -2,7 +2,7 @@
 
 ## 项目概览
 
-- **版本**: 2025.1.1-SNAPSHOT
+- **版本**: 2026.1.1-SNAPSHOT
 - **Java 版本**: 21
 - **Spring Boot 版本**: 3.5.3
 - **Spring Cloud 版本**: 2025.0.0

@@ -123,7 +123,7 @@ lambda-cloud-parent
         <dependency>
             <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-dependencies</artifactId>
-            <version>2025.1.1-SNAPSHOT</version>
+            <version>2026.1.1-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

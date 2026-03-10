@@ -1,20 +1,17 @@
 package com.lambda.autoconfig;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.lambda.cloud.core.jackson.JacksonModuleConfigurer;
-import com.lambda.cloud.core.jackson.LambdaObjectMapper;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
 import com.lambda.cloud.core.shared.CorsProperty;
 import com.lambda.cloud.mvc.StringToDateConverter;
 import com.lambda.cloud.mvc.execption.GlobalControllerAdvice;
 import com.lambda.cloud.mvc.filter.OrderedTimeHandlerFilter;
 import com.lambda.cloud.mvc.filter.XframeOptionsFilter;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -47,6 +44,11 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * WebMvcAutoConfiguration
  *
@@ -61,11 +63,10 @@ public class WebMvcAutoConfiguration {
     }
 
     @Bean
-    @SuppressWarnings("all")
     public WebMvcConfigurer webMvcConfigurer(CorsProperty corsProperty, LocalValidatorFactoryBean defaultValidator) {
         return new WebMvcConfigurer() {
             @Override
-            public void addFormatters(FormatterRegistry registry) {
+            public void addFormatters(@NonNull FormatterRegistry registry) {
                 registry.addConverter(new StringToDateConverter());
             }
 
@@ -75,7 +76,7 @@ public class WebMvcAutoConfiguration {
             }
 
             @Override
-            public void addCorsMappings(CorsRegistry registry) {
+            public void addCorsMappings(@NonNull CorsRegistry registry) {
                 if (corsProperty.isEnabled()) {
                     CorsRegistration registration = registry.addMapping(CorsProperty.ALL_PATH);
                     List<String> allowedOrigins = corsProperty.getAllowedOrigins();
@@ -101,19 +102,21 @@ public class WebMvcAutoConfiguration {
         return new CorsProperty();
     }
 
-    @Primary
-    @Bean("jacksonObjectMapper")
-    @ConditionalOnMissingBean(name = "jacksonObjectMapper")
-    public ObjectMapper jacksonObjectMapper() {
-        return JsonMapper.builder()
-                .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(Include.NON_NULL))
-                .build();
-    }
 
     @Bean
-    @ConditionalOnMissingBean
-    public LambdaObjectMapper objectMapper() {
-        return new LambdaObjectMapper();
+    @Primary
+    public ObjectMapper objectMapper(List<JacksonModule> customModules) {
+        JsonMapper.Builder builder = JsonMapper.builder()
+                .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
+                .defaultDateFormat(new ExtendDateFormat())
+                .enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES)
+                .enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
+                .disable(SerializationFeature.INDENT_OUTPUT);
+
+        if (customModules != null && !customModules.isEmpty()) {
+            builder.addModules(customModules);
+        }
+        return builder.build();
     }
 
     @Bean
@@ -133,13 +136,6 @@ public class WebMvcAutoConfiguration {
         converter.setSupportedMediaTypes(supportedMediaTypes);
         return converter;
     }
-
-    //    @Bean
-    //    public HttpMessageConverters httpMessageConverters(
-    //            JacksonJsonHttpMessageConverter mappingJackson2HttpMessageConverter,
-    //            StringHttpMessageConverter stringHttpMessageConverter) {
-    //        return new HttpMessageConverters(mappingJackson2HttpMessageConverter, stringHttpMessageConverter);
-    //    }
 
     @Bean
     public LocaleResolver localeResolver() {
@@ -194,7 +190,6 @@ public class WebMvcAutoConfiguration {
     }
 
     @Bean
-    @SuppressWarnings("all")
     public FilterRegistrationBean<XframeOptionsFilter> xframeOptionsFilter() {
         FilterRegistrationBean<XframeOptionsFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new XframeOptionsFilter());

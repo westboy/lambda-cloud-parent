@@ -81,7 +81,7 @@ YKC（云快充）协议模块，基于 Netty 实现的高性能充电桩通讯�
 <dependency>
     <groupId>com.lambda.cloud</groupId>
     <artifactId>lambda-cloud-starter-ykc</artifactId>
-    <version>2025.1.1-SNAPSHOT</version>
+    <version>2026.1.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -197,7 +197,7 @@ YkcV20StartChargingRequest request = new YkcV20StartChargingRequest();
 
 ## 版本信息
 
-- **当前版本**: 2025.1.1-SNAPSHOT
+- **当前版本**: 2026.1.1-SNAPSHOT
 - **Java 版本**: 21+
 - **Spring Boot 版本**: 3.5.3
 - **Netty 版本**: 4.1.122.Final
