@@ -608,11 +608,11 @@
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
-<!--                        <path>-->
-<!--                            <groupId>com.lambda.cloud</groupId>-->
-<!--                            <artifactId>lambda-cloud-processor</artifactId>-->
-<!--                            <version>${lambda-cloud.version}</version>-->
-<!--                        </path>-->
+                        <path>
+                            <groupId>com.lambda.cloud</groupId>
+                            <artifactId>lambda-cloud-processor</artifactId>
+                            <version>${lambda-cloud.version}</version>
+                        </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>

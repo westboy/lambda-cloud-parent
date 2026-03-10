@@ -101,9 +101,9 @@ public class WebMvcAutoConfiguration {
         return new CorsProperty();
     }
 
-    @Bean
     @Primary
-    public ObjectMapper objectMapper(List<JacksonModule> customModules) {
+    @Bean("jacksonJsonMapper")
+    public ObjectMapper jacksonJsonMapper(List<JacksonModule> customModules) {
         JsonMapper.Builder builder = JsonMapper.builder()
                 .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
                 .defaultDateFormat(new ExtendDateFormat())
