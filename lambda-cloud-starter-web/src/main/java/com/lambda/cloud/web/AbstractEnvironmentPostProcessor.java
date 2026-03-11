@@ -1,13 +1,13 @@
 package com.lambda.cloud.web;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
-import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.logging.DeferredLog;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.lang.NonNull;
 
 /**
  * @author w
@@ -24,7 +24,7 @@ public abstract class AbstractEnvironmentPostProcessor
      * @param application
      */
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+    public void postProcessEnvironment(@org.jspecify.annotations.NonNull ConfigurableEnvironment environment, SpringApplication application) {
         if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
             process(environment, application);
         }
@@ -39,7 +39,9 @@ public abstract class AbstractEnvironmentPostProcessor
     public void onApplicationEvent(@NonNull ApplicationEnvironmentPreparedEvent event) {
         if (event.getSource() instanceof SpringApplication application) {
             if (WebApplicationType.SERVLET.equals(application.getWebApplicationType())) {
-                log.replayTo(application.getMainApplicationClass());
+                if (application.getMainApplicationClass() != null) {
+                    log.replayTo(application.getMainApplicationClass());
+                }
             }
         }
     }
