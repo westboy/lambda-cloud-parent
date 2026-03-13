@@ -2,8 +2,11 @@ package com.lambda.autoconfig;
 
 import com.lambda.cloud.swagger.filter.SwaggerDisabledFilter;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,9 +30,24 @@ public class SwaggerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public OpenAPI openApi(SwaggerProperties info) {
-        return new OpenAPI()
+        OpenAPI openAPI = new OpenAPI()
                 .openapi(info.getOpenApiVersion().getVersion())
                 .info(new Info().title(info.getTitle()).version(info.getVersion()));
+        if (Boolean.TRUE.equals(info.getTokenEnabled())) {
+            String schemeName = info.getTokenSchemeName();
+            openAPI.components(new Components()
+                    .addSecuritySchemes(
+                            schemeName,
+                            new SecurityScheme()
+                                    .type(SecurityScheme.Type.HTTP)
+                                    .name(info.getTokenName())
+                                    .in(SecurityScheme.In.HEADER)
+                                    .scheme(info.getTokenScheme())
+                                    .bearerFormat(info.getTokenBearerFormat())
+                                    .description(info.getTokenDescription())));
+            openAPI.addSecurityItem(new SecurityRequirement().addList(schemeName));
+        }
+        return openAPI;
     }
 
     @Bean

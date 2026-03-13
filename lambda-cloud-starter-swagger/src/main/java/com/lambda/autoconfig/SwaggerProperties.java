@@ -21,4 +21,16 @@ public class SwaggerProperties {
 
     SpringDocConfigProperties.ApiDocs.OpenApiVersion openApiVersion =
             SpringDocConfigProperties.ApiDocs.OpenApiVersion.OPENAPI_3_1;
+
+    Boolean tokenEnabled = true;
+
+    String tokenName = "Authorization";
+
+    String tokenSchemeName = "bearerAuth";
+
+    String tokenBearerFormat = "JWT";
+
+    String tokenScheme = "bearer";
+
+    String tokenDescription = "在此输入 Bearer Token";
 }
