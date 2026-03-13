@@ -1,7 +1,6 @@
 package com.lambda.autoconfig;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.lambda.cloud.core.jackson.JacksonModuleConfigurer;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
 import com.lambda.cloud.core.shared.CorsProperty;
@@ -10,7 +9,6 @@ import com.lambda.cloud.mvc.execption.GlobalControllerAdvice;
 import com.lambda.cloud.mvc.filter.OrderedTimeHandlerFilter;
 import com.lambda.cloud.mvc.filter.XframeOptionsFilter;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -115,24 +111,6 @@ public class WebMvcAutoConfiguration {
             builder.addModules(customModules);
         }
         return builder.build();
-    }
-
-    @Bean
-    public JacksonJsonHttpMessageConverter jacksonJsonHttpMessageConverter(List<JacksonModule> modules) {
-        JsonMapper mapper = JsonMapper.builder()
-                .defaultDateFormat(new ExtendDateFormat())
-                .disable(SerializationFeature.INDENT_OUTPUT)
-                .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(Include.NON_NULL))
-                .enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES)
-                .enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
-                .addModules(modules)
-                .build();
-        JacksonJsonHttpMessageConverter converter = new JacksonJsonHttpMessageConverter(mapper);
-        List<MediaType> supportedMediaTypes = new ArrayList<>();
-        supportedMediaTypes.add(MediaType.APPLICATION_JSON);
-        supportedMediaTypes.add(MediaType.APPLICATION_FORM_URLENCODED);
-        converter.setSupportedMediaTypes(supportedMediaTypes);
-        return converter;
     }
 
     @Bean
