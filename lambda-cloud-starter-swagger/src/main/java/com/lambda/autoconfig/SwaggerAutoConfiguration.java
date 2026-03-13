@@ -27,7 +27,9 @@ public class SwaggerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public OpenAPI openApi(SwaggerProperties info) {
-        return new OpenAPI().info(new Info().title(info.getTitle()).version(info.getVersion()));
+        return new OpenAPI()
+                .openapi(info.getOpenApiVersion().getVersion())
+                .info(new Info().title(info.getTitle()).version(info.getVersion()));
     }
 
     @Bean

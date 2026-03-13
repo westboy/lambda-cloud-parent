@@ -1,6 +1,7 @@
 package com.lambda.autoconfig;
 
 import lombok.Data;
+import org.springdoc.core.properties.SpringDocConfigProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -17,4 +18,7 @@ public class SwaggerProperties {
     String docUri = "/swagger-ui.html";
 
     String version = "1.0.0";
+
+    SpringDocConfigProperties.ApiDocs.OpenApiVersion openApiVersion =
+            SpringDocConfigProperties.ApiDocs.OpenApiVersion.OPENAPI_3_1;
 }
