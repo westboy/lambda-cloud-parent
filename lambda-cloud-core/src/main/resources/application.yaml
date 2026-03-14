@@ -33,6 +33,8 @@ dubbo:
     parameters:
       namespace: ${spring.cloud.nacos.discovery.namespace}
 spring:
+  config:
+    import: "optional:dbconfig:"
   servlet:
     multipart:
       max-file-size: 10MB
