@@ -1,224 +1,200 @@
-# Lambda Cloud Dubbo Starter
-[![Dubbo](https://img.shields.io/badge/Dubbo-3.3.5-orange.svg)](https://dubbo.apache.org/)
+# lambda-cloud-starter-dubbo
 
-Lambda Cloud Dubbo Starter 是基于 Apache Dubbo 3.3.5 的企业级增强封装，为 Spring Boot 应用提供开箱即用的 Dubbo 企业级功能。
+`lambda-cloud-starter-dubbo` 是 Dubbo 增强 starter，围绕认证透传、租户上下文、调用日志、调用指标、健康检查与重试做统一自动配置。
 
-## ✨ 特性概览
+## 模块定位
 
-### 🔒 安全认证
-- **认证上下文传播** - 自动传播认证令牌、用户ID和租户ID
-- **安全过滤器** - 统一的认证信息处理
+- 在 `dubbo-spring-boot-starter` 基础上补充企业级治理能力。
+- 通过 `Filter` + `Actuator` + `ConfigurationProperties` 组合，提供默认可用、可配置关闭的增强能力。
+- 不替代 Dubbo 原生配置；本模块只负责增强链路与可观测性。
 
-### 📊 监控可观测性
-- **性能指标收集** - 请求次数、响应时间、成功率统计
-- **健康检查集成** - Spring Boot Actuator 健康检查端点
-- **慢调用检测** - 可配置的慢调用阈值和告警
-- **结构化日志** - 详细的请求/响应日志记录
+## 目录结构（src/main）
 
-### ⚡ 智能重试
-- **指数退避算法** - 智能的重试间隔策略
-- **可配置异常类型** - 只对指定异常进行重试
-- **重试次数控制** - 灵活的重试次数和间隔配置
+```text
+src/main/java/com/lambda/autoconfig/
+├─ DubboAutoConfiguration.java
+└─ DubboProperties.java
 
-### 🏢 多租户支持
-- **租户上下文隔离** - 完整的多租户数据隔离
-- **上下文自动传播** - 跨服务的租户信息传递
-- **默认租户配置** - 兜底的租户处理机制
+src/main/java/com/lambda/cloud/dubbo/
+├─ authorize/
+│  ├─ AuthenticationFilter.java
+│  ├─ TenantFilter.java
+│  └─ DubboContextHolder.java
+├─ logging/
+│  └─ LoggingFilter.java
+├─ monitor/
+│  ├─ MetricsFilter.java
+│  └─ DubboMetricsCollector.java
+├─ health/
+│  └─ DubboHealthIndicator.java
+└─ retry/
+   └─ DubboRetryInterceptor.java
 
-
-## 🚀 快速开始
-
-### 1. 添加依赖
-
-```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-dubbo</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
 ```
 
-### 2. 基础配置
+自动装配注册项：
+
+```text
+com.lambda.autoconfig.DubboAutoConfiguration
+```
+
+## 自动装配机制
+
+### DubboAutoConfiguration
+
+生效条件：
+
+- 存在 `org.apache.dubbo.config.ApplicationConfig`
+- 开启 `@EnableDubbo`
+- 启用配置属性绑定 `DubboProperties`（前缀 `lambda.dubbo`）
+
+按条件注册组件：
+
+- `AuthenticationFilter`：`lambda.dubbo.security.enabled=true`（默认开启）
+- `LoggingFilter`：`lambda.dubbo.monitoring.enable-logging=true`（默认开启）
+- `TenantFilter`：`lambda.dubbo.tenant.enabled=true`（默认关闭）
+- `DubboRetryInterceptor`：`lambda.dubbo.retry.enabled=true`（默认开启）
+- `DubboMetricsCollector`：`lambda.dubbo.monitoring.enable-metrics=true`（默认开启）
+- `DubboHealthIndicator`：`lambda.dubbo.monitoring.enabled=true` 且存在 Actuator `HealthIndicator`
+
+## 配置模型
+
+`DubboProperties` 包含 4 组配置：
+
+- `security`
+  - `enabled` 默认 `true`
+  - `tokenHeader` 默认 `Authorization`
+  - `userHeader` 默认 `X-User-Id`
+  - `tenantHeader` 默认 `X-Tenant-Id`
+- `monitoring`
+  - `enabled` 默认 `true`
+  - `enableMetrics` 默认 `true`
+  - `enableLogging` 默认 `true`
+  - `slowCallThreshold` 默认 `1000ms`
+- `retry`
+  - `enabled` 默认 `true`
+  - `maxAttempts` 默认 `3`
+  - `initialInterval` 默认 `1000ms`
+  - `multiplier` 默认 `2.0`
+  - `maxInterval` 默认 `10000ms`
+  - `retryableExceptions` 默认超时相关异常
+- `tenant`
+  - `enabled` 默认 `false`
+  - `tenantIdHeader` 默认 `X-Tenant-Id`
+  - `defaultTenant` 默认 `default`
+  - `inheritTenantContext` 默认 `true`
+
+## 核心链路
+
+### 认证与上下文链路
+
+`AuthenticationFilter`（Provider + Consumer）：
+
+- 从 `RpcContext.getServerAttachment()` 读取 token/userId/tenantId。
+- token 写入 `RpcContext.getServerContext().setAttachment("auth.token", token)`。
+- userId/tenantId 写入 `DubboContextHolder`。
+- `finally` 中调用 `DubboContextHolder.clearContext()` 清理线程上下文。
+
+`DubboContextHolder`：
+
+- 统一维护 `tenantId/userId/traceId` 的读取、写入和清理。
+- `setCurrentXxx` 同时写 serviceContext 与 clientAttachment，便于向下游传播。
+
+### 租户链路
+
+`TenantFilter`（Provider + Consumer）：
+
+- 若 `inheritTenantContext=true` 且本地已有 tenant，则写入 `clientAttachment` 透传到下游。
+- 若上游 attachment 有 tenant，则覆盖当前上下文。
+- 若上下文与上游都无 tenant，则写入 `defaultTenant`。
+- 调用结束后按条件清理租户上下文。
+
+### 日志链路
+
+`LoggingFilter`（Provider + Consumer）：
+
+- 记录调用开始、结束、耗时、异常。
+- 当耗时超过 `slowCallThreshold` 输出慢调用告警。
+- 默认读取远端地址用于定位调用来源。
+
+### 指标链路
+
+`MetricsFilter`（Provider + Consumer）：
+
+- 统计每次调用耗时、成功/失败、异常信息。
+- 最终写入 `DubboMetricsCollector`。
+
+`DubboMetricsCollector`：
+
+- 以 `接口简名.方法名` 为 key 维护并发安全指标。
+- 指标包含：
+  - 总请求/成功/失败/慢请求
+  - 平均/最大/最小耗时
+  - 异常类型计数
+
+### 健康检查链路
+
+`DubboHealthIndicator`：
+
+- 从 `DubboMetricsCollector` 聚合健康状态。
+- 单服务判定规则：请求数 > 10 且成功率 < 95% 时标记不健康。
+- 任一服务不健康则整体 `DOWN`，否则 `UP`。
+
+### 重试链路
+
+`DubboRetryInterceptor`（仅 Consumer）：
+
+- 基于 `Spring Retry` 的 `RetryTemplate`。
+- 策略为 `SimpleRetryPolicy + ExponentialBackOffPolicy`。
+- 仅对 `retryableExceptions` 命中的异常类型重试。
+- 非 `RpcException` 最终包装为 `RpcException` 抛出。
+
+## 使用示例
 
 ```yaml
-# application.yml
-spring:
-  application:
-    name: your-service-name
-
-# 标准 Dubbo 配置
-dubbo:
-  application:
-    name: ${spring.application.name}
-  registry:
-    address: nacos://localhost:8848
-  protocol:
-    name: dubbo
-    port: -1
-
-# Lambda Dubbo 增强配置
 lambda:
   dubbo:
-    # 安全认证
     security:
       enabled: true
       token-header: Authorization
       user-header: X-User-Id
       tenant-header: X-Tenant-Id
-    
-    # 监控配置
+    tenant:
+      enabled: true
+      tenant-id-header: X-Tenant-Id
+      default-tenant: default
+      inherit-tenant-context: true
     monitoring:
       enabled: true
       enable-metrics: true
       enable-logging: true
       slow-call-threshold: 1000
-    
-    # 重试配置
     retry:
       enabled: true
       max-attempts: 3
       initial-interval: 1000
       multiplier: 2.0
-```
-
-### 3. 使用服务
-
-#### 服务提供者
-
-```java
-@DubboService
-public class UserServiceImpl implements UserService {
-    
-    @Override
-    public User getUserById(Long userId) {
-        // 通过工具类获取上下文信息
-        String currentTenantId = DubboContextHolder.getCurrentTenantId();
-        String currentUserId = DubboContextHolder.getCurrentUserId();
-        
-        // 业务逻辑...
-        return userRepository.findById(userId);
-    }
-}
-```
-
-#### 服务消费者
-
-```java
-@RestController
-public class UserController {
-    
-    @DubboReference
-    private UserService userService;
-    
-    @GetMapping("/users/{id}")
-    public User getUser(@PathVariable Long id) {
-        // 设置上下文信息（可选，通常由过滤器自动处理）
-        DubboContextHolder.setCurrentTenantId("tenant-001");
-        DubboContextHolder.setCurrentUserId("user-123");
-        
-        return userService.getUserById(id);
-    }
-}
-```
-
-## ⚙️ 配置参考
-
-### 完整配置示例
-
-```yaml
-lambda:
-  dubbo:
-    # 安全认证配置
-    security:
-      enabled: true                    # 是否启用安全认证
-      token-header: Authorization      # 认证令牌请求头
-      user-header: X-User-Id          # 用户ID请求头
-      tenant-header: X-Tenant-Id      # 租户ID请求头
-    
-    # 监控和可观测性配置
-    monitoring:
-      enabled: true                   # 是否启用监控
-      enable-metrics: true            # 是否启用性能指标收集
-      enable-logging: true            # 是否启用请求日志
-      slow-call-threshold: 1000       # 慢调用阈值(毫秒)
-    
-    # 重试机制配置
-    retry:
-      enabled: true                   # 是否启用重试
-      max-attempts: 3                 # 最大重试次数
-      initial-interval: 1000          # 初始重试间隔(毫秒)
-      multiplier: 2.0                 # 重试间隔倍数
-      max-interval: 10000             # 最大重试间隔(毫秒)
-      retryable-exceptions:           # 可重试的异常类型
+      max-interval: 10000
+      retryable-exceptions:
         - java.util.concurrent.TimeoutException
         - java.net.SocketTimeoutException
-    
-    # 多租户配置
-    tenant:
-      enabled: false                  # 是否启用多租户
-      tenant-id-header: X-Tenant-Id   # 租户ID请求头
-      default-tenant: default         # 默认租户ID
-      inherit-tenant-context: true    # 是否继承租户上下文
 ```
 
-## 📊 监控指标
+## 依赖说明
 
-### 健康检查端点
+关键依赖（见 `pom.xml`）：
 
-访问 `GET /actuator/health` 查看Dubbo服务健康状态：
+- `org.apache.dubbo:dubbo-spring-boot-starter`
+- `org.apache.dubbo:dubbo-filter-validation`
+- `com.lambda.cloud:lambda-cloud-core`
+- `org.springframework.retry:spring-retry`
+- `org.springframework.boot:spring-boot-starter-actuator`
 
-```json
-{
-  "status": "UP",
-  "components": {
-    "dubbo": {
-      "status": "UP",
-      "details": {
-        "message": "All Dubbo services are healthy",
-        "totalServices": 2,
-        "UserService.getUserById": {
-          "status": "HEALTHY",
-          "successRate": "99.50%",
-          "totalRequests": 1000,
-          "averageDuration": "45ms",
-          "maxDuration": "200ms"
-        }
-      }
-    }
-  }
-}
-```
+## 当前实现约束
 
-### 性能指标
-
-通过 `DubboMetricsCollector` 获取详细的性能统计：
-
-```java
-@RestController
-public class MetricsController {
-    
-    @Autowired
-    private DubboMetricsCollector metricsCollector;
-    
-    @GetMapping("/metrics/dubbo")
-    public Map<String, ?> getDubboMetrics() {
-        return metricsCollector.getAllMetrics();
-    }
-}
-```
-
-## 🔧 高级用法
-
-### 自定义过滤器
-
-```java
-@Component
-public class CustomDubboFilter implements Filter {
-    
-    @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        // 自定义逻辑
-        return invoker.invoke(invocation);
-    }
-}
-```
+- `AuthenticationFilter` 在 `finally` 总是清理上下文，业务若需异步延迟使用上下文，需要自行转存。
+- `TenantFilter` 与 `AuthenticationFilter` 都可能操作 tenant 上下文，混合启用时应统一租户来源策略。
+- `DubboHealthIndicator` 的健康阈值写在实现中（成功率 95%、样本量 10），当前未参数化。
+- `DubboMetricsCollector#getErrorCounts` 返回可变结构，读取侧建议只读使用。

@@ -1,200 +1,194 @@
-# Lambda Cloud OSS Starter
+# lambda-cloud-starter-oss
 
-基于Spring Boot的OSS统一接入模块，支持多种对象存储服务。
+`lambda-cloud-starter-oss` 提供统一 OSS 接入能力，基于 AWS S3 SDK 适配 MinIO/阿里云 OSS/腾讯云 COS/七牛及其他 S3 兼容服务。
 
-## 功能特性
+## 模块定位
 
-- 统一API接入多种OSS服务
-- 支持多客户端配置
-- 文件上传、下载、删除
-- 分片上传大文件
-- 生成预签名URL
-- 设置存储桶权限策略
-- 完善的参数校验和异常处理
-- 自动资源管理，防止资源泄漏
-- 灵活的状态管理（支持 Redis 和内存两种实现）
-- 配置自动校验（JSR-303）
+- 统一对象存储客户端接入，屏蔽不同云厂商差异。
+- 支持多客户端并存，按名称路由调用。
+- 提供上传、下载、删除、预签名 URL、分片上传等通用能力。
 
-## 快速开始
+## 目录结构（src/main）
 
-### 1. 添加依赖
+```text
+src/main/java/com/lambda/autoconfig/
+├─ OssAutoConfiguration.java
+└─ OssProperties.java
 
-```xml
-<dependency>
-    <groupId>com.lambda</groupId>
-    <artifactId>lambda-cloud-starter-oss</artifactId>
-    <version>${latest.version}</version>
-</dependency>
+src/main/java/com/lambda/cloud/oss/
+├─ client/OssClient.java
+├─ manager/OssClientManager.java
+├─ service/OssService.java
+├─ upload/
+│  ├─ MultipartUploadStateManager.java
+│  └─ impl/
+│     ├─ RedisMultipartUploadStateManager.java
+│     └─ InMemoryMultipartUploadStateManager.java
+├─ policy/MinIOPolicyBuilder.java
+├─ util/ValidationUtils.java
+├─ enums/
+│  ├─ OssType.java
+│  ├─ AccessPolicyType.java
+│  └─ PolicyType.java
+└─ exception/OssException.java
+
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
 ```
 
-### 2. 配置说明
+自动装配注册项：
+
+```text
+com.lambda.autoconfig.OssAutoConfiguration
+```
+
+## 自动装配机制
+
+### OssAutoConfiguration
+
+核心行为：
+
+- 绑定配置前缀：`lambda.oss`。
+- 创建 `MultipartUploadStateManager`：
+  - 存在 `RedisHelper` -> `RedisMultipartUploadStateManager`
+  - 否则 -> `InMemoryMultipartUploadStateManager`
+- 创建 `OssClientManager`，遍历 `lambda.oss.clients` 初始化每个 `OssClient`。
+- 每个客户端初始化时会：
+  - 注入分片状态管理器
+  - 执行 `createBucket()`（仅 MINIO 生效）
+  - 注册到 `OssClientManager`
+
+## 配置模型
+
+配置前缀：`lambda.oss`
+
+### clients[]（必填）
+
+每个客户端配置项：
+
+- `name`：客户端名，正则 `^[a-zA-Z0-9_-]+$`
+- `type`：`MINIO|ALIYUN|QCLOUD|QINIU|OTHER`
+- `endpoint`：S3 兼容端点
+- `accessKey` / `secretKey`
+- `bucket`：3-63 位 DNS 风格小写命名
+- `region`：可选
+- `isHttps`：默认 `false`
+- `accessPolicy`：默认 `private`，支持 `private|public|custom`
+- `cdn`：可选，上传结果 URL 可走 CDN 域名
+- `enablePathStyleAccess`：默认 `false`
+- `httpClientConfig.*`：
+  - `connectionTimeout` 默认 `10000`
+  - `socketTimeout` 默认 `50000`
+  - `maxConnections` 默认 `50`
+  - `requestTimeout` 默认 `0`
+  - `clientExecutionTimeout` 默认 `0`
+  - `connectionTTL` 默认 `-1`
+  - `connectionMaxIdleMillis` 默认 `60000`
+
+## 配置示例
 
 ```yaml
 lambda:
   oss:
-    enabled: true # 是否启用自动配置(默认true)
     clients:
-      - name: default # 客户端名称（必填，只能包含字母、数字、下划线和连字符）
-        type: MINIO # 服务类型: MINIO|ALIYUN|QCLOUD|QINIU|OTHER（必填）
-        endpoint: http://your-oss-endpoint # OSS 服务端点（必填）
-        accessKey: your-access-key # 访问密钥 ID（必填）
-        secretKey: your-secret-key # 访问密钥（必填）
-        region: your-region # 区域（可选）
-        bucket: your-bucket-name # 存储桶名称（必填，3-63个字符，符合 DNS 命名规范）
-        isHttps: false # 是否使用 HTTPS（必填）
-        accessPolicy: private # 访问策略: private|public|custom（可选）
-        httpClientConfig: # HTTP 客户端配置（可选）
-          connectionTimeout: 10000 # 连接超时（毫秒，不小于 1000）
-          socketTimeout: 50000 # Socket 超时（毫秒，不小于 1000）
-          maxConnections: 50 # 最大连接数（不小于 1）
-          requestTimeout: 0 # 请求超时（毫秒，0 表示无限制）
-          clientExecutionTimeout: 0 # 客户端执行超时（毫秒，0 表示无限制）
-          connectionTTL: -1 # 连接 TTL（毫秒，-1 表示无限制）
-          connectionMaxIdleMillis: 60000 # 连接最大空闲时间（毫秒）
-      - name: backup # 可配置多个客户端
+      - name: default
+        type: MINIO
+        endpoint: http://127.0.0.1:9000
+        accessKey: minioadmin
+        secretKey: minioadmin
+        bucket: demo-bucket
+        isHttps: false
+        accessPolicy: private
+        enablePathStyleAccess: true
+        httpClientConfig:
+          connectionTimeout: 10000
+          socketTimeout: 50000
+          maxConnections: 50
+          requestTimeout: 0
+          clientExecutionTimeout: 0
+          connectionTTL: -1
+          connectionMaxIdleMillis: 60000
+      - name: backup
         type: ALIYUN
-        endpoint: http://backup-endpoint
-        accessKey: backup-key
-        secretKey: backup-secret
+        endpoint: http://oss-cn-hangzhou.aliyuncs.com
+        accessKey: your-ak
+        secretKey: your-sk
         bucket: backup-bucket
         isHttps: false
 ```
 
-**配置校验说明**：
-- 所有标记为"必填"的字段在启动时会自动校验
-- 如果配置不符合要求，应用启动时会抛出异常并提供清晰的错误信息
-- 存储桶名称必须符合 DNS 命名规范（小写字母、数字、连字符，3-63个字符）
+## 核心调用方式
 
-### 3. 使用示例
-
-#### 基本使用
+### 客户端管理
 
 ```java
 @Autowired
 private OssClientManager ossClientManager;
 
-// 上传文件
-public void uploadFile() throws FileNotFoundException {
-    InputStream inputStream = new FileInputStream("test.txt");
-    String objectKey = "test-folder/test.txt";
-    ossClientManager.get("default").upload(inputStream, objectKey, "text/plain");
-}
-
-// 使用默认客户端（第一个注册的客户端）
-public void useDefaultClient() throws FileNotFoundException {
-    OssClient client = ossClientManager.getDefault();
-    InputStream inputStream = new FileInputStream("test.txt");
-    client.upload(inputStream, "test.txt", "text/plain");
-}
-
-// 使用特定客户端
-public void useSpecificClient() throws FileNotFoundException {
-    OssClient backupClient = ossClientManager.get("backup");
-    InputStream inputStream = new FileInputStream("backup.txt");
-    backupClient.upload(inputStream, "backup/test.txt", "text/plain");
-}
-
-// 安全获取客户端（不存在返回 null）
-public void safeGetClient() {
-    OssClient client = ossClientManager.getOrNull("non-existent");
-    if (client != null) {
-        // 使用客户端
-    }
-}
-
-// 检查客户端是否存在
-public void checkClient() {
-    if (ossClientManager.exists("backup")) {
-        OssClient client = ossClientManager.get("backup");
-        // 使用客户端
-    }
-}
-
-// 获取所有客户端名称
-public void listClients() {
-    Set<String> clientNames = ossClientManager.getClientNames();
-    log.info("可用的 OSS 客户端: {}", clientNames);
-}
+OssClient client = ossClientManager.get("default");
+OssClient defaultClient = ossClientManager.getDefault();
+boolean exists = ossClientManager.exists("backup");
 ```
 
-#### 文件下载
+说明：
+
+- `getDefault()` 固定读取名为 `"default"` 的客户端，不是“第一个客户端”。
+- `get(name)` 不存在时会抛 `OssException`。
+
+### 上传与下载
 
 ```java
-// 下载文件
-public void downloadFile() throws IOException {
-    OssClient client = ossClientManager.get("default");
-    try (FileOutputStream fos = new FileOutputStream("downloaded.txt")) {
-        client.outStream("test-folder/test.txt", fos);
-    }
-}
-
-// 获取文件对象
-public void getFileObject() {
-    OssClient client = ossClientManager.get("default");
-    S3Object object = client.getObject("test-folder/test.txt");
-    // 使用文件对象
-}
+UploadObjectResult result = client.upload(inputStream, "docs/a.txt", "text/plain");
+client.outStream("docs/a.txt", outputStream);
+client.delete("docs/a.txt");
+String url = client.getPrivateUrl("docs/a.txt", 3600);
 ```
 
-#### 预签名 URL
+### 分片上传
 
 ```java
-// 生成预签名URL（有效期1小时）
-public String getPresignedUrl() {
-    OssClient client = ossClientManager.get("default");
-    return client.getPrivateUrl("test-folder/test.txt", 3600);
+for (int part = 1; part <= totalParts; part++) {
+    client.uploadPart(filePart, "application/zip", "archive/a.zip", part, totalParts);
 }
 ```
 
-#### 分片上传
+说明：
 
-```java
-// 分片上传大文件
-public void uploadLargeFile() {
-    OssClient client = ossClientManager.get("default");
-    File largeFile = new File("large-file.zip");
-    
-    // 假设分为 3 个分片
-    int totalParts = 3;
-    for (int i = 1; i <= totalParts; i++) {
-        client.uploadPart(largeFile, "application/zip", "large-file.zip", i, totalParts);
-    }
-}
-```
+- `partNumber` 必须从 `1` 开始，且 `partNumber <= partTotalNumber`。
+- 最后一个分片会触发 `completeMultipartUpload`。
+- 状态 key 规则：`objectKey + ":" + partTotalNumber`。
 
-**注意**：
-- 分片上传需要 Redis 支持（如果 Redis 不可用，会自动使用内存实现，仅适用于单机环境）
-- 分片上传状态会在 Redis 中保存 24 小时
+## 关键实现行为
 
-## 注意事项
+- `OssClient` 统一通过 `AmazonS3ClientBuilder` 构建客户端。
+- `MINIO` 或 `enablePathStyleAccess=true` 时启用 path-style 访问。
+- `upload(InputStream, ...)` 对非 `ByteArrayInputStream` 会先读入内存再上传。
+- `createBucket()` 仅在 `type=MINIO` 时执行。
+- `accessPolicy` 解析大小写敏感，非法值会触发运行时异常。
 
-1. 配置前缀为"lambda.oss"
-2. 必须配置bucket名称
-3. 使用HTTPS时需要设置isHttps=true
-4. 分片上传支持 Redis 和内存两种状态管理方式
-   - Redis 可用时自动使用 Redis 实现（适用于分布式环境）
-   - Redis 不可用时自动使用内存实现（仅适用于单机环境）
-5. 分片上传建议用于大文件(>100MB)
-6. 预签名URL需设置合理的过期时间（最长7天）
-7. 多客户端配置时需区分name属性
-8. 支持的OSS类型: MINIO, ALIYUN, QCLOUD, QINIU, OTHER
-9. 支持的访问策略: private, public, custom
-10. objectKey 不能以斜杠开头，不能包含连续斜杠
-11. 配置会在启动时自动校验，不符合要求会抛出异常
+## 异常与校验
 
-## 异常处理
+- 参数错误：`IllegalArgumentException`
+- OSS 调用错误：`OssException`（包装底层异常）
+- 启动期配置错误：`@ConfigurationProperties + @Validated` 会直接阻断启动
 
-所有方法都会进行参数校验，如果参数无效会抛出 `IllegalArgumentException`。
-OSS 操作失败会抛出 `OssException`，包含详细的错误信息和错误码。
+`ValidationUtils` 额外约束：
 
-```java
-try {
-    client.upload(inputStream, objectKey, contentType);
-} catch (IllegalArgumentException e) {
-    // 参数校验失败
-    log.error("参数错误: {}", e.getMessage());
-} catch (OssException e) {
-    // OSS 操作失败
-    log.error("OSS 操作失败: {}", e.getMessage(), e);
-}
-```
+- `objectKey` 不能以 `/` 开头，不能包含 `//`，长度 ≤ 1024
+- `expirationSeconds` 范围 `1~604800`（最长 7 天）
+
+## 依赖说明
+
+关键依赖（见 `pom.xml`）：
+
+- `com.amazonaws:aws-java-sdk-s3`
+- `com.lambda.cloud:lambda-cloud-starter-redis`
+- `com.lambda.cloud:lambda-cloud-core`
+
+## 当前实现约束
+
+- 本模块当前没有 `lambda.oss.enabled` 开关，配置存在即参与装配。
+- `OssClientManager` 使用静态缓存，跨上下文测试需注意清理。
+- 分片上传状态按 `objectKey:partTotal` 维度管理，同 key 并发上传需业务侧规避冲突。
+- 分片上传每次 `UploadPartRequest` 直接使用 `file.length()` 作为分片大小，需确保传入的确是“分片文件”而非整文件。
+- `upload(InputStream, ...)` 对大流会读入内存，超大文件建议使用分片上传。

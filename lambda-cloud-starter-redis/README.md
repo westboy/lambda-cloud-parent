@@ -1,108 +1,152 @@
-# Lambda Cloud Redis Starter
+# lambda-cloud-starter-redis
 
-基于Spring Boot的Redis增强模块，提供Redis操作工具、延迟队列和键过期监听功能。
+`lambda-cloud-starter-redis` 提供 Redis 访问基础能力，包含统一模板序列化配置、Lettuce 连接保活优化、Redisson 连接工厂桥接，以及可复用的 Redis 工具与延迟队列组件。
 
-## 功能特性
+## 模块定位
 
-- 增强的Redis操作工具类
-- 基于Redisson的延迟队列
-- 键过期事件监听
-- 支持单机/哨兵/集群模式
+- 统一输出 Redis 访问模板与序列化策略。
+- 解决 Lettuce 长连接空闲场景下的间歇性超时问题。
+- 提供 `RedisHelper` 封装，覆盖常用 Key/String/Hash/List/Set/ZSet 操作。
+- 提供基于 Redisson 的延迟队列执行组件（需业务显式装配）。
 
-## 快速开始
+## 目录结构（src/main）
 
-### 1. 添加依赖
+```text
+src/main/java/com/lambda/autoconfig/
+└─RedisAutoConfiguration.java
 
-```xml
-<dependency>
-    <groupId>com.lambda</groupId>
-    <artifactId>lambda-cloud-starter-redis</artifactId>
-    <version>${latest.version}</version>
-</dependency>
+src/main/java/com/lambda/cloud/redis/
+├─ helper/RedisHelper.java
+├─ listener/
+│  ├─ RedisKeyExpiredListener.java
+│  └─ KeyExpiredEventMessageListener.java
+└─ delay/
+   ├─ RedisDelayConfig.java
+   ├─ RedisDelayedListener.java
+   ├─ RedisDelayedQueueManager.java
+   └─ RedisDelayedWorker.java
+
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
 ```
 
-### 2. 基础配置
+自动装配注册项：
 
-```yaml
-spring:
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    password: 
-    database: 0
-    # 模式: STANDALONE(默认)/SENTINEL/CLUSTER
-    mode: STANDALONE 
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
+```text
+com.lambda.autoconfig.RedisAutoConfiguration
 ```
 
-### 3. Redis操作工具
+## 自动装配机制
 
-```java
-@Autowired
-private RedisHelper redisHelper;
+`RedisAutoConfiguration` 输出核心 Bean：
 
-// 设置值
-redisHelper.set("key", "value");
+- `RedisHelper`
+- `LettuceClientConfigurationBuilderCustomizer`
+- `ClientResourcesBuilderCustomizer`
+- `ObjectMapper`（Bean 名：`jacksonJsonMapper`，缺省时创建）
+- `jdkRedisTemplate`
+- `stringRedisTemplate`
+- `redisTemplate`（POJO 模板）
+- `RedissonConnectionFactory`（仅缺失 `RedisConnectionFactory` 时创建）
 
-// 获取值
-String value = redisHelper.get("key");
+### Lettuce 连接优化
 
-// 设置过期时间
-redisHelper.set("key", "value", 60, TimeUnit.SECONDS);
-```
+- 启用 `SO_KEEPALIVE` 配置。
+- 读策略固定为 `ReadFrom.MASTER`。
+- 对连接 channel 注入 `IdleStateHandler(30s)`。
+- 触发 `ALL_IDLE` 时主动 `disconnect`，用于避免长空闲连接导致的超时粘连问题。
 
-### 4. 延迟队列使用
+## RedisTemplate 策略
 
-```yaml
-lambda:
-  redis:
-    delay:
-      enabled: true
-      queues:
-        - name: order-delay-queue
-          delay: 30
-          timeUnit: SECONDS
-          works: 5
-```
+### jdkRedisTemplate
 
-```java
-@Autowired
-private RedisDelayedQueueManager delayedQueueManager;
+- Key/HashKey：`StringRedisSerializer`
+- Value/HashValue：沿用 `RedisTemplate` 默认序列化
 
-// 添加延迟任务
-delayedQueueManager.add("order-delay-queue", taskId, 30, TimeUnit.SECONDS);
+### stringRedisTemplate
 
-// 实现RedisDelayedListener处理任务
-@Component
-public class OrderDelayListener implements RedisDelayedListener {
-    @Override
-    public void onMessage(String taskId) {
-        // 处理延迟任务
-    }
-}
-```
+- Key：`StringRedisSerializer`
+- Value/HashValue：`GenericJacksonJsonRedisSerializer`
+- 事务支持：关闭（`setEnableTransactionSupport(false)`）
 
-### 5. 键过期监听
+### redisTemplate（POJO）
 
-```java
-@Component
-public class MyKeyExpiredListener implements RedisKeyExpiredListener {
-    @Override
-    public void onMessage(RedisKeyExpiredEvent<String> event) {
-        String expiredKey = new String(event.getSource());
-        // 处理键过期事件
-    }
-}
-```
+- Key：`StringRedisSerializer`
+- Value/HashValue：`GenericJacksonJsonRedisSerializer`
+- 事务支持：关闭
 
-## 注意事项
+序列化 ObjectMapper：
 
-1. 键过期监听在集群环境下需要特殊处理
-2. 延迟队列需要Redisson依赖
-3. 默认使用Lettuce作为Redis客户端
-4. 配置前缀为"spring.redis"
-5. 延迟队列配置前缀为"lambda.redis.delay"
+- 使用 `JsonInclude.Include.NON_NULL`
+- Bean 名固定 `jacksonJsonMapper`
+
+## 配置说明
+
+### spring.data.redis
+
+连接地址、密码、数据库等基础配置由 Spring Data Redis 标准配置承接。
+
+## RedisHelper 能力
+
+`RedisHelper` 基于 `RedisTemplate<String, Object>` 封装，覆盖：
+
+- Key 管理：删除、过期、重命名、类型、TTL
+- String：set/get、bit、multiGet/multiSet、自增
+- Hash：hGet/hPut/hScan 等
+- List：push/pop、阻塞 pop、trim、长度
+- Set：交并差、随机成员、scan
+- ZSet：rank/score/range、交并存储、scan
+
+适用场景：
+
+- 统一业务层调用风格，减少直接操作 `opsForXxx()` 的重复样板代码。
+
+## 延迟队列能力
+
+提供通用组件（非自动装配）：
+
+- `RedisDelayConfig`：队列名、默认延迟、工作线程数等
+- `RedisDelayedQueueManager<T>`：延迟队列管理器（`CommandLineRunner`）
+- `RedisDelayedWorker<T>`：消费工作线程
+- `RedisDelayedListener<T>`：业务回调接口
+
+运行机制：
+
+1. `afterPropertiesSet()` 获取 `RBlockingQueue` 与 `RDelayedQueue`
+2. `run()` 启动定时调度，每 `100ms` 拉取队列
+3. `RedisDelayedWorker` 使用固定大小线程池分发 `listener.execute(obj)`
+
+使用前提：
+
+- 需要容器中存在 `RedissonClient`
+- 不存在时会抛 `NotSupportedException`，提示开启 `spring.data.redis.redisson.enabled`
+
+## Key 过期事件监听
+
+提供接口与桥接类：
+
+- `RedisKeyExpiredListener`
+- `KeyExpiredEventMessageListener`
+
+说明：
+
+- 本模块未自动注册 `RedisMessageListenerContainer` 与该监听器，需业务侧自行装配。
+- 监听器将 Redis Message 转换为 `RedisKeyExpiredEvent<String>` 并回调业务 `publisher`。
+
+## 依赖说明
+
+关键依赖（见 `pom.xml`）：
+
+- `spring-boot-starter-data-redis`
+- `org.redisson:redisson-spring-data-40`
+- `org.redisson:redisson-spring-boot-starter`
+- `org.apache.commons:commons-pool2`
+- `io.netty:netty-transport-native-epoll`
+- `com.lambda.cloud:lambda-cloud-core`
+
+## 当前实现约束
+
+- `stringRedisTemplate` Bean 名与 Spring 默认同名，若业务自定义同名 Bean 需注意覆盖关系。
+- 延迟队列组件不是自动配置能力，必须手工声明 `RedisDelayConfig`、监听器与管理器 Bean。
+- `RedisDelayedQueueManager#destroy()` 当前仅调用 `isShutdown()`，不负责关闭 `RedissonClient`。
+- `RedisHelper` 是宽接口封装，复杂事务/流水线场景仍建议直接使用底层模板 API。

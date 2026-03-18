@@ -1,219 +1,152 @@
-# Lambda Cloud Starter Liquibase
+# lambda-cloud-starter-liquibase
 
-## 模块概述
+`lambda-cloud-starter-liquibase` 是 Lambda Cloud 的数据库版本管理 starter，提供统一的 Liquibase 执行入口、主变更集聚合规则、以及“主迁移完成后”的可插拔后置执行机制。
 
-`lambda-cloud-starter-liquibase` 是基于 Liquibase 的数据库版本管理 Spring Boot Starter，提供了自动化的数据库变更管理功能。该模块支持多变更日志文件的有序执行、后置处理器扩展以及灵活的配置管理。
+## 模块定位
 
-## 功能特性
+- 将 Liquibase 迁移能力封装为自动装配组件。
+- 统一约定变更日志扫描目录、文件过滤和执行顺序。
+- 支持通过 `LiquibasePostExecutor` 在主迁移后执行追加 changelog。
 
-### 1. 自动配置
-- 基于 Spring Boot 自动配置机制
-- 支持条件化启用/禁用
-- 自动创建和管理数据源
+## 目录结构（src/main）
 
-### 2. 变更日志管理
-- 支持多个变更日志文件的有序执行
-- 内置文件过滤器，自动识别符合命名规范的变更日志
-- 智能文件排序，确保变更按正确顺序执行
+```text
+src/main/java/com/lambda/autoconfig/
+├─ LiquibaseAutoConfiguration.java
+└─ LiquibaseProperties.java
 
-### 3. 后置处理器
-- 支持在主变更日志执行完成后运行额外的变更脚本
-- 灵活的扩展机制，支持自定义后置处理逻辑
-- 异常隔离，单个后置处理器失败不影响其他处理器
+src/main/java/com/lambda/cloud/liquibase/
+├─ LiquibaseFinishedPublisher.java
+├─ LiquibasePostExecutor.java
+├─ comparator/DefaultLiquibaseComparator.java
+└─ filter/DefaultLiquibaseFilter.java
 
-### 4. 安全性和稳定性
-- 完善的参数验证和异常处理
-- 详细的日志记录，便于问题排查
-- 线程安全的实现
+src/main/resources/
+├─ META-INF/db/changelogs/lambda-master.xml
+└─ META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+```
 
-## 核心组件
+自动装配注册项：
 
-### LiquibaseAutoConfiguration
-自动配置类，负责：
-- 创建和配置 SpringLiquibase Bean
-- 管理数据源连接
-- 注册后置处理器发布器
+```text
+com.lambda.autoconfig.LiquibaseAutoConfiguration
+```
 
-### LiquibaseProperties
-配置属性类，支持以下配置项：
-- `enabled`: 是否启用 Liquibase（默认：true）
-- `url`: 数据库连接 URL
-- `username`: 数据库用户名
-- `password`: 数据库密码
-- `driverClassName`: 数据库驱动类名
+## 自动装配机制
+
+`LiquibaseAutoConfiguration` 条件与行为：
+
+- `@AutoConfigureAfter(DataSourceAutoConfiguration.class)`
+- `@ConditionalOnProperty(prefix = "lambda.liquibase", name = "enabled", matchIfMissing = true)`
+- 绑定配置类：`LiquibaseProperties`
+
+### 核心 Bean
+
+- `lambdaLiquibase`（`SpringLiquibase`, `@Primary`）
+  - 读取 `lambda.liquibase.url/username/password/driver-class-name`
+  - 通过 `DataSourceUtils.getInstance(...)` 构造数据源
+  - 固定主 changelog：`classpath:META-INF/db/changelogs/lambda-master.xml`
+  - 固定 contexts：`lambda_cloud_liquibase`
+- `LiquibaseFinishedPublisher`（`@DependsOn("lambdaLiquibase")`）
+  - 注入 `List<LiquibasePostExecutor>`
+  - 在 Bean 初始化后逐个执行后置迁移
+
+## 配置模型
+
+配置前缀：`lambda.liquibase`
+
+- `enabled`：默认 `true`
+- `url`：数据库连接 URL
+- `username`：数据库用户名
+- `password`：数据库密码
+- `driver-class-name`：数据库驱动类名
+
+最小配置示例：
+
+```yaml
+lambda:
+  liquibase:
+    enabled: true
+    url: jdbc:mysql://127.0.0.1:3306/lambda
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+```
+
+## 变更集聚合规则
+
+主入口 changelog：
+
+- `META-INF/db/changelogs/lambda-master.xml`
+
+该文件通过 `includeAll` 扫描同目录并指定：
+
+- `filter = com.lambda.cloud.liquibase.filter.DefaultLiquibaseFilter`
+- `resourceComparator = com.lambda.cloud.liquibase.comparator.DefaultLiquibaseComparator`
+
+### 文件过滤规则
+
+`DefaultLiquibaseFilter` 仅允许匹配：
+
+- `lambda-\w*-changelog.xml`
+
+即只有 `lambda-xxx-changelog.xml` 形式的文件会进入执行集合。
+
+### 文件排序规则
+
+`DefaultLiquibaseComparator` 顺序如下：
+
+1. 强制优先：`lambda-datasource-changelog.xml`
+2. 普通文件：按文件名字典序
+3. 末尾执行：`lambda-additional-changelog.xml`
+
+## 后置执行机制
 
 ### LiquibasePostExecutor
-后置执行器，用于执行额外的变更脚本：
-- 支持指定变更日志文件路径
-- 自动生成唯一的执行上下文
-- 完善的异常处理和日志记录
 
-### DefaultLiquibaseFilter
-变更日志文件过滤器：
-- 匹配模式：`lambda-{模块名}-changelog.xml`
-- 自动排除不符合命名规范的文件
-- 性能优化的正则表达式匹配
+- 每个实例绑定一个 `changelog` 路径。
+- 执行时会：
+  - 创建独立 `SpringLiquibase`
+  - 复用主流程数据源
+  - `setContexts(IdUtil.fastSimpleUUID())`
+  - 调用 `afterPropertiesSet()`
 
-### DefaultLiquibaseComparator
-变更日志文件比较器：
-- 支持强制优先级排序
-- 特殊文件（如附加变更日志）的特殊处理
-- 默认按文件名字典序排序
+### LiquibaseFinishedPublisher
 
-## 配置说明
+- `@PostConstruct` 时执行全部后置执行器。
+- 单个执行器失败只记录错误，不中断其他执行器。
+- 无执行器时仅输出日志并跳过。
 
-### 基本配置
-```yaml
-lambda:
-  liquibase:
-    enabled: true
-    url: jdbc:mysql://localhost:3306/test
-    username: root
-    password: password
-    driver-class-name: com.mysql.cj.jdbc.Driver
-```
-
-### 配置项详解
-
-| 配置项 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `lambda.liquibase.enabled` | boolean | true | 是否启用 Liquibase |
-| `lambda.liquibase.url` | String | - | 数据库连接 URL（必填） |
-| `lambda.liquibase.username` | String | - | 数据库用户名 |
-| `lambda.liquibase.password` | String | - | 数据库密码 |
-| `lambda.liquibase.driver-class-name` | String | - | 数据库驱动类名（必填） |
-
-## 使用示例
-
-### 1. 基本使用
-
-#### 添加依赖
-```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-liquibase</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
-```
-
-#### 配置数据库连接
-```yaml
-lambda:
-  liquibase:
-    enabled: true
-    url: jdbc:mysql://localhost:3306/mydb
-    username: myuser
-    password: mypassword
-    driver-class-name: com.mysql.cj.jdbc.Driver
-```
-
-### 2. 创建变更日志文件
-
-在 `src/main/resources/META-INF/db/changelogs/` 目录下创建变更日志文件：
-
-#### lambda-user-changelog.xml
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
-                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
-
-    <changeSet id="create-user-table" author="developer">
-        <createTable tableName="user">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="username" type="VARCHAR(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="email" type="VARCHAR(100)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
-</databaseChangeLog>
-```
-
-### 3. 自定义后置处理器
+后置执行器注册示例：
 
 ```java
-@Component
-public class CustomLiquibasePostProcessor {
-    
-    @Bean
-    public LiquibasePostExecutor customPostExecutor() {
-        return new LiquibasePostExecutor("classpath:db/post-scripts/lambda-custom-changelog.xml");
-    }
+@Bean
+public LiquibasePostExecutor dictPostExecutor() {
+    return new LiquibasePostExecutor("classpath:META-INF/db/changelogs/lambda-dict-changelog.xml");
 }
 ```
 
-### 4. 条件化配置
+## 执行链路
 
-```java
-@Configuration
-@ConditionalOnProperty(prefix = "lambda.liquibase", name = "enabled", havingValue = "true")
-public class CustomLiquibaseConfig {
-    
-    @Bean
-    @ConditionalOnMissingBean
-    public LiquibasePostExecutor defaultPostExecutor() {
-        return new LiquibasePostExecutor("classpath:db/lambda-default-post-changelog.xml");
-    }
-}
-```
+1. 条件满足后加载 `LiquibaseAutoConfiguration`
+2. 校验 `url` 与 `driver-class-name` 非空
+3. 创建 `lambdaLiquibase` 并执行 `lambda-master.xml`
+4. `LiquibaseFinishedPublisher` 在 `@PostConstruct` 执行后置执行器
+5. 所有后置执行器完成后启动继续
 
-## 文件命名规范
+## 依赖说明
 
-### 变更日志文件
-- **命名格式**: `lambda-{模块名}-changelog.xml`
-- **示例**: 
-  - `lambda-user-changelog.xml`
-  - `lambda-order-changelog.xml`
-  - `lambda-product-changelog.xml`
+关键依赖（见 `pom.xml`）：
 
-### 特殊文件
-- **数据源变更日志**: `lambda-datasource-changelog.xml`（优先执行）
-- **附加变更日志**: `lambda-additional-changelog.xml`（最后执行）
+- `org.liquibase:liquibase-core`
+- `com.lambda.cloud:lambda-cloud-starter-datasource`
+- `spring-boot-configuration-processor`（optional）
 
-## 执行顺序
+## 当前实现约束
 
-1. **强制优先级文件**：`lambda-datasource-changelog.xml`
-2. **普通变更日志**：按文件名字典序排序
-3. **附加变更日志**：`lambda-additional-changelog.xml`
-4. **后置处理器**：按注册顺序执行
-
-## 核心依赖
-
-- **Spring Boot**: 自动配置和依赖注入
-- **Liquibase Core**: 数据库版本管理核心功能
-- **Lambda Cloud Starter Datasource**: 数据源管理
-- **Hutool**: 工具类库
-- **Lombok**: 代码简化
-
-## 注意事项
-
-1. **数据库连接配置**：
-   - `url` 和 `driverClassName` 为必填项
-   - 确保数据库驱动已添加到项目依赖中
-
-2. **变更日志文件**：
-   - 必须放置在 `META-INF/db/changelogs/` 目录下
-   - 文件名必须符合命名规范才会被自动识别
-   - 建议使用有意义的 changeSet ID 和 author
-
-3. **后置处理器**：
-   - 后置处理器异常不会中断其他处理器的执行
-   - 建议在后置处理器中添加适当的异常处理
-
-4. **性能考虑**：
-   - 大量变更建议分批执行
-   - 避免在生产环境执行耗时较长的变更
-
-5. **安全性**：
-   - 生产环境建议使用专门的数据库用户
-   - 敏感信息（如密码）建议使用环境变量或配置中心
+- 数据源来自 `lambda.liquibase.*`，不是复用业务主数据源 Bean。
+- `url` 与 `driver-class-name` 缺失会直接抛 `IllegalArgumentException` 阻断启动。
+- 主 changelog 路径固定为 `META-INF/db/changelogs/lambda-master.xml`，不支持配置覆盖。
+- `DefaultLiquibaseFilter` 正则仅支持 `\w`，文件名中包含 `-` 的模块段不会匹配。
+- `DefaultLiquibaseComparator` 的强制排序列表目前仅一个文件名，扩展性有限。
+- 后置执行器 context 每次随机 UUID，不适合依赖固定 context 的变更策略。

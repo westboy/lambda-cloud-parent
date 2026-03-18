@@ -1,207 +1,237 @@
-# Lambda Cloud Starter Netty
+# lambda-cloud-starter-netty
 
-基于 Netty 的 Spring Boot Starter，提供高性能网络通信能力。
+`lambda-cloud-starter-netty` 提供 Netty 服务端启动能力与协议引擎能力，核心覆盖：
 
-## 功能特性
+- Netty Server 自动装配与生命周期托管
+- 可扩展的 `ServerBootstrap` 与 `ChannelPipeline` 定制点
+- 基于注解的协议解析/序列化/校验引擎
+- CRC/长度字段自动计算与校验
+- 字段级可选加解密、List/Composite 复合结构解析
 
-### 网络通信
-- 自动配置 Netty 服务器
-- 支持 TCP 长连接
-- 可配置的线程池和连接参数
-- 提供 Channel 管理和序列号生成
-- 支持自定义 Pipeline 和 ServerBootstrap 配置
+## 模块定位
 
-### 协议引擎 🚀
-- **高性能协议解析**: 基于注解的协议定义和自动解析
-- **智能缓存优化**: 字段反射缓存和转换器缓存，提升处理速度
-- **对象池化**: 内置 ByteBuf 对象池，减少 GC 压力
-- **性能监控**: 实时统计解析、序列化、验证操作的性能指标
-- **数据验证**: 强类型数据验证和转换，支持自定义验证规则
-- **多引擎支持**: 基础引擎、增强引擎（带/不带监控）
-- **List 字段支持**: 支持 List 集合字段的解析和序列化，包括固定长度和动态长度列表
+- 面向“二进制协议接入”场景，提供统一协议层基础设施。
+- 业务可只关注“协议模型定义 + pipeline handler 组装”，无需重复实现底层字节编解码。
+- 与 Spring Boot 集成，支持配置化启动和 Bean 覆盖。
 
-## 依赖
+## 目录结构（src/main）
 
-```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-netty</artifactId>
-</dependency>
+```text
+src/main/java/com/lambda/autoconfig/
+├─ NettyAutoConfiguration.java
+└─ NettyExtendProperties.java
+
+src/main/java/com/lambda/cloud/netty/
+├─ NettyServer.java
+├─ NettyChannelInitializer.java
+├─ customizer/
+│  ├─ ServerBootstrapConfigurationCustomizer.java
+│  └─ ChannelPipelineConfigurationCustomizer.java
+├─ repository/
+│  ├─ ChannelRepository.java
+│  └─ SerialNumberManager.java
+├─ pool/ByteBufPool.java
+├─ exception/ProtocolException.java
+└─ protocol/
+   ├─ annotation/*.java
+   ├─ engine/*.java
+   ├─ converter/*.java
+   ├─ processor/*.java
+   ├─ validation/*.java
+   ├─ checksum/*.java
+   ├─ encrypt/*.java
+   ├─ scanner/ProtocolPayloadScanner.java
+   └─ message/ProtocolPayloadRegistry.java
 ```
 
-## 配置
+自动配置导入文件：
+
+```text
+src/main/resources/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+```
+
+## 自动装配机制
+
+### NettyAutoConfiguration
+
+核心装配行为：
+
+- 启用配置绑定：`@EnableConfigurationProperties(NettyExtendProperties.class)`
+- 导入 `NettyServer`，交由 `SmartLifecycle` 管理启动/停止
+- 注册 `EventLoopGroup`：
+  - `bossGroup`
+  - `workerGroup`
+- 注册 `ServerBootstrap`，并注入：
+  - `NettyChannelInitializer`
+  - `ServerBootstrapConfigurationCustomizer`
+- 注册 `InetSocketAddress`（使用 `spring.netty.server.tcp-port`）
+- 注册 `ChannelRepository`
+
+平台选择策略：
+
+- `shouldEpoll`：仅在 Linux 且 `Epoll.isAvailable()` 时使用 Epoll
+- 否则使用 NIO（`NioEventLoopGroup` + `NioServerSocketChannel`）
+
+### NettyServer 生命周期
+
+`NettyServer` 实现 `SmartLifecycle`：
+
+- `start()`：执行 `serverBootstrap.bind(...)`
+- `stop()`：关闭 `serverChannel`
+- `isAutoStartup()`：由 `spring.netty.server.auto-start-up` 控制
+- `getPhase()=Integer.MAX_VALUE`：在 Spring 生命周期末尾启动
+
+## 配置模型
+
+前缀：`spring.netty`
+
+`NettyExtendProperties` 关键项：
+
+- `server.tcp-port`：监听端口
+- `server.worker-thread-count`：worker 线程数（>0 时按配置创建）
+- `server.option-map`：透传到 `ServerBootstrap.option(...)`
+- `server.auto-start-up`：是否自动启动
+- `server.max-frame-length`：帧最大长度
+- `server.dispatch-permits`：分发并发许可
+- `server.idle-config.*`：
+  - `reader-idle-time-seconds`
+  - `writer-idle-time-seconds`
+  - `all-idle-time-seconds`
+  - `unit`
+
+## 扩展点
+
+### ServerBootstrapConfigurationCustomizer
+
+用于补充 server 级配置，例如：
+
+- `childOption(...)`
+- `childHandler(...)` 外的 server 侧参数
+- backlog、TCP 参数等
+
+### ChannelPipelineConfigurationCustomizer
+
+用于注入协议解码器、业务 handler、心跳 handler 等。  
+`NettyChannelInitializer` 仅调用 `customizer.configuration(pipeline)`，不内置默认 handler 链。
+
+## 协议引擎能力
+
+### 核心抽象
+
+- `ProtocolEngine<T>`：统一接口
+  - `parse`
+  - `serialize`
+  - `validate`
+  - `calculateLength`
+  - `getMetadata`
+- `ReflectionProtocolEngine`：当前主要实现
+- `ProtocolEngineFactory`：引擎实例缓存与管理
+
+### 注解模型
+
+- `@ProtocolPayload`：定义消息级元数据
+  - `frameType`
+  - `crcAlgorithm`
+  - `isFrame`
+- `@ProtocolField`：定义字段级编解码规则
+  - `order`、`length`、`dataType`
+  - `computed`、`crcFiled`、`lengthFiled`
+  - `payload`、`composite`
+  - `encryptedKey`、`encryptedField`
+- `@ProtocolValidation`：定义字段校验规则
+
+### 解析/序列化链路
+
+`ReflectionProtocolEngine` 处理流程：
+
+1. 读取/构建 `ProtocolPayloadMetadata`
+2. 遍历字段元数据并调用 `ProtocolFieldProcessor`
+3. 解析时收集 `computed=true` 字段原始切片，完成后执行 CRC 校验
+4. 序列化时先将 CRC/Length 字段置零占位，再回填真实值
+5. 调用 `ValidationEngine` 执行规则校验
+
+关键组件职责：
+
+- `ProtocolFieldProcessor`：字段读写、List/Composite 动态长度处理、加密字段处理
+- `ComputedProcessor`：CRC/长度计算、回填、校验
+- `DataTypeConverterResolver`：数据类型转换器分发
+- `ValidationEngine`：范围/长度/正则/自定义验证器执行
+
+### 支持的数据类型
+
+`ProtocolDataType` 支持：
+
+- `HEX`
+- `ASCII`
+- `BCD`
+- `BIT`
+- `UINT8/16/32/64`
+- `CP56TIME2A`
+- `COMPOSITE`
+- `LIST`
+
+### 加密能力
+
+- 默认加密服务：`DefaultEncryptionService`
+- 触发条件：
+  - 报文字段中存在 `encryptedKey=true` 且值为 `0x01`（或数值 1）
+  - 字段标记 `encryptedField=true`
+- 判断逻辑由 `EncryptionUtils.isEncryptionEnabled(...)` 控制
+
+### CRC能力
+
+- 算法入口：`ChecksumFactory`
+- 支持：
+  - `CRC16-CCITT`
+  - `CRC16-IBM`
+  - `CRC16-MAXIM`
+  - `CRC16-USB`
+  - `CRC16-X25`
+  - `CRC16-XMODEM`
+  - 默认 `CRC16-MODBUS`
+
+## 运行时辅助组件
+
+- `ChannelRepository`：维护连接 key -> `Channel` 映射
+- `SerialNumberManager`：线程安全循环序号生成器（默认 1..0xFFFF）
+- `ByteBufPool`：统一池化分配与安全释放
+- `ProtocolPayloadScanner` + `ProtocolPayloadRegistry`：按 `frameType` 扫描注册协议类型
+
+## 配置示例
 
 ```yaml
 spring:
   netty:
     server:
-      tcp-port: 8080                    # TCP 端口
-      boss-thread-count: 1              # Boss 线程数
-      worker-thread-count: 4            # Worker 线程数
-      so-keepalive: true                # 开启 TCP 长连接
-      auto-start-up: true               # 自动启动
-      max-frame-length: 255             # 最大帧长度
-      dispatch-permits: 100             # 线程池大小
+      tcp-port: 9000
+      worker-thread-count: 8
+      auto-start-up: true
+      max-frame-length: 2048
+      dispatch-permits: 200
+      option-map:
+        SO_BACKLOG: 1024
+        SO_REUSEADDR: true
       idle-config:
-        reader-idle-time-seconds: 0     # 读超时时间
-        writer-idle-time-seconds: 0     # 写超时时间
-        all-idle-time-seconds: 180      # 读写超时时间
+        reader-idle-time-seconds: 60
+        writer-idle-time-seconds: 0
+        all-idle-time-seconds: 180
 ```
 
-## 核心组件
+## 依赖说明
 
-### NettyServer
-实现 SmartLifecycle 接口的 Netty 服务器，支持自动启动和停止。
+关键依赖（见 `pom.xml`）：
 
-### ChannelRepository
-提供 Channel 的存储和管理功能。
+- `io.netty:netty-all`
+- `org.springframework.boot:spring-boot-starter`
+- `org.ow2.asm:asm`
+- `org.ow2.asm:asm-commons`
+- `com.lambda.cloud:lambda-cloud-core`
 
-### SerialNumberAccessor
-提供序列号生成功能，支持并发安全的递增序列号。
+## 当前实现约束
 
-### 自定义配置接口
-
-#### ChannelPipelineConfigurationCustomizer
-用于自定义 ChannelPipeline 配置：
-
-```java
-@Component
-public class CustomPipelineCustomizer implements ChannelPipelineConfigurationCustomizer {
-    @Override
-    public void configuration(ChannelPipeline pipeline) {
-        // 添加自定义处理器
-        pipeline.addLast(new YourCustomHandler());
-    }
-}
-```
-
-#### ServerBootstrapConfigurationCustomizer
-用于自定义 ServerBootstrap 配置：
-
-```java
-@Component
-public class CustomBootstrapCustomizer implements ServerBootstrapConfigurationCustomizer {
-    @Override
-    public void configuration(ServerBootstrap serverBootstrap) {
-        // 自定义 ServerBootstrap 配置
-        serverBootstrap.option(ChannelOption.SO_BACKLOG, 1024);
-    }
-}
-```
-
-## 使用示例
-
-
-### 自定义处理器
-
-```java
-@Component
-public class MyChannelPipelineCustomizer implements ChannelPipelineConfigurationCustomizer {
-    
-    @Override
-    public void configuration(ChannelPipeline pipeline) {
-        // 添加编解码器
-        pipeline.addLast(new StringDecoder());
-        pipeline.addLast(new StringEncoder());
-        
-        // 添加业务处理器
-        pipeline.addLast(new MyBusinessHandler());
-    }
-}
-```
-
-### 网络服务基本使用
-
-1. 添加依赖
-2. 配置端口和线程参数
-3. 实现自定义的 Pipeline 配置
-4. 启动应用，Netty 服务器将自动启动
-
-### 协议引擎使用
-
-#### 1. 定义协议消息
-
-```java
-@ProtocolMessage(version = "1.0", description = "用户消息")
-public class UserMessage {
-    
-    // 基础字段
-    @ProtocolField(order = 1, length = 4, dataType = DataType.UINT32)
-    @ProtocolValidation(required = true, min = 1)
-    private Long userId;
-    
-    // 字符串字段（带填充）
-    @ProtocolField(order = 2, length = 10, dataType = DataType.ASCII, 
-                  padding = PaddingDirection.RIGHT, paddingChar = ' ')
-    @ProtocolValidation(required = true, pattern = "^[a-zA-Z0-9]+$")
-    private String username;
-    
-    // 嵌套对象（composite=true）
-    @ProtocolField(order = 3, composite = true)
-    private Address address;
-    
-    // 列表字段（List支持）
-    @ProtocolField(order = 4, dataType = DataType.LIST, listElementType = DataType.UINT16, listElementSize = 5)
-    private List<Integer> scores;
-    
-    // 自动计算字段
-    @ProtocolField(order = 5, length = 4, dataType = DataType.UINT32, lengthFiled = true)
-    private Integer totalLength;  // 自动计算包长度
-    
-    @ProtocolField(order = 6, length = 2, dataType = DataType.UINT16, crcFiled = true)
-    private Integer crc;          // 自动计算CRC校验
-}
-```
-
-#### 2. ProtocolField 属性详解
-
-| 属性名 | 类型 | 说明 |
-|-------|------|------|
-| `order` | int | 字段顺序（从0开始） |
-| `length` | int | 字段长度（字节数） |
-| `dataType` | DataType | 数据类型 (UINT8, UINT16, UINT32, ASCII, HEX, LIST, BCD等) |
-| `composite` | boolean | 是否为嵌套对象 |
-| `computed` | boolean | 是否为计算字段（参与校验/长度计算） |
-| `payload` | boolean | 是否为有效载荷（参与校验/长度计算） |
-| `crcFiled` | boolean | 是否为CRC校验字段（自动计算并填充） |
-| `lengthFiled` | boolean | 是否为长度字段（自动计算并填充） |
-| `serialFiled` | boolean | 是否为流水号字段（自动递增） |
-| `encryptedKey` | boolean | 是否为加密密钥标识 |
-| `encryptedField` | boolean | 是否为加密字段 |
-| `listElementType` | DataType | List元素类型 |
-| `listElementSize` | int | List固定长度 |
-| `precision` | int | 数值精度（小数位数） |
-| `littleEndian` | boolean | 是否小端字节序 |
-| `optional` | boolean | 是否可选字段 |
-| `padding` | PaddingDirection | 填充方向 (LEFT, RIGHT) |
-| `paddingChar` | String | 填充字符 |
-
-#### 3. 使用协议引擎
-
-```java
-@Service
-public class MessageService {
-    
-    // 获取默认协议引擎（增强版，带性能监控）
-    private final ProtocolEngine<Object> engine = ProtocolEngineFactory.getDefaultEngine();
-    
-    public void processMessage(ByteBuf buffer) throws ProtocolException {
-        // 解析消息
-        UserMessage message = (UserMessage) engine.parse(buffer, UserMessage.class);
-        
-        // 验证消息
-        ValidationResult validation = engine.validate(message);
-        if (!validation.valid()) {
-            throw new ProtocolException("验证失败: " + validation.message());
-        }
-        
-        // 处理业务逻辑...
-        
-        // 序列化响应
-        ByteBuf responseBuffer = Unpooled.buffer();
-        engine.serialize(message, responseBuffer);
-        
-        // 发送响应...
-    }
-}
-```
+- `ChannelPipelineConfigurationCustomizer` 没有默认实现；若业务未提供，`channelInitializer` 依赖无法满足。
+- `spring.netty.server.boss-thread-count` 当前未在 `NettyAutoConfiguration` 使用。
+- `ProtocolPayloadScanner` 仅注册 `@ProtocolPayload(isFrame=false)` 类型。
+- `ProtocolPayloadRegistry` 为静态全局存储，多测试场景需要显式 `clear()`。
+- `ValidationEngine` 的数值范围使用 `double` 处理，极大整数存在精度风险。
+- 自动配置导入文件当前包含 `com.cx.autoconfig.NettyAutoConfiguration` 与 `ProtocolPayloadAutoConfiguration`，与本模块现有类不一致，存在装配风险。

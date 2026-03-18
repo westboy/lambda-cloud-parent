@@ -1,255 +1,196 @@
-# Lambda Cloud SSE Starter
+# lambda-cloud-starter-sse
 
-## 概述
+`lambda-cloud-starter-sse` 提供基于 Spring MVC `SseEmitter` 的服务端推送能力，包含连接管理、单播/广播、心跳保活，以及可选的 Redisson 集群广播能力。
 
-基于Spring Boot的Server-Sent Events(SSE)功能集成starter，提供轻量级的服务端推送能力，支持单机和分布式集群环境。
+## 模块定位
 
-## 功能特性
+- 提供开箱即用的 SSE 连接与消息推送组件。
+- 支持本地单节点与 Redis 主题驱动的集群广播两种模式。
+- 暴露可扩展接口，便于业务接入连接初始化和连接事件监听。
 
-✔️ **核心功能**
-- 客户端连接管理
-- 单播消息推送
-- 广播消息推送
-- 自动心跳保持
+## 目录结构（src/main）
 
-✔️ **增强功能**
-- 可配置的REST端点
-- 连接生命周期监听
-- 内置日志监听器
-- 连接数统计监控
-- 消息发送重试机制
-- 详细运行统计指标
+```text
+src/main/java/com/lambda/autoconfig/
+├─ SseAutoConfiguration.java
+└─ SseProperties.java
 
-✔️ **集群支持**
-- 跨节点广播
-- 自动连接同步
-- 集群心跳同步
-- 分布式统计聚合
+src/main/java/com/lambda/cloud/sse/
+├─ SseEmitterManager.java
+├─ MessageType.java
+├─ controller/SseController.java
+├─ service/
+│  ├─ SseService.java
+│  └─ SseServiceImpl.java
+├─ initializer/SseEmitterInitializer.java
+├─ listener/
+│  ├─ SseEventListener.java
+│  └─ DefaultSseEventListener.java
+├─ cluster/
+│  ├─ ClusterSseEmitterManager.java
+│  └─ ClusterMessage.java
+└─ exception/SseException.java
 
-✔️ **企业级支持**
-- 线程安全设计
-- 优雅的超时处理
-- 可扩展的事件监听机制
-- 自定义异常处理
-
-## 快速开始
-
-### 1. 添加依赖
-
-```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-sse</artifactId>
-    <version>1.2.0</version>
-</dependency>
-
-<!-- 集群模式需要添加 -->
-<dependency>
-    <groupId>org.redisson</groupId>
-    <artifactId>redisson-spring-boot-starter</artifactId>
-    <version>3.23.4</version>
-</dependency>
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
 ```
 
-### 2. 基础使用
+自动装配注册项：
 
-```java
-@RestController
-public class SseExampleController {
-    
-    private final SseEmitterManager emitterManager;
-    
-    // 1. 订阅接口
-    @GetMapping("/events")
-    public SseEmitter subscribe(@RequestParam String clientId) {
-        return emitterManager.createEmitter(clientId);
-    }
-    
-    // 2. 消息推送接口
-    @PostMapping("/events/push")
-    public void pushEvent(@RequestParam String clientId, 
-                        @RequestBody String message) {
-        emitterManager.sendEvent(clientId, "message", message);
-    }
-}
+```text
+com.lambda.autoconfig.SseAutoConfiguration
 ```
 
-## 详细配置
+## 自动装配机制
+
+`SseAutoConfiguration` 通过 `lambda.sse.cluster.enabled` 选择管理器实现：
+
+- `false`（默认）→ `SseEmitterManager`（本地模式）
+- `true` → `ClusterSseEmitterManager`（集群模式，依赖 `RedissonClient`）
+
+其他自动装配 Bean：
+
+- `SseService`（缺省时创建 `SseServiceImpl`）
+- `SseController`（`lambda.sse.enable-endpoint=true` 时自动暴露）
+
+## 配置模型
+
+配置前缀：`lambda.sse`
+
+- `timeout` 默认 `30000`
+- `heartbeat-interval` 默认 `15000`
+- `max-retry-attempts` 默认 `3`
+- `enable-endpoint` 默认 `true`
+- `enable-logging-listener` 默认 `true`
+- `endpoint-prefix` 默认 `/sse`
+- `subscribe-path` 默认 `/subscribe`
+- `send-path` 默认 `/send`
+- `broadcast-path` 默认 `/broadcast`
+
+集群配置 `lambda.sse.cluster.*`：
+
+- `enabled` 默认 `false`
+- `channel-prefix` 默认 `sse:channel`
+- `sync-timeout` 默认 `5000`
+- `sync-heartbeat` 默认 `true`
+- `node-id` 默认空（运行时自动生成 UUID）
+
+最小配置示例：
 
 ```yaml
 lambda:
   sse:
-    # 连接超时(毫秒)
     timeout: 30000
-    
-    # 心跳间隔(毫秒)
     heartbeat-interval: 15000
-    
-    # 消息发送最大重试次数
-    max-retry-attempts: 3
-    
-    # 是否启用自动配置的Controller
-    enable-controller: true
-    
-    # 是否启用日志监听器
-    enable-logging-listener: true
-    
-    # 端点配置
-    endpoint-prefix: /sse      # 基础路径
-    subscribe-path: /connect   # 订阅路径
-    send-path: /send          # 单播路径
-    broadcast-path: /broadcast # 广播路径
-    
-    # 集群配置
-    cluster:
-      enabled: true  # 启用集群模式
-      channel-prefix: "sse:cluster"  # Redis通道前缀
-      sync-timeout: 5000  # 同步超时(毫秒)
-      sync-heartbeat: true  # 是否同步心跳
-
-spring:
-  redis:
-    host: redis-server
-    port: 6379
+    enable-endpoint: true
+    endpoint-prefix: /sse
+    subscribe-path: /subscribe
+    send-path: /send
+    broadcast-path: /broadcast
 ```
 
-## 高级用法
+## HTTP 端点
 
-### 自定义监听器
+默认端点由 `SseController` 提供：
 
-```java
-@Component
-@Order(0) // 监听器执行顺序
-public class AuditEventListener implements SseEventListener {
-    
-    @Override
-    public void onConnect(String clientId) {
-        // 审计日志记录
-    }
-    
-    @Override
-    public void onDisconnect(String clientId) {
-        // 资源清理
-    }
-    
-    @Override
-    public void onMessageSent(String clientId, String eventName) {
-        // 消息发送审计
-    }
-}
-```
+- `GET  {endpointPrefix}{subscribePath}/{clientId}`
+  - 创建连接并返回 `SseEmitter`
+- `POST {endpointPrefix}{subscribePath}/{clientId}`
+  - 携带初始化 payload 创建连接
+- `POST {endpointPrefix}{sendPath}/{clientId}/{eventName}`
+  - 单播推送
+- `POST {endpointPrefix}{broadcastPath}/{eventName}`
+  - 广播推送
 
-### 集群模式使用
+按默认值展开即：
 
-```java
-@RestController
-public class ClusterSseController {
-    
-    private final SseEmitterManager emitterManager;
-    
-    // 集群广播示例
-    @PostMapping("/cluster/broadcast")
-    public void clusterBroadcast(@RequestBody String message) {
-        // 消息会自动广播到所有集群节点
-        emitterManager.broadcast("cluster-msg", message);
-    }
-}
-```
+- `GET /sse/subscribe/{clientId}`
+- `POST /sse/subscribe/{clientId}`
+- `POST /sse/send/{clientId}/{eventName}`
+- `POST /sse/broadcast/{eventName}`
 
-## 监控管理
+## 推送链路
 
-### 获取详细统计信息
+### 本地模式
+
+1. `createEmitter(clientId)` 创建 `SseEmitter(timeout)`
+2. 注册 `onCompletion/onTimeout/onError` 回调并自动移除连接
+3. `sendEvent(...)` 异步单播，失败后移除连接
+4. `broadcast(...)` 异步遍历连接逐个发送
+5. 定时任务按 `heartbeatInterval` 广播 `heartbeat/ping`
+
+### 集群模式
+
+`ClusterSseEmitterManager` 在本地广播基础上增加：
+
+- Redisson 主题订阅：`{channel-prefix}:broadcast`
+- 广播时发布 `ClusterMessage(sourceNode, BROADCAST, eventName, data)`
+- 收到其他节点消息后执行本地 `broadcast(...)`
+- 为避免循环，忽略 `sourceNode == 当前节点` 的消息
+- 集群层默认不转发 `heartbeat` 事件
+
+## 扩展点
+
+- `SseEmitterInitializer`
+  - `initialize(emitter)`
+  - `initialize(emitter, payload)`
+  - 用于连接建立时下发欢迎消息、绑定上下文等
+- `SseEventListener`
+  - `onConnect(clientId)`
+  - `onDisconnect(clientId)`
+  - `onMessageSent(clientId, eventName)`
+  - 可用于审计、在线状态同步等
+
+## 统计与运维
+
+`SseEmitterManager#getStatistics()` 返回：
+
+- `activeConnections`
+- `totalConnections`
+- `totalMessagesSent`
+- `failedMessages`
+- `retryAttempts`
+- `heartbeatInterval`
+
+可通过 `getActiveClients()` 获取当前活跃 clientId 集合。
+
+## 使用示例
 
 ```java
 @RestController
-@RequestMapping("/admin/sse")
-public class SseMonitorController {
-    
-    private final SseEmitterManager emitterManager;
-    
-    @GetMapping("/statistics")
-    public Map<String, Object> getStatistics() {
-        return emitterManager.getStatistics();
+@RequestMapping("/demo/sse")
+public class DemoSseController {
+    private final SseService sseService;
+
+    public DemoSseController(SseService sseService) {
+        this.sseService = sseService;
+    }
+
+    @GetMapping("/subscribe/{clientId}")
+    public SseEmitter subscribe(@PathVariable String clientId) {
+        return sseService.createEmitter(clientId);
+    }
+
+    @PostMapping("/send/{clientId}")
+    public void send(@PathVariable String clientId, @RequestBody Object payload) {
+        sseService.sendEvent(clientId, "message", payload);
     }
 }
 ```
 
-### 统计信息示例
+## 依赖说明
 
-```json
-{
-  "activeConnections": 42,
-  "totalConnections": 128,
-  "totalMessagesSent": 1024,
-  "failedMessages": 5,
-  "retryAttempts": 8,
-  "heartbeatInterval": 15000,
-  "clusterNodes": 3  // 集群节点数
-}
-```
+关键依赖（见 `pom.xml`）：
 
-## 异常处理
+- `com.lambda.cloud:lambda-cloud-starter-web`
+- `com.lambda.cloud:lambda-cloud-core`
+- `com.lambda.cloud:lambda-cloud-starter-redis`（optional，集群模式需要）
 
-### 自定义异常处理
+## 当前实现约束
 
-```java
-@RestControllerAdvice
-public class SseExceptionHandler {
-    
-    @ExceptionHandler(SseException.class)
-    public ResponseEntity<Map<String, Object>> handleSseException(SseException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "SSE Operation Failed");
-        body.put("message", ex.getMessage());
-        
-        if (ex.getClientId() != null) {
-            body.put("clientId", ex.getClientId());
-        }
-        
-        if (ex.getEventName() != null) {
-            body.put("eventName", ex.getEventName());
-        }
-        
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-}
-```
-
-## 注意事项
-
-1. **性能考量**
-   - 建议单个实例连接数不超过5000
-   - 高并发场景建议配合负载均衡使用
-   - 合理设置心跳间隔(默认15秒)
-
-2. **集群模式**
-   - 确保所有节点使用相同的Redis实例
-   - 合理设置通道前缀避免冲突
-   - 生产环境建议配置Redis哨兵或集群
-   - 网络延迟可能影响消息同步时效性
-
-3. **可靠性保障**
-   - 默认启用3次消息发送重试
-   - 建议实现自定义监听器处理失败场景
-   - 监控统计指标及时发现异常
-
-4. **浏览器兼容性**
-   - 现代浏览器均支持SSE协议
-   - 需要处理自动重连逻辑
-
-5. **最佳实践**
-   - 为每个客户端使用唯一ID
-   - 合理设置心跳间隔
-   - 及时处理断开事件释放资源
-   - 实现异常处理逻辑
-
-## 版本记录
-
-| 版本 | 日期       | 说明                |
-|------|------------|-------------------|
-| 1.0  | 2023-08-01 | 初始版本发布         |
-| 1.1  | 2023-09-15 | 增加配置化支持       |
-| 1.2  | 2023-10-01 | 新增心跳和重试机制    |
-| 1.3  | 2023-11-01 | 新增集群支持         |
+- `maxRetryAttempts` 配置当前未在发送逻辑中生效，`retryAttempts` 统计也未递增。
+- `enableLoggingListener` 配置未驱动默认监听器自动注册，需业务侧手工 `addEventListener(...)`。
+- `sync-timeout` 与 `sync-heartbeat` 当前未参与集群转发逻辑控制。
+- 集群广播会对 `data` 做 JSON 字符串化，远端节点收到后按字符串发送，不会自动反序列化为原对象。
+- `connectionCount` 在重复 `clientId` 重连时会递增，但替换旧连接时不会先递减，统计值可能偏大。
+- `SseServiceImpl#sendEvent` 抛出的是通用 `RuntimeException`，未使用模块内 `SseException`。

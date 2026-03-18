@@ -1,46 +1,148 @@
-# lambda-cloud-starter-datasource 数据源模块
+# lambda-cloud-starter-datasource
 
-## 功能概述
+`lambda-cloud-starter-datasource` 提供统一的数据源自动装配能力，支持：
 
-本模块提供标准数据源和动态数据源两种配置方式，基于 Spring Boot 自动配置实现。支持多种数据库类型，包括 MySQL、Oracle 和 Trino。
+- 单数据源（标准 `spring.datasource.url`）
+- 动态多数据源（`spring.datasource.dynamic.*`）
+- 运行时数据源增删改查与连通性测试（`DynamicDataSourceService`）
 
-## 支持的数据库
+## 模块定位
 
-| 数据库 | 驱动 | 说明 |
-|--------|------|------|
-| MySQL | mysql-connector-j | 默认为 MySQL |
-| Oracle | ojdbc8 | 需要 Oracle JDBC 驱动 |
-| Trino | trino-jdbc | 支持 Trino 查询引擎 |
+- 这是一个基础 starter，负责数据源装配与动态路由能力，不承载业务 DAO 逻辑。
+- 对外统一暴露 `DynamicRoutingDataSource` 与 `DynamicDataSourceService`，供上层模块在运行时管理数据源。
 
-## 配置方式
+## 目录结构（src/main）
 
-### 1. 标准数据源配置
+```text
+src/main/java/com/lambda/autoconfig/
+└─ DataSourceAutoConfiguration.java
 
-使用 HikariCP 连接池，配置前缀为 `spring.datasource.hikari`。
+src/main/java/com/lambda/cloud/datasource/
+├─ condition/
+│  ├─ DynamicDataSourceCondition.java
+│  └─ StandardDataSourceCondition.java
+├─ config/
+│  ├─ DynamicDataSourceConfigurer.java
+│  └─ StandardDataSourceConfigurer.java
+├─ dynamic/
+│  ├─ DynamicDataSourceService.java
+│  └─ impl/DynamicDataSourceServiceImpl.java
+├─ property/DataSourceProperty.java
+└─ utils/DataSourceUtils.java
 
-示例配置：
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
+```
+
+自动装配注册项：
+
+```text
+com.lambda.autoconfig.DataSourceAutoConfiguration
+```
+
+## 自动装配机制
+
+### 装配入口
+
+- `DataSourceAutoConfiguration`
+  - `@AutoConfigureBefore(DataSourceAutoConfiguration.class)`：优先于 Spring 默认 JDBC 自动配置。
+  - `@Import(StandardDataSourceConfigurer, DynamicDataSourceConfigurer)`：同时引入两套配置，由条件类互斥生效。
+  - 注册 `DynamicDataSourceService` Bean（实现为 `DynamicDataSourceServiceImpl`）。
+
+### 条件切换规则
+
+- 动态数据源条件 `DynamicDataSourceCondition`
+  - 条件：`spring.datasource.dynamic.primary` 有值。
+- 标准数据源条件 `StandardDataSourceCondition`
+  - 条件：`spring.datasource.url` 有值，且 `spring.datasource.dynamic.primary` 为空。
+
+两者在常规配置下互斥。
+
+## 核心组件
+
+### StandardDataSourceConfigurer（单数据源）
+
+- 导入 `org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration`。
+- 按 `spring.datasource.hikari` 绑定并创建 `HikariDataSource`。
+- 将单数据源包装进 `DynamicRoutingDataSource`：
+  - 主库键固定为 `primary`
+  - 路由策略 `LoadBalanceDynamicDataSourceStrategy`
+  - `strict=false`
+
+这意味着即使是单库模式，应用侧仍通过动态路由数据源访问。
+
+### DynamicDataSourceConfigurer（多数据源）
+
+- 直接导入 `com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceAutoConfiguration`。
+- 动态数据源配置由 baomidou starter 接管。
+
+### DynamicDataSourceService
+
+对外运行时管理接口：
+
+- `addDataSource(DataSourceProperty property)`
+- `updateDataSource(String id, DataSourceProperty property)`
+- `getDataSource(String id)`
+- `removeDataSource(String id)`
+- `test(DataSourceProperty property)`
+
+实现类 `DynamicDataSourceServiceImpl` 的关键行为：
+
+- 新增时先构建 Hikari，再做连接有效性检测，通过后才注册到 `DynamicRoutingDataSource`。
+- 更新时执行“先移除后新增”。
+- 删除时直接从路由容器移除。
+
+### DataSourceProperty
+
+核心字段：
+
+- `id`
+- `url`
+- `username`
+- `password`
+- `driverClassName`
+- `databaseId`
+- `schema`
+- `readOnly`
+
+说明：
+
+- `setJdbcUrl` 最终写入 `url`，兼容 JDBC 常用字段命名。
+- `databaseId/schema` 由测试连接过程回填。
+
+### DataSourceUtils
+
+提供三类能力：
+
+- `getInstance(...)`：按参数快速构造 Hikari 数据源。
+- `test(DataSourceProperty)`：
+  - 创建临时连接池（最小配置）
+  - 验证连接
+  - 成功后回填 `schema/databaseId`
+- `test(DataSource)`：基于现有数据源执行 `Connection#isValid`。
+
+## 配置示例
+
+### 单数据源模式
 
 ```yaml
 spring:
   datasource:
+    url: jdbc:mysql://localhost:3306/app
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/db
-      username: root
-      password: 123456
-      driver-class-name: com.mysql.cj.jdbc.Driver
+      maximum-pool-size: 10
 ```
 
-### 2. 动态数据源配置
-
-基于 baomidou 的动态数据源实现，需满足 `DynamicDataSourceCondition` 条件才会生效。
-
-多数据源配置示例：
+### 动态多数据源模式
 
 ```yaml
 spring:
   datasource:
     dynamic:
-      primary: master # 默认数据源
+      primary: master
       datasource:
         master:
           url: jdbc:mysql://localhost:3306/master
@@ -54,56 +156,19 @@ spring:
           driver-class-name: com.mysql.cj.jdbc.Driver
 ```
 
-### 3. 多数据库类型配置
+## 依赖说明
 
-```yaml
-spring:
-  datasource:
-    dynamic:
-      primary: mysql-db
-      datasource:
-        mysql-db:
-          url: jdbc:mysql://localhost:3306/mydb
-          username: root
-          password: 123456
-          driver-class-name: com.mysql.cj.jdbc.Driver
-        oracle-db:
-          url: jdbc:oracle:thin:@localhost:1521:orcl
-          username: root
-          password: 123456
-          driver-class-name: oracle.jdbc.OracleDriver
-        trino-db:
-          url: jdbc:trino://localhost:8080/hive
-          username: root
-          password: ""
-          driver-class-name: io.trino.jdbc.TrinoDriver
-```
+关键依赖（见 `pom.xml`）：
 
-## 核心类说明
+- `spring-boot-starter-jdbc`
+- `dynamic-datasource-spring-boot4-starter`
+- `liquibase-core`
+- `mysql-connector-j`
+- `ojdbc8` + `orai18n`
+- `trino-jdbc`
 
-- `StandardDataSourceConfigurer`: 标准数据源自动配置类
-- `DynamicDataSourceConfigurer`: 动态数据源自动配置类
-- `DynamicDataSourceService`: 动态数据源服务接口
-- `DynamicDataSourceServiceImpl`: 动态数据源服务实现
-- `DataSourceProperty`: 数据源属性定义类
-  - 包含 url、username、password 等基本连接属性
-  - 支持设置数据源 ID、数据库类型等扩展属性
+## 当前实现约束
 
-## 依赖
-
-该模块包含以下关键依赖：
-
-- `spring-boot-starter-jdbc`: JDBC 支持
-- `dynamic-datasource-spring-boot4-starter`: 动态数据源
-- `mysql-connector-j`: MySQL 驱动
-- `ojdbc8`: Oracle 驱动
-- `trino-jdbc`: Trino 驱动
-- `liquibase-core`: 数据库版本管理
-
-## 使用注意事项
-
-1. 标准数据源和动态数据源只能启用一种
-2. 使用动态数据源需要添加相关依赖
-3. 配置属性需严格按照规范设置
-4. Oracle 数据库需要额外的 orai18n 依赖
-5. Trino 数据库用于大规模数据分析场景
+- 条件类只检查关键配置项是否存在，不校验配置完整性。
+- `DynamicDataSourceServiceImpl#addDataSource` 仅设置基础连接信息，未开放池参数细粒度配置。
+- 标准模式主数据源 key 固定为 `primary`。

@@ -1,15 +1,21 @@
 # Lambda Cloud Processor
 
-`lambda-cloud-processor` 是编译期注解处理器模块，当前 `src/main` 内实际包含 2 个处理器：
+`lambda-cloud-processor` 是 Lambda Cloud 的编译期注解处理器模块，当前包含两类处理器：
 
-- `AutoConverterProcessor`：为 `@AutoConverter` 生成 MapStruct Converter 接口
-- `PermissionProcessor`：扫描 Controller 与权限注解，生成接口权限 JSON
+- `AutoConverterProcessor`：为 `@AutoConverter` 生成 MapStruct Converter 接口。
+- `PermissionProcessor`：在编译期扫描控制器权限注解并生成接口权限元数据 JSON。
 
-## 模块结构（基于 src/main）
+## 模块定位
+
+- 将对象转换规则前移到编译期，减少手写转换器成本。
+- 将接口权限元数据前移到编译期，支持运行期按静态元数据进行鉴权或上报。
+
+## 目录结构（src/main）
 
 ```text
 src/main/java/com/lambda/cloud/processor/
-├─ converter/AutoConverterProcessor.java
+├─ converter/
+│  └─ AutoConverterProcessor.java
 └─ permission/
    ├─ PermissionProcessor.java
    ├─ config/ProcessorConfig.java
@@ -18,17 +24,21 @@ src/main/java/com/lambda/cloud/processor/
    │  ├─ ApiPermissionMetadata.java
    │  └─ PermissionFileMetadata.java
    └─ scanner/AnnotationScanner.java
-src/main/resources/META-INF/services/javax.annotation.processing.Processor
+
+src/main/resources/META-INF/services/
+└─ javax.annotation.processing.Processor
 ```
 
-SPI 注册文件当前包含：
+SPI 注册项：
 
 ```text
 com.lambda.cloud.processor.permission.PermissionProcessor
 com.lambda.cloud.processor.converter.AutoConverterProcessor
 ```
 
-## 依赖
+## 依赖与打包说明
+
+### 依赖方式
 
 ```xml
 <dependency>
@@ -38,111 +48,125 @@ com.lambda.cloud.processor.converter.AutoConverterProcessor
 </dependency>
 ```
 
-## AutoConverterProcessor 行为说明
+### 打包行为
+
+- `pom.xml` 对 `resources` 做了 `META-INF/**/*` 排除。
+- `maven-resources-plugin` 在 `prepare-package` 阶段执行 `copy-resources`，将资源复制到 `target/classes`。
+- 目的是确保处理器 SPI 文件在最终构件中可用。
+
+## AutoConverterProcessor
 
 ### 触发条件
 
-- 仅处理 `@AutoConverter` 标注的 `class`
-- 注解类型：`com.lambda.cloud.core.annotation.AutoConverter`
+- `@SupportedAnnotationTypes`：`com.lambda.cloud.core.annotation.AutoConverter`
+- 仅处理 `ElementKind.CLASS`
 
-### 生成接口基础规则
+### 生成目标
 
-- 接口名：`{源类名}Converter`
-- 包名：与源类同包
-- 固定添加 `@Mapper` 属性：
+- 在源类同包生成 `{SourceSimpleName}Converter` 接口。
+- 生成接口带 `@Mapper` 注解，固定配置：
   - `componentModel = "spring"`
   - `nullValuePropertyMappingStrategy = IGNORE`
   - `nullValueCheckStrategy = ALWAYS`
   - `unmappedTargetPolicy = IGNORE`
-- `uses` 总会包含 `com.lambda.cloud.core.convert.ConvertFunctions.class`
-- 如果 `@AutoConverter(config = X.class)` 存在，则写入 `@Mapper(config = X.class)`
+- `uses` 默认包含 `ConvertFunctions.class`，并追加 `@AutoConverter(uses=...)` 配置。
+- `@AutoConverter(config=...)` 存在时透传到 `@Mapper(config=...)`。
 
-### 继承接口规则（以当前处理器实现为准）
+### 继承接口规则
 
-- `converter` 未指定（默认 `Void.class`）时：
-  - `isReverse = false`：`BaseConverter<Source, Target>`，`convertTo(Source source) -> Target`
-  - `isReverse = true`：`BaseConverter<Target, Source>`，`convertTo(Target source) -> Source`
-- `converter` 指定时：
-  - 直接继承 `converter` 指定接口
+- `converter` 未指定时，默认继承 `BaseConverter`：
+  - `isReverse=false`：`BaseConverter<Source, Target>`
+  - `isReverse=true`：`BaseConverter<Target, Source>`
+- `converter` 指定时，直接继承指定接口。
 
-### 字段映射来源
+### 字段映射收集顺序
 
-处理器会按以下来源收集 `FieldMapping`，并全部转换为 `@Mapping`：
+1. `@AutoConverter(fieldMappings = ...)`
+2. 类级别 `@FieldMapping`
+3. 类级别 `@FieldMappings`
+4. 字段级别 `@FieldMapping` / `@FieldMappings`
 
-1. `@AutoConverter(fieldMappings = {...})`
-2. 类上的 `@FieldMapping`
-3. 类上的 `@FieldMappings`
-4. 字段上的 `@FieldMapping` / `@FieldMappings`
+收集到映射后，处理器会为 `convertTo` 生成显式方法并附加 `@Mapping` 注解。
 
-### 何时生成显式 `convertTo` 方法
+### 支持透传的 FieldMapping 属性
 
-- 仅当收集到至少一个字段映射时，处理器会在生成接口中显式声明 `convertTo(...)` 并附加全部 `@Mapping`
-- 未收集到字段映射时，不额外声明 `convertTo(...)`，由父接口抽象方法与 MapStruct 处理
+- `target`
+- `source`
+- `ignore`
+- `dateFormat`
+- `numberFormat`
+- `locale`
+- `expression`
+- `defaultExpression`
+- `defaultValue`
+- `qualifiedByName`
+- `conditionExpression`
+- `conditionQualifiedByName`
+- `qualifiedBy`
+- `conditionQualifiedBy`
 
-### FieldMapping 支持写入的属性
+## PermissionProcessor
 
-`target`、`source`、`ignore`、`dateFormat`、`numberFormat`、`locale`、`expression`、`defaultExpression`、`defaultValue`、`qualifiedByName`、`conditionExpression`、`conditionQualifiedByName`、`qualifiedBy`、`conditionQualifiedBy`
+### 生命周期
 
-## PermissionProcessor 行为说明
+- `init`：
+  - 初始化 `Filer`、`Messager`、`ObjectMapper`。
+  - 读取编译参数到 `ProcessorConfig`。
+  - 初始化 `MetadataExtractor`、`AnnotationScanner`。
+  - 清空轮次收集容器 `collectedPermissions`。
+- `process`：
+  - 非结束轮：扫描并收集权限元数据。
+  - 结束轮：统一写出 JSON。
 
-### 生命周期与轮次
+### 扫描入口
 
-- `init` 阶段：
-  - 初始化 `Filer`、`Messager`、`ObjectMapper`
-  - 读取编译参数到 `ProcessorConfig`
-  - 初始化 `MetadataExtractor`、`AnnotationScanner`
-  - 清空 `collectedPermissions`
-- `process` 阶段：
-  - 非结束轮：扫描 Controller 并收集接口元数据
-  - 结束轮：统一写出 JSON 文件，然后清空收集列表
-
-### 扫描范围与方法选择
-
-- Controller 类来源：
+- 控制器来源：
   - `@RestController`
   - `@Controller`
+- 方法来源：
+  - 当前类 + 父类方法。
+  - 通过 `Elements#overrides` 去重覆盖关系。
 - 方法入选条件：
-  - 方法存在 Spring 路由注解之一：`@RequestMapping` / `@GetMapping` / `@PostMapping` / `@PutMapping` / `@DeleteMapping` / `@PatchMapping`
-- 方法遍历包含父类方法，并通过 `Elements#overrides` 去重
+  - 需存在路由注解：`@RequestMapping` 或 `@Get/Post/Put/Delete/PatchMapping`。
 
-### 元数据提取规则
+### 元数据提取行为（以当前实现为准）
 
-- 路径：类路径 + 方法路径，使用 `/` 规范化并去重斜杠
-- HTTP Method：
-  - 优先 `@GetMapping/@PostMapping/...`
-  - 否则取 `@RequestMapping(method=...)` 第一个值
-  - 都没有时默认 `"GET"`
-- 权限：类 + 方法上的 `@SaCheckPermission` 合并去重
-- 角色：类 + 方法上的 `@SaCheckRole` 合并去重
-- 权限逻辑优先级：
-  1. 方法 `@SaCheckRole.mode`
-  2. 方法 `@SaCheckPermission.mode`
-  3. 类 `@SaCheckRole.mode`
-  4. 类 `@SaCheckPermission.mode`
-  5. 默认 `"AND"`
-- 认证要求：
-  - 有 `@SaCheckLogin` 则为 `true`
-  - 否则只要存在权限或角色约束也为 `true`
-  - 否则为 `false`
-- 描述：`@Operation(summary)`
-- 分组：`@Tag(name)`
-- 废弃：
-  - `@Deprecated`，或
-  - `@Operation(deprecated = true)`
+- 处理器最终调用 `MetadataExtractor.extract(controller, method)`。
+- `MetadataExtractor.extract` 的首个判定是：
+  - 仅当类或方法存在 `@SaCheckPermission` 时才返回元数据。
+  - 仅有 `@SaCheckRole` 或 `@SaCheckLogin` 的方法不会被输出。
+- 路径规则：
+  - 类路径与方法路径合并，统一为单斜杠路径。
+  - 空路径默认 `/`。
+- HTTP Method 规则：
+  - 优先 HTTP 映射注解。
+  - 其次 `@RequestMapping(method=...)`。
+  - 默认 `GET`。
+- 描述与分组：
+  - 描述取 `@Operation(summary)`。
+  - 分组取类上的 `@Tag(name)`。
+- 废弃标记：
+  - `@Deprecated` 或 `@Operation(deprecated=true)`。
+- 权限提取规则：
+  - 优先取类上的 `@SaCheckPermission`。
+  - 若类上无权限注解，再取方法上的 `@SaCheckPermission`。
+  - 当前实现不会合并“类 + 方法”权限。
 
 ### 输出文件
 
-- 输出位置：`CLASS_OUTPUT` + `permission.output.path`
+- 写入位置：`CLASS_OUTPUT + permission.output.path`
 - 默认路径：`META-INF/permissions/api-permissions.json`
-- JSON 根对象字段：
-  - `version`（固定写入 `1.0.0`）
-  - `generatedAt`（`Instant.now().toString()`）
-  - `module`（`permission.module.name`）
-  - `basePackage`（`permission.base.package`）
+- 输出模型：`PermissionFileMetadata`
+  - `version`（默认 `1.0.0`）
+  - `generatedAt`
+  - `module`
+  - `basePackage`
   - `totalApis`
   - `apis`
 
-## 编译参数（代码已读取）
+### 编译参数
+
+支持读取的编译参数：
 
 ```text
 permission.enabled
@@ -154,19 +178,19 @@ permission.include.patterns
 permission.exclude.patterns
 ```
 
-其中当前 `src/main` 代码中的实际使用状态如下：
+当前实际生效：
 
-- 已直接参与流程：
+- 已生效：
   - `permission.enabled`
   - `permission.output.path`
-  - `permission.base.package`（写入输出 JSON）
-  - `permission.module.name`（写入输出 JSON）
-- 已读取但当前未用于扫描/输出分支控制：
+  - `permission.base.package`（写入输出）
+  - `permission.module.name`（写入输出）
+- 已读取但当前未参与过滤/分支：
   - `permission.output.format`
   - `permission.include.patterns`
   - `permission.exclude.patterns`
 
-## Maven 编译参数示例
+## Maven 配置示例
 
 ```xml
 <plugin>
@@ -190,8 +214,8 @@ permission.exclude.patterns
 </plugin>
 ```
 
-## 当前代码事实边界
+## 当前实现边界
 
-- `AutoConverterProcessor` 当前没有基于 `BaseDTO/BaseVO` 继承关系自动反转泛型，反转仅由 `isReverse` 控制
-- `PermissionProcessor` 当前没有使用 `include/exclude/basePackage` 做扫描过滤
-- `ApiPermissionMetadata` 中的 `tags`、`module` 字段在当前提取流程中未赋值
+- `AutoConverterProcessor` 不根据 `BaseDTO/BaseVO` 自动推断方向，方向只由 `isReverse` 控制。
+- `PermissionProcessor` 当前未使用 `basePackage/includePatterns/excludePatterns` 做扫描过滤。
+- `ApiPermissionMetadata` 中 `tags`、`module` 字段当前流程未赋值。

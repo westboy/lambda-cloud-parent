@@ -1,177 +1,152 @@
-# Lambda Cloud Starter Cache
+# lambda-cloud-starter-cache
 
-Lambda Cloud 统一缓存抽象层,支持多种缓存实现。
+`lambda-cloud-starter-cache` 提供统一缓存自动配置，支持三种模式：
 
-## 功能特性
+- `REDIS`：基于 `RedisCacheManager`
+- `CAFFEINE`：基于 `CaffeineCacheManager`
+- `MULTI_LEVEL`：L1 Caffeine + L2 Redis 的两级缓存
 
-- 🚀 **统一接口**: 提供统一的缓存操作接口,支持多种缓存实现
-- 🔄 **多级缓存**: 支持 L1(Caffeine 本地缓存) + L2(Redis 分布式缓存)的多级缓存架构
-- 📊 **统计信息**: 内置缓存命中率、加载时间等统计信息
-- ⚙️ **灵活配置**: 支持全局配置和单个缓存的细粒度配置
-- 🔌 **自动配置**: 基于 Spring Boot Auto-Configuration,开箱即用
+## 模块定位
 
-## 支持的缓存类型
+- 统一 Spring Cache 体系的默认接入方式，减少业务重复配置。
+- 在多级缓存模式下，提供跨节点 L1 失效同步能力（Redis Pub/Sub）。
+- 对外暴露标准 `org.springframework.cache.CacheManager`，兼容 `@Cacheable` 体系。
 
-| 缓存类型 | 说明 | 适用场景 |
-|---------|------|---------|
-| **REDIS** | Redis 分布式缓存 | 分布式系统,需要共享缓存数据 |
-| **CAFFEINE** | Caffeine 本地缓存 | 单机应用,高性能本地缓存需求 |
-| **MULTI_LEVEL** | 多级缓存 | 结合本地缓存和分布式缓存的优势 |
+## 目录结构（src/main）
 
-## 快速开始
+```text
+src/main/java/com/lambda/autoconfig/
+├─ CacheAutoConfiguration.java
+└─ CacheProperties.java
 
-### 添加依赖
+src/main/java/com/lambda/cloud/cache/
+├─ CacheConfig.java
+├─ CacheConstants.java
+├─ CacheType.java
+├─ provider/
+│  ├─ MultiLevelCache.java
+│  └─ MultiLevelCacheManager.java
+└─ support/
+   ├─ CacheMessage.java
+   ├─ CacheMessageListener.java
+   └─ CaffeineFactory.java
 
-```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-cache</artifactId>
-</dependency>
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
 ```
 
-### Redis 缓存配置
+自动装配注册项：
 
-```yaml
-lambda:
-  cache:
-    enabled: true
-    type: REDIS  # 使用 Redis 缓存
-    defaults:
-      ttl: 1h    # 默认过期时间
-      enable-stats: true
-      key-prefix: "lambda:cache:"
+```text
+com.lambda.autoconfig.CacheAutoConfiguration
 ```
 
-### Caffeine 本地缓存配置
+## 自动装配机制
 
-```yaml
-lambda:
-  cache:
-    enabled: true
-    type: CAFFEINE  # 使用 Caffeine 本地缓存
-    defaults:
-      ttl: 30m
-      max-size: 10000
-      initial-capacity: 100
-      enable-stats: true
-```
+### 总开关
 
-### 多级缓存配置
+- 配置键：`lambda.cache.enabled`
+- 条件：`havingValue=true, matchIfMissing=true`
+- 结论：默认启用缓存自动配置
 
-```yaml
-lambda:
-  cache:
-    enabled: true
-    type: MULTI_LEVEL  # 使用多级缓存
-    defaults:
-      ttl: 1h
-      max-size: 5000
-      enable-stats: true
-```
+### 按类型装配
 
-## 使用示例
+### CAFFEINE
 
-### 基本使用
+- 条件：
+  - `lambda.cache.type=CAFFEINE`
+  - classpath 存在 `com.github.benmanes.caffeine.cache.Caffeine`
+- 输出：
+  - `CaffeineCacheManager`
+- 特点：
+  - 支持 `defaults` + `caches` 细粒度配置
+  - `allowNullValues` 按配置生效
 
-```java
-@Service
-public class UserService {
+### REDIS
 
-    @Autowired
-    private CacheManager cacheManager;
+- 条件：
+  - `lambda.cache.type=REDIS`（`matchIfMissing=true`）
+  - classpath 存在 `RedisTemplate`
+- 输出：
+  - `RedisCacheManager`
+- 特点：
+  - Key 序列化固定为 String
+  - Value 序列化固定为 `RedisSerializer.json()`
+  - 支持 per-cache TTL/前缀/null-value 配置
 
-    public User getUserById(Long userId) {
-        Cache<Long, User> cache = cacheManager.getOrCreateCache("users");
+### MULTI_LEVEL
 
-        // 从缓存获取,如果不存在则加载
-        return cache.get(userId, id -> {
-            // 从数据库加载
-            return userRepository.findById(id).orElse(null);
-        });
-    }
+- 条件：
+  - `lambda.cache.type=MULTI_LEVEL`
+  - classpath 同时存在 `Caffeine` 与 `RedisTemplate`
+- 输出：
+  - `MultiLevelCacheManager`
+  - `CacheMessageListener`
+  - `RedisMessageListenerContainer`
+  - `cacheNodeId`（默认随机 UUID）
 
-    public void updateUser(User user) {
-        userRepository.save(user);
+## 配置模型
 
-        // 更新缓存
-        Cache<Long, User> cache = cacheManager.getOrCreateCache("users");
-        cache.put(user.getId(), user);
-    }
+前缀：`lambda.cache`
 
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
+主要字段：
 
-        // 清除缓存
-        Cache<Long, User> cache = cacheManager.getOrCreateCache("users");
-        cache.evict(userId);
-    }
-}
-```
+- `enabled`：总开关
+- `type`：`REDIS / CAFFEINE / MULTI_LEVEL`，默认 `REDIS`
+- `defaults`：默认缓存配置
+- `caches`：按缓存名覆盖配置
 
-### 批量操作
+`CacheConfigProperties` 关键字段：
 
-```java
-// 批量获取
-Set<Long> userIds = Set.of(1L, 2L, 3L);
-Map<Long, User> users = cache.getAll(userIds);
+- `ttl`：L2 过期时间（默认 `1h`）
+- `l1Ttl`：L1 过期时间（多级缓存生效）
+- `maxSize` / `initialCapacity`
+- `allowNullValues`
+- `keyPrefix`
+- `enableStats`
+- `expireAfterWrite` / `expireAfterAccess` / `refreshAfterWrite`
+- `softValues` / `weakValues` / `weakKeys`
 
-// 批量设置
-Map<Long, User> userMap = new HashMap<>();
-userMap.put(1L, user1);
-userMap.put(2L, user2);
-cache.putAll(userMap);
+## Caffeine 过期优先级
 
-// 批量删除
-Set<Long> idsToDelete = Set.of(1L, 2L);
-cache.evictAll(idsToDelete);
-```
+`CaffeineFactory` 的写后过期策略优先级：
 
-### 带过期时间的缓存
+1. `expireAfterWrite`
+2. `l1Ttl`
+3. `ttl`
 
-```java
-// 设置缓存,1小时后过期
-cache.put("token:" + userId, token, Duration.ofHours(1));
+即：若未显式设置 `expireAfterWrite`，会回退到 `l1Ttl`，再回退到 `ttl`。
 
-// 设置缓存,如果不存在
-boolean success = cache.putIfAbsent("lock:" + resourceId, "locked", Duration.ofMinutes(5));
-```
+## 多级缓存工作机制
 
-### 查看缓存统计
+### 读流程
 
-```java
-CacheStats stats = cache.getStats();
-System.out.println("命中率: " + stats.hitRate());
-System.out.println("命中次数: " + stats.getHitCount());
-System.out.println("未命中次数: " + stats.getMissCount());
-System.out.println("缓存大小: " + stats.getSize());
-System.out.println("平均加载时间: " + stats.averageLoadPenalty() + "ms");
-```
+1. 先读 L1（Caffeine）
+2. L1 未命中再读 L2（Redis）
+3. L2 命中后回填 L1
 
-## 配置说明
+### 写流程
 
-### 全局配置
+1. 同时写 L2 与 L1
+2. 发布同步消息到 `lambda:cache:topic`
 
-```yaml
-lambda:
-  cache:
-    enabled: true              # 是否启用缓存
-    type: REDIS               # 缓存类型: REDIS, CAFFEINE, MULTI_LEVEL
-    defaults:                 # 默认配置
-      ttl: 1h                # 默认过期时间
-      max-size: 10000        # 最大缓存条目数(仅本地缓存)
-      initial-capacity: 100  # 初始容量(仅本地缓存)
-      allow-null-values: true
-      key-prefix: "lambda:cache:"
-      enable-stats: true
-      expire-after-write: 1h      # 写入后过期(仅本地缓存)
-      expire-after-access: 30m    # 访问后过期(仅本地缓存)
-      refresh-after-write: 10m    # 刷新时间(仅本地缓存)
-      soft-values: false          # 软引用值(仅本地缓存)
-      weak-values: false          # 弱引用值(仅本地缓存)
-      weak-keys: false            # 弱引用键(仅本地缓存)
-```
+### 删流程
 
-### 单个缓存配置
+1. 同时删 L2 与 L1
+2. 发布同步消息到 `lambda:cache:topic`
+
+### 跨节点一致性策略
+
+- 多节点通过 Redis Pub/Sub 接收 `CacheMessage`。
+- 收到其他节点消息后，仅处理本地 L1：
+  - `PUT` / `EVICT`：本地 `evict(key)`
+  - `PUT_ALL` / `EVICT_ALL`：本地逐 key `evict`
+  - `CLEAR`：本地 `clear`
+- `PUT` 消息不直接写值，而是失效本地 L1，避免消息体传输大对象并保证下次读取从 L2 拿到最新值。
+
+## 示例配置
+
+### Redis 模式（默认）
 
 ```yaml
 lambda:
@@ -179,148 +154,81 @@ lambda:
     type: REDIS
     defaults:
       ttl: 1h
+      key-prefix: "lambda:cache:"
+      allow-null-values: true
     caches:
-      users:               # 用户缓存
+      users:
         ttl: 30m
-        key-prefix: "user:"
-      sessions:            # 会话缓存
+      sessions:
         ttl: 2h
-        key-prefix: "session:"
-      temporary:           # 临时缓存
-        ttl: 5m
-        key-prefix: "temp:"
 ```
 
-### 使用单个缓存配置
+### Caffeine 模式
 
-```java
-// 获取使用特定配置的缓存
-Cache<Long, User> userCache = cacheManager.getOrCreateCache("users");
-
-// 或者手动指定配置
-CacheConfig config = CacheConfig.builder()
-    .cacheName("products")
-    .ttl(Duration.ofMinutes(30))
-    .keyPrefix("product:")
-    .build();
-Cache<Long, Product> productCache = cacheManager.getOrCreateCache("products", config);
+```yaml
+lambda:
+  cache:
+    type: CAFFEINE
+    defaults:
+      ttl: 30m
+      max-size: 10000
+      initial-capacity: 100
+      enable-stats: true
 ```
 
-## 多级缓存原理
+### 多级缓存模式
 
-多级缓存使用 L1(Caffeine) + L2(Redis) 的架构:
+```yaml
+lambda:
+  cache:
+    type: MULTI_LEVEL
+    defaults:
+      ttl: 1h
+      l1-ttl: 10m
+      max-size: 5000
+      key-prefix: "lambda:cache:"
+    caches:
+      products:
+        ttl: 2h
+        l1-ttl: 5m
+```
 
-1. **读取流程**:
-   - 先从 L1 本地缓存读取(快速)
-   - L1 未命中,从 L2 Redis 读取
-   - L2 命中后同步到 L1
+## 使用方式
 
-2. **写入流程**:
-   - 同时写入 L1 和 L2
-   - 保证数据一致性
-
-3. **删除流程**:
-   - 同时从 L1 和 L2 删除
+本模块输出的是 Spring 标准 `CacheManager`，建议直接使用 Spring Cache 注解：
 
 ```java
-// 多级缓存使用示例
-@Service
-public class ProductService {
+@Cacheable(cacheNames = "users", key = "#id")
+public User findUser(Long id) {
+    return repository.findById(id).orElse(null);
+}
 
-    @Autowired
-    private CacheManager cacheManager; // 配置为 MULTI_LEVEL
+@CachePut(cacheNames = "users", key = "#user.id")
+public User updateUser(User user) {
+    return repository.save(user);
+}
 
-    public Product getProduct(Long productId) {
-        Cache<Long, Product> cache = cacheManager.getOrCreateCache("products");
-
-        return cache.get(productId, id -> {
-            // 从数据库加载
-            return productRepository.findById(id).orElse(null);
-        });
-        // 第一次: L1 miss -> L2 miss -> DB load -> save to L1 & L2
-        // 第二次: L1 hit (极快)
-        // 后续: 如果 L1 过期但 L2 未过期, L2 hit -> sync to L1
-    }
+@CacheEvict(cacheNames = "users", key = "#id")
+public void deleteUser(Long id) {
+    repository.deleteById(id);
 }
 ```
 
-## API 参考
+## 依赖说明
 
-### Cache 接口
+关键依赖（见 `pom.xml`）：
 
-| 方法 | 说明 |
-|------|------|
-| `get(K key)` | 获取缓存值 |
-| `get(K key, Callable<V> loader)` | 获取缓存值,不存在则加载 |
-| `get(K key, Function<K, V> loader)` | 获取缓存值,不存在则加载 |
-| `getAll(Set<K> keys)` | 批量获取 |
-| `put(K key, V value)` | 设置缓存 |
-| `put(K key, V value, Duration duration)` | 设置缓存(带过期时间) |
-| `putIfAbsent(K key, V value)` | 如果不存在则设置 |
-| `putAll(Map<K, V> map)` | 批量设置 |
-| `evict(K key)` | 删除缓存 |
-| `evictAll(Set<K> keys)` | 批量删除 |
-| `clear()` | 清空缓存 |
-| `exists(K key)` | 检查键是否存在 |
-| `size()` | 获取缓存大小 |
-| `expire(K key, Duration duration)` | 设置过期时间 |
-| `getExpire(K key)` | 获取剩余过期时间 |
-| `getStats()` | 获取统计信息 |
+- `spring-boot-starter-cache`
+- `spring-context-support`
+- `spring-boot-starter-data-redis`（optional）
+- `caffeine`（optional）
+- `lambda-cloud-core`
 
-### CacheManager 接口
+## 当前实现约束
 
-| 方法 | 说明 |
-|------|------|
-| `getCache(String name)` | 获取缓存 |
-| `getOrCreateCache(String name)` | 获取或创建缓存 |
-| `getOrCreateCache(String name, CacheConfig config)` | 获取或创建缓存(指定配置) |
-| `getCacheNames()` | 获取所有缓存名称 |
-| `destroyCache(String name)` | 销毁缓存 |
-| `destroyAll()` | 销毁所有缓存 |
-| `getCacheType()` | 获取缓存类型 |
-
-## 性能优化建议
-
-1. **选择合适的缓存类型**:
-   - 单机应用使用 CAFFEINE
-   - 分布式系统使用 REDIS
-   - 高并发读多写少场景使用 MULTI_LEVEL
-
-2. **合理设置过期时间**:
-   - 根据数据更新频率设��� TTL
-   - 热点数据使用较长的过期时间
-   - 临时数据使用较短的过期时间
-
-3. **使用批量操作**:
-   - 批量获取: `getAll()`
-   - 批量设置: `putAll()`
-   - 批量删除: `evictAll()`
-
-4. **监控缓存统计**:
-   - 定期检查缓存命中率
-   - 根据统计信息调整缓存策略
-
-## 注意事项
-
-1. **Caffeine 限制**:
-   - 不支持单个键的 TTL,只能使用全局 TTL
-   - 不支持分布式环境的数据共享
-
-2. **Redis 依赖**:
-   - 使用 REDIS 或 MULTI_LEVEL 类型需要配置 Redis 连接
-   - 需要引入 `lambda-cloud-starter-redis` 依赖
-
-3. **键前缀**:
-   - 建议为每个缓存设置唯一的键前缀,避免键冲突
-   - 多级缓存会自动为 L1 和 L2 添加后缀
-
-4. **空值处理**:
-   - 默认允许缓存空值,可通过 `allow-null-values` 配置
-   - 注意空值与键不存在的区别
-
-## 依赖
-
-- Spring Boot Starter Cache
-- Spring Data Redis (可选,REDIS 和 MULTI_LEVEL 类型需要)
-- Caffeine (可选,CAFFEINE 和 MULTI_LEVEL 类型需要)
-- Lambda Cloud Core
+- 多级缓存同步只保证“L1 最终一致失效”，不是强一致分布式事务。
+- `CacheMessageListener` 依赖 `RedisTemplate` 的 value serializer 反序列化消息，需与发布侧保持一致。
+- `REDIS` 与 `MULTI_LEVEL` 的 value 序列化策略不同：
+  - `REDIS` 模式固定 `RedisSerializer.json()`
+  - `MULTI_LEVEL` 模式跟随 `redisTemplate.getValueSerializer()`
+- `MULTI_LEVEL` 下 `refreshAfterWrite` 会为 L1 创建从 L2 回源的 CacheLoader；若 L2 不可用会记录告警并返回空值。

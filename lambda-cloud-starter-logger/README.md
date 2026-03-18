@@ -1,236 +1,166 @@
-# lambda-cloud-starter-logger 操作日志模块
+# lambda-cloud-starter-logger
 
-## 目录
-- [功能概述](#功能概述)
-- [核心组件](#核心组件)
-- [快速开始](#快速开始)
-- [配置说明](#配置说明)
-- [使用示例](#使用示例)
-- [扩展开发](#扩展开发)
-- [依赖说明](#依赖说明)
+`lambda-cloud-starter-logger` 提供基于 AOP 的操作日志采集能力，通过 `@OperationLog` 注解对方法调用进行结构化记录，并将日志持久化委托给可替换的 `OperationService`。
 
-## 功能概述
+## 模块定位
 
-本模块提供基于 Spring AOP 的操作日志记录功能，通过注解驱动的方式自动记录业务操作日志。主要特性包括：
+- 为业务方法提供统一的“操作日志”采集切面。
+- 自动捕获请求、参数、返回值、异常、耗时等上下文。
+- 默认输出到应用日志，支持业务侧替换存储实现。
 
-- **注解驱动**：通过 `@OperationLog` 注解标记需要记录日志的方法
-- **自动记录**：自动捕获方法执行参数、返回结果、执行耗时和异常信息
-- **上下文感知**：自动获取 HTTP 请求信息、用户信息和客户端 IP
-- **灵活配置**：支持 Kafka 日志收集等多种扩展方式
-- **线程安全**：基于 SLF4J MDC 实现线程本地日志上下文管理
-- **异常隔离**：日志记录异常不影响业务流程正常执行
+## 目录结构（src/main）
 
-## 核心组件
+```text
+src/main/java/com/lambda/autoconfig/
+├─ LoggerAutoConfiguration.java
+└─ LoggingProperties.java
 
-### 自动配置类
-- **LoggerAutoConfiguration**：操作日志自动配置类，负责注册相关 Bean
-- **LoggingProperties**：配置属性类，绑定 `lambda.logging` 前缀的配置项
+src/main/java/com/lambda/cloud/logger/
+├─ annotation/OperationLog.java
+├─ advices/
+│  ├─ AbstractAdvice.java
+│  └─ OperationLoggerAdvice.java
+├─ context/LogContext.java
+├─ model/
+│  ├─ OperationLogRecord.java
+│  └─ OperationContext.java
+└─ service/
+   ├─ OperationService.java
+   └─ impl/DefaultOperationServiceImpl.java
 
-### 核心注解
-- **@OperationLog**：操作日志注解，支持以下属性：
-  - `value`：操作标识，描述具体操作内容（默认使用方法全限定名）
-  - `module`：所属模块名称（默认为"模块"）
-  - `type`：操作类型，如 CREATE、UPDATE 等（默认根据 HTTP 方法推断）
-
-### 切面实现
-- **OperationLoggerAdvice**：操作日志切面类，拦截 `@OperationLog` 注解方法并记录日志
-
-### 服务接口
-- **OperationService**：操作日志服务接口，定义日志保存方法
-- **DefaultOperationServiceImpl**：默认实现，将日志输出到控制台（适用于开发测试环境）
-
-### 数据模型
-- **OperationLogRecord**：操作日志记录模型，包含操作者、方法、模块、耗时等核心信息
-- **OperationContext**：操作上下文模型，包含请求 URI、参数、请求体和响应结果等详细信息
-
-### 工具类
-- **LogContext**：日志上下文工具类，基于 SLF4J MDC 实现线程本地变量管理
-
-## 快速开始
-
-### 1. 添加依赖
-
-```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-logger</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
 ```
 
-### 2. 启用自动配置
+自动装配注册项：
 
-模块通过 Spring Boot 自动配置机制自动启用，无需额外配置。
+```text
+com.lambda.autoconfig.LoggerAutoConfiguration
+```
 
-### 3. 使用注解
+## 自动装配机制
 
-在需要记录日志的方法上添加 `@OperationLog` 注解：
+`LoggerAutoConfiguration` 主要行为：
+
+- 启用配置绑定：`LoggingProperties`（前缀 `lambda.logging`）
+- 仅在 Servlet Web 环境注册 `OperationLoggerAdvice`
+- 默认注册 `OperationService`（`DefaultOperationServiceImpl`）
+  - 条件：`@ConditionalOnMissingBean`
+  - 可被业务自定义实现覆盖
+
+## 注解模型
+
+`@OperationLog`（方法级）字段：
+
+- `value`：操作标识，默认空（最终会回退到 `类名.方法名`）
+- `module`：模块名，默认 `"模块"`
+- `type`：操作类型，默认空（最终会回退到 HTTP Method）
+
+## 日志采集链路
+
+以 `OperationLoggerAdvice` 为核心，处理流程如下：
+
+1. 拦截标注 `@OperationLog` 的方法（`@Around`）
+2. 解析目标方法与参数注解，启动 `StopWatch`
+3. 获取当前 `HttpServletRequest` 与当前用户（`OperatorUtils.getOperator()`）
+4. 组装 `OperationLogRecord`（方法、模块、类型、操作者、IP）
+5. 组装 `OperationContext`（URI、Query 参数、`@RequestBody` 参数）
+6. 执行业务方法
+   - 成功：记录返回值到 `OperationContext.result`
+   - 失败：记录异常堆栈到 `OperationContext.result` 后继续抛出
+7. 在 finally 中补齐时间、耗时并调用 `operationService.save(...)`
+8. 清理 `LogContext`（底层调用 `MDC.clear()`）
+
+## 上下文模型
+
+### OperationLogRecord
+
+主要字段：
+
+- `method`
+- `module`
+- `description`
+- `httpMethod`
+- `time`
+- `duration`（JSON 字段名 `cost`）
+- `detail`
+- `operator` / `operatorId`
+- `tenantId`
+- `ipAddress`
+
+### OperationContext
+
+主要字段：
+
+- `operationId`
+- `uri`
+- `parameters`
+- `body`
+- `result`
+
+## LogContext 用法
+
+`LogContext` 基于 SLF4J MDC 提供两个上下文键：
+
+- `detail`
+- `description`
+
+若业务在切面执行期间设置了这两个值：
+
+- `detail` 优先覆盖默认 `OperationContext` JSON
+- `description` 优先覆盖 Swagger `@Operation` 描述
+
+## 配置模型
+
+配置前缀：`lambda.logging`
+
+可绑定字段：
+
+- `operation.kafka.enabled`（默认 `false`）
+- `operation.kafka.topic`
+
+说明：
+
+- 当前 starter 仅完成属性绑定，源码内未内置 Kafka 发送实现。
+- 如需 Kafka 输出，需要业务侧自定义 `OperationService` 并读取这些配置。
+
+## 最小使用示例
 
 ```java
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
-    
-    @OperationLog(value = "用户登录", module = "用户管理", type = "LOGIN")
-    @PostMapping("/login")
-    public LoginResult login(@RequestBody LoginRequest request) {
-        return userService.login(request);
-    }
+@OperationLog(value = "创建用户", module = "用户管理", type = "CREATE")
+public User createUser(@RequestBody UserCreateReq req) {
+    return userService.create(req);
 }
 ```
 
-## 配置说明
-
-### 基础配置
-
-```yaml
-lambda:
-  logging:
-    operation:
-      kafka:
-        enabled: false          # 是否启用 Kafka 日志收集
-        topic: operation-logs   # Kafka 主题名称
-```
-
-### 配置属性说明
-
-| 配置项 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `lambda.logging.operation.kafka.enabled` | boolean | false | 是否启用 Kafka 日志收集 |
-| `lambda.logging.operation.kafka.topic` | String | - | Kafka 日志主题名称 |
-
-## 使用示例
-
-### 基础用法
-
-```java
-@Service
-public class UserService {
-    
-    @OperationLog(value = "创建用户", module = "用户管理", type = "CREATE")
-    public User createUser(@RequestBody User user) {
-        // 业务逻辑
-        return userRepository.save(user);
-    }
-    
-    @OperationLog(value = "更新用户信息", module = "用户管理", type = "UPDATE")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
-        // 业务逻辑
-        return userRepository.update(id, user);
-    }
-    
-    @OperationLog(value = "删除用户", module = "用户管理", type = "DELETE")
-    public void deleteUser(@PathVariable Long id) {
-        // 业务逻辑
-        userRepository.deleteById(id);
-    }
-}
-```
-
-### 使用默认值
-
-```java
-@OperationLog  // 使用默认配置
-public List<User> getAllUsers() {
-    return userRepository.findAll();
-}
-```
-
-### 结合 Swagger 注解
-
-```java
-@Operation(summary = "用户查询", description = "根据条件查询用户列表")
-@OperationLog(module = "用户管理", type = "QUERY")
-@GetMapping("/search")
-public PageResult<User> searchUsers(@RequestParam String keyword) {
-    return userService.searchUsers(keyword);
-}
-```
-
-### 日志上下文使用
-
-```java
-@OperationLog(value = "批量导入用户", module = "用户管理", type = "IMPORT")
-public ImportResult importUsers(@RequestParam MultipartFile file) {
-    try {
-        // 设置详情描述
-        LogContext.setDetail("导入文件：" + file.getOriginalFilename());
-        
-        ImportResult result = userService.importFromFile(file);
-        
-        // 设置操作说明
-        LogContext.setDescription(String.format("成功导入 %d 条用户数据", result.getSuccessCount()));
-        
-        return result;
-    } finally {
-        // 清理上下文（框架会自动清理，手动清理是可选的）
-        LogContext.clear();
-    }
-}
-```
-
-## 扩展开发
-
-### 自定义日志服务
-
-实现 `OperationService` 接口来自定义日志处理逻辑：
+自定义日志落库示例：
 
 ```java
 @Component
-public class DatabaseOperationService implements OperationService {
-    
-    @Autowired
-    private OperationLogRepository operationLogRepository;
-    
+public class DbOperationService implements OperationService {
     @Override
-    public void save(OperationLogRecord operationLogRecord) {
-        // 保存到数据库
-        OperationLogEntity entity = convertToEntity(operationLogRecord);
-        operationLogRepository.save(entity);
-    }
-    
-    private OperationLogEntity convertToEntity(OperationLogRecord record) {
-        // 转换逻辑
-        return new OperationLogEntity();
-    }
-}
-```
-
-### Kafka 集成示例
-
-```java
-@Component
-@ConditionalOnProperty(name = "lambda.logging.operation.kafka.enabled", havingValue = "true")
-public class KafkaOperationService implements OperationService {
-    
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
-    
-    @Value("${lambda.logging.operation.kafka.topic}")
-    private String topic;
-    
-    @Override
-    public void save(OperationLogRecord operationLogRecord) {
-        // 发送到 Kafka
-        kafkaTemplate.send(topic, operationLogRecord);
+    public void save(OperationLogRecord logRecord) {
+        repository.insert(logRecord);
     }
 }
 ```
 
 ## 依赖说明
 
-### 核心依赖
-- **lambda-cloud-core**：提供核心工具类和用户信息获取
-- **spring-boot-starter-logging**：日志框架支持
-- **aspectjweaver**：AOP 切面支持
-- **spring-web**：Web 环境支持
-- **jakarta.servlet-api**：Servlet API 支持（可选）
+关键依赖（见 `pom.xml`）：
 
-### 兼容性
-- Spring Boot 3.x
-- Java 17+
-- Jakarta EE 9+
+- `com.lambda.cloud:lambda-cloud-core`
+- `org.aspectj:aspectjweaver`
+- `org.springframework.boot:spring-boot-starter-logging`
+- `org.springframework:spring-web`
+- `jakarta.servlet:jakarta.servlet-api`（optional）
 
----
+## 当前实现约束
 
-**注意**：本模块设计为开箱即用，默认提供控制台日志输出。生产环境建议实现自定义的 `OperationService` 来满足具体的日志存储需求。
+- 仅在 Servlet Web 环境生效，非 Web 场景不会触发切面记录。
+- 无 HTTP 请求上下文时（如异步线程/非请求线程）直接跳过日志采集。
+- `LogContext.clear()` 调用 `MDC.clear()`，会清空当前线程全部 MDC 键。
+- `@RequestBody` 仅提取第一个命中参数，其他复杂体参数不会额外合并。
+- `OperationLogRecord.operator` 与 `tenantId` 当前切面未赋值，默认实现主要填充 `operatorId`。
+- `PATCH` 会被归并为 `PUT` 作为操作类型兜底值。
+- 默认 `OperationService` 仅输出日志，不做持久化与可靠投递。
