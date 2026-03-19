@@ -1,203 +1,151 @@
-# Lambda Cloud Starter YKC
+# lambda-cloud-starter-ykc
 
-YKC（云快充）协议模块，基于 Netty 实现的高性能充电桩通讯框架，支持 YKC 协议的多个版本。
+`lambda-cloud-starter-ykc` 提供云快充协议（YKC）消息模型与协议载荷自动扫描能力，依托 `lambda-cloud-starter-netty` 的协议引擎完成帧解析与序列化。
 
-## 概述
+## 模块定位
 
-`lambda-cloud-starter-ykc` 是 Lambda Cloud 微服务框架的充电桩通讯模块，专注于电动汽车充电桩的协议处理。该模块基于 Netty 实现，提供高性能的网络通信能力，并集成了 YKC 协议的完整实现。
+- 提供云快充 1.6 / 1.7 / 2.0 协议消息定义（`@ProtocolPayload` + `@ProtocolField`）。
+- 提供应用启动后的协议载荷自动扫描与注册入口。
+- 为业务侧 Netty 协议处理器提供可直接复用的数据模型。
+- 内置协议文档对照材料，便于字段对齐与验收。
 
-## 功能特性
+## 目录结构（核心）
 
-### 多版本协议支持
+```text
+src/main/java/com/lambda/autoconfig/
+├─ YkcAutoConfiguration.java
+└─ YkcProperties.java
 
-- **YKC v1.6**: 早期版本协议兼容
-- **YKC v1.7**: 优化版本协议支持
-- **YKC v2.0**: 最新版本协议实现
+src/main/java/com/lambda/cloud/ykc/message/
+├─ v16/
+│  ├─ YkcV16BasePayload.java
+│  ├─ req/*.java
+│  └─ resp/*.java
+├─ v17/
+│  ├─ YkcV17BasePayload.java
+│  ├─ req/*.java
+│  └─ resp/*.java
+└─ v20/
+   ├─ YkcV20BasePayload.java
+   ├─ req/*.java
+   └─ resp/*.java
 
-### 协议消息类型
+src/main/resources/
+└─ spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
 
-#### 请求消息 (Request)
-
-| 消息类型 | 说明 | 支持版本 |
-|---------|------|---------|
-| 登录 | 设备登录认证 | v1.6, v1.7, v2.0 |
-| 心跳 | 保持连接活跃 | v1.6, v1.7, v2.0 |
-| 计费模型 | 充电计费参数 | v1.6, v1.7, v2.0 |
-| 计费模型验证 | 计费参数校验 | v1.6, v1.7, v2.0 |
-| 充电开始 | 启动充电 | v1.6, v1.7, v2.0 |
-| 充电结束 | 停止充电 | v1.6, v1.7, v2.0 |
-| 远程启动 | 远程控制启动 | v1.6, v2.0 |
-| 远程停止 | 远程控制停止 | v1.6, v1.7, v2.0 |
-| 远程重启 | 设备远程重启 | v1.6 |
-| 远程升级 | 固件远程升级 | v1.6 |
-| 交易记录 | 充电交易数据 | v1.6, v1.7, v2.0 |
-| 监控数据 | 实时监控信息 | v1.6, v1.7 |
-| 时间同步 | 设备时间同步 | v1.6 |
-| 场站锁控制 | 停车场锁控制 | v1.6 |
-| 工作参数 | 设备工作参数 | v1.6 |
-| 参数配置 | 参数配置查询 | v2.0 |
-| BMS配置 | 电池管理系统配置 | v2.0 |
-| 实时数据 | 实时数据读取 | v2.0 |
-| 实时数据上传 | 实时数据上报 | v2.0 |
-| 交易确认 | 交易确认 | v2.0 |
-| 账户余额更新 | 账户余额同步 | v1.6 |
-
-#### 响应消息 (Response)
-
-每个请求消息都有对应的响应消息，包含：
-- 登录响应
-- 心跳响应
-- 计费模型响应
-- 计费模型验证响应
-- 充电握手响应
-- 充电开始响应
-- 充电结束响应
-- 远程启动响应
-- 远程停止响应
-- 交易记录响应
-- 监控数据响应
-- 参数配置响应
-- BMS 相关信息响应
-- 错误上报响应
-- 场站锁状态响应
-- 交易记录确认响应
-
-## 核心组件
-
-### 自动配置
-
-- **YkcAutoConfiguration**: 自动配置类，负责注册 Netty 服务器和相关组件
-- **YkcProperties**: 配置属性类，支持自定义配置
-
-### 协议基类
-
-- **YkcV16BasePayload**: v1.6 协议基类
-- **YkcV17BasePayload**: v1.7 协议基类
-- **YkcV20BasePayload**: v2.0 协议基类
-
-## 依赖
-
-```xml
-<dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-ykc</artifactId>
-    <version>2026.1.1-SNAPSHOT</version>
-</dependency>
+docs/
+├─ 云快充平台协议V1.6_完整报文参数对照表.md
+├─ 云快充平台协议V1.7_完整报文参数对照表.md
+└─ 云快充平台协议V2.1.0_完整报文参数对照表.md
 ```
 
-### 传递依赖
+自动装配注册项：
 
-该模块依赖以下模块：
+```text
+com.lambda.autoconfig.YkcAutoConfiguration
+```
 
-- `lambda-cloud-core`: 核心工具类
-- `lambda-cloud-starter-netty`: Netty 网络通信
-- `lambda-cloud-starter-test`: 测试支持
+## 自动装配机制
 
-## 配置说明
+`YkcAutoConfiguration` 主要行为：
 
-### 基础配置
+- 启用配置绑定：`YkcProperties`（前缀 `lambda.protocol.scanner`）
+- 注册 `ProtocolPayloadScanner` Bean
+- 在 `ApplicationReadyEvent` 触发时执行 `scanAndRegister(basePackages)`
+
+扫描逻辑：
+
+1. 若 `lazy-init=true`，跳过启动时自动扫描。
+2. 若未配置 `base-packages`，默认扫描 `com.lambda`。
+3. 扫描异常时：
+   - `fail-on-error=false`：仅记录日志
+   - `fail-on-error=true`：抛出异常中断启动
+
+## 配置模型
+
+配置前缀：`lambda.protocol.scanner`
+
+- `enabled` 默认 `true`
+- `base-packages` 扫描包数组
+- `lazy-init` 默认 `false`
+- `fail-on-error` 默认 `false`
+- `scan-sub-packages` 默认 `true`
+- `exclude-packages`
+- `verbose` 默认 `false`
+
+示例：
 
 ```yaml
 lambda:
-  ykc:
-    enabled: true
-    server:
-      port: 9000
-      boss-thread-count: 1
-      worker-thread-count: 4
+  protocol:
+    scanner:
+      base-packages:
+        - com.lambda.cloud.ykc.message
+      lazy-init: false
+      fail-on-error: true
 ```
 
-### Netty 配置
+## 协议模型设计
 
-详细 Netty 配置请参考 [lambda-cloud-starter-netty](../lambda-cloud-starter-netty/README.md)
+### 通用注解语义
 
-## 使用示例
+消息类基于以下注解描述编解码元数据：
 
-### 启动 YKC 服务
+- `@ProtocolPayload`
+  - 描述帧类型、协议名、版本、是否为帧
+- `@ProtocolField`
+  - 描述字段顺序、长度、字节序、数据类型、是否校验字段等
 
-```java
-@SpringBootApplication
-public class YkcServerApplication {
+常见字段标志：
 
-    public static void main(String[] args) {
-        SpringApplication.run(YkcServerApplication.class, args);
-    }
-}
-```
+- `lengthFiled=true`：长度字段
+- `crcFiled=true`：校验字段
+- `computed=true`：引擎计算字段
+- `composite=true`：组合对象字段
+- `encryptedField=true` / `encryptedKey=true`：加密相关字段
 
-### 处理充电请求
+### 基础帧模型
 
-```java
-@Service
-public class ChargingService {
+- `YkcV16BasePayload`
+  - 帧头 + 长度 + 序列号 + 加密标记 + 帧类型 + 数据域 + CRC
+- `YkcV17BasePayload<T>`
+  - 泛型 `detail` 结构，起始符默认 `68`
+- `YkcV20BasePayload<T>`
+  - 新增 `postTime(CP56TIME2A)` 字段，CRC 长度与前版本差异化
 
-    @Autowired
-    private YkcMessageHandler messageHandler;
+### 业务消息组织
 
-    public void handleStartCharging(YkcV16StartChargingRequest request) {
-        // 处理充电开始请求
-        // 验证计费模型
-        // 记录交易
-        // 返回响应
-    }
-}
-```
+- 各版本按 `req` / `resp` 目录划分。
+- 具体消息通过 `@ProtocolPayload(frameType = "...")` 标识帧类型。
+- 例如：
+  - v1.6 登录请求 `frameType = 0x01`
+  - v1.7 登录请求载荷类会在构造函数中设置 `frameType = "01"`
+  - v2.0 登录请求 `frameType = "01"`
 
-### 协议版本选择
+## 与协议引擎协作
 
-```java
-// 使用 v1.6 协议
-YkcV16StartChargingRequest request = new YkcV16StartChargingRequest();
+本模块不直接提供 Netty Server 启停逻辑，主要提供“消息模型 + 自动扫描注册”。
 
-// 使用 v1.7 协议
-YkcV17StartChargingRequest request = new YkcV17StartChargingRequest();
+常见协作方式：
 
-// 使用 v2.0 协议
-YkcV20StartChargingRequest request = new YkcV20StartChargingRequest();
-```
+1. 使用 `ReflectionProtocolEngine` 作为编解码引擎。
+2. 将具体 `frameType -> payload class` 注册到 `ProtocolPayloadRegistry`。
+3. 基于 `base payload` 做解析/序列化。
 
-## 消息流程
+测试目录中的 `YkcV16BillingMessageTest`、`YkcV17LoginMessageTest` 给出了典型使用方式。
 
-### 设备登录流程
+## 依赖说明
 
-```
-1. 设备发送 LoginRequest (登录请求)
-2. 服务器验证设备信息
-3. 服务器返回 LoginResponse (登录响应)
-4. 登录成功后进入正常通信状态
-```
+关键依赖（见 `pom.xml`）：
 
-### 充电流程
+- `com.lambda.cloud:lambda-cloud-core`
+- `com.lambda.cloud:lambda-cloud-starter-netty`
+- `com.lambda.cloud:lambda-cloud-starter-test`（test scope）
 
-```
-1. 设备发送 StartChargingRequest (充电开始请求)
-2. 服务器验证计费模型
-3. 服务器返回 StartChargingResponse (充电开始响应)
-4. 充电过程中设备发送 MonitoringDataRequest (监控数据)
-5. 设备发送 ChargingEndRequest (充电结束请求)
-6. 服务器返回 ChargingEndResponse (充电结束响应)
-7. 设备发送 TransactionRecordRequest (交易记录)
-8. 服务器返回 TransactionRecordResponse (交易记录响应)
-```
+## 当前实现约束
 
-### 心跳保持
-
-```
-设备定期发送 HeartbeatRequest (心跳请求)
-服务器返回 HeartbeatResponse (心跳响应)
-```
-
-## 注意事项
-
-1. **协议版本兼容**: 不同版本的协议消息结构有所不同，请根据设备实际情况选择合适的协议版本
-2. **网络配置**: 确保 Netty 服务器端口配置正确，设备能够正常连接
-3. **安全考虑**: 生产环境建议配置 SSL/TLS 加密传输
-4. **性能优化**: 根据实际并发量调整 Netty 线程池配置
-5. **日志记录**: 建议开启详细日志以便问题排查
-
-## 版本信息
-
-- **当前版本**: 2026.1.1-SNAPSHOT
-- **Java 版本**: 21+
-- **Spring Boot 版本**: 3.5.3
-- **Netty 版本**: 4.1.122.Final
+- `YkcProperties.enabled` 当前未在自动配置流程中实际参与条件判断。
+- `scan-sub-packages`、`exclude-packages`、`verbose` 字段当前未被 `YkcAutoConfiguration` 使用。
+- 自动装配导入文件位于 `resources/spring/`，与常见 `META-INF/spring/` 目录习惯不同。
+- 本模块只提供协议消息定义与扫描，不包含独立的连接管理、会话管理与业务处理编排。
+- 默认扫描包为 `com.lambda`，若业务项目包路径不在该范围会出现未注册消息类问题。

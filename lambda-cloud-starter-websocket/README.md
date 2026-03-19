@@ -1,98 +1,211 @@
-# Lambda Cloud WebSocket Starter
+# lambda-cloud-starter-websocket
 
-WebSocket模块，提供基于STOMP协议的WebSocket支持。
+`lambda-cloud-starter-websocket` 提供基于 STOMP 的 WebSocket 能力，内置认证拦截、连接事件分发、订阅事件分发，以及可选的内存/Redis 在线会话存储。
 
-## 核心功能
+## 模块定位
 
-### 1. 自动配置
-- 自动配置WebSocket消息代理
-- 支持STOMP协议
-- 支持SockJS
-- 可配置的消息前缀和端点
+- 提供开箱即用的 STOMP + SockJS WebSocket 基础设施。
+- 统一接入 Sa-Token 认证并将登录态注入 WebSocket 用户主体。
+- 提供用户在线状态仓库，支持在线检测与会话管理。
+- 提供连接/订阅事件扩展接口，便于业务插件式监听。
 
-### 2. 认证拦截
-- 基于SaToken的认证拦截器
-- 支持从Header获取accessToken
-- 支持多种登录类型(ADMIN/USER)
+## 目录结构（src/main）
 
-### 3. 通道存储
-- 提供内存和Redis两种存储模式
-- 支持用户会话管理
-- 支持在线用户统计
-- 支持批量检测用户在线状态
+```text
+src/main/java/com/lambda/autoconfig/
+├─ WebSocketAutoConfiguration.java
+└─ WebsocketProperties.java
 
-### 4. 事件处理
-- 处理连接生命周期事件（连接、断开）
-- 处理订阅/取消订阅事件
-- 支持自定义事件处理器
+src/main/java/com/lambda/cloud/websocket/
+├─ session/StompWebSocketSession.java
+├─ event/StompWebSocketSubscribeEvent.java
+├─ handler/StompWebSocketEventHandler.java
+├─ interceptor/
+│  ├─ DefaultAuthenticationChannelInterceptor.java
+│  └─ IpHandshakeInterceptor.java
+├─ repository/
+│  ├─ StompWebSocketChannelRepository.java
+│  └─ impl/
+│     ├─ DefaultStompWebSocketChannelRepository.java
+│     └─ RedisStompWebSocketChannelRepository.java
+└─ service/
+   ├─ StompWebSocketConnectEventService.java
+   └─ impl/DefaultStompWebSocketConnectEventServiceImpl.java
 
-## 配置项
+src/main/resources/
+├─ META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+└─ static/index.html
+```
+
+自动装配注册项：
+
+```text
+com.lambda.autoconfig.WebSocketAutoConfiguration
+```
+
+## 自动装配机制
+
+`WebSocketAutoConfiguration` 生效条件：
+
+- `lambda.websocket.enabled=true` 或缺省（`matchIfMissing = true`）
+
+主要自动装配项：
+
+- `StompWebSocketChannelRepository`
+  - `channel-store-mode=REDIS` -> `RedisStompWebSocketChannelRepository`
+  - 其他模式 -> `DefaultStompWebSocketChannelRepository`（默认 TTL 7 天）
+- `StompWebSocketConnectEventService`
+  - 默认实现：`DefaultStompWebSocketConnectEventServiceImpl`
+- `ChannelInterceptor`
+  - 默认：`DefaultAuthenticationChannelInterceptor`
+- `StompWebSocketEventHandler`
+  - 汇总所有连接事件服务与订阅事件处理器
+
+## STOMP Broker 与端点约定
+
+默认 Broker 配置：
+
+- `setUserDestinationPrefix(userPrefix)`
+- `enableSimpleBroker(topicPrefix, userPrefix)`
+- `setApplicationDestinationPrefixes(appPrefix)`
+
+默认端点：
+
+- STOMP 端点：`/ws/stomp`
+- 端点注册启用 SockJS，并附带：
+  - `streamBytesLimit=524288`
+  - `httpMessageCacheSize=1000`
+  - `disconnectDelay=30000`
+  - `sessionCookieNeeded=false`
+
+握手拦截：
+
+- `IpHandshakeInterceptor` 将客户端 IP 写入 session attribute（键：`ip`）。
+
+## 认证链路
+
+`DefaultAuthenticationChannelInterceptor` 在 `CONNECT` 命令处理：
+
+1. 读取 `x-websocket-framework` 头并写入 session attributes。
+2. 从 `Authorization` 头提取 `Bearer` Token。
+3. 通过 `StpLogicUtils.getSaSession(token)` 获取登录会话。
+4. 从会话读取 `loginUser` 并注入 `accessor.setUser(...)`。
+5. 无 token 或无用户信息时抛 `AuthenticationException`。
+
+说明：
+
+- 当前实现强依赖 Sa-Token 会话中存在 `loginUser` 对象。
+
+## 会话模型与事件分发
+
+### StompWebSocketSession
+
+统一封装事件上下文，提供：
+
+- `sessionId`
+- `topic`
+- `user`
+- `sessionAttributes`
+- `ip`
+- `framework`
+
+### StompWebSocketEventHandler
+
+监听并分发事件：
+
+- `SessionConnectEvent`
+- `SessionConnectedEvent`
+- `SessionDisconnectEvent`
+- `SessionSubscribeEvent`
+- `SessionUnsubscribeEvent`
+
+分发规则：
+
+- 连接类事件广播给所有 `StompWebSocketConnectEventService`。
+- 订阅类事件按 `topics()` 精确匹配分发给 `StompWebSocketSubscribeEvent`。
+
+## 在线会话存储策略
+
+### 默认内存模式（DEFAULT）
+
+`DefaultStompWebSocketChannelRepository` 基于 Caffeine：
+
+- key：`uid`
+- value：`Set<sid>`
+- 过期：`expireAfterWrite(timeout)`（默认 7 天）
+- 支持在线用户统计与批量在线判断。
+
+### Redis 模式（REDIS）
+
+`RedisStompWebSocketChannelRepository` 关键键结构：
+
+- 用户会话集合：`lambda:websocket:online_user:{tenant}:{uid}`
+- 在线用户集合：`lambda:websocket:online_users:{tenant}`
+
+特点：
+
+- 通过 Lua 脚本维护用户集合与在线集合一致性。
+- 自动拼接租户维度（`TenantHolder.getTenantId()`，缺省回退 `system`）。
+
+## 连接事件默认行为
+
+`DefaultStompWebSocketConnectEventServiceImpl`：
+
+- `connectedEvent`：将 `uid/sid` 写入仓库。
+- `disconnectEvent`：将 `uid/sid` 从仓库移除。
+- 要求 `user != null` 且 `framework != null` 才执行仓库更新。
+
+## 配置模型
+
+配置前缀：`lambda.websocket`
+
+- `enabled` 默认 `false`（但自动配置条件 `matchIfMissing=true`，缺省仍会生效）
+- `channel-store-mode` 默认 `DEFAULT`
+- `app-prefix` 默认 `/app`
+- `user-prefix` 默认 `/user/`
+- `topic-prefix` 默认 `/topic/`
+- `stomp-endpoint` 默认 `/ws/stomp`
+- `origin-endpoint` 默认 `/ws/native`
+- `origins` 默认 `*`
+
+示例：
 
 ```yaml
 lambda:
   websocket:
-    enabled: true # 是否启用
-    store-mode: memory # 存储模式(memory/redis)
-    endpoint: /ws # WebSocket端点路径
-    application-destination-prefix: /app # 应用目标前缀
-    user-destination-prefix: /user # 用户目标前缀
-    topic-prefix: /topic # 主题前缀
+    enabled: true
+    channel-store-mode: REDIS
+    app-prefix: /app
+    user-prefix: /user/
+    topic-prefix: /topic/
+    stomp-endpoint: /ws/stomp
+    origins: "*"
 ```
 
-## 使用说明
+## 扩展点
 
-### 1. 添加依赖
-```xml
-<dependency>
-    <groupId>com.lambda</groupId>
-    <artifactId>lambda-cloud-starter-websocket</artifactId>
-    <version>${latest.version}</version>
-</dependency>
-```
+- `StompWebSocketConnectEventService`
+  - 扩展连接建立/断开生命周期处理
+- `StompWebSocketSubscribeEvent`
+  - 通过 `topics()` 声明订阅主题，处理订阅/取消订阅事件
+- `StompWebSocketChannelRepository`
+  - 可替换在线会话存储实现
 
-### 2. 自定义事件处理器
-```java
-@Component
-public class CustomConnectEventService implements WsConnectEventService {
-    @Override
-    public void connectEvent(WsSessionInfo<SessionConnectEvent> info) {
-        // 处理连接事件
-    }
-}
+## 依赖说明
 
-@Component
-public class CustomSubscribeEvent implements WsSubscribeEvent {
-    @Override
-    public String[] topics() {
-        return new String[]{"/topic/demo"};
-    }
+关键依赖（见 `pom.xml`）：
 
-    @Override
-    public void subscribeEvent(WsSessionInfo<SessionSubscribeEvent> info) {
-        // 处理订阅事件
-    }
-}
-```
+- `spring-boot-starter-websocket`
+- `com.lambda.cloud:lambda-cloud-starter-security`
+- `com.lambda.cloud:lambda-cloud-starter-web`
+- `com.lambda.cloud:lambda-cloud-starter-redis`
+- `com.github.ben-manes.caffeine:caffeine`
+- `com.lambda.cloud:lambda-cloud-core`
 
-### 3. 发送消息示例
-```java
-@RestController
-public class WebSocketController {
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+## 当前实现约束
 
-    @GetMapping("/send")
-    public void sendMessage() {
-        // 发送给特定用户
-        messagingTemplate.convertAndSendToUser("userId", "/queue/messages", "Hello");
-        
-        // 广播消息
-        messagingTemplate.convertAndSend("/topic/broadcast", "Broadcast message");
-    }
-}
-```
-
-## 注意事项
-1. 默认使用内存存储模式，生产环境建议使用Redis模式
-2. 认证拦截器需要配合SaToken使用
-3. 订阅事件处理器需要实现WsSubscribeEvent接口并注册为Spring Bean
+- `WebsocketProperties.enabled` 默认值是 `false`，但自动配置 `matchIfMissing=true`，未配置时仍会启用 WebSocket。
+- `WebSocketAutoConfiguration` 在 REDIS 模式通过 `SpringUtil.getBean(StringRedisTemplate.class)` 获取 Bean，若未提供会在运行期失败。
+- `DefaultStompWebSocketConnectEventServiceImpl` 依赖 `framework` 非空，客户端未传 `x-websocket-framework` 时不会记录在线状态。
+- `StompWebSocketSubscribeEvent` 的 topic 匹配为精确匹配，不支持 Ant 风格通配。
+- `originEndpoint` 属性当前未在自动配置中使用，属于未接入配置项。
