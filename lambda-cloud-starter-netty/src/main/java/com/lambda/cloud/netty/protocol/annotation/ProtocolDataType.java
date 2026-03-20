@@ -33,6 +33,11 @@ public enum ProtocolDataType {
     BIT("位数据"),
 
     /**
+     * BMS电流
+     */
+    BMS_CURRENT("BMS电流"),
+
+    /**
      * 无符号整数（1字节）
      */
     UINT8("无符号8位整数"),

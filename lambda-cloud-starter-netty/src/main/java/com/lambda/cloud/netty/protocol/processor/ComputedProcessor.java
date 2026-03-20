@@ -145,9 +145,6 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
     private long calculateCrcByParsedDataList(ByteBuf dataForCrc, ProtocolPayloadMetadata frameMetadata) {
         try {
             // 使用 CRC 算法计算校验值
-            // 注意：ByteBuf 需要转为 byte[] 才能被 ChecksumFactory 使用，或者 ChecksumFactory 需要支持 ByteBuf
-            // 考虑到 ChecksumFactory 接口可能只支持 byte[]，这里可能还是需要一次拷贝
-            // 但如果在上层传入的是 slice，那么这里的拷贝也是基于 slice 的，比原来的 ByteArrayOutputStream 重建要好
             // 如果 ChecksumFactory 能升级支持 ByteBuf 会更好
             byte[] bytes = ByteBufUtil.getBytes(dataForCrc);
             long crcValue = ChecksumFactory.getAlgorithm(frameMetadata.getCrcAlgorithmName())
