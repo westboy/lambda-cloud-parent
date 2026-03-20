@@ -4,6 +4,7 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import com.lambda.cloud.netty.protocol.message.ProtocolMessage;
+import com.lambda.cloud.netty.protocol.message.RawPayloadAware;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -12,7 +13,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @ProtocolPayload(name = "云快充基础协议", isFrame = true, description = "云快充基础协议字段")
-public class YkcV16BasePayload implements ProtocolMessage {
+public class YkcV16BasePayload implements ProtocolMessage, RawPayloadAware {
 
     @ProtocolField(order = 0, length = 1, dataType = ProtocolDataType.HEX, description = "起始符")
     private String startFlag;
@@ -65,4 +66,14 @@ public class YkcV16BasePayload implements ProtocolMessage {
             crcFiled = true,
             description = "校验码")
     private String crc;
+
+    @Override
+    public byte[] getRawPayload() {
+        return new byte[0];
+    }
+
+    @Override
+    public void setRawPayload(byte[] rawPayload) {
+
+    }
 }
