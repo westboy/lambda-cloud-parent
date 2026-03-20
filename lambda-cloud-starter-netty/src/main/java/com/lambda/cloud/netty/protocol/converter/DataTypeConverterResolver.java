@@ -99,7 +99,6 @@ public class DataTypeConverterResolver {
         registerConverter(ProtocolDataType.ASCII, new AsciiConverter());
         registerConverter(ProtocolDataType.BCD, new BcdConverter());
         registerConverter(ProtocolDataType.BIT, new BitConverter());
-        registerConverter(ProtocolDataType.BIT, new BmsCurrentConverter(0.1, -400));
         registerConverter(ProtocolDataType.UINT8, new UInt8Converter());
         registerConverter(ProtocolDataType.UINT16, new UInt16Converter());
         registerConverter(ProtocolDataType.UINT32, new UInt32Converter());
