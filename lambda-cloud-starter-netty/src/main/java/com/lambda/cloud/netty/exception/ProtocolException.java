@@ -1,6 +1,7 @@
 package com.lambda.cloud.netty.exception;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 协议处理异常
@@ -15,6 +16,8 @@ public class ProtocolException extends Exception {
 
     private final ErrorCode errorCode;
     private final String fieldName;
+    @Setter
+    private byte[] rawPayload; // 存储引发异常时的原始报文快照
 
     public ProtocolException(String message) {
         this(ErrorCode.UNKNOWN, message, null, null);

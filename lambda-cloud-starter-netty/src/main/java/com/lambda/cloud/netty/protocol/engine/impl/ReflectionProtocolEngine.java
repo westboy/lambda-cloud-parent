@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import com.lambda.cloud.netty.protocol.message.RawPayloadAware;
 
 /**
  * 反射协议引擎
@@ -103,13 +104,12 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
     public Object parse(ByteBuf byteBuf, Class<?> messageClass) throws ProtocolException {
         ProtocolPayloadMetadata metadata = getMetadata(messageClass);
         long startTime = System.nanoTime();
+        int readerIndex = byteBuf.readerIndex();
         try {
             // 记录解析开始
             logProtocolOperation("帧解析", metadata);
             // 创建消息实例
             Object protocolMessage = getConstructor(messageClass).newInstance();
-            // 记录原始readerIndex
-            int readerIndex = byteBuf.readerIndex();
 
             // 使用 CompositeByteBuf 来收集参与 CRC 计算的数据切片
             // 这样既避免了内存复制，又能灵活处理不连续的 computed 字段
@@ -149,6 +149,17 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                 }
             }
 
+            // 如果实现了原始报文感知接口，按需完成原始报文拷贝注入
+            if (protocolMessage instanceof RawPayloadAware rawAware) {
+                int totalLength = byteBuf.readerIndex() - readerIndex;
+                if (totalLength > 0) {
+                    byte[] rawData = new byte[totalLength];
+                    // 使用 getBytes 进行无指针副作用的拷贝
+                    byteBuf.getBytes(readerIndex, rawData);
+                    rawAware.setRawPayload(rawData);
+                }
+            }
+
             // 记录解析成功和性能指标
             if (log.isDebugEnabled()) {
                 long duration = System.nanoTime() - startTime;
@@ -168,8 +179,23 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                     duration / 1000,
                     e.getMessage());
 
-            throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(), e);
+            ProtocolException pe;
+            if (e instanceof ProtocolException) {
+                pe = (ProtocolException) e;
+            } else {
+                pe = new ProtocolException(
+                        ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(), e);
+            }
+
+            // 保存引发异常时的原始报文快照，方便构建死信队列追溯
+            int currentLength = byteBuf.readerIndex() - readerIndex;
+            if (currentLength > 0) {
+                byte[] partialData = new byte[currentLength];
+                byteBuf.getBytes(readerIndex, partialData);
+                pe.setRawPayload(partialData);
+            }
+
+            throw pe;
         }
     }
 
@@ -182,6 +208,25 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
         try {
             // 记录序列化开始
             logProtocolOperation("序列化", metadata);
+
+            // 支持网关透传模式：直接写入跳过反射序列化
+            if (message instanceof RawPayloadAware rawAware) {
+                byte[] rawPayload = rawAware.getRawPayload();
+                if (rawPayload != null && rawPayload.length > 0) {
+                    byteBuf.writeBytes(rawPayload);
+                    if (log.isDebugEnabled()) {
+                        long duration = System.nanoTime() - startTime;
+                        int bytesWritten = byteBuf.writerIndex() - initialWriterIndex;
+                        log.debug(
+                                "协议帧透传序列化完成 - 类型: {}, 耗时: {}μs, 写入原始字节: {}, 缓冲区容量: {}",
+                                message.getClass().getSimpleName(),
+                                duration / 1000,
+                                bytesWritten,
+                                byteBuf.capacity());
+                    }
+                    return;
+                }
+            }
 
             // 1. 重置CRC和Length字段（占位）
             computedProcessor.resetCrcAndLengthFields(message, metadata);
