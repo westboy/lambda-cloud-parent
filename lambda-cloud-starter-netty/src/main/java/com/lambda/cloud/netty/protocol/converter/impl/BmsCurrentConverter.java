@@ -11,7 +11,7 @@ import io.netty.buffer.ByteBuf;
 public class BmsCurrentConverter implements DataTypeConverter {
 
     private final double resolution; // 每位电流值
-    private final double offset;     // 偏移量
+    private final double offset; // 偏移量
 
     public BmsCurrentConverter(double resolution, double offset) {
         this.resolution = resolution;
@@ -22,9 +22,7 @@ public class BmsCurrentConverter implements DataTypeConverter {
     public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (length != 2) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR,
-                    "BMS电流字段必须为2字节",
-                    fieldMetadata.getFieldName());
+                    ProtocolException.ErrorCode.PARSE_ERROR, "BMS电流字段必须为2字节", fieldMetadata.getFieldName());
         }
 
         byte high = buffer.readByte();
@@ -46,9 +44,7 @@ public class BmsCurrentConverter implements DataTypeConverter {
     public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (!(value instanceof Number number)) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.SERIALIZE_ERROR,
-                    "BMS电流必须为数字类型",
-                    fieldMetadata.getFieldName());
+                    ProtocolException.ErrorCode.SERIALIZE_ERROR, "BMS电流必须为数字类型", fieldMetadata.getFieldName());
         }
 
         // 转回原始整数
@@ -77,10 +73,7 @@ public class BmsCurrentConverter implements DataTypeConverter {
             return Double.parseDouble(value);
         } catch (NumberFormatException e) {
             throw new ProtocolException(
-                    ProtocolException.ErrorCode.PARSE_ERROR,
-                    "BMS电流字符串格式错误: " + value,
-                    fieldMetadata.getFieldName());
+                    ProtocolException.ErrorCode.PARSE_ERROR, "BMS电流字符串格式错误: " + value, fieldMetadata.getFieldName());
         }
     }
-
 }
