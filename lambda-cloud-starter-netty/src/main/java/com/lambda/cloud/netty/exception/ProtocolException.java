@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.exception;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,10 +13,12 @@ import lombok.Setter;
  * @author Jin
  */
 @Getter
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class ProtocolException extends Exception {
 
     private final ErrorCode errorCode;
     private final String fieldName;
+
     @Setter
     private byte[] rawPayload; // 存储引发异常时的原始报文快照
 

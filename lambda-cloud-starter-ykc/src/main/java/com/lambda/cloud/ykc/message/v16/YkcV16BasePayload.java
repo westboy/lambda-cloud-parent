@@ -73,7 +73,5 @@ public class YkcV16BasePayload implements ProtocolMessage, RawPayloadAware {
     }
 
     @Override
-    public void setRawPayload(byte[] rawPayload) {
-
-    }
+    public void setRawPayload(byte[] rawPayload) {}
 }

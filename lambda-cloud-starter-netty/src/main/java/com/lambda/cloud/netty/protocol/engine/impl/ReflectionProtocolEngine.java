@@ -17,6 +17,7 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverterResolver;
 import com.lambda.cloud.netty.protocol.converter.impl.CompositeConverter;
 import com.lambda.cloud.netty.protocol.encrypt.EncryptionService;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
+import com.lambda.cloud.netty.protocol.message.RawPayloadAware;
 import com.lambda.cloud.netty.protocol.processor.ComputedProcessor;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.netty.protocol.validation.ValidationEngine;
@@ -33,7 +34,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import com.lambda.cloud.netty.protocol.message.RawPayloadAware;
 
 /**
  * 反射协议引擎
@@ -170,7 +170,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                         byteBuf.readableBytes());
             }
             return protocolMessage;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // 记录解析失败和性能指标
             long duration = System.nanoTime() - startTime;
             log.error(
@@ -179,23 +179,18 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
                     duration / 1000,
                     e.getMessage());
 
-            ProtocolException pe;
-            if (e instanceof ProtocolException) {
-                pe = (ProtocolException) e;
-            } else {
-                pe = new ProtocolException(
-                        ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(), e);
-            }
+            ProtocolException protocolException = new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(), e);
 
             // 保存引发异常时的原始报文快照，方便构建死信队列追溯
             int currentLength = byteBuf.readerIndex() - readerIndex;
             if (currentLength > 0) {
                 byte[] partialData = new byte[currentLength];
                 byteBuf.getBytes(readerIndex, partialData);
-                pe.setRawPayload(partialData);
+                protocolException.setRawPayload(partialData);
             }
 
-            throw pe;
+            throw protocolException;
         }
     }
 
