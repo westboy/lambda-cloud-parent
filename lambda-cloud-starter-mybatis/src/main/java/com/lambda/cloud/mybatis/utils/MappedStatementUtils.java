@@ -18,9 +18,9 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Jin
  */
-public final class MybatisUtils {
+public final class MappedStatementUtils {
 
-    private MybatisUtils() {}
+    private MappedStatementUtils() {}
 
     /**
      * 构造新的MappedStatement
@@ -46,7 +46,7 @@ public final class MybatisUtils {
     public static MappedStatement newMappedStatement(
             MappedStatement statement, org.apache.ibatis.mapping.BoundSql boundSql, String sql) {
         org.apache.ibatis.mapping.SqlSource sqlSource = newSqlSource(modifyBoundSql(boundSql, sql));
-        return MybatisUtils.newMappedStatement(statement, sqlSource);
+        return MappedStatementUtils.newMappedStatement(statement, sqlSource);
     }
 
     /**

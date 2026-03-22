@@ -1,20 +1,15 @@
 package com.lambda.cloud.mybatis.utils;
 
-import java.io.StringReader;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import lombok.experimental.UtilityClass;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.statement.select.Select;
 
 /**
  * @author Jin
  */
 @UtilityClass
-public final class SQLUtils {
+public final class SqlConditionUtils {
     public static final String COMMA = ",";
     public static final String LEFT_BRACKET = "(";
     public static final String RIGHT_BRACKET = ")";
@@ -22,10 +17,6 @@ public final class SQLUtils {
     public static final String IN = "IN";
     public static final String EQUAL = "=";
     public static final String SPACE = " ";
-
-    private static final CCJSqlParserManager PARSER = new CCJSqlParserManager();
-
-    private static final Pattern ORACLE_PATTERN = Pattern.compile("\\?\\|");
 
     /**
      * 将数字数组转为IN模式
@@ -68,27 +59,5 @@ public final class SQLUtils {
             builder.append(joiner);
         }
         return builder.toString();
-    }
-
-    /**
-     * 将字符串解析为SQL语句
-     *
-     * @param sql
-     * @return net.sf.jsqlparser.statement.select.Select
-     */
-    public static Select parse(String sql) throws JSQLParserException {
-        // 将Oracle方言中?||按标准模式添加空格
-        sql = ORACLE_PATTERN.matcher(sql).replaceAll("? |");
-        return parse(new StringReader(sql));
-    }
-
-    /**
-     * 将字符串解析为SQL语句
-     *
-     * @param reader
-     * @return net.sf.jsqlparser.statement.select.Select
-     */
-    public static Select parse(StringReader reader) throws JSQLParserException {
-        return (Select) PARSER.parse(reader);
     }
 }

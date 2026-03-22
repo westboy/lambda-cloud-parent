@@ -1,14 +1,13 @@
-package com.lambda.cloud.mybatis.purview.strategy;
+package com.lambda.cloud.mybatis.datascope.strategy;
 
 import cn.hutool.cache.Cache;
 import cn.hutool.cache.CacheUtil;
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.mybatis.purview.PurviewContext;
-import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
-import com.lambda.cloud.mybatis.purview.support.CacheKey;
-import com.lambda.cloud.mybatis.purview.support.PurviewProfile;
-import com.lambda.cloud.mybatis.purview.support.PurviewSqlHelper;
-import com.lambda.cloud.mybatis.utils.SQLUtils;
+import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
+import com.lambda.cloud.mybatis.datascope.support.DataScopeCacheKey;
+import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluationContext;
+import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator;
+import com.lambda.cloud.mybatis.utils.JSqlParserUtils;
 import java.io.StringReader;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -23,9 +22,9 @@ import net.sf.jsqlparser.statement.select.Select;
  * @author Jin
  */
 @Slf4j
-public abstract class AbstractStrategy implements PurviewModeStrategy {
+public abstract class AbstractDataScopeStrategy implements DataScopeStrategy {
 
-    private static final Cache<CacheKey, String> SQL_CACHE = CacheUtil.newLRUCache(1024);
+    private static final Cache<DataScopeCacheKey, String> SQL_CACHE = CacheUtil.newLRUCache(1024);
 
     /**
      * 更新Where条件
@@ -59,15 +58,15 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
      * 增强SQL语句
      *
      * @param source
-     * @param purviewProfile
+     * @param dataScopeEvaluationContext
      * @return org.apache.ibatis.mapping.MappedStatement
      * @throws JSQLParserException
      */
     @Override
-    public String improve(String source, PurviewProfile purviewProfile) {
-        LoginUser operator = purviewProfile.getOperator();
-        PurviewContext purview = purviewProfile.getPurview();
-        Set<String> permissions = purviewProfile.getPermissions();
+    public String improve(String source, DataScopeEvaluationContext dataScopeEvaluationContext) {
+        LoginUser operator = dataScopeEvaluationContext.getOperator();
+        DataScopeContext purview = dataScopeEvaluationContext.getContext();
+        Set<String> permissions = dataScopeEvaluationContext.getPermissions();
 
         // 显式处理 Replace 模式
         if (purview.isReplace()) {
@@ -77,7 +76,7 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
                 // Replace 模式下的特定回退逻辑（如果是基于正则替换的实现，通常不会抛出 JSQLParserException）
                 // 但为了保险起见，这里可以保留一个最小化的回退或者直接抛出异常
                 log.warn("Replace mode failed, falling back to regex replacement. Error: {}", e.getMessage());
-                return PurviewSqlHelper.getSql(source, permissions);
+                return DataScopeEvaluator.getSql(source, permissions);
             }
         }
 
@@ -97,6 +96,6 @@ public abstract class AbstractStrategy implements PurviewModeStrategy {
     }
 
     protected Select getSelect(String sql) throws JSQLParserException {
-        return SQLUtils.parse(new StringReader(sql));
+        return JSqlParserUtils.parse(new StringReader(sql));
     }
 }

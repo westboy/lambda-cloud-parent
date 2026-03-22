@@ -1,13 +1,13 @@
-package com.lambda.cloud.mybatis.purview.strategy;
+package com.lambda.cloud.mybatis.datascope.strategy;
 
-import static com.lambda.cloud.mybatis.purview.support.PurviewSqlHelper.getLevel;
-import static com.lambda.cloud.mybatis.purview.support.PurviewSqlHelper.getPurviewIds;
+import static com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator.getDataScopeIds;
+import static com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator.getLevel;
 
-import com.lambda.autoconfig.PurviewProperties;
+import com.lambda.autoconfig.datascope.DataScopeProperties;
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.mybatis.purview.PurviewContext;
-import com.lambda.cloud.mybatis.purview.annotation.Purview;
-import com.lambda.cloud.mybatis.purview.config.PurviewPropertiesHolder;
+import com.lambda.cloud.mybatis.datascope.DataScopePropertiesHolder;
+import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
+import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,14 +30,14 @@ import org.apache.commons.lang.ArrayUtils;
  *
  * @author Jin
  */
-public class PurviewModeInnerStrategy extends AbstractStrategy {
+public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
 
     @Override
-    public void update(PlainSelect body, PurviewContext purview, LoginUser user, Set<String> permissions) {
-        Purview.Scheme scheme = purview.getScheme();
-        if (Purview.Scheme.NOT_CASCADE.equals(scheme)) {
+    public void update(PlainSelect body, DataScopeContext purview, LoginUser user, Set<String> permissions) {
+        DataScope.Scheme scheme = purview.getScheme();
+        if (DataScope.Scheme.NOT_CASCADE.equals(scheme)) {
             throw new RuntimeException();
-        } else if (Purview.Scheme.ORGAN.equals(scheme)) {
+        } else if (DataScope.Scheme.ORGANIZATION.equals(scheme)) {
             Expression expression = innerExpressionForOrgan(body, purview, user);
             updateWhere(body, expression);
         } else {
@@ -46,7 +46,7 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
     }
 
     @Override
-    public String replace(String source, PurviewContext purview, LoginUser operator, Set<String> permissions) {
+    public String replace(String source, DataScopeContext purview, LoginUser operator, Set<String> permissions) {
         throw new RuntimeException();
     }
 
@@ -57,12 +57,12 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
      * @param purview
      * @param user
      */
-    private Expression innerExpressionForOrgan(PlainSelect body, PurviewContext purview, LoginUser user) {
+    private Expression innerExpressionForOrgan(PlainSelect body, DataScopeContext purview, LoginUser user) {
         String orgId = user.getOrgId();
-        String idOrg = PurviewPropertiesHolder.getInstance().getOrganizationTableAlias() + "."
-                + PurviewPropertiesHolder.getInstance().getOrganizationIdColumn();
-        Table table = new Table(PurviewPropertiesHolder.getInstance().getOrganizationTableName());
-        table.setAlias(new Alias(PurviewPropertiesHolder.getInstance().getOrganizationTableAlias(), false));
+        String idOrg = DataScopePropertiesHolder.getInstance().getOrganizationTableAlias() + "."
+                + DataScopePropertiesHolder.getInstance().getOrganizationIdColumn();
+        Table table = new Table(DataScopePropertiesHolder.getInstance().getOrganizationTableName());
+        table.setAlias(new Alias(DataScopePropertiesHolder.getInstance().getOrganizationTableAlias(), false));
         EqualsTo expression0 = new EqualsTo();
         expression0.setLeftExpression(new Column(idOrg));
         expression0.setRightExpression(new Column(purview.getKey()));
@@ -77,8 +77,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         joins.add(join);
         body.setJoins(joins);
         // ~~=====================WHERE==================~~//
-        String idParentKeys = PurviewPropertiesHolder.getInstance().getOrganizationTableAlias() + "."
-                + PurviewPropertiesHolder.getInstance().getOrganizationParentKeysColumn();
+        String idParentKeys = DataScopePropertiesHolder.getInstance().getOrganizationTableAlias() + "."
+                + DataScopePropertiesHolder.getInstance().getOrganizationParentKeysColumn();
         EqualsTo expression1 = new EqualsTo();
         expression1.setLeftExpression(new Column(idOrg));
         expression1.setRightExpression(new StringValue(orgId));
@@ -96,7 +96,7 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
      * @param permissions
      */
     private void innerExpressionForCascade(
-            PlainSelect body, PurviewContext purview, LoginUser operator, Set<String> permissions) {
+            PlainSelect body, DataScopeContext purview, LoginUser operator, Set<String> permissions) {
         if (purview.isPretreatment()) {
             InExpression expression = new InExpression();
             expression.setLeftExpression(new Column(purview.getKey()));
@@ -111,7 +111,7 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         Select selectbody = getDistinctSelect(purview, operator);
         LateralSubSelect select1 = new LateralSubSelect();
         select1.setSelect(selectbody);
-        PurviewProperties properties = PurviewPropertiesHolder.getInstance();
+        DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
         select1.setAlias(new Alias(properties.getPurviewTableAlias(), false));
         EqualsTo expression0 = new EqualsTo();
         expression0.setLeftExpression(
@@ -129,8 +129,8 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         body.setJoins(joins);
     }
 
-    private Select getDistinctSelect(PurviewContext purview, LoginUser operator) {
-        PurviewProperties properties = PurviewPropertiesHolder.getInstance();
+    private Select getDistinctSelect(DataScopeContext purview, LoginUser operator) {
+        DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
         PlainSelect body1 = new PlainSelect();
         body1.addSelectItems(new SelectItem<>(
                 new Column("DISTINCT " + properties.getPurviewTableAlias0() + "." + properties.getPurviewIdColumn())));
@@ -139,7 +139,7 @@ public class PurviewModeInnerStrategy extends AbstractStrategy {
         body1.setFromItem(table);
 
         List<Expression> tids =
-                getPurviewIds(operator).stream().map(StringValue::new).collect(Collectors.toList());
+                getDataScopeIds(operator).stream().map(StringValue::new).collect(Collectors.toList());
         InExpression expression1 = new InExpression();
         expression1.setLeftExpression(
                 new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTidColumn()));

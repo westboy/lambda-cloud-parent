@@ -1,6 +1,6 @@
-package com.lambda.cloud.mybatis.purview.config;
+package com.lambda.cloud.mybatis.datascope;
 
-import com.lambda.autoconfig.PurviewProperties;
+import com.lambda.autoconfig.datascope.DataScopeProperties;
 import com.lambda.cloud.core.utils.Assert;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.experimental.UtilityClass;
@@ -12,15 +12,15 @@ import lombok.experimental.UtilityClass;
  * @author Jin
  */
 @UtilityClass
-public class PurviewPropertiesHolder {
+public class DataScopePropertiesHolder {
 
-    private static final AtomicReference<PurviewProperties> REF = new AtomicReference<>(new PurviewProperties());
+    private static final AtomicReference<DataScopeProperties> REF = new AtomicReference<>(new DataScopeProperties());
 
-    public static PurviewProperties getInstance() {
+    public static DataScopeProperties getInstance() {
         return REF.get();
     }
 
-    public static void initialize(PurviewProperties properties) {
+    public static void initialize(DataScopeProperties properties) {
         Assert.notNull(properties, "PurviewProperties must not be null");
         REF.set(properties);
     }

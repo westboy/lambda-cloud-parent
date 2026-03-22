@@ -11,7 +11,7 @@ import com.lambda.autoconfig.condition.MapperPackageConfiguredCondition;
 import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
 import com.lambda.cloud.mybatis.handler.EntityMetaFiller;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
-import com.lambda.cloud.mybatis.injector.LambdaExtendSqlInjector;
+import com.lambda.cloud.mybatis.injector.LambdaSqlInjector;
 import com.lambda.cloud.mybatis.tenant.TenantExpressionInterceptor;
 import com.lambda.cloud.mybatis.tenant.TenantHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -113,8 +113,8 @@ public class MyBatisAutoConfiguration {
      * @return ExtendLogicSqlInjector
      */
     @Bean
-    public LambdaExtendSqlInjector extendLogicSqlInjector() {
-        return new LambdaExtendSqlInjector();
+    public LambdaSqlInjector extendLogicSqlInjector() {
+        return new LambdaSqlInjector();
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.purview.strategy;
+package com.lambda.cloud.mybatis.datascope.strategy;
 
 import javax.annotation.Nonnull;
 import net.sf.jsqlparser.schema.Table;
@@ -11,7 +11,7 @@ import net.sf.jsqlparser.statement.select.Select;
  *
  * @author Jin
  */
-public class PurviewModeStatisticsStrategy extends PurviewModeQueryStrategy {
+public class StatisticsDataScopeStrategy extends SubQueryDataScopeStrategy {
 
     @Nonnull
     @Override

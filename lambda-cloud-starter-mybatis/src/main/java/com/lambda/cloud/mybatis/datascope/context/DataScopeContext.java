@@ -1,7 +1,7 @@
-package com.lambda.cloud.mybatis.purview;
+package com.lambda.cloud.mybatis.datascope.context;
 
 import com.baomidou.mybatisplus.core.toolkit.Constants;
-import com.lambda.cloud.mybatis.purview.annotation.Purview;
+import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.Serializable;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.Data;
  */
 @Data
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2", "EI_EXPOSE_REP"})
-public class PurviewContext implements Serializable {
+public class DataScopeContext implements Serializable {
 
     /**
      * 数据权限关联的字段名
@@ -25,7 +25,7 @@ public class PurviewContext implements Serializable {
      */
     private int level;
 
-    private Purview.Expression levelExp;
+    private DataScope.Expression levelExp;
 
     /**
      * 权限树类型
@@ -35,12 +35,12 @@ public class PurviewContext implements Serializable {
     /**
      * 查询模式
      */
-    private Purview.Mode mode;
+    private DataScope.Mode mode;
 
     /**
      * 权限方案
      */
-    private Purview.Scheme scheme;
+    private DataScope.Scheme scheme;
 
     /**
      * 调用方额外的sql查询条件
@@ -61,12 +61,12 @@ public class PurviewContext implements Serializable {
 
     private boolean replace;
 
-    public PurviewContext() {
+    public DataScopeContext() {
         this.key = "T.id";
         this.level = Integer.MAX_VALUE;
-        this.mode = Purview.Mode.SUB_QUERY;
-        this.scheme = Purview.Scheme.CASCADE;
-        this.levelExp = Purview.Expression.EQ;
+        this.mode = DataScope.Mode.SUB_QUERY;
+        this.scheme = DataScope.Scheme.CASCADE;
+        this.levelExp = DataScope.Expression.EQ;
         this.condition = Constants.EMPTY;
     }
 }

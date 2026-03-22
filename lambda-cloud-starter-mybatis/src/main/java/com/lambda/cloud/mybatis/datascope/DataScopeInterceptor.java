@@ -1,15 +1,16 @@
-package com.lambda.cloud.mybatis.purview;
+package com.lambda.cloud.mybatis.datascope;
 
-import static com.lambda.cloud.mybatis.purview.support.PurviewSqlHelper.*;
-import static com.lambda.cloud.mybatis.utils.MybatisUtils.getCurrentMethod;
-import static com.lambda.cloud.mybatis.utils.MybatisUtils.newMappedStatement;
+import static com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator.*;
+import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.getCurrentMethod;
+import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.newMappedStatement;
 
 import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Sets;
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.mybatis.purview.annotation.Purview;
-import com.lambda.cloud.mybatis.purview.annotation.PurviewModeStrategy;
-import com.lambda.cloud.mybatis.purview.support.PurviewProfile;
+import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
+import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
+import com.lambda.cloud.mybatis.datascope.strategy.DataScopeStrategy;
+import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluationContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -39,9 +40,9 @@ import org.springframework.util.ClassUtils;
             args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
-public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements Interceptor {
+public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements Interceptor {
 
-    private static final String PURVIEW_MS_ID = "purviewMappedStatementId";
+    private static final String DATA_SCOPE_MS_ID = "dataScopeMappedStatementId";
     private static final int MAX = 1000;
 
     @Override
@@ -58,13 +59,13 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
         Method method = getCurrentMethod(statement);
         BoundSql boundSql = statement.getBoundSql(parameter);
         String sql = boundSql.getSql();
-        PurviewContext purview = getDynamicPurview(method, sql);
-        if (purview == null) {
+        DataScopeContext context = buildDataScopeContext(method, sql);
+        if (context == null) {
             return invocation.proceed();
         }
         // 处理type映射
         if (typeMapper != null && !typeMapper.isEmpty()) {
-            purview.setType(Arrays.stream(purview.getType())
+            context.setType(Arrays.stream(context.getType())
                     .map(type -> {
                         if (typeMapper.containsKey(type)) {
                             return typeMapper.get(type);
@@ -76,8 +77,8 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
 
         boolean replace = getReplace(sql);
         if (replace) {
-            purview.setMode(Purview.Mode.SUB_QUERY);
-            purview.setReplace(true);
+            context.setMode(DataScope.Mode.SUB_QUERY);
+            context.setReplace(true);
             log.debug(
                     "It is detected that the SQL contains data permission flags, and the subquery mode is forced to be used.");
         }
@@ -96,16 +97,17 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
             }
         } else {
             Set<String> permissions = Collections.emptySet();
-            if (purview.isPretreatment()) {
-                permissions = getUserPermissions(executor, statement, rowBounds, purview, operator);
+            if (context.isPretreatment()) {
+                permissions = getUserPermissions(executor, statement, rowBounds, context, operator);
                 // 当用户无数据权限时，直接返回相应的结果
                 if (CollectionUtils.isEmpty(permissions)) {
                     return emptyResult(method);
                 }
             }
-            PurviewProfile purviewProfile = new PurviewProfile(operator, purview, permissions);
-            PurviewModeStrategy strategy = PurviewModeStrategy.getInstance(purview.getMode());
-            updated = strategy.improve(sql, purviewProfile);
+            DataScopeEvaluationContext dataScopeEvaluationContext =
+                    new DataScopeEvaluationContext(operator, context, permissions);
+            DataScopeStrategy strategy = DataScopeStrategy.getInstance(context.getMode());
+            updated = strategy.improve(sql, dataScopeEvaluationContext);
         }
         args[0] = newMappedStatement(statement, boundSql, updated);
         return invocation.proceed();
@@ -138,11 +140,11 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
             Executor executor,
             MappedStatement statement,
             RowBounds rowBounds,
-            PurviewContext purview,
+            DataScopeContext purview,
             LoginUser operator)
             throws SQLException {
         final Configuration configuration = statement.getConfiguration();
-        MappedStatement pms = buildPurviewMappedStatement(configuration, purview, operator);
+        MappedStatement pms = buildDataScopeMappedStatement(configuration, purview, operator);
         List<String> result = executor.query(pms, null, rowBounds, null);
         Set<String> permissions = Sets.newHashSet(result);
         if (permissions.size() > MAX) {
@@ -153,12 +155,20 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
         return permissions;
     }
 
-    private MappedStatement buildPurviewMappedStatement(
-            @Nonnull Configuration configuration, @Nonnull PurviewContext purview, @Nonnull LoginUser operator) {
-        String sql = buildSQL01(purview, operator);
+    @Override
+    public Object plugin(Object target) {
+        if (target instanceof Executor) {
+            return Plugin.wrap(target, this);
+        }
+        return target;
+    }
+
+    private static MappedStatement buildDataScopeMappedStatement(
+            @Nonnull Configuration configuration, @Nonnull DataScopeContext context, @Nonnull LoginUser operator) {
+        String sql = buildSQL01(context, operator);
         SqlSource sqlSource = new StaticSqlSource(configuration, sql);
         MappedStatement.Builder builder =
-                new MappedStatement.Builder(configuration, PURVIEW_MS_ID, sqlSource, SqlCommandType.SELECT);
+                new MappedStatement.Builder(configuration, DATA_SCOPE_MS_ID, sqlSource, SqlCommandType.SELECT);
         builder.resultSetType(ResultSetType.DEFAULT);
         builder.statementType(StatementType.PREPARED);
         List<ResultMap> resultMaps = new ArrayList<>();
@@ -168,11 +178,28 @@ public record PurviewInterceptor(Map<Integer, Integer> typeMapper) implements In
         return builder.build();
     }
 
-    @Override
-    public Object plugin(Object target) {
-        if (target instanceof Executor) {
-            return Plugin.wrap(target, this);
+    /**
+     * 获取数据权限注解信息
+     *
+     * @param method 当前方法
+     */
+    private static DataScopeContext buildDataScopeContext(Method method, String sql) {
+        if (method != null) {
+            DataScope actual = method.getAnnotation(DataScope.class);
+            if (Objects.nonNull(actual)) {
+                DataScopeContext purview = new DataScopeContext();
+                purview.setKey(actual.key());
+                purview.setLevel(actual.level());
+                purview.setLevelExp(actual.levelExp());
+                purview.setType(actual.type());
+                purview.setMode(actual.mode());
+                purview.setScheme(actual.scheme());
+                purview.setCondition(actual.condition());
+                purview.setPretreatment(actual.pretreatment());
+                purview.setChecked(actual.checked());
+                return purview;
+            }
         }
-        return target;
+        return null;
     }
 }

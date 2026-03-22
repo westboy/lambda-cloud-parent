@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.annotation;
+package com.lambda.cloud.mybatis.injector;
 
 import java.lang.annotation.*;
 

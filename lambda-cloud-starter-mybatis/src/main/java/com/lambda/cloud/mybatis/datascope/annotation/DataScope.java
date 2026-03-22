@@ -1,4 +1,4 @@
-package com.lambda.cloud.mybatis.purview.annotation;
+package com.lambda.cloud.mybatis.datascope.annotation;
 
 import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
 
@@ -15,7 +15,7 @@ import org.apache.commons.lang.StringUtils;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-public @interface Purview {
+public @interface DataScope {
     /**
      * 数据权限关联的字段名
      */
@@ -88,7 +88,7 @@ public @interface Purview {
         /**
          * 按照组织授权
          */
-        ORGAN
+        ORGANIZATION
     }
 
     enum Expression {

@@ -1,4 +1,4 @@
-package com.lambda.autoconfig;
+package com.lambda.autoconfig.datascope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collections;
@@ -13,8 +13,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Data
 @SuppressFBWarnings("EI_EXPOSE_REP")
-@ConfigurationProperties(prefix = "lambda.purview")
-public class PurviewProperties {
+@ConfigurationProperties(prefix = "lambda.datascope")
+public class DataScopeProperties {
 
     /**
      * 组织表名
@@ -24,7 +24,7 @@ public class PurviewProperties {
     /**
      * 组织表别名
      */
-    private String organizationTableAlias = "ORGA";
+    private String organizationTableAlias = "ORG";
 
     /**
      * 组织表ID字段名

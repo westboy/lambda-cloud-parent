@@ -1,16 +1,15 @@
-package com.lambda.cloud.mybatis.purview.support;
+package com.lambda.cloud.mybatis.datascope.support;
 
 import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
-import static com.lambda.cloud.mybatis.utils.SQLUtils.toIn;
+import static com.lambda.cloud.mybatis.utils.SqlConditionUtils.toIn;
 
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
-import com.lambda.autoconfig.PurviewProperties;
+import com.lambda.autoconfig.datascope.DataScopeProperties;
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.mybatis.purview.PurviewContext;
-import com.lambda.cloud.mybatis.purview.annotation.Purview;
-import com.lambda.cloud.mybatis.purview.config.PurviewPropertiesHolder;
-import com.lambda.cloud.mybatis.utils.SQLUtils;
-import java.lang.reflect.Method;
+import com.lambda.cloud.mybatis.datascope.DataScopePropertiesHolder;
+import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
+import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
+import com.lambda.cloud.mybatis.utils.SqlConditionUtils;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,7 +26,7 @@ import org.apache.ibatis.binding.MapperMethod.ParamMap;
  * @author Jin
  **/
 @Slf4j
-public final class PurviewSqlHelper {
+public final class DataScopeEvaluator {
     private static final String PERMISSIONS = "'lambda-permissions(\\|(\\d+)(,\\d+)*+)?(\\|([><])?=?-?\\d*)?'";
     private static final Pattern PATTERN = Pattern.compile(PERMISSIONS);
     private static final Pattern CLEAR_PATTERN =
@@ -40,7 +39,7 @@ public final class PurviewSqlHelper {
     private static final Integer ONE = 1;
     private static final Integer TWO = 2;
 
-    private PurviewSqlHelper() {}
+    private DataScopeEvaluator() {}
 
     /**
      * 判断当前用户是否是数据的拥有者
@@ -50,7 +49,7 @@ public final class PurviewSqlHelper {
         if (operator == null || StringUtils.isBlank(operator.getName())) {
             return false;
         }
-        PurviewProperties config = PurviewPropertiesHolder.getInstance();
+        DataScopeProperties config = DataScopePropertiesHolder.getInstance();
         List<String> superAdmins = config.getSuperAdminUsernames();
         if (CollectionUtils.isNotEmpty(superAdmins)) {
             return superAdmins.contains(operator.getName());
@@ -65,7 +64,7 @@ public final class PurviewSqlHelper {
      *
      * @return java.util.Set<java.lang.String>
      */
-    public static Set<String> getPurviewIds(LoginUser operator) {
+    public static Set<String> getDataScopeIds(LoginUser operator) {
         if (isOwner(operator)) {
             return Collections.emptySet();
         }
@@ -83,11 +82,11 @@ public final class PurviewSqlHelper {
     /**
      * 获取数据权限注解级别
      *
-     * @param purview
+     * @param context DataScopeContext
      * @return int
      */
-    public static int getLevel(PurviewContext purview) {
-        int level = purview.getLevel();
+    public static int getLevel(DataScopeContext context) {
+        int level = context.getLevel();
         if (level == 0) {
             return Integer.MAX_VALUE;
         }
@@ -97,8 +96,8 @@ public final class PurviewSqlHelper {
     /**
      * 获取SQL
      *
-     * @param source
-     * @param permissions
+     * @param source DataScopeContext
+     * @param permissions DataScopeContext
      */
     public static String getSql(String source, Set<String> permissions) {
         if (CollectionUtils.isNotEmpty(permissions)) {
@@ -123,38 +122,12 @@ public final class PurviewSqlHelper {
     }
 
     /**
-     * 获取数据权限注解信息
-     *
-     * @param method 当前方法
-     * @param sql
-     */
-    public static PurviewContext getDynamicPurview(Method method, String sql) {
-        if (method != null) {
-            Purview actual = method.getAnnotation(Purview.class);
-            if (Objects.nonNull(actual)) {
-                PurviewContext purview = new PurviewContext();
-                purview.setKey(actual.key());
-                purview.setLevel(actual.level());
-                purview.setLevelExp(actual.levelExp());
-                purview.setType(actual.type());
-                purview.setMode(actual.mode());
-                purview.setScheme(actual.scheme());
-                purview.setCondition(actual.condition());
-                purview.setPretreatment(actual.pretreatment());
-                purview.setChecked(actual.checked());
-                return purview;
-            }
-        }
-        return null;
-    }
-
-    /**
      * 根据replace字符串解析数据权限属性
      *
      * @param sql
      * @return
      */
-    public static PurviewContext getReplacePurview(String sql) {
+    public static DataScopeContext parseReplaceDataScope(String sql) {
         if (StringUtils.isBlank(sql)) {
             return null;
         }
@@ -168,7 +141,7 @@ public final class PurviewSqlHelper {
         }
         // 提取和组装数据权限对象
         String[] tokens = group.split("'")[1].split("\\|");
-        PurviewContext purview = new PurviewContext();
+        DataScopeContext purview = new DataScopeContext();
         purview.setReplace(true);
         purview.setType(new int[] {0});
         // 解析type
@@ -186,7 +159,7 @@ public final class PurviewSqlHelper {
                         (levelMatcher.group(1) != null && !levelMatcher.group(1).isEmpty())
                                 ? levelMatcher.group(1)
                                 : "=";
-                purview.setLevelExp(Purview.Expression.parseExpression(operator));
+                purview.setLevelExp(DataScope.Expression.parseExpression(operator));
                 // 获取数字
                 String number = levelMatcher.group(2);
                 purview.setLevel(Integer.parseInt(number));
@@ -217,7 +190,7 @@ public final class PurviewSqlHelper {
      * @param key
      * @return void
      */
-    public static String getPurviewKey(Alias alias, @Nonnull String key) {
+    public static String resolveColumnName(Alias alias, @Nonnull String key) {
         if (key.contains(LEFT_BRACKET) || key.contains(DOT)) {
             return key;
         }
@@ -248,10 +221,10 @@ public final class PurviewSqlHelper {
     }
 
     @Nonnull
-    public static String buildSQL01(@Nonnull PurviewContext purview, @Nonnull LoginUser operator) {
-        PurviewProperties properties = PurviewPropertiesHolder.getInstance();
-        int[] types = purview.getType();
-        Set<String> ids = PurviewSqlHelper.getPurviewIds(operator);
+    public static String buildSQL01(@Nonnull DataScopeContext context, @Nonnull LoginUser operator) {
+        DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
+        int[] types = context.getType();
+        Set<String> ids = DataScopeEvaluator.getDataScopeIds(operator);
         StringBuilder sql = new StringBuilder(
                 "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName());
         sql.append(SPACE)
@@ -262,41 +235,41 @@ public final class PurviewSqlHelper {
                 .append("AND ")
                 .append(properties.getPurviewTypeColumn())
                 .append(toIn(types));
-        if (purview.getLevel() > -1) {
+        if (context.getLevel() > -1) {
             sql.append(SPACE)
                     .append("AND ")
                     .append(properties.getPurviewRankColumn())
                     .append(" ")
-                    .append(purview.getLevelExp().getComparison())
+                    .append(context.getLevelExp().getComparison())
                     .append(StringPool.SPACE)
-                    .append(getLevel(purview));
+                    .append(getLevel(context));
         }
         return sql.toString();
     }
 
     /**
-     * @param purview
+     * @param context
      * @param operator
      * @return java.lang.String
      */
     @Nonnull
-    public static String buildSQL02(@Nonnull PurviewContext purview, @Nonnull LoginUser operator) {
-        PurviewProperties properties = PurviewPropertiesHolder.getInstance();
-        int[] types = purview.getType();
-        int level = getLevel(purview);
-        String condition = purview.getCondition();
+    public static String buildSQL02(@Nonnull DataScopeContext context, @Nonnull LoginUser operator) {
+        DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
+        int[] types = context.getType();
+        int level = getLevel(context);
+        String condition = context.getCondition();
         StringBuilder builder = new StringBuilder();
         builder.append(properties.getPurviewTableAlias())
                 .append(DOT)
                 .append(properties.getPurviewTidColumn())
-                .append(toIn(getPurviewIds(operator)));
+                .append(toIn(getDataScopeIds(operator)));
         builder.append(" AND ")
                 .append(properties.getPurviewTableAlias())
                 .append(DOT)
                 .append(properties.getPurviewTypeColumn())
-                .append(SQLUtils.toIn(types));
-        Purview.Scheme scheme = purview.getScheme();
-        if (Purview.Scheme.ORGAN.equals(scheme)) {
+                .append(SqlConditionUtils.toIn(types));
+        DataScope.Scheme scheme = context.getScheme();
+        if (DataScope.Scheme.ORGANIZATION.equals(scheme)) {
             String orgId = "";
             builder = new StringBuilder();
             builder.append("SELECT ")
@@ -320,18 +293,18 @@ public final class PurviewSqlHelper {
                     .append(orgId)
                     .append("%'");
             return builder.toString();
-        } else if (Purview.Scheme.CASCADE.equals(scheme)) {
+        } else if (DataScope.Scheme.CASCADE.equals(scheme)) {
             if (level > -1) {
                 builder.append(" AND ")
                         .append(properties.getPurviewTableAlias())
                         .append(DOT)
                         .append(properties.getPurviewRankColumn())
                         .append(" ")
-                        .append(purview.getLevelExp().getComparison())
+                        .append(context.getLevelExp().getComparison())
                         .append(StringPool.SPACE)
                         .append(level);
             }
-            int checked = purview.getChecked();
+            int checked = context.getChecked();
             if (checked > 0) {
                 builder.append(" AND ")
                         .append(properties.getPurviewTableAlias())
@@ -356,7 +329,7 @@ public final class PurviewSqlHelper {
             if (StringUtils.isNotBlank(condition)) {
                 condition = "AND VDV." + condition;
             }
-            String type = purview.getType()[0] > 0 ? String.valueOf(purview.getType()[0]) : "";
+            String type = context.getType()[0] > 0 ? String.valueOf(context.getType()[0]) : "";
             return "SELECT VDV." + properties.getDataViewSidColumn() + " FROM " + properties.getPurviewTableName()
                     + SPACE + properties.getPurviewTableAlias() + "," + properties.getDataViewTableNamePrefix() + type
                     + " VDV WHERE VDV." + properties.getDataViewIdColumn() + " LIKE" + " CONCAT("
