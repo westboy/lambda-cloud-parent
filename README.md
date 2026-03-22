@@ -80,6 +80,7 @@
 
 ```
 lambda-cloud-parent
+│
 ├── lambda-cloud-core                    # 核心功能与通用工具包
 │
 ├── lambda-cloud-processor               # 编译期注解处理器
