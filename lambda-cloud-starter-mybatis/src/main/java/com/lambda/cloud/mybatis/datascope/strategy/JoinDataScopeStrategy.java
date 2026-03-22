@@ -33,31 +33,28 @@ import org.apache.commons.lang.ArrayUtils;
 public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
 
     @Override
-    public void update(PlainSelect body, DataScopeContext purview, LoginUser user, Set<String> permissions) {
-        DataScope.Scheme scheme = purview.getScheme();
+    public void update(PlainSelect body, DataScopeContext context, LoginUser user, Set<String> permissions) {
+        DataScope.Scheme scheme = context.getScheme();
         if (DataScope.Scheme.NOT_CASCADE.equals(scheme)) {
             throw new RuntimeException();
         } else if (DataScope.Scheme.ORGANIZATION.equals(scheme)) {
-            Expression expression = innerExpressionForOrgan(body, purview, user);
+            Expression expression = innerExpressionForOrgan(body, context, user);
             updateWhere(body, expression);
         } else {
-            innerExpressionForCascade(body, purview, user, permissions);
+            innerExpressionForCascade(body, context, user, permissions);
         }
     }
 
     @Override
-    public String replace(String source, DataScopeContext purview, LoginUser operator, Set<String> permissions) {
-        throw new RuntimeException();
+    public String replace(String source, DataScopeContext context, LoginUser operator, Set<String> permissions) {
+        // Replace模式难以通过JOIN实现，降级为子查询或直接返回不支持
+        throw new UnsupportedOperationException("JoinDataScopeStrategy does not support Replace mode");
     }
 
     /**
      * 组织模式的内联查询表达式
-     *
-     * @param body
-     * @param purview
-     * @param user
      */
-    private Expression innerExpressionForOrgan(PlainSelect body, DataScopeContext purview, LoginUser user) {
+    private Expression innerExpressionForOrgan(PlainSelect body, DataScopeContext context, LoginUser user) {
         String orgId = user.getOrgId();
         String idOrg = DataScopePropertiesHolder.getInstance().getOrganizationTableAlias() + "."
                 + DataScopePropertiesHolder.getInstance().getOrganizationIdColumn();
@@ -65,7 +62,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
         table.setAlias(new Alias(DataScopePropertiesHolder.getInstance().getOrganizationTableAlias(), false));
         EqualsTo expression0 = new EqualsTo();
         expression0.setLeftExpression(new Column(idOrg));
-        expression0.setRightExpression(new Column(purview.getKey()));
+        expression0.setRightExpression(new Column(context.getKey()));
         Join join = new Join();
         join.setInner(true);
         join.setRightItem(table);
@@ -90,16 +87,12 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
 
     /***
      * 联动模式的内联查询表达式
-     * @param body
-     * @param purview
-     * @param operator
-     * @param permissions
      */
     private void innerExpressionForCascade(
-            PlainSelect body, DataScopeContext purview, LoginUser operator, Set<String> permissions) {
-        if (purview.isPretreatment()) {
+            PlainSelect body, DataScopeContext context, LoginUser operator, Set<String> permissions) {
+        if (context.isPretreatment()) {
             InExpression expression = new InExpression();
-            expression.setLeftExpression(new Column(purview.getKey()));
+            expression.setLeftExpression(new Column(context.getKey()));
             List<Expression> expressions = new ArrayList<>();
             for (String item : permissions) {
                 expressions.add(new StringValue(item));
@@ -108,15 +101,15 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
             updateWhere(body, expression);
         }
 
-        Select selectbody = getDistinctSelect(purview, operator);
+        Select selectable = getDistinctSelect(context, operator);
         LateralSubSelect select1 = new LateralSubSelect();
-        select1.setSelect(selectbody);
+        select1.setSelect(selectable);
         DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
-        select1.setAlias(new Alias(properties.getPurviewTableAlias(), false));
+        select1.setAlias(new Alias(properties.getDataScopeTableAlias(), false));
         EqualsTo expression0 = new EqualsTo();
         expression0.setLeftExpression(
-                new Column(properties.getPurviewTableAlias() + "." + properties.getPurviewIdColumn()));
-        expression0.setRightExpression(new Column(purview.getKey()));
+                new Column(properties.getDataScopeTableAlias() + "." + properties.getDataScopeIdColumn()));
+        expression0.setRightExpression(new Column(context.getKey()));
         Join join = new Join();
         join.setInner(true);
         join.setRightItem(select1);
@@ -129,35 +122,35 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
         body.setJoins(joins);
     }
 
-    private Select getDistinctSelect(DataScopeContext purview, LoginUser operator) {
+    private Select getDistinctSelect(DataScopeContext context, LoginUser operator) {
         DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
         PlainSelect body1 = new PlainSelect();
-        body1.addSelectItems(new SelectItem<>(
-                new Column("DISTINCT " + properties.getPurviewTableAlias0() + "." + properties.getPurviewIdColumn())));
-        Table table = new Table(properties.getPurviewTableName());
-        table.setAlias(new Alias(properties.getPurviewTableAlias0(), false));
+        body1.addSelectItems(new SelectItem<>(new Column(
+                "DISTINCT " + properties.getDataScopeTableAlias0() + "." + properties.getDataScopeIdColumn())));
+        Table table = new Table(properties.getDataScopeTableName());
+        table.setAlias(new Alias(properties.getDataScopeTableAlias0(), false));
         body1.setFromItem(table);
 
-        List<Expression> tids =
+        List<Expression> expressions =
                 getDataScopeIds(operator).stream().map(StringValue::new).collect(Collectors.toList());
         InExpression expression1 = new InExpression();
         expression1.setLeftExpression(
-                new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTidColumn()));
-        expression1.setRightExpression(new ExpressionList<>(tids));
+                new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
+        expression1.setRightExpression(new ExpressionList<>(expressions));
 
         Expression expression = expression1;
-        int[] types = purview.getType();
+        int[] types = context.getType();
         if (ArrayUtils.isNotEmpty(types)) {
             if (types.length == 1) {
                 EqualsTo expression2 = new EqualsTo();
                 expression2.setLeftExpression(
-                        new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTypeColumn()));
+                        new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTypeColumn()));
                 expression2.setRightExpression(new LongValue(types[0]));
                 expression = new AndExpression(expression1, expression2);
             } else {
                 InExpression expression2 = new InExpression();
                 expression2.setLeftExpression(
-                        new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewTypeColumn()));
+                        new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTypeColumn()));
                 List<Expression> list = new ArrayList<>();
                 for (int i : types) {
                     list.add(new LongValue(i));
@@ -167,19 +160,19 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
             }
         }
 
-        int level = getLevel(purview);
+        int level = getLevel(context);
         if (level > -1) {
-            ComparisonOperator expression3 = purview.getLevelExp().getComparisonOperator();
+            ComparisonOperator expression3 = context.getLevelExp().getComparisonOperator();
             expression3.setLeftExpression(
-                    new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewRankColumn()));
+                    new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeRankColumn()));
             expression3.setRightExpression(new LongValue(level));
             expression = new AndExpression(expression, expression3);
         }
-        int checked = purview.getChecked();
+        int checked = context.getChecked();
         if (checked > 0) {
             EqualsTo expression4 = new EqualsTo();
             expression4.setLeftExpression(
-                    new Column(properties.getPurviewTableAlias0() + "." + properties.getPurviewCheckedColumn()));
+                    new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeCheckedColumn()));
             expression4.setRightExpression(new LongValue(checked));
             expression = new AndExpression(expression, expression4);
         }

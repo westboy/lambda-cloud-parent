@@ -16,13 +16,13 @@ public interface DataScopeStrategy {
     /**
      * 根据策略生成不同的语句
      */
-    void update(PlainSelect body, DataScopeContext purview, LoginUser operator, Set<String> permissions)
+    void update(PlainSelect body, DataScopeContext context, LoginUser operator, Set<String> permissions)
             throws JSQLParserException;
 
     /**
      * 替换数据权限语句
      */
-    String replace(String source, DataScopeContext purview, LoginUser operator, Set<String> permissions)
+    String replace(String source, DataScopeContext context, LoginUser operator, Set<String> permissions)
             throws JSQLParserException;
 
     /**

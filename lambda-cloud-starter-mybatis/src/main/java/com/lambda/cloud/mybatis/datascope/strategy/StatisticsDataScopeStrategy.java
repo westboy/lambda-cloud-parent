@@ -18,18 +18,24 @@ public class StatisticsDataScopeStrategy extends SubQueryDataScopeStrategy {
     public PlainSelect getBody(Select select) {
         PlainSelect body = super.getBody(select);
         FromItem item = body.getFromItem();
+        // 仅当下钻的子查询依然是一个简单的 SELECT 时才继续下钻，防止破坏复杂的聚合查询或 UNION 查询
         while (item instanceof Select) {
-            PlainSelect body1 = ((Select) item).getPlainSelect();
-            if (body1 != null) {
-                body = body1;
-                item = body1.getFromItem();
+            Select subSelect = (Select) item;
+            if (subSelect.getSelectBody() instanceof PlainSelect) {
+                PlainSelect body1 = (PlainSelect) subSelect.getSelectBody();
+                if (body1 != null) {
+                    body = body1;
+                    item = body1.getFromItem();
+                } else {
+                    break;
+                }
             } else {
                 break;
             }
         }
-        if (item instanceof Table) {
+        if (item instanceof Table || item instanceof Select) {
             return body;
         }
-        throw new RuntimeException("not supported");
+        throw new UnsupportedOperationException("StatisticsDataScopeStrategy does not support this SQL structure");
     }
 }

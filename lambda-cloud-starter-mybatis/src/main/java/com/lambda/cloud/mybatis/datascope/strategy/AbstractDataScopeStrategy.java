@@ -65,13 +65,13 @@ public abstract class AbstractDataScopeStrategy implements DataScopeStrategy {
     @Override
     public String improve(String source, DataScopeEvaluationContext dataScopeEvaluationContext) {
         LoginUser operator = dataScopeEvaluationContext.getOperator();
-        DataScopeContext purview = dataScopeEvaluationContext.getContext();
+        DataScopeContext context = dataScopeEvaluationContext.getContext();
         Set<String> permissions = dataScopeEvaluationContext.getPermissions();
 
         // 显式处理 Replace 模式
-        if (purview.isReplace()) {
+        if (context.isReplace()) {
             try {
-                return replace(source, purview, operator, permissions);
+                return replace(source, context, operator, permissions);
             } catch (Exception e) {
                 // Replace 模式下的特定回退逻辑（如果是基于正则替换的实现，通常不会抛出 JSQLParserException）
                 // 但为了保险起见，这里可以保留一个最小化的回退或者直接抛出异常
@@ -83,7 +83,7 @@ public abstract class AbstractDataScopeStrategy implements DataScopeStrategy {
         try {
             Select select = getSelect(source);
             PlainSelect body = getBody(select);
-            update(body, purview, operator, permissions);
+            update(body, context, operator, permissions);
             return select.getPlainSelect().toString();
         } catch (JSQLParserException e) {
             log.error("Failed to parse SQL: {}. Error: {}", source, e.getMessage());

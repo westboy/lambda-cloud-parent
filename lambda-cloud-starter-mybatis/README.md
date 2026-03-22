@@ -33,10 +33,10 @@ src/main/java/com/lambda/cloud/mybatis/
 │  ├─ TenantContextHolder.java
 │  ├─ TenantExpressionInterceptor.java
 │  └─ TenantHandler.java
-├─ purview/
+├─ datascope/
 │  ├─ PurviewInterceptor.java
 │  ├─ PurviewContext*.java
-│  ├─ annotation/Purview.java
+│  ├─ annotation/DataScope.java
 │  ├─ strategy/*.java
 │  └─ support/PurviewSqlHelper.java
 └─ utils/MybatisUtils.java / SQLUtils.java
@@ -105,7 +105,7 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 - `tenant.tenant-column`（默认 `tenant_id`）
 - `tenant.ignore-tables`（与内置默认忽略表集合做并集）
 
-数据权限配置前缀：`lambda.purview`
+数据权限配置前缀：`lambda.datascope`
 
 `PurviewProperties` 主要用于配置组织表、权限表、数据视图表字段与管理员用户名白名单。
 
@@ -162,7 +162,7 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 
 `PurviewInterceptor` 仅拦截 `SELECT`：
 
-- 从 Mapper 方法读取 `@Purview`
+- 从 Mapper 方法读取 `@DataScope`
 - 非管理员用户按策略改写 SQL
 - 支持三种 `mode`：
   - `SUB_QUERY`
@@ -171,7 +171,7 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 - 支持 `pretreatment` 预加载权限集合模式
 - 若 SQL 含占位标记 `'lambda-permissions|...'`，会进入 replace 模式
 
-管理员判定依据：`lambda.purview.super-admin-usernames`。
+管理员判定依据：`lambda.datascope.super-admin-usernames`。
 
 ## 配置示例
 
@@ -189,7 +189,7 @@ mybatis-plus:
       - sys_dict
 
 lambda:
-  purview:
+  datascope:
     super-admin-usernames:
       - admin
 ```

@@ -84,7 +84,7 @@ public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements 
         }
         LoginUser operator = getOperator(parameter);
         if (operator == null) {
-            log.warn("When using @Purview, the user must be provided. Otherwise it will be ignored.");
+            log.warn("When using @DataScope, the user must be provided. Otherwise it will be ignored.");
             return invocation.proceed();
         }
         boolean owner = isOwner(operator);
@@ -140,11 +140,11 @@ public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements 
             Executor executor,
             MappedStatement statement,
             RowBounds rowBounds,
-            DataScopeContext purview,
+            DataScopeContext context,
             LoginUser operator)
             throws SQLException {
         final Configuration configuration = statement.getConfiguration();
-        MappedStatement pms = buildDataScopeMappedStatement(configuration, purview, operator);
+        MappedStatement pms = buildDataScopeMappedStatement(configuration, context, operator);
         List<String> result = executor.query(pms, null, rowBounds, null);
         Set<String> permissions = Sets.newHashSet(result);
         if (permissions.size() > MAX) {
@@ -187,17 +187,17 @@ public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements 
         if (method != null) {
             DataScope actual = method.getAnnotation(DataScope.class);
             if (Objects.nonNull(actual)) {
-                DataScopeContext purview = new DataScopeContext();
-                purview.setKey(actual.key());
-                purview.setLevel(actual.level());
-                purview.setLevelExp(actual.levelExp());
-                purview.setType(actual.type());
-                purview.setMode(actual.mode());
-                purview.setScheme(actual.scheme());
-                purview.setCondition(actual.condition());
-                purview.setPretreatment(actual.pretreatment());
-                purview.setChecked(actual.checked());
-                return purview;
+                DataScopeContext context = new DataScopeContext();
+                context.setKey(actual.key());
+                context.setLevel(actual.level());
+                context.setLevelExp(actual.levelExp());
+                context.setType(actual.type());
+                context.setMode(actual.mode());
+                context.setScheme(actual.scheme());
+                context.setCondition(actual.condition());
+                context.setPretreatment(actual.pretreatment());
+                context.setChecked(actual.checked());
+                return context;
             }
         }
         return null;

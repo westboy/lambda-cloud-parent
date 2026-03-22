@@ -39,42 +39,42 @@ public class DataScopeProperties {
     /**
      * 权限表名
      */
-    private String purviewTableName = "PURVIEWS";
+    private String dataScopeTableName = "DATASCOPES";
 
     /**
      * 权限表别名
      */
-    private String purviewTableAlias = "PURV";
+    private String dataScopeTableAlias = "DATASCOPE";
 
     /**
      * 权限表辅助别名（用于子查询或去重）
      */
-    private String purviewTableAlias0 = "PURV0";
+    private String dataScopeTableAlias0 = "DATASCOPE0";
 
     /**
      * 权限表ID字段名
      */
-    private String purviewIdColumn = "ID";
+    private String dataScopeIdColumn = "ID";
 
     /**
      * 权限表关联ID字段名
      */
-    private String purviewTidColumn = "TID";
+    private String dataScopeTidColumn = "TID";
 
     /**
      * 权限表类型字段名
      */
-    private String purviewTypeColumn = "type2";
+    private String dataScopeTypeColumn = "type2";
 
     /**
      * 权限表级别字段名
      */
-    private String purviewRankColumn = "rank2";
+    private String dataScopeRankColumn = "rank2";
 
     /**
      * 权限表选中状态字段名
      */
-    private String purviewCheckedColumn = "checked";
+    private String dataScopeCheckedColumn = "checked";
 
     /**
      * 数据视图表名前缀

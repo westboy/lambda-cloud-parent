@@ -141,12 +141,12 @@ public final class DataScopeEvaluator {
         }
         // 提取和组装数据权限对象
         String[] tokens = group.split("'")[1].split("\\|");
-        DataScopeContext purview = new DataScopeContext();
-        purview.setReplace(true);
-        purview.setType(new int[] {0});
+        DataScopeContext context = new DataScopeContext();
+        context.setReplace(true);
+        context.setType(new int[] {0});
         // 解析type
         if (tokens.length > ONE && StringUtils.isNotBlank(tokens[ONE])) {
-            purview.setType(Arrays.stream(tokens[1].split(","))
+            context.setType(Arrays.stream(tokens[1].split(","))
                     .mapToInt(Integer::parseInt)
                     .toArray());
         }
@@ -159,13 +159,13 @@ public final class DataScopeEvaluator {
                         (levelMatcher.group(1) != null && !levelMatcher.group(1).isEmpty())
                                 ? levelMatcher.group(1)
                                 : "=";
-                purview.setLevelExp(DataScope.Expression.parseExpression(operator));
+                context.setLevelExp(DataScope.Expression.parseExpression(operator));
                 // 获取数字
                 String number = levelMatcher.group(2);
-                purview.setLevel(Integer.parseInt(number));
+                context.setLevel(Integer.parseInt(number));
             }
         }
-        return purview;
+        return context;
     }
 
     /**
@@ -226,19 +226,19 @@ public final class DataScopeEvaluator {
         int[] types = context.getType();
         Set<String> ids = DataScopeEvaluator.getDataScopeIds(operator);
         StringBuilder sql = new StringBuilder(
-                "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM " + properties.getPurviewTableName());
+                "SELECT DISTINCT " + properties.getDataScopeIdColumn() + " FROM " + properties.getDataScopeTableName());
         sql.append(SPACE)
                 .append("WHERE ")
-                .append(properties.getPurviewTidColumn())
+                .append(properties.getDataScopeTidColumn())
                 .append(toIn(ids));
         sql.append(SPACE)
                 .append("AND ")
-                .append(properties.getPurviewTypeColumn())
+                .append(properties.getDataScopeTypeColumn())
                 .append(toIn(types));
         if (context.getLevel() > -1) {
             sql.append(SPACE)
                     .append("AND ")
-                    .append(properties.getPurviewRankColumn())
+                    .append(properties.getDataScopeRankColumn())
                     .append(" ")
                     .append(context.getLevelExp().getComparison())
                     .append(StringPool.SPACE)
@@ -259,14 +259,14 @@ public final class DataScopeEvaluator {
         int level = getLevel(context);
         String condition = context.getCondition();
         StringBuilder builder = new StringBuilder();
-        builder.append(properties.getPurviewTableAlias())
+        builder.append(properties.getDataScopeTableAlias())
                 .append(DOT)
-                .append(properties.getPurviewTidColumn())
+                .append(properties.getDataScopeTidColumn())
                 .append(toIn(getDataScopeIds(operator)));
         builder.append(" AND ")
-                .append(properties.getPurviewTableAlias())
+                .append(properties.getDataScopeTableAlias())
                 .append(DOT)
-                .append(properties.getPurviewTypeColumn())
+                .append(properties.getDataScopeTypeColumn())
                 .append(SqlConditionUtils.toIn(types));
         DataScope.Scheme scheme = context.getScheme();
         if (DataScope.Scheme.ORGANIZATION.equals(scheme)) {
@@ -296,9 +296,9 @@ public final class DataScopeEvaluator {
         } else if (DataScope.Scheme.CASCADE.equals(scheme)) {
             if (level > -1) {
                 builder.append(" AND ")
-                        .append(properties.getPurviewTableAlias())
+                        .append(properties.getDataScopeTableAlias())
                         .append(DOT)
-                        .append(properties.getPurviewRankColumn())
+                        .append(properties.getDataScopeRankColumn())
                         .append(" ")
                         .append(context.getLevelExp().getComparison())
                         .append(StringPool.SPACE)
@@ -307,22 +307,22 @@ public final class DataScopeEvaluator {
             int checked = context.getChecked();
             if (checked > 0) {
                 builder.append(" AND ")
-                        .append(properties.getPurviewTableAlias())
+                        .append(properties.getDataScopeTableAlias())
                         .append(DOT)
-                        .append(properties.getPurviewCheckedColumn())
+                        .append(properties.getDataScopeCheckedColumn())
                         .append(" = ")
                         .append(checked);
             }
             if (StringUtils.isNotBlank(condition)) {
                 builder.append(" AND ")
-                        .append(properties.getPurviewTableAlias())
+                        .append(properties.getDataScopeTableAlias())
                         .append(DOT)
                         .append(condition);
             }
             return builder.insert(
                             0,
-                            "SELECT DISTINCT " + properties.getPurviewIdColumn() + " FROM "
-                                    + properties.getPurviewTableName() + SPACE + properties.getPurviewTableAlias()
+                            "SELECT DISTINCT " + properties.getDataScopeIdColumn() + " FROM "
+                                    + properties.getDataScopeTableName() + SPACE + properties.getDataScopeTableAlias()
                                     + " WHERE ")
                     .toString();
         } else {
@@ -330,10 +330,11 @@ public final class DataScopeEvaluator {
                 condition = "AND VDV." + condition;
             }
             String type = context.getType()[0] > 0 ? String.valueOf(context.getType()[0]) : "";
-            return "SELECT VDV." + properties.getDataViewSidColumn() + " FROM " + properties.getPurviewTableName()
-                    + SPACE + properties.getPurviewTableAlias() + "," + properties.getDataViewTableNamePrefix() + type
+            return "SELECT VDV." + properties.getDataViewSidColumn() + " FROM " + properties.getDataScopeTableName()
+                    + SPACE + properties.getDataScopeTableAlias() + "," + properties.getDataViewTableNamePrefix() + type
                     + " VDV WHERE VDV." + properties.getDataViewIdColumn() + " LIKE" + " CONCAT("
-                    + properties.getPurviewTableAlias() + DOT + properties.getPurviewIdColumn() + ", '%') " + condition
+                    + properties.getDataScopeTableAlias() + DOT + properties.getDataScopeIdColumn() + ", '%') "
+                    + condition
                     + " AND " + builder;
         }
     }

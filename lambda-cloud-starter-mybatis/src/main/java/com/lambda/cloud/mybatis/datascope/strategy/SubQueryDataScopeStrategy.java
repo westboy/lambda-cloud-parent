@@ -24,34 +24,35 @@ import net.sf.jsqlparser.statement.select.*;
 public class SubQueryDataScopeStrategy extends AbstractDataScopeStrategy {
 
     @Override
-    public String replace(String source, DataScopeContext purview, LoginUser operator, Set<String> permissions) {
-        if (purview.isPretreatment()) {
+    public String replace(String source, DataScopeContext context, LoginUser operator, Set<String> permissions) {
+        if (context.isPretreatment()) {
             return DataScopeEvaluator.getSql(source, permissions);
         } else {
-            String sql = DataScopeEvaluator.buildSQL02(purview, operator);
+            String sql = DataScopeEvaluator.buildSQL02(context, operator);
             return DataScopeEvaluator.getSql(source, sql);
         }
     }
 
     @Override
-    public void update(PlainSelect body, DataScopeContext purview, LoginUser operator, Set<String> permissions)
+    public void update(PlainSelect body, DataScopeContext context, LoginUser operator, Set<String> permissions)
             throws JSQLParserException {
         InExpression expression = new InExpression();
-        FromItem fromItem = body.getFromItem();
-        String key = purview.getKey();
-        if (fromItem instanceof Table) {
-            Alias alias = fromItem.getAlias();
-            key = DataScopeEvaluator.resolveColumnName(alias, key);
-        }
+
+        String key = context.getKey();
+        // 强制使用用户在注解中配置的 key
+        // if (fromItem instanceof Table) {
+        //  Alias alias = fromItem.getAlias();
+        //  key = DataScopeEvaluator.resolveColumnName(alias, key);
+        // }
         expression.setLeftExpression(new Column(key));
-        if (purview.isPretreatment()) {
+        if (context.isPretreatment()) {
             List<Expression> expressions = new ArrayList<>();
             for (String item : permissions) {
                 expressions.add(new StringValue(item));
             }
             expression.setRightExpression(new ExpressionList<>(expressions));
         } else {
-            String sql = DataScopeEvaluator.buildSQL02(purview, operator);
+            String sql = DataScopeEvaluator.buildSQL02(context, operator);
             Select select = getSelect(sql);
             PlainSelect selectBody = select.getPlainSelect();
             LateralSubSelect subSelect = new LateralSubSelect();
