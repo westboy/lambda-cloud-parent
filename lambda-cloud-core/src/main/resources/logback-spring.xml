@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="false" scanPeriod="120 seconds" debug="false">
-    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+    <shutdownHook class="ch.qos.logback.core.hook.DefaultShutdownHook"/>
 
     <springProperty scope="context" name="app.name" source="spring.application.name" defaultValue="tmp" />
     <springProperty scope="context" name="log.path" source="logging.file.path" defaultValue="logs/${app.name}" />
@@ -15,8 +15,8 @@
     <include resource="logback/logback-common.xml" />
 
 
-    <!-- 开发、测试、本地环境：控制台 + 文件 -->
-    <springProfile name="dev,test,local">
+    <!-- 开发、测试、本地、默认环境：控制台 + 文件 -->
+    <springProfile name="dev,test,local,default">
         <root level="info">
             <appender-ref ref="console"/>
             <appender-ref ref="async_info"/>
