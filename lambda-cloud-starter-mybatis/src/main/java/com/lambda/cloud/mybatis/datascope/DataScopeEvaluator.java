@@ -45,14 +45,21 @@ public final class DataScopeEvaluator {
      * 判断当前用户是否是数据的拥有者
      *
      */
-    public static boolean isOwner(LoginUser operator) {
-        if (operator == null || StringUtils.isBlank(operator.getName())) {
-            return false;
-        }
-        DataScopeProperties config = DataScopePropertiesHolder.getInstance();
-        List<String> superAdmins = config.getSuperAdminUsernames();
-        if (CollectionUtils.isNotEmpty(superAdmins)) {
-            return superAdmins.contains(operator.getName());
+    public static boolean isOwner(@Nonnull LoginUser operator) {
+        List<String> adminIdentifiers = DataScopePropertiesHolder.getInstance().getSuperAdminIdentifiers();
+        if (CollectionUtils.isNotEmpty(adminIdentifiers)) {
+            // 1. 检查用户名是否在超级管理员列表中
+            if (adminIdentifiers.contains(operator.getName())) {
+                return true;
+            }
+            // 2. 检查用户的角色是否在超级管理员列表中
+            if (CollectionUtils.isNotEmpty(operator.getRoles())) {
+                for (String role : operator.getRoles()) {
+                    if (adminIdentifiers.contains(role)) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
@@ -208,10 +215,31 @@ public final class DataScopeEvaluator {
         int level = getLevel(context);
         String condition = context.getCondition();
         StringBuilder builder = new StringBuilder();
-        builder.append(properties.getDataScopeTableAlias())
-                .append(DOT)
-                .append(properties.getDataScopeTidColumn())
-                .append(toIn(getDataScopeIds(operator)));
+        
+        Set<String> scopeIds = getDataScopeIds(operator);
+        if (CollectionUtils.isEmpty(scopeIds)) {
+            return "SELECT '' FROM DUAL WHERE 1=0";
+        }
+
+        // 处理 TARGET_TYPE 和 TID 联合查询
+        // scopeIds 中的格式为 "USER:admin", "ROLE:role1" 等
+        builder.append("(");
+        StringJoiner orJoiner = new StringJoiner(" OR ");
+        for (String scopeId : scopeIds) {
+            String[] parts = scopeId.split(":");
+            if (parts.length == 2) {
+                String targetType = parts[0];
+                String tid = parts[1];
+                orJoiner.add("(" + properties.getDataScopeTableAlias() + DOT + properties.getDataScopeTargetTypeColumn() + " = '" + targetType + "' AND "
+                        + properties.getDataScopeTableAlias() + DOT + properties.getDataScopeTidColumn() + " = '" + tid + "')");
+            } else {
+                // 兼容旧版或没有前缀的情况
+                orJoiner.add(properties.getDataScopeTableAlias() + DOT + properties.getDataScopeTidColumn() + " = '" + scopeId + "'");
+            }
+        }
+        builder.append(orJoiner.toString());
+        builder.append(")");
+
         builder.append(" AND ")
                 .append(properties.getDataScopeTableAlias())
                 .append(DOT)
@@ -280,4 +308,6 @@ public final class DataScopeEvaluator {
                     .toString();
         }
     }
+
+
 }

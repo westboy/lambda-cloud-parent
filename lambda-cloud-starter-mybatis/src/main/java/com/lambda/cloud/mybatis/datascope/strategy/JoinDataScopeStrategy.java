@@ -131,14 +131,46 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
         table.setAlias(new Alias(properties.getDataScopeTableAlias0(), false));
         body1.setFromItem(table);
 
-        List<Expression> expressions =
-                getDataScopeIds(operator).stream().map(StringValue::new).collect(Collectors.toList());
-        InExpression expression1 = new InExpression();
-        expression1.setLeftExpression(
-                new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
-        expression1.setRightExpression(new ExpressionList<>(expressions));
+        List<String> scopeIds = new ArrayList<>(getDataScopeIds(operator));
+        if (CollectionUtils.isEmpty(scopeIds)) {
+            // 没有权限时，构造一个 1=0 的条件短路查询
+            EqualsTo falseExpr = new EqualsTo();
+            falseExpr.setLeftExpression(new LongValue(1));
+            falseExpr.setRightExpression(new LongValue(0));
+            body1.setWhere(falseExpr);
+            return body1;
+        }
 
-        Expression expression = expression1;
+        Expression expression = null;
+        for (String scopeId : scopeIds) {
+            Expression currentExpr;
+            String[] parts = scopeId.split(":");
+            if (parts.length == 2) {
+                String targetType = parts[0];
+                String tid = parts[1];
+                EqualsTo exprType = new EqualsTo();
+                exprType.setLeftExpression(new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTargetTypeColumn()));
+                exprType.setRightExpression(new StringValue(targetType));
+
+                EqualsTo exprTid = new EqualsTo();
+                exprTid.setLeftExpression(new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
+                exprTid.setRightExpression(new StringValue(tid));
+
+                currentExpr = new AndExpression(exprType, exprTid);
+            } else {
+                EqualsTo exprTid = new EqualsTo();
+                exprTid.setLeftExpression(new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
+                exprTid.setRightExpression(new StringValue(scopeId));
+                currentExpr = exprTid;
+            }
+
+            if (expression == null) {
+                expression = new Parenthesis(currentExpr);
+            } else {
+                expression = new OrExpression(expression, new Parenthesis(currentExpr));
+            }
+        }
+        expression = new Parenthesis(expression);
         int[] types = context.getType();
         if (ArrayUtils.isNotEmpty(types)) {
             if (types.length == 1) {

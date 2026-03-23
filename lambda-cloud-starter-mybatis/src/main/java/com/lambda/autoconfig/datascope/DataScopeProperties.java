@@ -19,81 +19,71 @@ public class DataScopeProperties {
     /**
      * 组织表名
      */
-    private String organizationTableName = "ORGANIZATION";
+    private String organizationTableName = "la_organization";
 
     /**
      * 组织表别名
      */
-    private String organizationTableAlias = "ORG";
+    private String organizationTableAlias = "org";
 
     /**
      * 组织表ID字段名
      */
-    private String organizationIdColumn = "ID";
+    private String organizationIdColumn = "id";
 
     /**
      * 组织表父级ID路径字段名
      */
-    private String organizationParentKeysColumn = "parentkeys";
+    private String organizationParentKeysColumn = "parent_keys";
 
     /**
      * 权限表名
      */
-    private String dataScopeTableName = "DATASCOPES";
+    private String dataScopeTableName = "la_datascopes";
 
     /**
      * 权限表别名
      */
-    private String dataScopeTableAlias = "DATASCOPE";
+    private String dataScopeTableAlias = "datascope";
 
     /**
      * 权限表辅助别名（用于子查询或去重）
      */
-    private String dataScopeTableAlias0 = "DATASCOPE0";
+    private String dataScopeTableAlias0 = "datascope0";
 
     /**
      * 权限表ID字段名
      */
-    private String dataScopeIdColumn = "ID";
+    private String dataScopeIdColumn = "id";
 
     /**
      * 权限表关联ID字段名
      */
-    private String dataScopeTidColumn = "TID";
+    private String dataScopeTidColumn = "tid";
+
+    /**
+     * 权限表主体类型字段名 (USER, ROLE, ORG 等)
+     */
+    private String dataScopeTargetTypeColumn = "target_type";
 
     /**
      * 权限表类型字段名
      */
-    private String dataScopeTypeColumn = "DOMAIN_TYPE";
+    private String dataScopeTypeColumn = "domain_type";
 
     /**
      * 权限表级别字段名
      */
-    private String dataScopeRankColumn = "RANK_LEVEL";
+    private String dataScopeRankColumn = "rank_level";
 
     /**
      * 权限表选中状态字段名
      */
-    private String dataScopeCheckedColumn = "CHECKED";
+    private String dataScopeCheckedColumn = "checked";
 
     /**
-     * 数据视图表名前缀
+     * 超级管理员的身份标识集合（如用户名 admin，或角色 ROLE_ADMIN），逗号分隔。
+     * 拥有这些标识的主体将被视为数据拥有者（Owner），拥有全部权限，跳过数据权限拦截。
      */
-    private String dataViewTableNamePrefix = "V_DATAVIEW";
-
-    /**
-     * 数据视图表ID字段名
-     */
-    private String dataViewIdColumn = "ID";
-
-    /**
-     * 数据视图表SID字段名
-     */
-    private String dataViewSidColumn = "SID";
-
-    /**
-     * 超级管理员用户名列表，逗号分隔
-     * 拥有这些用户名的用户将被视为数据拥有者（Owner），拥有全部权限
-     */
-    private List<String> superAdminUsernames = Collections.singletonList("admin");
+    private List<String> superAdminIdentifiers = Collections.singletonList("admin");
 }
