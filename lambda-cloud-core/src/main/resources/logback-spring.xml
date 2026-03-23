@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="false" scanPeriod="120 seconds" debug="false"  shutdownHook="true">
+<configuration scan="false" scanPeriod="120 seconds" debug="false">
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
 
-    <springProperty scope="context" name="log.path" source="spring.application.name" defaultValue="tmp" />
+    <springProperty scope="context" name="app.name" source="spring.application.name" defaultValue="tmp" />
+    <springProperty scope="context" name="log.path" source="logging.file.path" defaultValue="logs/${app.name}" />
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -13,10 +15,21 @@
     <include resource="logback/logback-common.xml" />
 
 
-    <root level="info">
-        <appender-ref ref="console"/>
-        <appender-ref ref="async_info"/>
-        <appender-ref ref="async_error"/>
-    </root>
+    <!-- 开发、测试、本地环境：控制台 + 文件 -->
+    <springProfile name="dev,test,local">
+        <root level="info">
+            <appender-ref ref="console"/>
+            <appender-ref ref="async_info"/>
+            <appender-ref ref="async_error"/>
+        </root>
+    </springProfile>
+
+    <!-- 生产环境：仅异步文件 -->
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="async_info"/>
+            <appender-ref ref="async_error"/>
+        </root>
+    </springProfile>
 
 </configuration>
