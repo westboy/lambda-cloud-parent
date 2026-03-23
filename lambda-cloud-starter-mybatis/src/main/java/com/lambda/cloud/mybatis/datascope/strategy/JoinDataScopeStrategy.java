@@ -8,6 +8,7 @@ import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -81,7 +82,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
         LikeExpression expression2 = new LikeExpression();
         expression2.setLeftExpression(new Column(idParentKeys));
         expression2.setRightExpression(new StringValue("%" + orgId + "%"));
-        return new ParenthesedExpressionList<>(new OrExpression(expression1, expression2));
+        return new Parenthesis(new OrExpression(expression1, expression2));
     }
 
     /***

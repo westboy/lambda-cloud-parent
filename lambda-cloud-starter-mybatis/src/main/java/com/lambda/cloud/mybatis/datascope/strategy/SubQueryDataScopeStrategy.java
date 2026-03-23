@@ -21,7 +21,7 @@ import static com.baomidou.mybatisplus.core.toolkit.StringPool.DOT;
 import static com.baomidou.mybatisplus.core.toolkit.StringPool.LEFT_BRACKET;
 
 /**
- * 内联查询
+ *  子查询
  *
  * @author Jin
  */
@@ -43,11 +43,10 @@ public class SubQueryDataScopeStrategy extends AbstractDataScopeStrategy {
         InExpression expression = new InExpression();
 
         String key = context.getKey();
-        // 强制使用用户在注解中配置的 key
-        // if (fromItem instanceof Table) {
-        //  Alias alias = fromItem.getAlias();
-        //  key = DataScopeEvaluator.resolveColumnName(alias, key);
-        // }
+        if (fromItem instanceof Table) {
+         Alias alias = fromItem.getAlias();
+         key = DataScopeEvaluator.resolveColumnName(alias, key);
+        }
         expression.setLeftExpression(new Column(key));
         if (context.isPretreatment()) {
             List<Expression> expressions = new ArrayList<>();
