@@ -19,13 +19,12 @@ public class StatisticsDataScopeStrategy extends SubQueryDataScopeStrategy {
         PlainSelect body = super.getBody(select);
         FromItem item = body.getFromItem();
         // 仅当下钻的子查询依然是一个简单的 SELECT 时才继续下钻，防止破坏复杂的聚合查询或 UNION 查询
-        while (item instanceof Select) {
-            Select subSelect = (Select) item;
-            if (subSelect.getSelectBody() instanceof PlainSelect) {
-                PlainSelect body1 = (PlainSelect) subSelect.getSelectBody();
-                if (body1 != null) {
-                    body = body1;
-                    item = body1.getFromItem();
+        while (item instanceof Select subSelect) {
+            if (subSelect.getPlainSelect() != null) {
+                PlainSelect plainSelect = subSelect.getPlainSelect();
+                if (plainSelect != null) {
+                    body = plainSelect;
+                    item = plainSelect.getFromItem();
                 } else {
                     break;
                 }

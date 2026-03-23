@@ -1,5 +1,9 @@
 package com.lambda.cloud.mybatis.datascope;
 
+import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.*;
+import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.getCurrentMethod;
+import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.newMappedStatement;
+
 import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Sets;
 import com.lambda.cloud.core.principal.LoginUser;
@@ -9,6 +13,10 @@ import com.lambda.cloud.mybatis.datascope.context.DataScopeContextHolder;
 import com.lambda.cloud.mybatis.datascope.strategy.DataScopeStrategy;
 import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluationContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.util.*;
+import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.ibatis.builder.StaticSqlSource;
@@ -20,15 +28,6 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.util.ClassUtils;
 
-import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.sql.SQLException;
-import java.util.*;
-
-import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.*;
-import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.getCurrentMethod;
-import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.newMappedStatement;
-
 /**
  * 数据权限拦截器
  *
@@ -36,10 +35,10 @@ import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.newMappedState
  */
 @Slf4j
 @Intercepts({
-        @Signature(
-                type = Executor.class,
-                method = "query",
-                args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
+    @Signature(
+            type = Executor.class,
+            method = "query",
+            args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
 public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements Interceptor {

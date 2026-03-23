@@ -1,14 +1,19 @@
 package com.lambda.cloud.mybatis.datascope.strategy;
 
+import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.getDataScopeIds;
+import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.getLevel;
+
 import com.lambda.autoconfig.datascope.DataScopeProperties;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.datascope.DataScopePropertiesHolder;
 import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
 import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -18,14 +23,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.getDataScopeIds;
-import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.getLevel;
 
 /**
  * 内联查询
@@ -62,6 +59,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
         table.setAlias(new Alias(DataScopePropertiesHolder.getInstance().getOrganizationTableAlias(), false));
         EqualsTo expression0 = new EqualsTo();
         expression0.setLeftExpression(new Column(idOrg));
+        //noinspection DuplicatedCode
         expression0.setRightExpression(new Column(context.getKey()));
         Join join = new Join();
         join.setInner(true);
@@ -82,7 +80,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
         LikeExpression expression2 = new LikeExpression();
         expression2.setLeftExpression(new Column(idParentKeys));
         expression2.setRightExpression(new StringValue("%" + orgId + "%"));
-        return new Parenthesis(new OrExpression(expression1, expression2));
+        return new ParenthesedExpressionList<>(new OrExpression(expression1, expression2));
     }
 
     /***
@@ -109,6 +107,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
         EqualsTo expression0 = new EqualsTo();
         expression0.setLeftExpression(
                 new Column(properties.getDataScopeTableAlias() + "." + properties.getDataScopeIdColumn()));
+        //noinspection DuplicatedCode
         expression0.setRightExpression(new Column(context.getKey()));
         Join join = new Join();
         join.setInner(true);
@@ -149,28 +148,31 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
                 String targetType = parts[0];
                 String tid = parts[1];
                 EqualsTo exprType = new EqualsTo();
-                exprType.setLeftExpression(new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTargetTypeColumn()));
+                exprType.setLeftExpression(new Column(
+                        properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTargetTypeColumn()));
                 exprType.setRightExpression(new StringValue(targetType));
 
                 EqualsTo exprTid = new EqualsTo();
-                exprTid.setLeftExpression(new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
+                exprTid.setLeftExpression(
+                        new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
                 exprTid.setRightExpression(new StringValue(tid));
 
                 currentExpr = new AndExpression(exprType, exprTid);
             } else {
                 EqualsTo exprTid = new EqualsTo();
-                exprTid.setLeftExpression(new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
+                exprTid.setLeftExpression(
+                        new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTidColumn()));
                 exprTid.setRightExpression(new StringValue(scopeId));
                 currentExpr = exprTid;
             }
 
             if (expression == null) {
-                expression = new Parenthesis(currentExpr);
+                expression = new ParenthesedExpressionList<>(currentExpr);
             } else {
-                expression = new OrExpression(expression, new Parenthesis(currentExpr));
+                expression = new OrExpression(expression, new ParenthesedExpressionList<>(currentExpr));
             }
         }
-        expression = new Parenthesis(expression);
+        expression = new ParenthesedExpressionList<>(expression);
         int[] types = context.getType();
         if (ArrayUtils.isNotEmpty(types)) {
             if (types.length == 1) {
@@ -178,7 +180,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
                 expression2.setLeftExpression(
                         new Column(properties.getDataScopeTableAlias0() + "." + properties.getDataScopeTypeColumn()));
                 expression2.setRightExpression(new LongValue(types[0]));
-                expression = new AndExpression(expression1, expression2);
+                expression = new AndExpression(expression, expression2);
             } else {
                 InExpression expression2 = new InExpression();
                 expression2.setLeftExpression(
@@ -188,7 +190,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
                     list.add(new LongValue(i));
                 }
                 expression2.setRightExpression(new ExpressionList<>(list));
-                expression = new AndExpression(expression1, expression2);
+                expression = new AndExpression(expression, expression2);
             }
         }
 
