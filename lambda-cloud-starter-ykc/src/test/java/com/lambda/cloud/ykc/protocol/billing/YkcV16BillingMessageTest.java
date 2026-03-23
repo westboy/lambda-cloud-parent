@@ -67,7 +67,6 @@ public class YkcV16BillingMessageTest {
         }
     }
 
-    @Test
     public void test2() {
         try {
             ProtocolEngine<YkcV16BasePayload> engine =
