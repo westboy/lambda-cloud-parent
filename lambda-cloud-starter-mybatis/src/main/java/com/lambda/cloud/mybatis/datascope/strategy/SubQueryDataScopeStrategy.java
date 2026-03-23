@@ -2,7 +2,7 @@ package com.lambda.cloud.mybatis.datascope.strategy;
 
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
-import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator;
+import com.lambda.cloud.mybatis.datascope.DataScopeEvaluator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -13,8 +13,12 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
+
+import javax.annotation.Nonnull;
+
+import static com.baomidou.mybatisplus.core.toolkit.StringPool.DOT;
+import static com.baomidou.mybatisplus.core.toolkit.StringPool.LEFT_BRACKET;
 
 /**
  * 内联查询
@@ -28,7 +32,7 @@ public class SubQueryDataScopeStrategy extends AbstractDataScopeStrategy {
         if (context.isPretreatment()) {
             return DataScopeEvaluator.getSql(source, permissions);
         } else {
-            String sql = DataScopeEvaluator.buildSQL02(context, operator);
+            String sql = DataScopeEvaluator.buildStrategyScopeSql(context, operator);
             return DataScopeEvaluator.getSql(source, sql);
         }
     }
@@ -52,7 +56,7 @@ public class SubQueryDataScopeStrategy extends AbstractDataScopeStrategy {
             }
             expression.setRightExpression(new ExpressionList<>(expressions));
         } else {
-            String sql = DataScopeEvaluator.buildSQL02(context, operator);
+            String sql = DataScopeEvaluator.buildStrategyScopeSql(context, operator);
             Select select = getSelect(sql);
             PlainSelect selectBody = select.getPlainSelect();
             LateralSubSelect subSelect = new LateralSubSelect();
@@ -60,5 +64,18 @@ public class SubQueryDataScopeStrategy extends AbstractDataScopeStrategy {
             expression.setRightExpression(subSelect);
         }
         updateWhere(body, expression);
+    }
+
+    /**
+     *  强制使用用户在注解中配置的 key
+     */
+    public static String resolveColumnName(Alias alias, @Nonnull String key) {
+        if (key.contains(LEFT_BRACKET) || key.contains(DOT)) {
+            return key;
+        }
+        if (alias != null) {
+            return alias.getName() + DOT + key;
+        }
+        return key;
     }
 }

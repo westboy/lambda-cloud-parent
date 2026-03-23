@@ -6,7 +6,7 @@ import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
 import com.lambda.cloud.mybatis.datascope.support.DataScopeCacheKey;
 import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluationContext;
-import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator;
+import com.lambda.cloud.mybatis.datascope.DataScopeEvaluator;
 import com.lambda.cloud.mybatis.utils.JSqlParserUtils;
 import java.io.StringReader;
 import java.util.Set;

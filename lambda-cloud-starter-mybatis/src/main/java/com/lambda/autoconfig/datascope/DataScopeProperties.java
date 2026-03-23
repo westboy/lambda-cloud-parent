@@ -64,17 +64,17 @@ public class DataScopeProperties {
     /**
      * 权限表类型字段名
      */
-    private String dataScopeTypeColumn = "type2";
+    private String dataScopeTypeColumn = "DOMAIN_TYPE";
 
     /**
      * 权限表级别字段名
      */
-    private String dataScopeRankColumn = "rank2";
+    private String dataScopeRankColumn = "RANK_LEVEL";
 
     /**
      * 权限表选中状态字段名
      */
-    private String dataScopeCheckedColumn = "checked";
+    private String dataScopeCheckedColumn = "CHECKED";
 
     /**
      * 数据视图表名前缀
@@ -89,7 +89,7 @@ public class DataScopeProperties {
     /**
      * 数据视图表SID字段名
      */
-    private String dataViewSidColumn = "sid";
+    private String dataViewSidColumn = "SID";
 
     /**
      * 超级管理员用户名列表，逗号分隔

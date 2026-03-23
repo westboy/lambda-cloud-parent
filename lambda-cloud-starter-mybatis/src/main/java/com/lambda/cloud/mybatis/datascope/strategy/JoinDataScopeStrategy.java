@@ -1,17 +1,10 @@
 package com.lambda.cloud.mybatis.datascope.strategy;
 
-import static com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator.getDataScopeIds;
-import static com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator.getLevel;
-
 import com.lambda.autoconfig.datascope.DataScopeProperties;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.datascope.DataScopePropertiesHolder;
 import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
 import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -25,6 +18,14 @@ import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.getDataScopeIds;
+import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.getLevel;
+
 /**
  * 内联查询
  *
@@ -35,9 +36,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
     @Override
     public void update(PlainSelect body, DataScopeContext context, LoginUser user, Set<String> permissions) {
         DataScope.Scheme scheme = context.getScheme();
-        if (DataScope.Scheme.NOT_CASCADE.equals(scheme)) {
-            throw new RuntimeException();
-        } else if (DataScope.Scheme.ORGANIZATION.equals(scheme)) {
+        if (DataScope.Scheme.ORGANIZATION.equals(scheme)) {
             Expression expression = innerExpressionForOrgan(body, context, user);
             updateWhere(body, expression);
         } else {
@@ -47,7 +46,7 @@ public class JoinDataScopeStrategy extends AbstractDataScopeStrategy {
 
     @Override
     public String replace(String source, DataScopeContext context, LoginUser operator, Set<String> permissions) {
-        // Replace模式难以通过JOIN实现，降级为子查询或直接返回不支持
+        // Replace模式难以通过JOIN实现，降级为子查询或直接返回不支持.
         throw new UnsupportedOperationException("JoinDataScopeStrategy does not support Replace mode");
     }
 

@@ -1,24 +1,23 @@
-package com.lambda.cloud.mybatis.datascope.support;
-
-import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
-import static com.lambda.cloud.mybatis.utils.SqlConditionUtils.toIn;
+package com.lambda.cloud.mybatis.datascope;
 
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.lambda.autoconfig.datascope.DataScopeProperties;
 import com.lambda.cloud.core.principal.LoginUser;
-import com.lambda.cloud.mybatis.datascope.DataScopePropertiesHolder;
 import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
 import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
 import com.lambda.cloud.mybatis.utils.SqlConditionUtils;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.expression.Alias;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.binding.MapperMethod.ParamMap;
+
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
+import static com.lambda.cloud.mybatis.utils.SqlConditionUtils.toIn;
 
 /**
  * 获取用户下的权限标识集合
@@ -27,7 +26,7 @@ import org.apache.ibatis.binding.MapperMethod.ParamMap;
  **/
 @Slf4j
 public final class DataScopeEvaluator {
-    private static final String PERMISSIONS = "'lambda-permissions(\\|(\\d+)(,\\d+)*+)?(\\|([><])?=?-?\\d*)?'";
+    private static final String PERMISSIONS = "'permissions(\\|(\\d+)(,\\d+)*+)?(\\|([><])?=?-?\\d*)?'";
     private static final Pattern PATTERN = Pattern.compile(PERMISSIONS);
     private static final Pattern CLEAR_PATTERN =
             Pattern.compile("\\s*\\S*\\s*(?i)(IN)\\s*\\(\\s*" + PERMISSIONS + "\\s*\\)");
@@ -39,7 +38,8 @@ public final class DataScopeEvaluator {
     private static final Integer ONE = 1;
     private static final Integer TWO = 2;
 
-    private DataScopeEvaluator() {}
+    private DataScopeEvaluator() {
+    }
 
     /**
      * 判断当前用户是否是数据的拥有者
@@ -95,27 +95,6 @@ public final class DataScopeEvaluator {
 
     /**
      * 获取SQL
-     *
-     * @param source DataScopeContext
-     * @param permissions DataScopeContext
-     */
-    public static String getSql(String source, Set<String> permissions) {
-        if (CollectionUtils.isNotEmpty(permissions)) {
-            StringJoiner joiner = new StringJoiner(SINGLE_QUOTE + COMMA + SINGLE_QUOTE, SINGLE_QUOTE, SINGLE_QUOTE);
-            for (String item : permissions) {
-                joiner.add(item);
-            }
-            return getSql(source, joiner.toString());
-        }
-        return source;
-    }
-
-    /**
-     * 获取SQL
-     *
-     * @param source
-     * @param sql
-     * @return
      */
     public static String getSql(String source, String sql) {
         return PATTERN.matcher(source).replaceAll(sql);
@@ -124,8 +103,6 @@ public final class DataScopeEvaluator {
     /**
      * 根据replace字符串解析数据权限属性
      *
-     * @param sql
-     * @return
      */
     public static DataScopeContext parseReplaceDataScope(String sql) {
         if (StringUtils.isBlank(sql)) {
@@ -143,7 +120,7 @@ public final class DataScopeEvaluator {
         String[] tokens = group.split("'")[1].split("\\|");
         DataScopeContext context = new DataScopeContext();
         context.setReplace(true);
-        context.setType(new int[] {0});
+        context.setType(new int[]{0});
         // 解析type
         if (tokens.length > ONE && StringUtils.isNotBlank(tokens[ONE])) {
             context.setType(Arrays.stream(tokens[1].split(","))
@@ -169,6 +146,21 @@ public final class DataScopeEvaluator {
     }
 
     /**
+     * 获取SQL
+     *
+     */
+    public static String getSql(String source, Set<String> permissions) {
+        if (CollectionUtils.isNotEmpty(permissions)) {
+            StringJoiner joiner = new StringJoiner(SINGLE_QUOTE + COMMA + SINGLE_QUOTE, SINGLE_QUOTE, SINGLE_QUOTE);
+            for (String item : permissions) {
+                joiner.add(item);
+            }
+            return getSql(source, joiner.toString());
+        }
+        return source;
+    }
+
+    /**
      * 获取LoginUser参数
      *
      * @param parameter 参数信息
@@ -186,32 +178,14 @@ public final class DataScopeEvaluator {
     }
 
     /**
-     * @param alias
-     * @param key
-     * @return void
-     */
-    public static String resolveColumnName(Alias alias, @Nonnull String key) {
-        if (key.contains(LEFT_BRACKET) || key.contains(DOT)) {
-            return key;
-        }
-        if (alias != null) {
-            return alias.getName() + DOT + key;
-        }
-        return key;
-    }
-
-    /**
      * 是否需要替换权限
-     *
-     * @param source
-     * @return boolean
      */
     public static boolean getReplace(String source) {
         return PATTERN.matcher(source).find();
     }
 
     /**
-     * 为数据拥有者修改SQL将xxx in ('PURVermissions') 替换为 1 = 1；
+     * 为数据拥有者修改SQL将xxx in ('permissions') 替换为 1 = 1；
      *
      * @return java.lang.String
      */
@@ -220,40 +194,15 @@ public final class DataScopeEvaluator {
         return matcher.replaceAll(" 1 = 1 ");
     }
 
-    @Nonnull
-    public static String buildSQL01(@Nonnull DataScopeContext context, @Nonnull LoginUser operator) {
-        DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
-        int[] types = context.getType();
-        Set<String> ids = DataScopeEvaluator.getDataScopeIds(operator);
-        StringBuilder sql = new StringBuilder(
-                "SELECT DISTINCT " + properties.getDataScopeIdColumn() + " FROM " + properties.getDataScopeTableName());
-        sql.append(SPACE)
-                .append("WHERE ")
-                .append(properties.getDataScopeTidColumn())
-                .append(toIn(ids));
-        sql.append(SPACE)
-                .append("AND ")
-                .append(properties.getDataScopeTypeColumn())
-                .append(toIn(types));
-        if (context.getLevel() > -1) {
-            sql.append(SPACE)
-                    .append("AND ")
-                    .append(properties.getDataScopeRankColumn())
-                    .append(" ")
-                    .append(context.getLevelExp().getComparison())
-                    .append(StringPool.SPACE)
-                    .append(getLevel(context));
-        }
-        return sql.toString();
-    }
-
     /**
-     * @param context
-     * @param operator
+     * 构建带有高级策略过滤的SQL (支持组织架构模式、Condition、Checked状态等)
+     *
+     * @param context  数据权限上下文
+     * @param operator 当前登录用户
      * @return java.lang.String
      */
     @Nonnull
-    public static String buildSQL02(@Nonnull DataScopeContext context, @Nonnull LoginUser operator) {
+    public static String buildStrategyScopeSql(@Nonnull DataScopeContext context, @Nonnull LoginUser operator) {
         DataScopeProperties properties = DataScopePropertiesHolder.getInstance();
         int[] types = context.getType();
         int level = getLevel(context);
@@ -270,7 +219,11 @@ public final class DataScopeEvaluator {
                 .append(SqlConditionUtils.toIn(types));
         DataScope.Scheme scheme = context.getScheme();
         if (DataScope.Scheme.ORGANIZATION.equals(scheme)) {
-            String orgId = "";
+            String orgId = operator.getOrgId();
+            if (StringUtils.isBlank(orgId)) {
+                // 如果用户没有组织ID，直接返回一个查不到数据的条件（或根据业务需要抛出异常）
+                return "SELECT '' FROM DUAL WHERE 1=0";
+            }
             builder = new StringBuilder();
             builder.append("SELECT ")
                     .append(properties.getOrganizationIdColumn())
@@ -293,7 +246,7 @@ public final class DataScopeEvaluator {
                     .append(orgId)
                     .append("%'");
             return builder.toString();
-        } else if (DataScope.Scheme.CASCADE.equals(scheme)) {
+        } else {
             if (level > -1) {
                 builder.append(" AND ")
                         .append(properties.getDataScopeTableAlias())
@@ -325,17 +278,6 @@ public final class DataScopeEvaluator {
                                     + properties.getDataScopeTableName() + SPACE + properties.getDataScopeTableAlias()
                                     + " WHERE ")
                     .toString();
-        } else {
-            if (StringUtils.isNotBlank(condition)) {
-                condition = "AND VDV." + condition;
-            }
-            String type = context.getType()[0] > 0 ? String.valueOf(context.getType()[0]) : "";
-            return "SELECT VDV." + properties.getDataViewSidColumn() + " FROM " + properties.getDataScopeTableName()
-                    + SPACE + properties.getDataScopeTableAlias() + "," + properties.getDataViewTableNamePrefix() + type
-                    + " VDV WHERE VDV." + properties.getDataViewIdColumn() + " LIKE" + " CONCAT("
-                    + properties.getDataScopeTableAlias() + DOT + properties.getDataScopeIdColumn() + ", '%') "
-                    + condition
-                    + " AND " + builder;
         }
     }
 }

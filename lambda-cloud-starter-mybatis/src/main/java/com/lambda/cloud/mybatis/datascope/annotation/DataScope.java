@@ -82,10 +82,6 @@ public @interface DataScope {
          */
         CASCADE,
         /**
-         * 非级联方案
-         */
-        NOT_CASCADE,
-        /**
          * 按照组织授权
          */
         ORGANIZATION

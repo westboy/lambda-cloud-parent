@@ -1,21 +1,14 @@
 package com.lambda.cloud.mybatis.datascope;
 
-import static com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluator.*;
-import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.getCurrentMethod;
-import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.newMappedStatement;
-
 import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Sets;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
 import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
+import com.lambda.cloud.mybatis.datascope.context.DataScopeContextHolder;
 import com.lambda.cloud.mybatis.datascope.strategy.DataScopeStrategy;
 import com.lambda.cloud.mybatis.datascope.support.DataScopeEvaluationContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.lang.reflect.Method;
-import java.sql.SQLException;
-import java.util.*;
-import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.ibatis.builder.StaticSqlSource;
@@ -27,6 +20,15 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.util.ClassUtils;
 
+import javax.annotation.Nonnull;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.util.*;
+
+import static com.lambda.cloud.mybatis.datascope.DataScopeEvaluator.*;
+import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.getCurrentMethod;
+import static com.lambda.cloud.mybatis.utils.MappedStatementUtils.newMappedStatement;
+
 /**
  * 数据权限拦截器
  *
@@ -34,10 +36,10 @@ import org.springframework.util.ClassUtils;
  */
 @Slf4j
 @Intercepts({
-    @Signature(
-            type = Executor.class,
-            method = "query",
-            args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
+        @Signature(
+                type = Executor.class,
+                method = "query",
+                args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP"})
 public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements Interceptor {
@@ -165,7 +167,7 @@ public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements 
 
     private static MappedStatement buildDataScopeMappedStatement(
             @Nonnull Configuration configuration, @Nonnull DataScopeContext context, @Nonnull LoginUser operator) {
-        String sql = buildSQL01(context, operator);
+        String sql = DataScopeEvaluator.buildStrategyScopeSql(context, operator);
         SqlSource sqlSource = new StaticSqlSource(configuration, sql);
         MappedStatement.Builder builder =
                 new MappedStatement.Builder(configuration, DATA_SCOPE_MS_ID, sqlSource, SqlCommandType.SELECT);
@@ -184,22 +186,28 @@ public record DataScopeInterceptor(Map<Integer, Integer> typeMapper) implements 
      * @param method 当前方法
      */
     private static DataScopeContext buildDataScopeContext(Method method, String sql) {
-        if (method != null) {
-            DataScope actual = method.getAnnotation(DataScope.class);
-            if (Objects.nonNull(actual)) {
-                DataScopeContext context = new DataScopeContext();
-                context.setKey(actual.key());
-                context.setLevel(actual.level());
-                context.setLevelExp(actual.levelExp());
-                context.setType(actual.type());
-                context.setMode(actual.mode());
-                context.setScheme(actual.scheme());
-                context.setCondition(actual.condition());
-                context.setPretreatment(actual.pretreatment());
-                context.setChecked(actual.checked());
+        try (DataScopeContextHolder holder = DataScopeContextHolder.getInstance()) {
+            DataScopeContext context = holder.getDataScopeContext();
+            if (context != null) {
                 return context;
             }
+            if (method != null) {
+                DataScope actual = method.getAnnotation(DataScope.class);
+                if (Objects.nonNull(actual)) {
+                    context = new DataScopeContext();
+                    context.setKey(actual.key());
+                    context.setLevel(actual.level());
+                    context.setLevelExp(actual.levelExp());
+                    context.setType(actual.type());
+                    context.setMode(actual.mode());
+                    context.setScheme(actual.scheme());
+                    context.setCondition(actual.condition());
+                    context.setPretreatment(actual.pretreatment());
+                    context.setChecked(actual.checked());
+                    return context;
+                }
+            }
+            return parseReplaceDataScope(sql);
         }
-        return null;
     }
 }
