@@ -2,7 +2,9 @@ package com.lambda.autoconfig.datascope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -86,4 +88,9 @@ public class DataScopeProperties {
      * 拥有这些标识的主体将被视为数据拥有者（Owner），拥有全部权限，跳过数据权限拦截。
      */
     private List<String> superAdminIdentifiers = Collections.singletonList("admin");
+
+    /**
+     * 数据权限类型映射器，key：代码中的type值，value：数据库中的type值
+     */
+    Map<Integer, Integer> typeMapper = new HashMap<>();
 }
