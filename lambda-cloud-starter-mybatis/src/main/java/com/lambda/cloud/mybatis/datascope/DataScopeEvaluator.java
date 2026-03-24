@@ -63,11 +63,11 @@ public final class DataScopeEvaluator {
         }
         Set<String> ids = new HashSet<>();
         if (StringUtils.isNotBlank(operator.getName())) {
-            ids.add(operator.getName());
+            ids.add("USER:" + operator.getName());
         }
         String orgId = operator.getOrgId();
         if (StringUtils.isNotBlank(orgId)) {
-            ids.add(orgId);
+            ids.add("ORG:" + orgId);
         }
         return ids;
     }
