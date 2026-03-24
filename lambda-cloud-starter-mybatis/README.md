@@ -14,32 +14,35 @@
 src/main/java/com/lambda/autoconfig/
 ├─ MyBatisAutoConfiguration.java
 ├─ MybatisPlusExtendProperties.java
-├─ PurviewAutoConfiguration.java
-├─ PurviewProperties.java
+├─ DataScopeAutoConfiguration.java
+├─ DataScopeProperties.java
 └─ condition/MapperPackageConfiguredCondition.java
 
 src/main/java/com/lambda/cloud/mybatis/
-├─ annotation/TableCodeField.java
 ├─ handler/
 │  ├─ AesEncryptHandler.java
 │  ├─ EntityMetaFiller.java
 │  └─ GlobalMetaObjectHandler.java
 ├─ injector/
-│  ├─ LambdaExtendSqlInjector.java
+│  ├─ LambdaSqlInjector.java
+│  ├─ TableCodeField.java
 │  └─ method/...（InsertAll / SelectByCode / UpdateByCode / Exists 等）
 ├─ mapper/LambdaBaseMapper.java
 ├─ mapping/LambdaBoundSql.java / LambdaSqlSource.java
 ├─ tenant/
 │  ├─ TenantContextHolder.java
 │  ├─ TenantExpressionInterceptor.java
+│  ├─ TenantConverter.java
 │  └─ TenantHandler.java
 ├─ datascope/
-│  ├─ PurviewInterceptor.java
-│  ├─ PurviewContext*.java
+│  ├─ DataScopeInterceptor.java
+│  ├─ DataScopeEvaluator.java
+│  ├─ DataScopePropertiesHolder.java
+│  ├─ context/*.java
 │  ├─ annotation/DataScope.java
 │  ├─ strategy/*.java
-│  └─ support/PurviewSqlHelper.java
-└─ utils/MybatisUtils.java / SQLUtils.java
+│  └─ support/*.java
+└─ utils/*.java
 
 src/main/resources/
 ├─ META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
@@ -50,7 +53,7 @@ src/main/resources/
 
 ```text
 com.lambda.autoconfig.MyBatisAutoConfiguration
-com.lambda.autoconfig.PurviewAutoConfiguration
+com.lambda.autoconfig.DataScopeAutoConfiguration
 ```
 
 ## 自动装配机制
@@ -63,7 +66,7 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 - 注册 `ConfigurationCustomizer`，统一 `JdbcTypeForNull = NULL`。
 - 当配置了 `mybatis-plus.mapper-package` 时，动态注册 `MapperScannerConfigurer`。
 - 注册 `DatabaseIdProvider`，内置 H2/MySQL/Oracle/PostgreSQL/DB2/DM 映射并支持扩展。
-- 注册 `LambdaExtendSqlInjector`，注入扩展 SQL 方法。
+- 注册 `LambdaSqlInjector`，注入扩展 SQL 方法。
 - 注册 `GlobalMetaObjectHandler`，聚合执行所有 `EntityMetaFiller`。
 - 注册 `JdbcTemplate`（`@Primary`）。
 - 注册 `MybatisPlusInterceptor`，按 `Order` 组装所有 `InnerInterceptor`。
@@ -90,7 +93,6 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 
 - `TenantLineHandler`（默认 `TenantHandler`）
 - `TenantLineInnerInterceptor`（`@Order(10)`）
-- `TenantExpressionInterceptor`（`@Order(Short.MAX_VALUE)`）
 
 ## 配置模型
 
@@ -107,7 +109,7 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 
 数据权限配置前缀：`lambda.datascope`
 
-`PurviewProperties` 主要用于配置组织表、权限表、数据视图表字段与管理员用户名白名单。
+`DataScopeProperties` 主要用于配置组织表、权限表、数据视图表字段与管理员用户名白名单。
 
 ## 核心能力
 
@@ -160,7 +162,7 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 
 ### 数据权限 SQL 改写
 
-`PurviewInterceptor` 仅拦截 `SELECT`：
+`DataScopeInterceptor` 仅拦截 `SELECT`：
 
 - 从 Mapper 方法读取 `@DataScope`
 - 非管理员用户按策略改写 SQL
@@ -171,7 +173,7 @@ com.lambda.autoconfig.PurviewAutoConfiguration
 - 支持 `pretreatment` 预加载权限集合模式
 - 若 SQL 含占位标记 `'lambda-permissions|...'`，会进入 replace 模式
 
-管理员判定依据：`lambda.datascope.super-admin-usernames`。
+管理员判定依据：`lambda.datascope.super-admin-identifiers`。
 
 ## 配置示例
 
@@ -190,7 +192,7 @@ mybatis-plus:
 
 lambda:
   datascope:
-    super-admin-usernames:
+    super-admin-identifiers:
       - admin
 ```
 
@@ -226,7 +228,7 @@ public class UserEntity {
 ## 当前实现约束
 
 - `mybatis-plus.mapper-package` 为空时不会自动注册 `MapperScannerConfigurer`，需业务自行 `@MapperScan`。
-- `TenantExpressionInterceptor` 依赖参数名与 `tenant-column` 一致；不一致时会回退到登录用户租户。
-- `PurviewInterceptor` 只处理 `SELECT`，不会改写 `UPDATE/DELETE/INSERT`。
-- 数据权限策略在复杂 SQL 下依赖 JSqlParser 解析成功；解析失败会导致策略不可用。
+- `TenantExpressionInterceptor` 依赖参数名与 `tenant-column` 一致；不一致时会回退到登录用户租户。该拦截器需手动注册为 Bean 并加入 MyBatis 拦截器链，构造参数 `name` 即为租户列名。
+- `DataScopeInterceptor` 只处理 `SELECT`，不会改写 `UPDATE/DELETE/INSERT`。
+- 数据权限策略在复杂 SQL 下依赖 JSqlParser 解析成功；解析失败时 SUB_QUERY/INNER 模式会抛出异常。
 - `AesEncryptHandler` 使用配置密钥对称加解密，密钥轮换需业务自行规划迁移策略。

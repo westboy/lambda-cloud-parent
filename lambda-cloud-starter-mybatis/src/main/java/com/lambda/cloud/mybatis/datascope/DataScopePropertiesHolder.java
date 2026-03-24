@@ -21,7 +21,7 @@ public class DataScopePropertiesHolder {
     }
 
     public static void initialize(DataScopeProperties properties) {
-        Assert.notNull(properties, "PurviewProperties must not be null");
+        Assert.notNull(properties, "DataScopeProperties must not be null");
         REF.set(properties);
     }
 }
