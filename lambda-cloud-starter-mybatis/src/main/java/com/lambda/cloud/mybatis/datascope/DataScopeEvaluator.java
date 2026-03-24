@@ -5,6 +5,7 @@ import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.lambda.autoconfig.datascope.DataScopeProperties;
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.cloud.core.utils.OperatorUtils;
 import com.lambda.cloud.mybatis.datascope.annotation.DataScope;
 import com.lambda.cloud.mybatis.datascope.context.DataScopeContext;
 import com.lambda.cloud.mybatis.utils.SqlConditionUtils;
@@ -167,7 +168,11 @@ public final class DataScopeEvaluator {
                 return (LoginUser) optional.get();
             }
         }
-        return null;
+        try {
+            return OperatorUtils.getOperator();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
