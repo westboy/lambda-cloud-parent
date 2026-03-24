@@ -13,6 +13,7 @@ import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConf
 import org.springframework.boot.micrometer.metrics.autoconfigure.export.prometheus.PrometheusMetricsExportAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 /**
  * @author jin
@@ -29,17 +30,17 @@ public class ActuatorAutoConfiguration {
     }
 
     @Bean
-    public CountedAspect countedAspect(MeterRegistry meterRegistry) {
+    public CountedAspect countedAspect(@Lazy MeterRegistry meterRegistry) {
         return new CountedAspect(meterRegistry);
     }
 
     @Bean
-    public TimedAspect timedAspect(MeterRegistry meterRegistry) {
+    public TimedAspect timedAspect(@Lazy MeterRegistry meterRegistry) {
         return new TimedAspect(meterRegistry);
     }
 
     @Bean
-    public MeterHelper meterHelper(MeterRegistry meterRegistry) {
+    public MeterHelper meterHelper(@Lazy MeterRegistry meterRegistry) {
         return new MeterHelper(meterRegistry);
     }
 
