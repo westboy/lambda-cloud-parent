@@ -93,16 +93,6 @@ public class SecurityProperties {
     @Getter
     @Setter
     public static class ExtendSaTokenConfig extends SaTokenConfig {
-        /**
-         * 是否启用方法级认证
-         * <p>
-         * 控制Sa-Token的注解鉴权功能开关。当设置为true时，
-         * {@code @SaCheckLogin}、{@code @SaCheckRole} 等注解才会生效。
-         * </p>
-         *
-         * @default true
-         */
-        private Boolean enableMethodAuthentication = true;
 
         /**
          * 忽略拦截的路径列表

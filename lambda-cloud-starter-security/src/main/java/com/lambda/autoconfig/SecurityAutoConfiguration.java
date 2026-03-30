@@ -262,8 +262,7 @@ public class SecurityAutoConfiguration {
          */
         @Bean
         public SaInterceptor saInterceptor(SecureInterceptor secureInterceptor) {
-            return new SaInterceptor(new SaTokenInterceptor(secureInterceptor))
-                    .isAnnotation(securityProperties.getSaToken().getEnableMethodAuthentication());
+            return new SaInterceptor(new SaTokenInterceptor(secureInterceptor)).isAnnotation(false);
         }
 
         /**
