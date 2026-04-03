@@ -166,10 +166,10 @@ public class StpLogicUtils {
      */
     public static SaSession getSaSession(String accessToken) {
         if (LOGIN_TYPE_SET.isEmpty()) {
-            return StpUtil.getStpLogic().getTokenSessionByToken(accessToken,false);
+            return StpUtil.getStpLogic().getTokenSessionByToken(accessToken, false);
         }
         for (String loginType : LOGIN_TYPE_SET) {
-            SaSession saSession = getStpLogic(loginType).getTokenSessionByToken(accessToken,false);
+            SaSession saSession = getStpLogic(loginType).getTokenSessionByToken(accessToken, false);
             if (saSession != null) {
                 return saSession;
             }
