@@ -22,6 +22,7 @@
         <spring-cloud-alibaba.version>2025.1.0.0</spring-cloud-alibaba.version>
         <gson.version>2.11.0</gson.version>
         <langchain4j.version>1.12.2</langchain4j.version>
+        <langchain4j-spring-boot.version>1.12.2-beta22</langchain4j-spring-boot.version>
         <langgraph4j.version>1.8.11</langgraph4j.version>
         <slf4j.version>2.0.16</slf4j.version>
         <mysql.version>8.2.0</mysql.version>
@@ -144,7 +145,7 @@
             <dependency>
                 <groupId>dev.langchain4j</groupId>
                 <artifactId>langchain4j-spring-boot-starter</artifactId>
-                <version>1.12.2-beta22</version>
+                <version>${langchain4j-spring-boot.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bsc.langgraph4j</groupId>
