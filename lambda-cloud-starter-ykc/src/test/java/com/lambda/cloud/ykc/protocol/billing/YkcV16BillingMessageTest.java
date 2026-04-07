@@ -67,25 +67,25 @@ public class YkcV16BillingMessageTest {
         }
     }
 
-    public void test2() {
+    public static void test2() {
         try {
+            // 初始化协议引擎
+            ReflectionProtocolEngine reflectionProtocolEngine = new ReflectionProtocolEngine(null);
+            ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, reflectionProtocolEngine);
+
             ProtocolEngine<YkcV16BasePayload> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
             // 将十六进制字符串转换为字节数组
             byte[] bytes = HexUtil.decodeHex(
-                    "682a21BF00321812000000104902239326785321369618120000001049020000000000000000701101000100E818");
-            // 将十六进制字符串转换为字节数组
-            //            byte[] bytes = HexUtil.decodeHex(
-            //
-            // "682a164500321812000000104901239610290538086418120000001049010000000000000000701101000100346D");
+                    "682a286B00321812000000292602258910132969472018120000002926020000000000000000a0860100010040A6");
 
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
             ProtocolPayloadRegistry.register("32", YkcV16StartChargingResponse.class);
             // 使用协议引擎解析消息
             YkcV16BasePayload record = engine.parse(byteBuf, YkcV16BasePayload.class);
 
-            System.out.println(record);
+            System.out.println(record.getDetail());
 
             ByteBuf serializeBuffer = Unpooled.buffer();
             engine.serialize(record, serializeBuffer);
@@ -98,6 +98,10 @@ public class YkcV16BillingMessageTest {
             log.error("计费模型响应序列化测试失败", e);
             fail("计费模型响应序列化失败: " + e.getMessage());
         }
+    }
+
+    public static void main(String[] args) {
+        test2();
     }
 
     private static final String RAW =

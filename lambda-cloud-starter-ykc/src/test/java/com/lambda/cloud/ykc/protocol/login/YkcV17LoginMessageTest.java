@@ -6,6 +6,9 @@ import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
+import com.lambda.cloud.ykc.message.v17.YkcV17BasePayload;
+import com.lambda.cloud.ykc.message.v17.req.YkcV17HeartbeatRequest;
+import com.lambda.cloud.ykc.message.v17.req.YkcV17HeartbeatRequestPayload;
 import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequest;
 import com.lambda.cloud.ykc.message.v17.req.YkcV17LoginRequestPayload;
 import io.netty.buffer.ByteBuf;
@@ -40,7 +43,7 @@ public class YkcV17LoginMessageTest {
         log.info("开始测试登录请求消息的序列化");
 
         try {
-            ProtocolEngine<YkcV17LoginRequestPayload> engine =
+            ProtocolEngine<YkcV17BasePayload<?>> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
             // 将十六进制字符串转换为字节数组
@@ -50,12 +53,36 @@ public class YkcV17LoginMessageTest {
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
             // 使用协议引擎解析消息
-            YkcV17LoginRequestPayload record = engine.parse(byteBuf, YkcV17LoginRequestPayload.class);
+            YkcV17LoginRequestPayload record =
+                    (YkcV17LoginRequestPayload) engine.parse(byteBuf, YkcV17LoginRequestPayload.class);
 
+            YkcV17LoginRequestPayload ykcV17LoginRequestPayload = new YkcV17LoginRequestPayload();
+            YkcV17LoginRequest ykcV17LoginRequest = new YkcV17LoginRequest();
+            ykcV17LoginRequest.setEquipmentId("18210000000016");
+            ykcV17LoginRequest.setEquipmentType(1);
+            ykcV17LoginRequest.setConnectorCount(1);
+            ykcV17LoginRequest.setNetworkType(0);
+            ykcV17LoginRequest.setProgramVersion("1.7.1.0");
+            ykcV17LoginRequest.setProtocolVersion(10);
+            ykcV17LoginRequest.setSimCardNumber("898604C91024C0459707");
+            ykcV17LoginRequest.setOperator(0);
+
+            ykcV17LoginRequestPayload.setDetail(ykcV17LoginRequest);
+            ykcV17LoginRequestPayload.setSerialNumber(1000);
+            ykcV17LoginRequestPayload.setEncryptFlag("0");
             System.out.println(record);
 
+            YkcV17HeartbeatRequestPayload ykcV17HeartbeatRequestPayload = new YkcV17HeartbeatRequestPayload();
+            YkcV17HeartbeatRequest ykcV17HeartbeatRequest = new YkcV17HeartbeatRequest();
+            ykcV17HeartbeatRequest.setEquipmentId("18210000000016");
+            ykcV17HeartbeatRequest.setConnectorId(1);
+            ykcV17HeartbeatRequest.setConnectorStatus(0);
+            ykcV17HeartbeatRequestPayload.setSerialNumber(1000);
+            ykcV17HeartbeatRequestPayload.setEncryptFlag("0");
+            ykcV17HeartbeatRequestPayload.setDetail(ykcV17HeartbeatRequest);
+
             ByteBuf serializeBuffer = Unpooled.buffer();
-            engine.serialize(record, serializeBuffer);
+            engine.serialize(ykcV17HeartbeatRequestPayload, serializeBuffer);
 
             byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
             serializeBuffer.readBytes(serializedBytes);
