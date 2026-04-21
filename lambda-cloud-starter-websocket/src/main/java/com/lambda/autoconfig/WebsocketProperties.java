@@ -19,7 +19,7 @@ public class WebsocketProperties {
     /**
      * 是否 开启 WebSocket
      */
-    private boolean enabled = false;
+    private boolean enabled = true;
     /**
      * 固定前缀
      */
