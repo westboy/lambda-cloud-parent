@@ -53,14 +53,14 @@ public class YkcV20ChargingEndRequest {
      * BMS动力蓄电池单体最低电压 (2字节)
      * 0.01 V/位，0 V 偏移量；数据范围：0 ~24 V
      */
-    @ProtocolField(order = 5, length = 2, dataType = ProtocolDataType.UINT16, description = "BMS动力蓄电池单体最低电压")
+    @ProtocolField(order = 5, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, precision = 2, description = "BMS动力蓄电池单体最低电压")
     private Integer bmsMinCellVoltage;
 
     /**
      * BMS动力蓄电池单体最高电压 (2字节)
      * 0.01 V/位，0 V 偏移量；数据范围：0 ~24 V
      */
-    @ProtocolField(order = 6, length = 2, dataType = ProtocolDataType.UINT16, description = "BMS动力蓄电池单体最高电压")
+    @ProtocolField(order = 6, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, precision = 2, description = "BMS动力蓄电池单体最高电压")
     private Integer bmsMaxCellVoltage;
 
     /**
@@ -81,13 +81,13 @@ public class YkcV20ChargingEndRequest {
      * 电桩累计充电时间 (2字节)
      * 1min/位，0min偏移量；数据范围：0~1092min
      */
-    @ProtocolField(order = 9, length = 2, dataType = ProtocolDataType.UINT16, description = "电桩累计充电时间")
+    @ProtocolField(order = 9, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "电桩累计充电时间")
     private Integer chargingDuration;
 
     /**
      * 电桩输出能量 (2字节)
      * 0.1kWh/位，0kWh偏移量；数据范围：0~6553.5kWh
      */
-    @ProtocolField(order = 10, length = 2, dataType = ProtocolDataType.UINT16, description = "电桩输出能量")
+    @ProtocolField(order = 10, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, precision = 1, description = "电桩输出能量")
     private Integer outputEnergy;
 }

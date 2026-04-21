@@ -53,15 +53,15 @@ public class YkcV20StartChargingConfirmResponse {
      * 账户余额 (4字节)
      * 保留两位小数
      */
-    @ProtocolField(order = 5, length = 4, dataType = ProtocolDataType.UINT32, description = "账户余额")
-    private Integer accountBalance;
+    @ProtocolField(order = 5, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, description = "账户余额")
+    private Long accountBalance;
 
     /**
      * 本次充电当前允许的最大功率 (2字节)
      * 单位：kW
      * 默认值0000；当值为0000时按默认最大功率报文下发的功率限制，如无默认最大功率限制则按无限制执行
      */
-    @ProtocolField(order = 6, length = 2, dataType = ProtocolDataType.UINT16, description = "本次充电当前允许的最大功率")
+    @ProtocolField(order = 6, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "本次充电当前允许的最大功率")
     private Integer maxPowerLimit;
 
     /**
@@ -75,8 +75,8 @@ public class YkcV20StartChargingConfirmResponse {
      * 充电电量限制 (4字节)
      * 精确到小数点后四位；默认全0，不限制
      */
-    @ProtocolField(order = 8, length = 4, dataType = ProtocolDataType.UINT32, description = "充电电量限制")
-    private Integer energyLimit;
+    @ProtocolField(order = 8, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, description = "充电电量限制")
+    private Long energyLimit;
 
     /**
      * 鉴权成功标志 (1字节)
@@ -91,6 +91,6 @@ public class YkcV20StartChargingConfirmResponse {
      * 0x05桩停用，0x06该账户不能在此桩上充电，0x07密码错误，0x08电站电容不足
      * 0x09系统中vin码不存在，0x0A该桩存在未结账记录，0x0B该桩不支持刷卡
      */
-    @ProtocolField(order = 10, length = 1, dataType = ProtocolDataType.BCD, description = "失败原因")
+    @ProtocolField(order = 10, length = 1, dataType = ProtocolDataType.HEX, description = "失败原因")
     private String failureReason;
 }

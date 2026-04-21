@@ -54,21 +54,21 @@ public class YkcV20RemoteStartRequest {
      * 不足补零，桩与平台交互需使用的物理卡号
      */
     @ProtocolField(order = 5, length = 8, dataType = ProtocolDataType.HEX, description = "物理卡号")
-    private byte[] physicalCardNumber;
+    private String physicalCardNumber;
 
     /**
      * 账户余额 (4字节)
      * 保留到小数点两位
      */
-    @ProtocolField(order = 6, length = 4, dataType = ProtocolDataType.UINT32, description = "账户余额")
-    private Integer accountBalance;
+    @ProtocolField(order = 6, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, description = "账户余额")
+    private Long accountBalance;
 
     /**
      * 本次充电当前允许的最大功率 (2字节)
      * 单位：kW
      * 默认值0000；当值为0000时按默认最大功率报文下发的功率限制，如无默认最大功率限制则按无限制执行
      */
-    @ProtocolField(order = 7, length = 2, dataType = ProtocolDataType.UINT16, description = "本次充电当前允许的最大功率")
+    @ProtocolField(order = 7, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "本次充电当前允许的最大功率")
     private Integer maxPowerLimit;
 
     /**
@@ -82,6 +82,6 @@ public class YkcV20RemoteStartRequest {
      * 充电电量限制 (4字节)
      * 精确到小数点后四位；默认全0，不限制
      */
-    @ProtocolField(order = 9, length = 4, dataType = ProtocolDataType.UINT32, description = "充电电量限制")
-    private Integer energyLimit;
+    @ProtocolField(order = 9, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, description = "充电电量限制")
+    private Long energyLimit;
 }

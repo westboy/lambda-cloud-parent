@@ -69,14 +69,14 @@ public class YkcV20UploadRealtimeDataRequest {
      * 输出电压 (2字节)
      * 精确到小数点后一位；待机置零
      */
-    @ProtocolField(order = 7, length = 2, dataType = ProtocolDataType.UINT16, description = "输出电压")
+    @ProtocolField(order = 7, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, precision = 1, description = "输出电压")
     private Integer outputVoltage;
 
     /**
      * 输出电流 (2字节)
      * 精确到小数点后一位；待机置零
      */
-    @ProtocolField(order = 8, length = 2, dataType = ProtocolDataType.UINT16, description = "输出电流")
+    @ProtocolField(order = 8, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, precision = 1, description = "输出电流")
     private Integer outputCurrent;
 
     /**
@@ -111,21 +111,21 @@ public class YkcV20UploadRealtimeDataRequest {
      * 累计充电时间 (2字节)
      * 单位：min；待机置零
      */
-    @ProtocolField(order = 13, length = 2, dataType = ProtocolDataType.UINT16, description = "累计充电时间")
+    @ProtocolField(order = 13, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "累计充电时间")
     private Integer accumulatedChargingTime;
 
     /**
      * 剩余时间 (2字节)
      * 单位：min；待机置零、交流桩置零
      */
-    @ProtocolField(order = 14, length = 2, dataType = ProtocolDataType.UINT16, description = "剩余时间")
+    @ProtocolField(order = 14, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "剩余时间")
     private Integer remainingTime;
 
     /**
      * 充电度数 (4字节)
      * 精确到小数点后四位；待机置零
      */
-    @ProtocolField(order = 15, length = 4, dataType = ProtocolDataType.UINT32, description = "充电度数")
+    @ProtocolField(order = 15, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "充电度数")
     private Integer chargingEnergy;
 
     /**
@@ -133,7 +133,7 @@ public class YkcV20UploadRealtimeDataRequest {
      * 精确到小数点后四位；待机置零
      * 未设置计损比例时等于充电度数
      */
-    @ProtocolField(order = 16, length = 4, dataType = ProtocolDataType.UINT32, description = "计损充电度数")
+    @ProtocolField(order = 16, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "计损充电度数")
     private Integer lossAdjustedChargingEnergy;
 
     /**
@@ -141,14 +141,14 @@ public class YkcV20UploadRealtimeDataRequest {
      * 精确到小数点后四位；待机置零
      * （电费+服务费）*计损充电度数
      */
-    @ProtocolField(order = 17, length = 4, dataType = ProtocolDataType.UINT32, description = "已充金额")
+    @ProtocolField(order = 17, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "已充金额")
     private Integer chargedAmount;
 
     /**
      * 硬件故障 (2字节)
      * Bit位表示（0否1是），低位到高位顺序
      */
-    @ProtocolField(order = 18, length = 2, dataType = ProtocolDataType.UINT16, description = "硬件故障")
+    @ProtocolField(order = 18, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "硬件故障")
     private Integer hardwareFault;
 
     /**

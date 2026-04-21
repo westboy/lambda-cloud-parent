@@ -50,9 +50,9 @@ public class YkcV20ChargingHandshakeRequest {
             order = 4,
             length = 3,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             description = "BMS通信协议版本号")
-    private byte[] bmsProtocolVersion;
+    private String bmsProtocolVersion;
 
     /**
      * BMS电池类型 (1字节)
@@ -70,6 +70,8 @@ public class YkcV20ChargingHandshakeRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "BMS整车动力蓄电池系统额定容量")
     private Integer bmsRatedCapacity;
 
@@ -82,6 +84,8 @@ public class YkcV20ChargingHandshakeRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "BMS整车动力蓄电池系统额定总电压")
     private Integer bmsRatedVoltage;
 
@@ -93,16 +97,16 @@ public class YkcV20ChargingHandshakeRequest {
             order = 8,
             length = 4,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.ASCII,
             description = "BMS电池生产厂商名称")
-    private byte[] bmsManufacturerName;
+    private String bmsManufacturerName;
 
     /**
      * BMS电池组序号 (4字节)
      * BIN码，预留，由厂商自行定义
      */
-    @ProtocolField(order = 9, length = 4, computed = true, dataType = ProtocolDataType.UINT32, description = "BMS电池组序号")
-    private byte[] bmsBatteryPackSerialNumber;
+    @ProtocolField(order = 9, length = 4, computed = true, dataType = ProtocolDataType.HEX, description = "BMS电池组序号")
+    private String bmsBatteryPackSerialNumber;
 
     /**
      * BMS电池组生产日期年 (1字节)
@@ -148,9 +152,9 @@ public class YkcV20ChargingHandshakeRequest {
             order = 13,
             length = 3,
             computed = true,
-            dataType = ProtocolDataType.UINT32,
+            dataType = ProtocolDataType.HEX,
             description = "BMS电池组充电次数")
-    private byte[] bmsChargingCycles;
+    private String bmsChargingCycles;
 
     /**
      * BMS电池组产权标识 (1字节)
@@ -188,5 +192,5 @@ public class YkcV20ChargingHandshakeRequest {
      * BIN码，预留，由厂商自行定义
      */
     @ProtocolField(order = 17, length = 8, computed = true, dataType = ProtocolDataType.HEX, description = "BMS软件版本号")
-    private byte[] bmsSoftwareVersion;
+    private String bmsSoftwareVersion;
 }

@@ -46,8 +46,8 @@ public class YkcV20RemoteStartReplyResponse {
      * 启动结果 (1字节)
      * 0x00失败 0x01成功
      */
-    @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.BCD, description = "启动结果")
-    private String startResult;
+    @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.UINT8, description = "启动结果")
+    private Integer startResult;
 
     /**
      * 失败原因 (1字节)

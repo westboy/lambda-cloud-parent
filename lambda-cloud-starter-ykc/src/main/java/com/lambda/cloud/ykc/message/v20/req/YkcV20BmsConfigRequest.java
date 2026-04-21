@@ -51,6 +51,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 2,
             description = "BMS单体动力蓄电池最高允许充电电压")
     private Integer bmsMaxCellVoltage;
 
@@ -63,6 +65,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "BMS最高允许充电电流")
     private Integer bmsMaxChargingCurrent;
 
@@ -75,6 +79,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "BMS动力蓄电池标称总能量")
     private Integer bmsNominalTotalEnergy;
 
@@ -87,6 +93,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "BMS最高允许充电总电压")
     private Integer bmsMaxTotalVoltage;
 
@@ -106,6 +114,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "BMS整车动力蓄电池荷电状态SOC")
     private Integer bmsSoc;
 
@@ -118,6 +128,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "BMS整车动力蓄电池当前电池电压")
     private Integer bmsCurrentVoltage;
 
@@ -130,6 +142,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "充电桩最高输出电压")
     private Integer chargerMaxOutputVoltage;
 
@@ -142,6 +156,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "充电桩最低输出电压")
     private Integer chargerMinOutputVoltage;
 
@@ -154,6 +170,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "充电桩最大输出电流")
     private Integer chargerMaxOutputCurrent;
 
@@ -166,6 +184,8 @@ public class YkcV20BmsConfigRequest {
             length = 2,
             computed = true,
             dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            precision = 1,
             description = "充电桩最小输出电流")
     private Integer chargerMinOutputCurrent;
 }

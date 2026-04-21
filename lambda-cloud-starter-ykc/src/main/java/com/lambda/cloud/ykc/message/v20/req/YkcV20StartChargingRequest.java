@@ -56,14 +56,14 @@ public class YkcV20StartChargingRequest {
      * 不足8位补0，具体见示例
      */
     @ProtocolField(order = 5, length = 8, dataType = ProtocolDataType.HEX, description = "账号或者物理卡号")
-    private byte[] accountOrCardNumber;
+    private String accountOrCardNumber;
 
     /**
      * 输入密码 (16字节)
      * 对用户输入的密码进行16位MD5加密，采用小写上传
      */
     @ProtocolField(order = 6, length = 16, dataType = ProtocolDataType.HEX, description = "输入密码")
-    private byte[] inputPassword;
+    private String inputPassword;
 
     /**
      * VIN码 (17字节)

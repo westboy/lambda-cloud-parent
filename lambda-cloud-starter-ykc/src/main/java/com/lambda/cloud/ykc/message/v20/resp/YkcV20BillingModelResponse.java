@@ -3,7 +3,7 @@ package com.lambda.cloud.ykc.message.v20.resp;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
-import java.math.BigDecimal;
+import com.lambda.cloud.ykc.message.v20.model.YkcV20BillingModelFee;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,20 +46,19 @@ public class YkcV20BillingModelResponse {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.UINT8, description = "费率数量")
     private Integer rateCount;
 
-    /**
-     * 计损比例 (1字节)
-     * 见名词解释
-     */
+    @ProtocolField(
+            order = 4,
+            length = 8,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20BillingModelFee.class,
+            listElementSizeField = "rateCount",
+            description = "费率列表")
+    private List<YkcV20BillingModelFee> fees;
+
     @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.UINT8, description = "计损比例")
     private Integer lossRatio;
-
-    /**
-     * 复合字段List
-     * 电费费率列表
-     * 每个费率4字节，精确到五位小数
-     */
-    @ProtocolField(order = 4, composite = true, description = "电费费率")
-    private List<BillingModelFee> fees;
 
     /**
      *  普通字段List
@@ -70,27 +69,9 @@ public class YkcV20BillingModelResponse {
     @ProtocolField(
             order = 6,
             length = 1,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.UINT8,
             listElementSize = 48,
-            dataType = ProtocolDataType.UINT8,
             description = "时段费率号")
     private List<Integer> timeSlotRateNumbers;
-
-    @Getter
-    @Setter
-    @ProtocolPayload(frameType = "0A", name = "计费模型请求应答", description = "计费模型请求应答详细信息")
-    public static class BillingModelFee {
-        /**
-         * 电费费率列表
-         * 每个费率4字节，精确到五位小数
-         */
-        @ProtocolField(order = 1, length = 4, dataType = ProtocolDataType.HEX, precision = 5, description = "电费费率")
-        private BigDecimal electricityRate1;
-
-        /**
-         * 服务费费率列表
-         * 每个费率4字节，精确到五位小数
-         */
-        @ProtocolField(order = 2, length = 4, dataType = ProtocolDataType.HEX, precision = 5, description = "服务费费率")
-        private BigDecimal serviceRate1;
-    }
 }

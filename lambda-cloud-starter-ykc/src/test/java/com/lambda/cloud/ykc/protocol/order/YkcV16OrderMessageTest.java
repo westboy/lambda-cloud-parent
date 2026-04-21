@@ -9,6 +9,7 @@ import com.lambda.cloud.netty.protocol.validation.ValidationResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 
 /**
  * 交易记录协议解析测试
@@ -33,6 +34,7 @@ public class YkcV16OrderMessageTest {
     private static final String TEST_DATA5 =
             "68A28001003B18220000000155021673797553635328182200000001550208CF1C16170A19D0841517170A19400D0300000000000000000000000000400D0300000000000000000000000000400D0300000000000000000000000000A85B01007375000000000000876800000A000000007D75000000737500000000000087680000000000000000000000000000000000000001D0841517170A19450000000000000000A5B3";
 
+    @Test
     public void testParseTransactionRecordWithNewProtocol() {
         //        log.info("开始使用新协议框架解析交易记录报文");
         //        log.info("测试数据: {}", TEST_DATA4);

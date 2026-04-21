@@ -39,8 +39,8 @@ public class YkcV20RemoteStopReplyResponse {
      * 停止结果 (1字节)
      * 0x00失败 0x01成功
      */
-    @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.BCD, description = "停止结果")
-    private String stopResult;
+    @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.UINT8, description = "停止结果")
+    private Integer stopResult;
 
     /**
      * 失败原因 (1字节)

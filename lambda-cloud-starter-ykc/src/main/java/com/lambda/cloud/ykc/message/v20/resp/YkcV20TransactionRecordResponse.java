@@ -3,153 +3,99 @@ package com.lambda.cloud.ykc.message.v20.resp;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
+import com.lambda.cloud.ykc.message.v20.model.YkcV20HalfHourEnergy;
+import com.lambda.cloud.ykc.message.v20.model.YkcV20TransactionRatePeriod;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * 云快充2.0协议 - 交易记录响应详细信息
- * <p>
- * 帧类型码：0x3D
- * 对应协议文档：8.7 交易记录
- * </p>
- *
- * @author zx
- */
 @Getter
 @Setter
 @ToString
 @ProtocolPayload(frameType = "3D", name = "交易记录", description = "交易记录响应详细信息")
 public class YkcV20TransactionRecordResponse {
 
-    /**
-     * 交易流水号 (16字节)
-     * 见名词解释
-     */
     @ProtocolField(order = 1, length = 16, dataType = ProtocolDataType.BCD, description = "交易流水号")
     private String transactionSerialNumber;
 
-    /**
-     * 桩编号 (7字节)
-     * 不足7位补0
-     */
     @ProtocolField(order = 2, length = 7, dataType = ProtocolDataType.BCD, description = "桩编号")
     private String equipmentId;
 
-    /**
-     * 枪号 (1字节)
-     */
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.BCD, description = "枪号")
     private String connectorId;
 
-    /**
-     * 开始时间 (7字节)
-     * CP56Time2a格式
-     */
-    @ProtocolField(order = 4, length = 7, dataType = ProtocolDataType.CP56TIME2A, description = "开始时间")
-    private byte[] startTime;
+    @ProtocolField(order = 4, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "开始时间")
+    private LocalDateTime startTime;
 
-    /**
-     * 结束时间 (7字节)
-     * CP56Time2a格式
-     */
-    @ProtocolField(order = 5, length = 7, dataType = ProtocolDataType.CP56TIME2A, description = "结束时间")
-    private byte[] endTime;
+    @ProtocolField(order = 5, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "结束时间")
+    private LocalDateTime endTime;
 
-    /**
-     * 充电时长 (4字节)
-     * 单位：分钟
-     */
-    @ProtocolField(order = 6, length = 4, dataType = ProtocolDataType.HEX, description = "充电时长")
-    private String chargingDuration;
+    @ProtocolField(order = 6, length = 6, dataType = ProtocolDataType.BCD, description = "电表表号")
+    private String meterNo;
 
-    /**
-     * 开始SOC (1字节)
-     * 百分比
-     */
-    @ProtocolField(order = 7, length = 1, dataType = ProtocolDataType.HEX, description = "开始SOC")
-    private String startSoc;
+    @ProtocolField(order = 7, length = 34, dataType = ProtocolDataType.HEX, description = "电表密文")
+    private String meterCipher;
 
-    /**
-     * 结束SOC (1字节)
-     * 百分比
-     */
-    @ProtocolField(order = 8, length = 1, dataType = ProtocolDataType.HEX, description = "结束SOC")
-    private String endSoc;
+    @ProtocolField(order = 8, length = 2, dataType = ProtocolDataType.HEX, description = "电表协议版本号")
+    private String meterProtocolVersion;
 
-    /**
-     * 充电前电表读数 (4字节)
-     * 精确到小数点后四位
-     */
-    @ProtocolField(order = 9, length = 4, dataType = ProtocolDataType.HEX, description = "充电前电表读数")
-    private String startMeterReading;
+    @ProtocolField(order = 9, length = 1, dataType = ProtocolDataType.UINT8, description = "加密方式")
+    private Integer encryptMethod;
 
-    /**
-     * 充电后电表读数 (4字节)
-     * 精确到小数点后四位
-     */
-    @ProtocolField(order = 10, length = 4, dataType = ProtocolDataType.HEX, description = "充电后电表读数")
-    private String endMeterReading;
+    @ProtocolField(order = 10, length = 5, dataType = ProtocolDataType.HEX, littleEndian = true, description = "电表总起值")
+    private String meterStartValue;
 
-    /**
-     * 充电度数 (4字节)
-     * 精确到小数点后四位
-     */
-    @ProtocolField(order = 11, length = 4, dataType = ProtocolDataType.HEX, description = "充电度数")
-    private String chargingEnergy;
+    @ProtocolField(order = 11, length = 5, dataType = ProtocolDataType.HEX, littleEndian = true, description = "电表总止值")
+    private String meterEndValue;
 
-    /**
-     * 停止原因 (1字节)
-     * 0x01人工停止，0x02自动停止，0x03故障停止，0x04平台停止，0x05紧急停止，0x06其他
-     */
-    @ProtocolField(order = 12, length = 1, dataType = ProtocolDataType.BCD, description = "停止原因")
-    private String stopReason;
+    @ProtocolField(order = 12, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "总电量")
+    private Integer totalEnergy;
 
-    /**
-     * 充电金额 (4字节)
-     * 精确到小数点后两位
-     */
-    @ProtocolField(order = 13, length = 4, dataType = ProtocolDataType.HEX, description = "充电金额")
-    private String chargingAmount;
+    @ProtocolField(order = 13, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "计损总电量")
+    private Integer totalEnergyWithLoss;
 
-    /**
-     * 服务费金额 (4字节)
-     * 精确到小数点后两位
-     */
-    @ProtocolField(order = 14, length = 4, dataType = ProtocolDataType.HEX, description = "服务费金额")
-    private String serviceFeeAmount;
+    @ProtocolField(order = 14, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "消费金额")
+    private Integer totalAmount;
 
-    /**
-     * 总金额 (4字节)
-     * 精确到小数点后两位
-     */
-    @ProtocolField(order = 15, length = 4, dataType = ProtocolDataType.HEX, description = "总金额")
-    private String totalAmount;
+    @ProtocolField(order = 15, length = 17, dataType = ProtocolDataType.ASCII, description = "电动汽车唯一标识")
+    private String vin;
 
-    /**
-     * 逻辑卡号 (8字节)
-     * 显示在屏幕上，不足8位补零
-     */
-    @ProtocolField(order = 16, length = 8, dataType = ProtocolDataType.BCD, description = "逻辑卡号")
-    private String logicalCardNumber;
+    @ProtocolField(order = 16, length = 1, dataType = ProtocolDataType.UINT8, description = "交易标识")
+    private Integer transactionType;
 
-    /**
-     * 物理卡号 (8字节)
-     * 不足8位补零
-     */
-    @ProtocolField(order = 17, length = 8, dataType = ProtocolDataType.HEX, description = "物理卡号")
+    @ProtocolField(order = 17, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "交易日期、时间")
+    private LocalDateTime transactionDateTime;
+
+    @ProtocolField(order = 18, length = 1, dataType = ProtocolDataType.UINT8, description = "停止原因")
+    private Integer stopReason;
+
+    @ProtocolField(order = 19, length = 8, dataType = ProtocolDataType.HEX, description = "物理卡号")
     private String physicalCardNumber;
 
-    /**
-     * 计费模型编号 (2字节)
-     */
-    @ProtocolField(order = 18, length = 2, dataType = ProtocolDataType.BCD, description = "计费模型编号")
-    private String billingModelNumber;
+    @ProtocolField(order = 20, length = 1, dataType = ProtocolDataType.UINT8, description = "费率时段数量")
+    private Integer ratePeriodCount;
 
-    /**
-     * VIN码 (17字节)
-     * ASCII编码
-     */
-    @ProtocolField(order = 19, length = 17, dataType = ProtocolDataType.ASCII, description = "VIN码")
-    private String vinCode;
+    @ProtocolField(
+            order = 21,
+            length = 16,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20TransactionRatePeriod.class,
+            listElementSizeField = "ratePeriodCount",
+            description = "费率时段列表")
+    private List<YkcV20TransactionRatePeriod> ratePeriods;
+
+    @ProtocolField(
+            order = 22,
+            length = 4,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20HalfHourEnergy.class,
+            listElementSize = 48,
+            description = "半小时电量列表")
+    private List<YkcV20HalfHourEnergy> halfHourEnergies;
 }

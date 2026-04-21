@@ -37,7 +37,6 @@
         <calcite.version>1.35.0</calcite.version>
         <guava.version>33.2.1-jre</guava.version>
         <redisson.version>4.3.0</redisson.version>
-        <fastjson.version>1.2.83</fastjson.version>
         <liquibase.version>5.0.2</liquibase.version>
         <jackson-bom.version>3.0.4</jackson-bom.version>
         <mapstruct.version>1.6.3</mapstruct.version>
@@ -767,8 +766,6 @@
                         <exclude>**/generated/**</exclude>
                         <exclude>**/*Application.class</exclude>
                         <exclude>**/model/*.class</exclude>
-                        <exclude>**/config/*.class</exclude>
-                        <exclude>**/autoconfig/*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

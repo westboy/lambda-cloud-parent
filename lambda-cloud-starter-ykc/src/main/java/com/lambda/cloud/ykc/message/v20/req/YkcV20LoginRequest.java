@@ -53,8 +53,8 @@ public class YkcV20LoginRequest {
      * 通信协议版本 (3字节)
      * 如果协议版本号为1.0.11，则为0x01，0x00,0x0B
      */
-    @ProtocolField(order = 5, length = 3, dataType = ProtocolDataType.UINT32, description = "通信协议版本")
-    private byte[] protocolVersion;
+    @ProtocolField(order = 5, length = 3, dataType = ProtocolDataType.HEX, description = "通信协议版本")
+    private String protocolVersion;
 
     /**
      * 程序版本 (8字节)
@@ -137,7 +137,7 @@ public class YkcV20LoginRequest {
      * 偏移量：180；精确到小数点后6位，取不到置零。
      * 示例：东经90°(+90.000000)，上报十进制为270000000，对应16进制为0x1017DF80
      */
-    @ProtocolField(order = 14, length = 4, dataType = ProtocolDataType.UINT32, description = "经度")
+    @ProtocolField(order = 14, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 6, description = "经度")
     private Integer longitude;
 
     /**
@@ -145,6 +145,6 @@ public class YkcV20LoginRequest {
      * 偏移量：90；精确到小数点后6位，取不到置零。
      * 示例：南纬45°(-45.000000)，上报十进制为45000000，对应16进制为0x02AEA540
      */
-    @ProtocolField(order = 15, length = 4, dataType = ProtocolDataType.UINT32, description = "纬度")
+    @ProtocolField(order = 15, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 6, description = "纬度")
     private Integer latitude;
 }
