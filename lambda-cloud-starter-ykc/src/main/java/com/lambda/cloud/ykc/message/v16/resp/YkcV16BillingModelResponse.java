@@ -32,8 +32,7 @@ public class YkcV16BillingModelResponse {
             order = 1,
             length = 7,
             computed = true,
-            dataType = ProtocolDataType.HEX,
-            littleEndian = true,
+            dataType = ProtocolDataType.BCD,
             description = "桩编号")
     private String equipmentId;
 
@@ -42,11 +41,10 @@ public class YkcV16BillingModelResponse {
      * 固定值：01 00
      */
     @ProtocolField(
-            order = 3,
+            order = 2,
             length = 2,
             computed = true,
             dataType = ProtocolDataType.BCD,
-            littleEndian = true,
             description = "计费模型编号")
     private String billingModelCode;
 
@@ -184,9 +182,8 @@ public class YkcV16BillingModelResponse {
             length = 1,
             computed = true,
             dataType = ProtocolDataType.LIST,
-            listElementType = ProtocolDataType.BCD,
+            listElementType = ProtocolDataType.UINT8,
             listElementSize = 48,
-            littleEndian = true,
             description = "时段费率号数组")
-    private List<String> timeSlotRates;
+    private List<Integer> timeSlotRates;
 }

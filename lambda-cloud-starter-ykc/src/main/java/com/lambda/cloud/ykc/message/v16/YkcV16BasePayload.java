@@ -67,11 +67,15 @@ public class YkcV16BasePayload implements ProtocolMessage, RawPayloadAware {
             description = "校验码")
     private String crc;
 
+    private byte[] rawPayload;
+
     @Override
     public byte[] getRawPayload() {
-        return new byte[0];
+        return rawPayload;
     }
 
     @Override
-    public void setRawPayload(byte[] rawPayload) {}
+    public void setRawPayload(byte[] rawPayload) {
+        this.rawPayload = rawPayload;
+    }
 }
