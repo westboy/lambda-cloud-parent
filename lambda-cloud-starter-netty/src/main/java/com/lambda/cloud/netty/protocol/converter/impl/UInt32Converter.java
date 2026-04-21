@@ -6,6 +6,8 @@ import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import io.netty.buffer.ByteBuf;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -38,13 +40,26 @@ public class UInt32Converter implements DataTypeConverter {
 
             // 根据字段类型返回不同的对象
             Class<?> fieldType = fieldMetadata.getFieldType();
+            int precision = fieldMetadata.getPrecision();
 
             if (PrimitiveTypeUtils.isLongType(fieldType)) {
                 return unsignedValue;
             } else if (PrimitiveTypeUtils.isIntegerType(fieldType)) {
                 return value;
+            } else if (fieldType == BigDecimal.class) {
+                if (precision <= 0) {
+                    return new BigDecimal(unsignedValue);
+                }
+                return new BigDecimal(unsignedValue)
+                        .divide(BigDecimal.TEN.pow(precision), precision, RoundingMode.DOWN);
             } else if (fieldType == String.class) {
-                return String.valueOf(unsignedValue);
+                if (precision <= 0) {
+                    return String.valueOf(unsignedValue);
+                }
+                return new BigDecimal(unsignedValue)
+                        .divide(BigDecimal.TEN.pow(precision), precision, RoundingMode.DOWN)
+                        .stripTrailingZeros()
+                        .toPlainString();
             } else {
                 return unsignedValue; // 默认返回长整型
             }
@@ -65,8 +80,12 @@ public class UInt32Converter implements DataTypeConverter {
 
         try {
             long longValue;
+            int precision = fieldMetadata.getPrecision();
 
-            if (value instanceof Number) {
+            if (value instanceof BigDecimal b) {
+                BigDecimal scaled = precision > 0 ? b.multiply(BigDecimal.TEN.pow(precision)) : b;
+                longValue = scaled.longValue();
+            } else if (value instanceof Number) {
                 longValue = ((Number) value).longValue();
             } else if (value instanceof String) {
                 longValue = Long.parseUnsignedLong((String) value);
