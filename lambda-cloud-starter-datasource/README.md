@@ -129,8 +129,8 @@ com.lambda.autoconfig.DataSourceAutoConfiguration
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/app
-    username: root
-    password: 123456
+    username: your-user
+    password: your-password
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -146,13 +146,13 @@ spring:
       datasource:
         master:
           url: jdbc:mysql://localhost:3306/master
-          username: root
-          password: 123456
+          username: your-user
+          password: your-password
           driver-class-name: com.mysql.cj.jdbc.Driver
         slave:
           url: jdbc:mysql://localhost:3306/slave
-          username: root
-          password: 123456
+          username: your-user
+          password: your-password
           driver-class-name: com.mysql.cj.jdbc.Driver
 ```
 

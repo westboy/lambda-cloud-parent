@@ -1,34 +1,24 @@
-# Lambda Cloud Starter Nacos
+# lambda-cloud-starter-nacos
 
-Nacos 服务发现和配置管理的 Spring Boot Starter，整合了 Alibaba Nacos 相关依赖。
+`lambda-cloud-starter-nacos` 是 Nacos 相关依赖的聚合 starter，用于在 Lambda Cloud 体系中统一引入 Nacos 客户端、服务发现与配置中心依赖，并处理部分冲突依赖（如日志适配器）。
 
-## 功能特性
+## 模块定位
 
-- 集成 Nacos 服务发现
-- 集成 Nacos 配置管理
-- 统一依赖管理，避免版本冲突
-- 排除不必要的日志适配器
+- 提供依赖聚合：`nacos-client`、`spring-cloud-starter-alibaba-nacos-discovery`、`spring-cloud-starter-alibaba-nacos-config`。
+- 本模块不提供额外的自动装配类，Nacos 能力由 Spring Cloud Alibaba 官方 starter 完成。
 
-## 依赖
+## 快速开始
+
+### 1）引入依赖
 
 ```xml
 <dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-nacos</artifactId>
+  <groupId>com.lambda.cloud</groupId>
+  <artifactId>lambda-cloud-starter-nacos</artifactId>
 </dependency>
 ```
 
-## 包含的依赖
-
-该 Starter 整合了以下 Nacos 相关依赖：
-
-- `nacos-client` - Nacos 客户端核心库
-- `spring-cloud-starter-alibaba-nacos-discovery` - Nacos 服务发现
-- `spring-cloud-starter-alibaba-nacos-config` - Nacos 配置管理
-
-## 配置示例
-
-### 服务发现配置
+### 2）最小配置（服务发现）
 
 ```yaml
 spring:
@@ -37,20 +27,9 @@ spring:
       discovery:
         server-addr: localhost:8848
         namespace: dev
-        group: DEFAULT_GROUP
-        cluster-name: DEFAULT
-        service: ${spring.application.name}
-        weight: 1
-        ip: 192.168.1.100
-        port: ${server.port}
-        secure: false
-        access-key: your-access-key
-        secret-key: your-secret-key
-        log-name: nacos-discovery.log
-        endpoint: your-endpoint
 ```
 
-### 配置管理配置
+### 3）最小配置（配置中心）
 
 ```yaml
 spring:
@@ -59,97 +38,17 @@ spring:
       config:
         server-addr: localhost:8848
         namespace: dev
-        group: DEFAULT_GROUP
-        name: ${spring.application.name}
         file-extension: yaml
-        timeout: 3000
-        max-retry: 10
-        config-long-poll-timeout: 46000
-        config-retry-time: 2333
-        enable-remote-sync-config: true
-        access-key: your-access-key
-        secret-key: your-secret-key
-        endpoint: your-endpoint
 ```
 
-### 多配置文件
+## 依赖说明
 
-```yaml
-spring:
-  cloud:
-    nacos:
-      config:
-        server-addr: localhost:8848
-        namespace: dev
-        extension-configs:
-          - data-id: common.yaml
-            group: COMMON_GROUP
-            refresh: true
-          - data-id: redis.yaml
-            group: MIDDLEWARE_GROUP
-            refresh: true
-        shared-configs:
-          - data-id: shared.yaml
-            group: SHARED_GROUP
-            refresh: true
-```
+本模块在 [pom.xml](pom.xml) 中聚合：
 
-## 使用示例
+- `com.alibaba.nacos:nacos-client`（排除 nacos 日志适配器依赖）
+- `com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery`
+- `com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config`
 
-### 基本使用
+## 安全建议
 
-1. 添加依赖到项目
-2. 配置 Nacos 服务器地址
-3. 启动应用，自动注册到 Nacos
-
-### 服务发现
-
-```java
-@RestController
-public class DiscoveryController {
-    
-    @Autowired
-    private DiscoveryClient discoveryClient;
-    
-    @GetMapping("/services")
-    public List<String> getServices() {
-        return discoveryClient.getServices();
-    }
-    
-    @GetMapping("/instances/{service}")
-    public List<ServiceInstance> getInstances(@PathVariable String service) {
-        return discoveryClient.getInstances(service);
-    }
-}
-```
-
-### 配置动态刷新
-
-```java
-@RestController
-@RefreshScope
-public class ConfigController {
-    
-    @Value("${user.name:default}")
-    private String userName;
-    
-    @Value("${user.age:0}")
-    private Integer userAge;
-    
-    @GetMapping("/config")
-    public Map<String, Object> getConfig() {
-        Map<String, Object> config = new HashMap<>();
-        config.put("userName", userName);
-        config.put("userAge", userAge);
-        return config;
-    }
-}
-```
-
-## 注意事项
-
-- 确保 Nacos 服务器正常运行
-- 配置正确的服务器地址和端口
-- 注意命名空间和分组的配置
-- 使用 `@RefreshScope` 注解实现配置动态刷新
-- 该 Starter 已排除冲突的日志适配器依赖
+- 不要在仓库中明文提交 `access-key/secret-key`，建议通过环境变量或配置中心加密能力注入。

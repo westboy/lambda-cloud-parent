@@ -31,7 +31,7 @@ src/main/java/com/lambda/cloud/ykc/message/
    └─ resp/*.java
 
 src/main/resources/
-└─ spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+└─ META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
 
 docs/
 ├─ 云快充平台协议V1.6_完整报文参数对照表.md
@@ -146,6 +146,5 @@ lambda:
 
 - `YkcProperties.enabled` 当前未在自动配置流程中实际参与条件判断。
 - `scan-sub-packages`、`exclude-packages`、`verbose` 字段当前未被 `YkcAutoConfiguration` 使用。
-- 自动装配导入文件位于 `resources/spring/`，与常见 `META-INF/spring/` 目录习惯不同。
 - 本模块只提供协议消息定义与扫描，不包含独立的连接管理、会话管理与业务处理编排。
 - 默认扫描包为 `com.lambda`，若业务项目包路径不在该范围会出现未注册消息类问题。

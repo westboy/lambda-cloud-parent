@@ -90,10 +90,10 @@ com.lambda.autoconfig.SecurityAutoConfiguration
 
 - 继承 Sa-Token 原生配置。
 - 扩展项：
-  - `enableMethodAuthentication` 默认 `true`
   - `ignored` 自定义忽略路径
   - `loginTypes` 动态注册多登录类型
 - 内置忽略路径包含：`/public/**`、`/v3/**`、`/anon/**`、静态资源后缀等。
+- Sa-Token 原生配置在本 starter 中使用 `lambda.security.sa-token` 作为绑定前缀（对应注入到 `SaTokenConfig` Bean），用于与业务侧 `sa-token.*` 配置隔离。
 
 ### form
 

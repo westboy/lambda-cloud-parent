@@ -133,6 +133,11 @@ lambda:
       code-template-id: SMS_123456789
 ```
 
+## 安全建议
+
+- 不要在代码仓库中提交 `access-key-id/access-key-secret/app-key` 等敏感信息，建议通过环境变量、密钥管理系统或配置中心加密能力注入。
+- 生产模式建议同时配置网关侧限流/防刷与告警，避免短信通道被滥用。
+
 ```java
 @Service
 public class VerifyCodeService {

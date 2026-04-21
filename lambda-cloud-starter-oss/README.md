@@ -94,8 +94,8 @@ lambda:
       - name: default
         type: MINIO
         endpoint: http://127.0.0.1:9000
-        accessKey: minioadmin
-        secretKey: minioadmin
+        accessKey: your-access-key
+        secretKey: your-secret-key
         bucket: demo-bucket
         isHttps: false
         accessPolicy: private
@@ -116,6 +116,11 @@ lambda:
         bucket: backup-bucket
         isHttps: false
 ```
+
+## 安全建议
+
+- 不要在代码仓库中提交 `accessKey/secretKey` 等敏感信息，建议通过环境变量、密钥管理系统或配置中心加密能力注入。
+- 生产环境建议使用最小权限的 AK/SK，并结合 `accessPolicy` 控制访问范围。
 
 ## 核心调用方式
 

@@ -21,11 +21,11 @@
 ## 核心优势 
 
 - 🚀 **现代化技术栈**：基于 Spring Boot 4.0.2、Spring Cloud 2025.1.1、Spring Cloud Alibaba 2025.1.0.0、JDK 21
-- 🧩 **高度模块化**：27+ 个独立模块，支持灵活组合，按需引入，避免依赖膨胀
+- 🧩 **高度模块化**：27 个独立模块（含 core/processor/BOM 与各 starter），支持灵活组合，按需引入，避免依赖膨胀
 - 🔐 **企业级安全**：集成 Sa-Token 1.45.0，支持表单登录、短信登录、HMAC 签名认证、第三方登录（微信小程序）、XSS 防护等多种认证方式
 - 💾 **MyBatis Plus 增强**：扩展 Mapper（批量插入、编码字段操作、Exists 判断）、自动填充、多租户行级隔离、字段加密、数据权限改写等企业级功能
 - 🔧 **自动化配置**：所有中间件均提供自动配置，零配置即可快速启动，支持细粒度定制和条件装配
-- 🌐 **微服务全栈支持**：Dubbo 3.3.6、OpenFeign 双 RPC、Nacos 注册中心、Gateway 网关、Kafka/RocketMQ 消息队列
+- 🌐 **微服务全栈支持**：Dubbo 3.3.6、OpenFeign 双 RPC、Nacos 注册中心、Gateway 网关、RocketMQ 消息队列
 - 📦 **统一依赖管理**：通过 `lambda-cloud-starter-dependencies` 管理所有组件版本，避免依赖冲突
 - 🎯 **协议引擎**：基于 Netty 的高性能二进制协议解析引擎，支持注解驱动的协议定义、CRC 校验、字段加解密、List/Composite 复合结构解析
 - 💡 **智能对象转换**：基于 MapStruct 1.6.3 的编译期对象转换，支持 @AutoConverter 注解驱动、@FieldMapping 字段映射和自定义转换函数
@@ -53,7 +53,6 @@
 | | Redisson | 4.3.0 | Redis 客户端，支持分布式锁和延迟队列 |
 | | Caffeine | - | 本地缓存 |
 | | Lambda Cache | - | 统一缓存抽象层，支持 Redis/Caffeine/多级缓存 |
-| **消息队列** | Kafka | - | 高吞吐量消息中间件，支持延迟消息 |
 | | RocketMQ | 2.3.4 | 分布式消息中间件 |
 | **RPC 框架** | Dubbo | 3.3.6 | 高性能 RPC 框架，支持认证透传、租户上下文、调用日志、指标、健康检查 |
 | | OpenFeign | - | 声明式 HTTP 客户端，支持请求头透传、错误解码、重试 |
@@ -104,8 +103,6 @@ lambda-cloud-parent
 ├── lambda-cloud-starter-cache           # 统一缓存抽象层
 │
 ├── lambda-cloud-starter-redis           # Redis 访问基础能力
-│
-├── lambda-cloud-starter-kafka           # Kafka 消息队列集成（延迟消息、监控管理）
 │
 ├── lambda-cloud-starter-rocketmq        # RocketMQ 消息队列集成
 │
@@ -211,7 +208,7 @@ lambda-cloud-parent
   集成 IoTDB 时序数据库与多源数据处理能力，支持高性能采集、实时查询与可视化分析，适用于工业监控、能耗管理等数据密集型场景。
 
 - 🛍️ **电商与交易系统**  
-  结合 Redis 缓存、Kafka 消息队列与分布式锁机制，轻松应对高并发下的库存、订单、支付等核心业务，确保系统高可用与一致性。
+  结合 Redis 缓存、消息队列与分布式锁机制，轻松应对高并发下的库存、订单、支付等核心业务，确保系统高可用与一致性。
 
 - 💳 **支付与清结算平台**  
   提供 HMAC 签名认证、多数据源管理与分布式事务支持，助力构建安全可靠的支付网关与清结算系统。

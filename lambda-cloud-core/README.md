@@ -1,6 +1,6 @@
 # Lambda Cloud Core
 
-`lambda-cloud-core` 是 `lambda_cloud_parent` 的基础公共模块，提供模型基类、对象转换、异常模型、安全上下文与通用工具能力，供上层 starter 和业务模块直接复用。
+`lambda-cloud-core` 是 `lambda-cloud-parent` 的基础公共模块，提供模型基类、对象转换、异常模型、安全上下文与通用工具能力，供上层 starter 和业务模块直接复用。
 
 ## 模块定位
 

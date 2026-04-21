@@ -159,7 +159,7 @@ com.lambda.autoconfig.WebSocketAutoConfiguration
 
 配置前缀：`lambda.websocket`
 
-- `enabled` 默认 `false`（但自动配置条件 `matchIfMissing=true`，缺省仍会生效）
+- `enabled` 默认 `true`（设置为 `false` 可关闭自动装配）
 - `channel-store-mode` 默认 `DEFAULT`
 - `app-prefix` 默认 `/app`
 - `user-prefix` 默认 `/user/`
@@ -204,7 +204,6 @@ lambda:
 
 ## 当前实现约束
 
-- `WebsocketProperties.enabled` 默认值是 `false`，但自动配置 `matchIfMissing=true`，未配置时仍会启用 WebSocket。
 - `WebSocketAutoConfiguration` 在 REDIS 模式通过 `SpringUtil.getBean(StringRedisTemplate.class)` 获取 Bean，若未提供会在运行期失败。
 - `DefaultStompWebSocketConnectEventServiceImpl` 依赖 `framework` 非空，客户端未传 `x-websocket-framework` 时不会记录在线状态。
 - `StompWebSocketSubscribeEvent` 的 topic 匹配为精确匹配，不支持 Ant 风格通配。

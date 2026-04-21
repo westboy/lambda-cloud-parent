@@ -38,7 +38,7 @@ com.lambda.autoconfig.SwaggerAutoConfiguration
 
 - `OpenAPI`（缺省时创建）
 - `GroupedOpenApi`（缺省时创建，分组名默认取 `spring.application.name`）
-- `SwaggerDisabledFilter`（当 `lambda.api-docs.enabled=false` 时创建）
+- `SwaggerDisabledFilter`（当 `lambda.api-docs.enabled=false` 或未配置时创建）
 
 ### OpenAPI 构建规则
 
@@ -95,7 +95,7 @@ lambda:
 
 ## 文档禁用机制
 
-当 `lambda.api-docs.enabled=false` 时，`SwaggerDisabledFilter` 生效：
+当 `lambda.api-docs.enabled=false` 或未配置时，`SwaggerDisabledFilter` 生效：
 
 - 若请求 URI 等于 `doc-uri`，返回 404
 - 其他请求透传
@@ -124,7 +124,7 @@ lambda:
 
 ## 当前实现约束
 
-- `lambda.api-docs.enabled` 默认值为 `false`，默认会启用禁用过滤器并阻断 `doc-uri`。
+- `lambda.api-docs.enabled` 默认值为 `false`，未配置或设置为 `false` 时会启用禁用过滤器并阻断 `doc-uri`。
 - 默认分组仅包含标注了 `@Operation` 的接口，未标注方法不会出现在文档中。
 - `SwaggerDisabledFilter` 为 Servlet `Filter`，仅适用于 WebMVC 场景。
 - 禁用逻辑只判断 URI 与 `doc-uri` 的精确相等，不处理尾斜杠或上下文路径差异。

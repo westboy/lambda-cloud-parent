@@ -41,6 +41,7 @@ com.lambda.autoconfig.WebClientAutoConfiguration
 
 - `@ConditionalOnClass(WebClient.class)`
 - `@ConditionalOnProperty(prefix = "lambda.webclient", name = "enabled", matchIfMissing = true)`
+- 总开关：`lambda.webclient.enabled`（缺省视为 `true`）
 
 自动装配 Bean：
 

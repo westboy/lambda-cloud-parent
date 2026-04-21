@@ -38,6 +38,7 @@ com.lambda.autoconfig.LiquibaseAutoConfiguration
 
 - `@AutoConfigureAfter(DataSourceAutoConfiguration.class)`
 - `@ConditionalOnProperty(prefix = "lambda.liquibase", name = "enabled", matchIfMissing = true)`
+- 总开关：`lambda.liquibase.enabled`（缺省视为 `true`）
 - 绑定配置类：`LiquibaseProperties`
 
 ### 核心 Bean
@@ -68,8 +69,8 @@ lambda:
   liquibase:
     enabled: true
     url: jdbc:mysql://127.0.0.1:3306/lambda
-    username: root
-    password: root
+    username: your-user
+    password: your-password
     driver-class-name: com.mysql.cj.jdbc.Driver
 ```
 

@@ -14,9 +14,11 @@
 src/main/java/com/lambda/autoconfig/
 ├─ MyBatisAutoConfiguration.java
 ├─ MybatisPlusExtendProperties.java
-├─ DataScopeAutoConfiguration.java
-├─ DataScopeProperties.java
 └─ condition/MapperPackageConfiguredCondition.java
+
+src/main/java/com/lambda/autoconfig/datascope/
+├─ DataScopeAutoConfiguration.java
+└─ DataScopeProperties.java
 
 src/main/java/com/lambda/cloud/mybatis/
 ├─ handler/
@@ -53,7 +55,7 @@ src/main/resources/
 
 ```text
 com.lambda.autoconfig.MyBatisAutoConfiguration
-com.lambda.autoconfig.DataScopeAutoConfiguration
+com.lambda.autoconfig.datascope.DataScopeAutoConfiguration
 ```
 
 ## 自动装配机制

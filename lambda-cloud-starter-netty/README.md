@@ -47,7 +47,13 @@ src/main/java/com/lambda/cloud/netty/
 自动配置导入文件：
 
 ```text
-src/main/resources/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+```
+
+自动装配注册项：
+
+```text
+com.lambda.autoconfig.NettyAutoConfiguration
 ```
 
 ## 自动装配机制
@@ -234,4 +240,3 @@ spring:
 - `ProtocolPayloadScanner` 仅注册 `@ProtocolPayload(isFrame=false)` 类型。
 - `ProtocolPayloadRegistry` 为静态全局存储，多测试场景需要显式 `clear()`。
 - `ValidationEngine` 的数值范围使用 `double` 处理，极大整数存在精度风险。
-- 自动配置导入文件当前包含 `com.cx.autoconfig.NettyAutoConfiguration` 与 `ProtocolPayloadAutoConfiguration`，与本模块现有类不一致，存在装配风险。

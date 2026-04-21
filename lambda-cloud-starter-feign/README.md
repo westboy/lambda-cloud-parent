@@ -55,6 +55,7 @@ com.lambda.autoconfig.FeignAutoConfiguration
 ### Retryer 条件
 
 - 条件注解：`@ConditionalOnProperty(prefix="spring.cloud.openfeign.client.retry", name="enabled", matchIfMissing=true)`
+- 配置键：`spring.cloud.openfeign.client.retry.enabled`
 - 默认重试参数：`maxAttempts=3`（来自 `ExtendFeignClientProperties.Retry`）。
 - 实际重试器：`Retryer.Default(100ms, 1min, maxAttempts)`。
 

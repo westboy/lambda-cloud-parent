@@ -1,144 +1,139 @@
-# Lambda Cloud Starter IoTDB
+# lambda-cloud-starter-iotdb
 
-Apache IoTDB 的 Spring Boot Starter，提供时序数据库连接和订阅功能。
+`lambda-cloud-starter-iotdb` 提供 Apache IoTDB 的自动装配能力，覆盖 Tree/Table 两种数据模型的连接池，以及可选的订阅消费（subscription）管理。
 
-## 功能特性
+## 模块定位
 
-- 支持 IoTDB Tree 和 Table 两种数据模型
-- 自动配置 SessionPool 和 TableSessionPool
-- 提供订阅功能支持
-- 支持消息处理器自动注册
+- 面向业务侧的 IoTDB 连接池装配：Tree（`SessionPool`）与 Table（`ITableSessionPool`）。
+- 提供声明式订阅：通过 `@IotDbSubscription` + `MessageHandler` 的组合，在应用启动后自动注册消费者。
 
-## 依赖
+## 目录结构（src/main）
+
+```text
+src/main/java/com/lambda/autoconfig/
+├─ IotDbAutoConfiguration.java
+└─ IotDbProperties.java
+
+src/main/java/com/lambda/cloud/iotdb/
+├─ annotation/IotDbSubscription.java
+├─ handler/MessageHandler.java
+├─ manager/IotDbConsumerManager.java
+├─ IotDbConsumerContainer.java
+└─ IotDbConsumerRegistrar.java
+
+src/main/resources/META-INF/spring/
+└─ org.springframework.boot.autoconfigure.AutoConfiguration.imports
+```
+
+自动装配注册项：
+
+```text
+com.lambda.autoconfig.IotDbAutoConfiguration
+```
+
+## 自动装配机制
+
+装配入口为 [IotDbAutoConfiguration](src/main/java/com/lambda/autoconfig/IotDbAutoConfiguration.java)，核心条件如下：
+
+- Tree 模式连接池：当 `lambda.iotdb.tree-dialect=true` 时装配 `SessionPool`（`@ConditionalOnMissingBean`）。
+- Table 模式连接池：当 `lambda.iotdb.table-dialect=true` 时装配 `ITableSessionPool`（`@ConditionalOnMissingBean`）。
+- 订阅能力：当 `lambda.iotdb.enable-subscription=true` 时启用子配置 `IotDbSubscriptionConfiguration`：
+  - `ISubscriptionTreeSession`（Tree + subscription）
+  - `ISubscriptionTableSession`（Table + subscription）
+  - `IotDbConsumerManager` / `IotDbConsumerRegistrar`（用于扫描与注册 `@IotDbSubscription`）
+
+## 配置模型
+
+配置前缀：`lambda.iotdb`（见 [IotDbProperties](src/main/java/com/lambda/autoconfig/IotDbProperties.java)）
+
+常用配置项：
+
+- `tree-dialect`：是否启用 Tree 连接池
+- `table-dialect`：是否启用 Table 连接池
+- `enable-subscription`：是否启用订阅
+- `host` / `port`：IoTDB 地址（`node-urls` 为空时用于拼默认节点）
+- `node-urls[]`：集群节点列表（可选）
+- `user` / `password`
+- `database`：Table 模式数据库名
+- `max-size`：连接池大小（默认 10）
+- `thrift-max-frame-size`：Table/Subscription builder 使用
+- `base-package`：订阅扫描包（默认 `com.lambda.cloud.iotdb`）
+
+## 快速开始
+
+### 1）引入依赖
 
 ```xml
 <dependency>
-    <groupId>com.lambda.cloud</groupId>
-    <artifactId>lambda-cloud-starter-iotdb</artifactId>
+  <groupId>com.lambda.cloud</groupId>
+  <artifactId>lambda-cloud-starter-iotdb</artifactId>
 </dependency>
 ```
 
-## 配置
+### 2）最小配置（Tree）
 
-```yaml
-lambda:
-  iotdb:
-    tree-dialect: true                    # 启用 Tree 数据模型
-    table-dialect: false                  # 启用 Table 数据模型
-    enable-subscription: true             # 启用订阅功能
-    host: localhost                       # IoTDB 主机地址
-    port: 6667                           # IoTDB 端口
-    node-urls:                           # 集群节点地址（可选）
-      - localhost:6667
-    user: root                           # 用户名
-    password: root                       # 密码
-    database: test                       # 数据库名（Table 模式）
-    max-size: 10                         # 连接池最大连接数
-    thrift-max-frame-size: 67108864      # Thrift 最大帧大小
-    base-package: com.lambda.cloud.iotdb # 扫描包路径
-```
-
-## 核心组件
-
-### SessionPool (Tree 数据模型)
-当 `tree-dialect=true` 时自动配置，用于 Tree 数据模型的数据操作。
-
-### ITableSessionPool (Table 数据模型)
-当 `table-dialect=true` 时自动配置，用于 Table 数据模型的数据操作。
-
-### 订阅功能
-当 `enable-subscription=true` 时启用：
-- `ISubscriptionTreeSession` - Tree 模型订阅会话
-- `ISubscriptionTableSession` - Table 模型订阅会话
-
-## 使用示例
-
-### 基本数据操作
-
-```java
-@Service
-public class IoTDBService {
-    
-    @Autowired
-    private SessionPool sessionPool; // Tree 模型
-    
-    @Autowired
-    private ITableSessionPool tableSessionPool; // Table 模型
-    
-    public void insertData() throws Exception {
-        // Tree 模型插入
-        sessionPool.insertRecord("root.test.device", 
-            System.currentTimeMillis(), 
-            Arrays.asList("temperature"), 
-            Arrays.asList(TSDataType.DOUBLE), 
-            Arrays.asList(25.5));
-    }
-}
-```
-
-### 消息订阅
-
-创建消息处理器：
-
-```java
-@IotDbSubscription(
-    consumerId = "consumer1",
-    topic = "test_topic",
-    consumerGroupId = "group1"
-)
-public class MyMessageHandler implements MessageHandler {
-    
-    @Override
-    public void handle(RowRecord record) {
-        // 处理接收到的数据
-        System.out.println("Received: " + record);
-    }
-}
-```
-
-### 配置示例
-
-#### Tree 数据模型配置
 ```yaml
 lambda:
   iotdb:
     tree-dialect: true
     host: localhost
     port: 6667
-    user: root
-    password: root
-    max-size: 20
+    user: your-user
+    password: your-password
+    max-size: 10
 ```
 
-#### Table 数据模型配置
+### 3）最小配置（Table）
+
 ```yaml
 lambda:
   iotdb:
     table-dialect: true
     host: localhost
     port: 6667
-    user: root
-    password: root
+    user: your-user
+    password: your-password
     database: test_db
-    max-size: 20
+    thrift-max-frame-size: 67108864
 ```
 
-#### 启用订阅功能
+### 4）启用订阅（可选）
+
 ```yaml
 lambda:
   iotdb:
-    tree-dialect: true
     enable-subscription: true
-    host: localhost
-    port: 6667
-    user: root
-    password: root
+    base-package: com.example
 ```
 
-## 注意事项
+## 使用示例
 
-- Tree 和 Table 数据模型可以同时启用
-- 订阅功能需要单独启用
-- 确保 IoTDB 服务正常运行
-- 根据实际需求调整连接池大小
-- 消息处理器需要实现 MessageHandler 接口并使用 @IotDbSubscription 注解
+### Tree 写入示例
+
+```java
+@Service
+public class IotDbService {
+    private final SessionPool sessionPool;
+
+    public IotDbService(SessionPool sessionPool) {
+        this.sessionPool = sessionPool;
+    }
+}
+```
+
+### 订阅处理器示例
+
+```java
+@IotDbSubscription(consumerId = "consumer1", topic = "test_topic", consumerGroupId = "group1")
+public class MyMessageHandler implements MessageHandler {
+    @Override
+    public void handle(RowRecord record) {
+    }
+}
+```
+
+## 当前实现约束
+
+- `node-urls` 未配置时，默认节点为 `${host}:${port}`（见 [IotDbProperties#getNodeUrls](src/main/java/com/lambda/autoconfig/IotDbProperties.java)）。
+- Tree/Table 可同时启用，但需业务侧自行避免“同一场景重复注入”导致的混用问题。
+- `enable-subscription=true` 仅开启订阅相关 Bean，仍需同时开启 Tree 或 Table（否则对应 subscription session 不会装配）。
