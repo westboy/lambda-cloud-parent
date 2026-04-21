@@ -278,4 +278,13 @@ public record ProtocolFieldMetadata(
     public int getListElementSize() {
         return protocolField.listElementSize();
     }
+
+    public String getListElementSizeField() {
+        return protocolField.listElementSizeField();
+    }
+
+    public Class<?> getListElementClass() {
+        Class<?> clazz = protocolField.listElementClass();
+        return clazz == Void.class ? null : clazz;
+    }
 }

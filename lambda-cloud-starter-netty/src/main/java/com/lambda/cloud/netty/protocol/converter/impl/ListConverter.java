@@ -2,6 +2,8 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.accessor.FieldAccessor;
+import com.lambda.cloud.netty.protocol.accessor.impl.VirtualFieldAccessor;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolFieldProxy;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
@@ -48,21 +50,36 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
 
             // 如果是复合字段
             if (fieldMetadata.isComposite()) {
+                int elementLength = fieldMetadata.getLength();
+                Object ext = fieldMetadata.extParam().get("ListElementLength");
+                if ((elementLength <= 0) && (ext instanceof Number number)) {
+                    elementLength = number.intValue();
+                }
+                if (elementLength <= 0) {
+                    int listSize = fieldMetadata.getListElementSize();
+                    if (listSize > 0) {
+                        elementLength = length / listSize;
+                    }
+                }
+                if (elementLength <= 0) {
+                    throw new ProtocolException(
+                            ProtocolException.ErrorCode.PARSE_ERROR,
+                            "复合List元素长度必须大于0: " + fieldMetadata.getFieldName(),
+                            fieldMetadata.getFieldName());
+                }
+                if (length % elementLength != 0) {
+                    throw new ProtocolException(
+                            ProtocolException.ErrorCode.PARSE_ERROR,
+                            "复合List长度无法整除元素长度: " + fieldMetadata.getFieldName(),
+                            fieldMetadata.getFieldName());
+                }
+                int listSize = length / elementLength;
                 ProtocolFieldMetadata elementMetadata = createElementMetadata(fieldMetadata);
-                // 复合字段通常作为整体解析，或者只有一个元素？
-                // 原有逻辑是：
-                // Object element = elementConverter.parse(data, elementMetadata);
-                // result.add(element);
-                // 这里 data 是整个 List 的数据。
-                // 如果是复合字段List，通常应该循环解析？
-                // 但原有逻辑只调用了一次 parse 并 add 了一次。
-                // 这意味着 fieldMetadata.isComposite() 为 true 时，它被视为单个复合对象放入 List？
-                // 或者 elementConverter.parse 会处理整个 List？
-                // 假设 elementConverter 是 CompositeConverter，它调用 ProtocolEngine.parse。
-                // 如果 ProtocolEngine 解析出的是 List，那么这里 add 进去的就是 List<List>？
-                // 这是一个潜在的疑点。但根据原有逻辑保持不变：
-                Object element = elementConverter.parse(slice, length, elementMetadata);
-                result.add(element);
+                for (int i = 0; i < listSize; i++) {
+                    ByteBuf elementSlice = slice.readSlice(elementLength);
+                    Object element = elementConverter.parse(elementSlice, elementLength, elementMetadata);
+                    result.add(element);
+                }
             } else {
                 int listSize = determineListSize(length, fieldMetadata);
                 log.debug("List字段 {} 元素数量: {}", fieldMetadata.getFieldName(), listSize);
@@ -231,10 +248,21 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
      * @return 元素元数据
      */
     private ProtocolFieldMetadata createElementMetadata(ProtocolFieldMetadata listMetadata) {
-        return new ProtocolFieldMetadata(
-                listMetadata.fieldAccessor(),
-                new ProtocolFieldProxy(listMetadata),
-                listMetadata.validation(),
-                new ConcurrentHashMap<>(8));
+        FieldAccessor fieldAccessor = listMetadata.fieldAccessor();
+        if (listMetadata.isComposite()) {
+            Class<?> elementClass = listMetadata.getListElementClass();
+            if (elementClass != null) {
+                fieldAccessor = new VirtualFieldAccessor(listMetadata.getFieldName() + "[]", elementClass);
+            }
+        }
+        ProtocolFieldMetadata elementMetadata = new ProtocolFieldMetadata(
+                fieldAccessor, new ProtocolFieldProxy(listMetadata), listMetadata.validation(), new ConcurrentHashMap<>(8));
+        if (listMetadata.isComposite()) {
+            Class<?> elementClass = listMetadata.getListElementClass();
+            if (elementClass != null) {
+                elementMetadata.extParam().put("CompositeType", elementClass);
+            }
+        }
+        return elementMetadata;
     }
 }

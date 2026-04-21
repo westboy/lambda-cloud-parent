@@ -352,10 +352,60 @@ public class ProtocolFieldProcessor {
                 // 读取实际长度的数据
                 return converter.parseWithEncryption(byteBuf, remaining, fieldMetadata, encryptionService);
             } else {
-                // 获取复合字段的目标类型
-                int actualLength = calculateCompositeFieldLength(targetType);
+                int actualLength;
                 if (fieldMetadata.isList()) {
-                    actualLength = actualLength * fieldMetadata.getListElementSize();
+                    int elementLength = calculateCompositeFieldLength(targetType);
+                    int elementSize = fieldMetadata.getListElementSize();
+                    String elementSizeField = fieldMetadata.getListElementSizeField();
+                    if ((elementSize <= 0) && (elementSizeField != null) && (!elementSizeField.isBlank())) {
+                        try {
+                            Field field = instance.getClass().getDeclaredField(elementSizeField);
+                            field.setAccessible(true);
+                            Object value = field.get(instance);
+                            if (value instanceof Number number) {
+                                elementSize = number.intValue();
+                            }
+                        } catch (Exception e) {
+                            throw new ProtocolException(
+                                    ProtocolException.ErrorCode.PARSE_ERROR,
+                                    "读取List元素数量字段失败: " + fieldMetadata.getFieldName(),
+                                    fieldMetadata.getFieldName(),
+                                    e);
+                        }
+                    }
+                    if (elementSize <= 0) {
+                        if (frameMetadata.hasUnknownLengthFieldsAfter(fieldMetadata.getOrder())) {
+                            throw new ProtocolException(
+                                    ProtocolException.ErrorCode.PARSE_ERROR,
+                                    "无法确定List字段长度: " + fieldMetadata.getFieldName(),
+                                    fieldMetadata.getFieldName());
+                        }
+                        int remaining =
+                                byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
+                        if (remaining <= 0) {
+                            return null;
+                        }
+                        if (remaining % elementLength != 0) {
+                            throw new ProtocolException(
+                                    ProtocolException.ErrorCode.PARSE_ERROR,
+                                    "List字段长度无法整除元素长度: " + fieldMetadata.getFieldName(),
+                                    fieldMetadata.getFieldName());
+                        }
+                        elementSize = remaining / elementLength;
+                    }
+                    actualLength = elementLength * elementSize;
+                    fieldMetadata.extParam().put("CompositeType", targetType);
+                    fieldMetadata.extParam().put("ListElementLength", elementLength);
+                } else if (fieldMetadata.isPayload() && fieldMetadata.getLength() == 0) {
+                    if (frameMetadata.hasUnknownLengthFieldsAfter(fieldMetadata.getOrder())) {
+                        throw new ProtocolException(
+                                ProtocolException.ErrorCode.PARSE_ERROR,
+                                "动态解析Payload失败: " + fieldMetadata.getFieldName(),
+                                fieldMetadata.getFieldName());
+                    }
+                    actualLength = byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
+                } else {
+                    actualLength = calculateCompositeFieldLength(targetType);
                 }
                 // 读取实际长度的数据
                 return converter.parse(byteBuf, actualLength, fieldMetadata);
@@ -435,7 +485,7 @@ public class ProtocolFieldProcessor {
                     byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
         } else {
             // 计算 List 字段需要读取的总字节数
-            int totalBytes = calculateListFieldLength(byteBuf, fieldMetadata);
+            int totalBytes = calculateListFieldLength(byteBuf, instance, fieldMetadata, frameMetadata);
             log.info("计算得到的总字节数: {}", totalBytes);
 
             // 使用 ListConverter 解析数据
@@ -453,15 +503,46 @@ public class ProtocolFieldProcessor {
      * @return 需要读取的字节数
      */
     @SuppressWarnings("unused")
-    private int calculateListFieldLength(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
+    private int calculateListFieldLength(
+            ByteBuf byteBuf,
+            Object instance,
+            ProtocolFieldMetadata fieldMetadata,
+            ProtocolPayloadMetadata frameMetadata)
+            throws ProtocolException {
         int listLength = fieldMetadata.getLength();
         int elementSize = fieldMetadata.getListElementSize();
+        String elementSizeField = fieldMetadata.getListElementSizeField();
+        if ((elementSize <= 0) && (elementSizeField != null) && (!elementSizeField.isBlank())) {
+            try {
+                Field field = instance.getClass().getDeclaredField(elementSizeField);
+                field.setAccessible(true);
+                Object value = field.get(instance);
+                if (value instanceof Number number) {
+                    elementSize = number.intValue();
+                }
+            } catch (Exception e) {
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.PARSE_ERROR,
+                        "读取List元素数量字段失败: " + fieldMetadata.getFieldName(),
+                        fieldMetadata.getFieldName(),
+                        e);
+            }
+        }
         // 如果listLength > 0，表示固定长度的List
         if (elementSize > 0) {
             return listLength * elementSize;
         } else {
-            // 元素长度未指定，使用字段的默认长度
-            return listLength * fieldMetadata.getDataType().getDefaultLength();
+            if (frameMetadata.hasUnknownLengthFieldsAfter(fieldMetadata.getOrder())) {
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.PARSE_ERROR,
+                        "无法确定List字段长度: " + fieldMetadata.getFieldName(),
+                        fieldMetadata.getFieldName());
+            }
+            int remaining = byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
+            if (remaining <= 0) {
+                return 0;
+            }
+            return remaining;
         }
     }
 }

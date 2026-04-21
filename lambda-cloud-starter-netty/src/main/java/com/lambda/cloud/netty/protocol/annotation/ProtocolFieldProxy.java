@@ -107,12 +107,23 @@ public record ProtocolFieldProxy(ProtocolFieldMetadata listMetadata) implements 
 
     @Override
     public ProtocolDataType listElementType() {
-        return ProtocolDataType.HEX;
+        return listMetadata.getListElementDataType();
     }
 
     @Override
     public int listElementSize() {
         return listMetadata.getListElementSize();
+    }
+
+    @Override
+    public Class<?> listElementClass() {
+        Class<?> clazz = listMetadata.getListElementClass();
+        return clazz == null ? Void.class : clazz;
+    }
+
+    @Override
+    public String listElementSizeField() {
+        return listMetadata.getListElementSizeField();
     }
 
     @Override

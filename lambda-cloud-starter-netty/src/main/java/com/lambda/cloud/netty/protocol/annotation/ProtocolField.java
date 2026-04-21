@@ -195,4 +195,8 @@ public @interface ProtocolField {
      * @return List 元素数量
      */
     int listElementSize() default 0;
+
+    Class<?> listElementClass() default Void.class;
+
+    String listElementSizeField() default "";
 }
