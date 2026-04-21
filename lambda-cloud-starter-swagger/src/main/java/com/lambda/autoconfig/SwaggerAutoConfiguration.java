@@ -61,7 +61,7 @@ public class SwaggerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "lambda.api-docs", name = "enabled", havingValue = "false")
+    @ConditionalOnProperty(prefix = "lambda.api-docs", name = "enabled", havingValue = "false", matchIfMissing = true)
     public SwaggerDisabledFilter swaggerDisabledFilter(SwaggerProperties properties) {
         return new SwaggerDisabledFilter(properties.getDocUri());
     }
