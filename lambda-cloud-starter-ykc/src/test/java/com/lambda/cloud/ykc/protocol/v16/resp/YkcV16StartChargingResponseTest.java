@@ -19,13 +19,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16StartChargingResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("32", YkcV16StartChargingResponse.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16StartChargingResponse resp = new YkcV16StartChargingResponse();
         resp.setTransactionId("32010200000001012018061219595785");

@@ -20,7 +20,12 @@ public class YkcV20LogCallRequest {
     @ProtocolField(order = 2, length = 16, dataType = ProtocolDataType.ASCII, description = "上传服务器地址")
     private String uploadServerAddress;
 
-    @ProtocolField(order = 3, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "上传服务器端口")
+    @ProtocolField(
+            order = 3,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "上传服务器端口")
     private Integer uploadServerPort;
 
     @ProtocolField(order = 4, length = 16, dataType = ProtocolDataType.ASCII, description = "用户名")
@@ -47,4 +52,3 @@ public class YkcV20LogCallRequest {
     @ProtocolField(order = 11, length = 1, dataType = ProtocolDataType.UINT8, description = "上传超时时间")
     private Integer uploadTimeoutMinutes;
 }
-

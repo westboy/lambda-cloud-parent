@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20RemoteUpdateResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("93", YkcV20RemoteUpdateResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20RemoteUpdateResponse detail = new YkcV20RemoteUpdateResponse();
         detail.setEquipmentId("1234567890123");
@@ -48,7 +50,8 @@ public class YkcV20RemoteUpdateResponseTest {
         assertEquals("93", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20RemoteUpdateResponse parsedDetail = assertInstanceOf(YkcV20RemoteUpdateResponse.class, parsed.getDetail());
+        YkcV20RemoteUpdateResponse parsedDetail =
+                assertInstanceOf(YkcV20RemoteUpdateResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals(1, parsedDetail.getUpgradeStatus());
 

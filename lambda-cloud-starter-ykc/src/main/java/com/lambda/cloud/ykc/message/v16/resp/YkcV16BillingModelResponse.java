@@ -28,24 +28,14 @@ public class YkcV16BillingModelResponse {
      * 桩编号 (7字节)
      * 不足7位补0
      */
-    @ProtocolField(
-            order = 1,
-            length = 7,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            description = "桩编号")
+    @ProtocolField(order = 1, length = 7, computed = true, dataType = ProtocolDataType.BCD, description = "桩编号")
     private String equipmentId;
 
     /**
      * 计费模型编号 (2字节)
      * 固定值：01 00
      */
-    @ProtocolField(
-            order = 2,
-            length = 2,
-            computed = true,
-            dataType = ProtocolDataType.BCD,
-            description = "计费模型编号")
+    @ProtocolField(order = 2, length = 2, computed = true, dataType = ProtocolDataType.BCD, description = "计费模型编号")
     private String billingModelCode;
 
     /**

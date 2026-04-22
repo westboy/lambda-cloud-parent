@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16LoginRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("01", YkcV16LoginRequest.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16LoginRequest req = new YkcV16LoginRequest();
         req.setEquipmentId("55031412782305");

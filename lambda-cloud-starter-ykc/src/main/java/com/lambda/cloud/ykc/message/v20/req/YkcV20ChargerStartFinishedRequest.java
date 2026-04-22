@@ -39,7 +39,12 @@ public class YkcV20ChargerStartFinishedRequest {
     @ProtocolField(order = 6, length = 5, dataType = ProtocolDataType.HEX, description = "当前电表总值")
     private String currentMeterValue;
 
-    @ProtocolField(order = 7, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "最大允许充电总电压")
+    @ProtocolField(
+            order = 7,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "最大允许充电总电压")
     private Integer maxAllowChargeVoltage;
 
     @ProtocolField(order = 8, length = 3, dataType = ProtocolDataType.HEX, description = "BMS通信协议版本号")
@@ -48,4 +53,3 @@ public class YkcV20ChargerStartFinishedRequest {
     @ProtocolField(order = 9, length = 1, dataType = ProtocolDataType.UINT8, description = "BMS电池类型")
     private Integer batteryType;
 }
-

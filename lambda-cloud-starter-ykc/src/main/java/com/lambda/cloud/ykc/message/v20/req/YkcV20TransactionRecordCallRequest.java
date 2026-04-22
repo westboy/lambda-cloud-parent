@@ -30,4 +30,3 @@ public class YkcV20TransactionRecordCallRequest {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.BCD, description = "枪号")
     private String connectorId;
 }
-

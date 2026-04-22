@@ -36,4 +36,3 @@ public class YkcV20TransactionRecordCallResponse {
     @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.UINT8, description = "失败原因")
     private Integer failReason;
 }
-

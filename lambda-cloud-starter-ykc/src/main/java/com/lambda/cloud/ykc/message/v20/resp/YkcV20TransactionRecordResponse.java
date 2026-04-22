@@ -26,10 +26,20 @@ public class YkcV20TransactionRecordResponse {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.BCD, description = "枪号")
     private String connectorId;
 
-    @ProtocolField(order = 4, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "开始时间")
+    @ProtocolField(
+            order = 4,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "开始时间")
     private LocalDateTime startTime;
 
-    @ProtocolField(order = 5, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "结束时间")
+    @ProtocolField(
+            order = 5,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "结束时间")
     private LocalDateTime endTime;
 
     @ProtocolField(order = 6, length = 6, dataType = ProtocolDataType.BCD, description = "电表表号")
@@ -50,13 +60,31 @@ public class YkcV20TransactionRecordResponse {
     @ProtocolField(order = 11, length = 5, dataType = ProtocolDataType.HEX, littleEndian = true, description = "电表总止值")
     private String meterEndValue;
 
-    @ProtocolField(order = 12, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "总电量")
+    @ProtocolField(
+            order = 12,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 4,
+            description = "总电量")
     private Integer totalEnergy;
 
-    @ProtocolField(order = 13, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "计损总电量")
+    @ProtocolField(
+            order = 13,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 4,
+            description = "计损总电量")
     private Integer totalEnergyWithLoss;
 
-    @ProtocolField(order = 14, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "消费金额")
+    @ProtocolField(
+            order = 14,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 4,
+            description = "消费金额")
     private Integer totalAmount;
 
     @ProtocolField(order = 15, length = 17, dataType = ProtocolDataType.ASCII, description = "电动汽车唯一标识")
@@ -65,7 +93,12 @@ public class YkcV20TransactionRecordResponse {
     @ProtocolField(order = 16, length = 1, dataType = ProtocolDataType.UINT8, description = "交易标识")
     private Integer transactionType;
 
-    @ProtocolField(order = 17, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "交易日期、时间")
+    @ProtocolField(
+            order = 17,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "交易日期、时间")
     private LocalDateTime transactionDateTime;
 
     @ProtocolField(order = 18, length = 1, dataType = ProtocolDataType.UINT8, description = "停止原因")

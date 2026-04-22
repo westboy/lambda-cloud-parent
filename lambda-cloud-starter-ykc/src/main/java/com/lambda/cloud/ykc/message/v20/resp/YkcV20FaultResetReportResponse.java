@@ -30,4 +30,3 @@ public class YkcV20FaultResetReportResponse {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.UINT8, description = "确认接收标记")
     private Integer confirmFlag;
 }
-

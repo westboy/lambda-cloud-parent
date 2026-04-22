@@ -11,7 +11,12 @@ import lombok.ToString;
 @ToString
 public class YkcV20HalfHourEnergy {
 
-    @ProtocolField(order = 1, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 4, description = "电量")
+    @ProtocolField(
+            order = 1,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 4,
+            description = "电量")
     private Integer energy;
 }
-

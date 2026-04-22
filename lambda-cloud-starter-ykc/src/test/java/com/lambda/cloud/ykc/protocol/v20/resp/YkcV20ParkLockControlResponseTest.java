@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20ParkLockControlResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("63", YkcV20ParkLockControlResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20ParkLockControlResponse detail = new YkcV20ParkLockControlResponse();
         detail.setEquipmentId("1234567890123");
@@ -50,7 +52,8 @@ public class YkcV20ParkLockControlResponseTest {
         assertEquals("63", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20ParkLockControlResponse parsedDetail = assertInstanceOf(YkcV20ParkLockControlResponse.class, parsed.getDetail());
+        YkcV20ParkLockControlResponse parsedDetail =
+                assertInstanceOf(YkcV20ParkLockControlResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals(1, parsedDetail.getConnectorId());
         assertEquals(1, parsedDetail.getControlResult());

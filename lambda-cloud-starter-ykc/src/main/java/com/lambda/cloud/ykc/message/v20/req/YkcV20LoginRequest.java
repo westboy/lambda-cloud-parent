@@ -137,7 +137,13 @@ public class YkcV20LoginRequest {
      * 偏移量：180；精确到小数点后6位，取不到置零。
      * 示例：东经90°(+90.000000)，上报十进制为270000000，对应16进制为0x1017DF80
      */
-    @ProtocolField(order = 14, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 6, description = "经度")
+    @ProtocolField(
+            order = 14,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 6,
+            description = "经度")
     private Integer longitude;
 
     /**
@@ -145,6 +151,12 @@ public class YkcV20LoginRequest {
      * 偏移量：90；精确到小数点后6位，取不到置零。
      * 示例：南纬45°(-45.000000)，上报十进制为45000000，对应16进制为0x02AEA540
      */
-    @ProtocolField(order = 15, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 6, description = "纬度")
+    @ProtocolField(
+            order = 15,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 6,
+            description = "纬度")
     private Integer latitude;
 }

@@ -25,4 +25,3 @@ public class YkcV20PlatformConnectConfigRequest {
     @ProtocolField(order = 4, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "平台端口")
     private Integer platformPort;
 }
-

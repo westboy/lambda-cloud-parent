@@ -20,13 +20,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16OfflineCardSyncRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldKeepAllItems() throws Exception {
         ProtocolPayloadRegistry.register("44", YkcV16OfflineCardSyncRequest.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16OfflineCardSyncCard card = new YkcV16OfflineCardSyncCard();
         card.setLogicalCardNo("0000000010000001");

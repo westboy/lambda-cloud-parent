@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
@@ -18,13 +19,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20PlatformConnectConfigResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("5C", YkcV20PlatformConnectConfigResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20PlatformConnectConfigResponse detail = new YkcV20PlatformConnectConfigResponse();
         detail.setEquipmentId("1234567890123");
@@ -45,10 +48,11 @@ public class YkcV20PlatformConnectConfigResponseTest {
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV20BasePayload parsed = engine.parse(in, YkcV20BasePayload.class);
 
-        assertEquals("5C", parsed.getFrameType());
+        assertEquals("5c", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20PlatformConnectConfigResponse parsedDetail = assertInstanceOf(YkcV20PlatformConnectConfigResponse.class, parsed.getDetail());
+        YkcV20PlatformConnectConfigResponse parsedDetail =
+                assertInstanceOf(YkcV20PlatformConnectConfigResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals(1, parsedDetail.getResult());
 
@@ -57,5 +61,7 @@ public class YkcV20PlatformConnectConfigResponseTest {
         byte[] raw2 = new byte[out2.readableBytes()];
         out2.readBytes(raw2);
         assertArrayEquals(raw, raw2);
+        String hexString = HexUtil.encodeHexStr(raw, false);
+        System.out.println(hexString);
     }
 }

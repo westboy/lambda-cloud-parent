@@ -30,4 +30,3 @@ public class YkcV20AccountBalanceUpdateResponse {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.UINT8, description = "修改结果")
     private Integer updateResult;
 }
-

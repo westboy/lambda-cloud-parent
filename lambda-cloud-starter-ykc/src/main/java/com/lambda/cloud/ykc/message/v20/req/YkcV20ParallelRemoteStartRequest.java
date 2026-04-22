@@ -34,4 +34,3 @@ public class YkcV20ParallelRemoteStartRequest {
     @ProtocolField(order = 7, length = 6, dataType = ProtocolDataType.BCD, description = "并充序号")
     private String parallelSequence;
 }
-

@@ -79,7 +79,13 @@ public class YkcV20BasePayload implements ProtocolMessage, RawPayloadAware {
      * 数据域(可变长度)
      * 具体的消息内容，根据帧类型的不同而不同
      */
-    @ProtocolField(order = 5, composite = true, payload = true, computed = true, description = "数据域", encryptedField = true)
+    @ProtocolField(
+            order = 5,
+            composite = true,
+            payload = true,
+            computed = true,
+            description = "数据域",
+            encryptedField = true)
     private Object detail;
 
     /**

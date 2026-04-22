@@ -25,4 +25,3 @@ public class YkcV20ParkLockControlRequest {
     @ProtocolField(order = 4, length = 4, dataType = ProtocolDataType.HEX, description = "预留位")
     private String reserved;
 }
-

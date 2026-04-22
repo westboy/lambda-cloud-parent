@@ -12,10 +12,21 @@ import lombok.ToString;
 @ToString
 public class YkcV20BillingModelFee {
 
-    @ProtocolField(order = 1, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 5, description = "电费费率")
+    @ProtocolField(
+            order = 1,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 5,
+            description = "电费费率")
     private BigDecimal electricityRate;
 
-    @ProtocolField(order = 2, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 5, description = "服务费费率")
+    @ProtocolField(
+            order = 2,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 5,
+            description = "服务费费率")
     private BigDecimal serviceRate;
 }
-

@@ -20,7 +20,12 @@ public class YkcV20DefaultMaxPowerRequest {
     @ProtocolField(order = 2, length = 1, dataType = ProtocolDataType.BCD, description = "枪号")
     private String connectorId;
 
-    @ProtocolField(order = 3, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "默认最大功率")
+    @ProtocolField(
+            order = 3,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "默认最大功率")
     private Integer defaultMaxPower;
 
     @ProtocolField(order = 4, length = 7, dataType = ProtocolDataType.CP56TIME2A, description = "开始时间")
@@ -29,4 +34,3 @@ public class YkcV20DefaultMaxPowerRequest {
     @ProtocolField(order = 5, length = 7, dataType = ProtocolDataType.CP56TIME2A, description = "结束时间")
     private LocalDateTime endTime;
 }
-

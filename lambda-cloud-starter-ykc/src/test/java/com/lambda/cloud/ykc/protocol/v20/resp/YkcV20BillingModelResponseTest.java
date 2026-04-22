@@ -22,13 +22,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20BillingModelResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("0A", YkcV20BillingModelResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20BillingModelResponse detail = new YkcV20BillingModelResponse();
         detail.setEquipmentId("1234567890123");
@@ -64,7 +66,8 @@ public class YkcV20BillingModelResponseTest {
         assertEquals("0A", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20BillingModelResponse parsedDetail = assertInstanceOf(YkcV20BillingModelResponse.class, parsed.getDetail());
+        YkcV20BillingModelResponse parsedDetail =
+                assertInstanceOf(YkcV20BillingModelResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("123", parsedDetail.getBillingModelNumber());
         assertEquals(1, parsedDetail.getRateCount());

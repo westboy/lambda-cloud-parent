@@ -19,13 +19,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16OfflineCardQueryRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("48", YkcV16OfflineCardQueryRequest.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16OfflineCardQueryRequest req = new YkcV16OfflineCardQueryRequest();
         req.setEquipmentId("32010200000001");
@@ -62,4 +64,3 @@ public class YkcV16OfflineCardQueryRequestTest {
         assertArrayEquals(raw, raw2);
     }
 }
-

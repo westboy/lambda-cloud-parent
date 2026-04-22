@@ -22,10 +22,19 @@ public class YkcV20LogCallResponse {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.UINT8, description = "失败原因")
     private Integer failReason;
 
-    @ProtocolField(order = 4, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "日志文件数量")
+    @ProtocolField(
+            order = 4,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "日志文件数量")
     private Integer logFileCount;
 
-    @ProtocolField(order = 5, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "日志文件编码")
+    @ProtocolField(
+            order = 5,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "日志文件编码")
     private Integer logFileEncoding;
 }
-

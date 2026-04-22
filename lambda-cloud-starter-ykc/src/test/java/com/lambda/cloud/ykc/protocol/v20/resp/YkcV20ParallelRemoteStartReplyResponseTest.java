@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20ParallelRemoteStartReplyResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("A3", YkcV20ParallelRemoteStartReplyResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20ParallelRemoteStartReplyResponse detail = new YkcV20ParallelRemoteStartReplyResponse();
         detail.setTransactionSerialNumber("1234567890123456789012345678901");
@@ -53,7 +55,8 @@ public class YkcV20ParallelRemoteStartReplyResponseTest {
         assertEquals("A3", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20ParallelRemoteStartReplyResponse parsedDetail = assertInstanceOf(YkcV20ParallelRemoteStartReplyResponse.class, parsed.getDetail());
+        YkcV20ParallelRemoteStartReplyResponse parsedDetail =
+                assertInstanceOf(YkcV20ParallelRemoteStartReplyResponse.class, parsed.getDetail());
         assertEquals("1234567890123456789012345678901", parsedDetail.getTransactionSerialNumber());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("1", parsedDetail.getConnectorId());

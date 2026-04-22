@@ -19,13 +19,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16OfflineCardQueryResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldKeepAllItems() throws Exception {
         ProtocolPayloadRegistry.register("47", YkcV16OfflineCardQueryResponse.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16OfflineCardQueryResult r1 = new YkcV16OfflineCardQueryResult();
         r1.setPhysicalCardNo("00000000d14b0a54");
@@ -55,10 +57,10 @@ public class YkcV16OfflineCardQueryResponseTest {
         assertEquals("47", parsed.getFrameType());
         assertEquals(7, parsed.getSerialNumber());
 
-        YkcV16OfflineCardQueryResponse detail = assertInstanceOf(YkcV16OfflineCardQueryResponse.class, parsed.getDetail());
+        YkcV16OfflineCardQueryResponse detail =
+                assertInstanceOf(YkcV16OfflineCardQueryResponse.class, parsed.getDetail());
         assertEquals(2, detail.getResults().size());
         assertEquals("00000000d14b0a54", detail.getResults().get(0).getPhysicalCardNo());
         assertEquals("00000000e14c0a54", detail.getResults().get(1).getPhysicalCardNo());
     }
 }
-

@@ -19,4 +19,3 @@ public class YkcV20RemoteRebootRequest {
     @ProtocolField(order = 2, length = 1, dataType = ProtocolDataType.UINT8, description = "执行控制")
     private Integer executeControl;
 }
-

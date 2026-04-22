@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20ReadRealtimeDataRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("12", YkcV20ReadRealtimeDataRequest.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20ReadRealtimeDataRequest detail = new YkcV20ReadRealtimeDataRequest();
         detail.setEquipmentId("1234567890123");
@@ -48,7 +50,8 @@ public class YkcV20ReadRealtimeDataRequestTest {
         assertEquals("12", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20ReadRealtimeDataRequest parsedDetail = assertInstanceOf(YkcV20ReadRealtimeDataRequest.class, parsed.getDetail());
+        YkcV20ReadRealtimeDataRequest parsedDetail =
+                assertInstanceOf(YkcV20ReadRealtimeDataRequest.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("1", parsedDetail.getConnectorId());
 

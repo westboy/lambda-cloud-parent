@@ -30,4 +30,3 @@ public class YkcV20OfflineCardSyncResponse {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.UINT8, description = "失败原因")
     private Integer failReason;
 }
-

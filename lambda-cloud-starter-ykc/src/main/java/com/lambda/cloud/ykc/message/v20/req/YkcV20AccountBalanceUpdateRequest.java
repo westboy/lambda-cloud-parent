@@ -30,7 +30,11 @@ public class YkcV20AccountBalanceUpdateRequest {
     @ProtocolField(order = 3, length = 8, dataType = ProtocolDataType.HEX, description = "物理卡号")
     private String physicalCardNumber;
 
-    @ProtocolField(order = 4, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, description = "修改后账户金额")
+    @ProtocolField(
+            order = 4,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            description = "修改后账户金额")
     private Long updatedAccountBalance;
 }
-

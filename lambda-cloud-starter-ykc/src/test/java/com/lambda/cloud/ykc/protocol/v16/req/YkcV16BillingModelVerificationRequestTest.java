@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16BillingModelVerificationRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("05", YkcV16BillingModelVerificationRequest.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16BillingModelVerificationRequest req = new YkcV16BillingModelVerificationRequest();
         req.setEquipmentId("32010200000001");
@@ -60,4 +62,3 @@ public class YkcV16BillingModelVerificationRequestTest {
         assertArrayEquals(raw, raw2);
     }
 }
-

@@ -37,4 +37,3 @@ public class YkcV20FaultResetReportRequest {
     @ProtocolField(order = 5, length = 7, dataType = ProtocolDataType.CP56TIME2A, description = "故障复位时间")
     private LocalDateTime resetTime;
 }
-

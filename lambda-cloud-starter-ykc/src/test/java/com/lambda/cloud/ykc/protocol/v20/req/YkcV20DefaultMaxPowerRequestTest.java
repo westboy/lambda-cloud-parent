@@ -19,13 +19,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20DefaultMaxPowerRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("60", YkcV20DefaultMaxPowerRequest.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20DefaultMaxPowerRequest detail = new YkcV20DefaultMaxPowerRequest();
         detail.setEquipmentId("1234567890123");
@@ -52,7 +54,8 @@ public class YkcV20DefaultMaxPowerRequestTest {
         assertEquals("60", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20DefaultMaxPowerRequest parsedDetail = assertInstanceOf(YkcV20DefaultMaxPowerRequest.class, parsed.getDetail());
+        YkcV20DefaultMaxPowerRequest parsedDetail =
+                assertInstanceOf(YkcV20DefaultMaxPowerRequest.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("1", parsedDetail.getConnectorId());
         assertEquals(300, parsedDetail.getDefaultMaxPower());

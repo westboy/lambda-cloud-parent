@@ -22,4 +22,3 @@ public class YkcV20DefaultMaxPowerResponse {
     @ProtocolField(order = 3, length = 1, dataType = ProtocolDataType.UINT8, description = "设置结果")
     private Integer setResult;
 }
-

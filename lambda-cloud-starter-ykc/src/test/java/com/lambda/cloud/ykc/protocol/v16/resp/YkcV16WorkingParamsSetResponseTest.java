@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16WorkingParamsSetResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("51", YkcV16WorkingParamsSetResponse.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16WorkingParamsSetResponse resp = new YkcV16WorkingParamsSetResponse();
         resp.setEquipmentId("32010200000001");
@@ -48,7 +50,8 @@ public class YkcV16WorkingParamsSetResponseTest {
         assertEquals(12, parsed.getDataLength());
         assertEquals(8, parsed.getSerialNumber());
 
-        YkcV16WorkingParamsSetResponse detail = assertInstanceOf(YkcV16WorkingParamsSetResponse.class, parsed.getDetail());
+        YkcV16WorkingParamsSetResponse detail =
+                assertInstanceOf(YkcV16WorkingParamsSetResponse.class, parsed.getDetail());
         assertEquals("32010200000001", detail.getEquipmentId());
         assertEquals(1, detail.getSetResult());
 
@@ -59,4 +62,3 @@ public class YkcV16WorkingParamsSetResponseTest {
         assertArrayEquals(raw, raw2);
     }
 }
-

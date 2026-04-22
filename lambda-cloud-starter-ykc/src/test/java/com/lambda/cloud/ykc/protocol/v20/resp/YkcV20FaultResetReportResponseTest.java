@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20FaultResetReportResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("4A", YkcV20FaultResetReportResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20FaultResetReportResponse detail = new YkcV20FaultResetReportResponse();
         detail.setEquipmentId("1234567890123");
@@ -49,7 +51,8 @@ public class YkcV20FaultResetReportResponseTest {
         assertEquals("4A", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20FaultResetReportResponse parsedDetail = assertInstanceOf(YkcV20FaultResetReportResponse.class, parsed.getDetail());
+        YkcV20FaultResetReportResponse parsedDetail =
+                assertInstanceOf(YkcV20FaultResetReportResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("1", parsedDetail.getConnectorId());
         assertEquals(1, parsedDetail.getConfirmFlag());

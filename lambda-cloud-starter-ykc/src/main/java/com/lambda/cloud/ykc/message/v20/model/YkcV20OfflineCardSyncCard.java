@@ -17,4 +17,3 @@ public class YkcV20OfflineCardSyncCard {
     @ProtocolField(order = 2, length = 8, dataType = ProtocolDataType.HEX, description = "物理卡号")
     private String physicalCardNo;
 }
-

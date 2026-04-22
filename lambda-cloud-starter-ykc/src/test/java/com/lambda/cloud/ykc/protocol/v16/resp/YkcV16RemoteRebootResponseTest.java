@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16RemoteRebootResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("91", YkcV16RemoteRebootResponse.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16RemoteRebootResponse resp = new YkcV16RemoteRebootResponse();
         resp.setEquipmentId("32010200000001");
@@ -59,4 +61,3 @@ public class YkcV16RemoteRebootResponseTest {
         assertArrayEquals(raw, raw2);
     }
 }
-

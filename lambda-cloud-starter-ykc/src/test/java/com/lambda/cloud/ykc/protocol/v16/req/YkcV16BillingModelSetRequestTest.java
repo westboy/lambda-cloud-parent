@@ -20,13 +20,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16BillingModelSetRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("58", YkcV16BillingModelSetRequest.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16BillingModelSetRequest req = new YkcV16BillingModelSetRequest();
         req.setEquipmentId("55031412782305");
@@ -60,8 +62,7 @@ public class YkcV16BillingModelSetRequestTest {
         assertEquals("58", parsed.getFrameType());
         assertEquals(37, parsed.getSerialNumber());
 
-        YkcV16BillingModelSetRequest detail =
-                assertInstanceOf(YkcV16BillingModelSetRequest.class, parsed.getDetail());
+        YkcV16BillingModelSetRequest detail = assertInstanceOf(YkcV16BillingModelSetRequest.class, parsed.getDetail());
         assertEquals("55031412782305", detail.getEquipmentId());
         assertEquals("0100", detail.getBillingModelCode());
         assertEquals(48, detail.getTimeSlotRates().size());

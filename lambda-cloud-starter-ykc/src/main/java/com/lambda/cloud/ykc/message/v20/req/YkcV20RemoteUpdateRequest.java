@@ -25,7 +25,12 @@ public class YkcV20RemoteUpdateRequest {
     @ProtocolField(order = 4, length = 16, dataType = ProtocolDataType.ASCII, description = "升级服务器地址")
     private String upgradeServerAddress;
 
-    @ProtocolField(order = 5, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "升级服务器端口")
+    @ProtocolField(
+            order = 5,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "升级服务器端口")
     private Integer upgradeServerPort;
 
     @ProtocolField(order = 6, length = 16, dataType = ProtocolDataType.ASCII, description = "用户名")
@@ -49,4 +54,3 @@ public class YkcV20RemoteUpdateRequest {
     @ProtocolField(order = 12, length = 32, dataType = ProtocolDataType.ASCII, description = "文件MD5签名")
     private String fileMd5;
 }
-

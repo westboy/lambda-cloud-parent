@@ -20,4 +20,3 @@ public class YkcV20TimeSyncResponse {
     @ProtocolField(order = 2, length = 7, dataType = ProtocolDataType.CP56TIME2A, description = "当前时间")
     private LocalDateTime currentTime;
 }
-

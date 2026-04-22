@@ -32,4 +32,3 @@ public class YkcV20KeyUpdateRequest {
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.UINT8, description = "执行控制")
     private Integer executeControl;
 }
-

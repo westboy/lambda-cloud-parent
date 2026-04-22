@@ -47,4 +47,3 @@ public class YkcV20BillingModelSetRequest {
             description = "时段费率号")
     private List<Integer> timeSlotRateNumbers;
 }
-

@@ -21,13 +21,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20OfflineCardClearRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("46", YkcV20OfflineCardClearRequest.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20OfflineCardClearRequest detail = new YkcV20OfflineCardClearRequest();
         detail.setEquipmentId("1234567890123");
@@ -60,7 +62,8 @@ public class YkcV20OfflineCardClearRequestTest {
         assertEquals("46", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20OfflineCardClearRequest parsedDetail = assertInstanceOf(YkcV20OfflineCardClearRequest.class, parsed.getDetail());
+        YkcV20OfflineCardClearRequest parsedDetail =
+                assertInstanceOf(YkcV20OfflineCardClearRequest.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals(1, parsedDetail.getCardCount());
 

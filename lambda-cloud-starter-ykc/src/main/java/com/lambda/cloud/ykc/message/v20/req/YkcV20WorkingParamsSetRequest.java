@@ -28,4 +28,3 @@ public class YkcV20WorkingParamsSetRequest {
     @ProtocolField(order = 5, length = 1, dataType = ProtocolDataType.UINT8, description = "离线充电时间")
     private Integer offlineChargeSeconds;
 }
-

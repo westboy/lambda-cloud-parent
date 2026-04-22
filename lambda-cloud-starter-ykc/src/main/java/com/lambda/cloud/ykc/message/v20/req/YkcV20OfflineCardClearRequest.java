@@ -40,4 +40,3 @@ public class YkcV20OfflineCardClearRequest {
             description = "离线卡列表")
     private List<YkcV20OfflineCardSyncCard> cards;
 }
-

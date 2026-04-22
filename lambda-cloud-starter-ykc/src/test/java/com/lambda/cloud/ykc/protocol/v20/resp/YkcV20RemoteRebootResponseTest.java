@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20RemoteRebootResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("91", YkcV20RemoteRebootResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20RemoteRebootResponse detail = new YkcV20RemoteRebootResponse();
         detail.setEquipmentId("1234567890123");
@@ -48,7 +50,8 @@ public class YkcV20RemoteRebootResponseTest {
         assertEquals("91", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20RemoteRebootResponse parsedDetail = assertInstanceOf(YkcV20RemoteRebootResponse.class, parsed.getDetail());
+        YkcV20RemoteRebootResponse parsedDetail =
+                assertInstanceOf(YkcV20RemoteRebootResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals(1, parsedDetail.getResult());
 

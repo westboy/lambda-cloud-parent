@@ -34,4 +34,3 @@ public class YkcV20ParkLockStatusUploadRequest {
     @ProtocolField(order = 7, length = 4, dataType = ProtocolDataType.HEX, description = "预留位")
     private String reserved;
 }
-

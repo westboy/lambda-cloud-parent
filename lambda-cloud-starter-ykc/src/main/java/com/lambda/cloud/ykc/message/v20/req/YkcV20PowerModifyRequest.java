@@ -19,7 +19,12 @@ public class YkcV20PowerModifyRequest {
     @ProtocolField(order = 2, length = 1, dataType = ProtocolDataType.BCD, description = "枪号")
     private String connectorId;
 
-    @ProtocolField(order = 3, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "允许最大功率")
+    @ProtocolField(
+            order = 3,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "允许最大功率")
     private Integer maxPower;
 
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.UINT8, description = "指令响应优先级")
@@ -28,4 +33,3 @@ public class YkcV20PowerModifyRequest {
     @ProtocolField(order = 5, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "限制时间")
     private Integer limitTime;
 }
-

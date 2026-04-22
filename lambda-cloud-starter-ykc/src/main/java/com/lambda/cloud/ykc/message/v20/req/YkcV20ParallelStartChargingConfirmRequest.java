@@ -37,4 +37,3 @@ public class YkcV20ParallelStartChargingConfirmRequest {
     @ProtocolField(order = 8, length = 6, dataType = ProtocolDataType.BCD, description = "并充序号")
     private String parallelSequence;
 }
-

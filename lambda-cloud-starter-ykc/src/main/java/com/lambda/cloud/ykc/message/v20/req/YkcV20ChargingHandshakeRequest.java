@@ -46,12 +46,7 @@ public class YkcV20ChargingHandshakeRequest {
      * BMS通信协议版本号 (3字节)
      * BIN码，当前版本为V1.1，表示为：byte3，byte2—0001H；byte1—01H
      */
-    @ProtocolField(
-            order = 4,
-            length = 3,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            description = "BMS通信协议版本号")
+    @ProtocolField(order = 4, length = 3, computed = true, dataType = ProtocolDataType.HEX, description = "BMS通信协议版本号")
     private String bmsProtocolVersion;
 
     /**
@@ -148,12 +143,7 @@ public class YkcV20ChargingHandshakeRequest {
      * BMS电池组充电次数 (3字节)
      * BIN码，1次/位，0次偏移量
      */
-    @ProtocolField(
-            order = 13,
-            length = 3,
-            computed = true,
-            dataType = ProtocolDataType.HEX,
-            description = "BMS电池组充电次数")
+    @ProtocolField(order = 13, length = 3, computed = true, dataType = ProtocolDataType.HEX, description = "BMS电池组充电次数")
     private String bmsChargingCycles;
 
     /**

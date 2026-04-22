@@ -19,4 +19,3 @@ public class YkcV20RemoteUpdateResponse {
     @ProtocolField(order = 2, length = 1, dataType = ProtocolDataType.UINT8, description = "升级状态")
     private Integer upgradeStatus;
 }
-

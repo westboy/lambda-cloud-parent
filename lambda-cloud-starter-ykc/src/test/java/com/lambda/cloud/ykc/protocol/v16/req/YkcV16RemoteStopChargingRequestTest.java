@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV16RemoteStopChargingRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("36", YkcV16RemoteStopChargingRequest.class);
-        ProtocolEngine<YkcV16BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV16BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV16RemoteStopChargingRequest req = new YkcV16RemoteStopChargingRequest();
         req.setEquipmentId("32010200000001");
@@ -47,7 +49,8 @@ public class YkcV16RemoteStopChargingRequestTest {
         assertEquals("36", parsed.getFrameType());
         assertEquals(768, parsed.getSerialNumber());
 
-        YkcV16RemoteStopChargingRequest detail = assertInstanceOf(YkcV16RemoteStopChargingRequest.class, parsed.getDetail());
+        YkcV16RemoteStopChargingRequest detail =
+                assertInstanceOf(YkcV16RemoteStopChargingRequest.class, parsed.getDetail());
         assertEquals("32010200000001", detail.getEquipmentId());
         assertEquals(1, detail.getConnectorId());
 

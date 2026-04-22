@@ -35,4 +35,3 @@ public class YkcV20QrCodeSetRequest {
             description = "二维码内容")
     private List<Integer> qrCodeContent;
 }
-

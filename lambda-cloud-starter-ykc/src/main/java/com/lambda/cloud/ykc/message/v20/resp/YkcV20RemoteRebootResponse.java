@@ -19,4 +19,3 @@ public class YkcV20RemoteRebootResponse {
     @ProtocolField(order = 2, length = 1, dataType = ProtocolDataType.UINT8, description = "设置结果")
     private Integer result;
 }
-

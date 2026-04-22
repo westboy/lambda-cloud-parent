@@ -37,4 +37,3 @@ public class YkcV20ErrorReportRequest {
     @ProtocolField(order = 5, length = 7, dataType = ProtocolDataType.CP56TIME2A, description = "故障发生时间")
     private LocalDateTime faultTime;
 }
-

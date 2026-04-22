@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20AccountBalanceUpdateResponseTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("41", YkcV20AccountBalanceUpdateResponse.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20AccountBalanceUpdateResponse detail = new YkcV20AccountBalanceUpdateResponse();
         detail.setEquipmentId("1234567890123");
@@ -49,7 +51,8 @@ public class YkcV20AccountBalanceUpdateResponseTest {
         assertEquals("41", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20AccountBalanceUpdateResponse parsedDetail = assertInstanceOf(YkcV20AccountBalanceUpdateResponse.class, parsed.getDetail());
+        YkcV20AccountBalanceUpdateResponse parsedDetail =
+                assertInstanceOf(YkcV20AccountBalanceUpdateResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("0123456789abcdef", parsedDetail.getPhysicalCardNumber().toLowerCase());
         assertEquals(1, parsedDetail.getUpdateResult());

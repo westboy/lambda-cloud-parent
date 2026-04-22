@@ -18,13 +18,15 @@ import org.junit.jupiter.api.Test;
 public class YkcV20TransactionConfirmRequestTest {
     @BeforeEach
     public void setUp() {
-        ProtocolEngineFactory.addEngine(ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
+        ProtocolEngineFactory.addEngine(
+                ProtocolEngineFactory.EngineType.REFLECTION, new ReflectionProtocolEngine(null));
     }
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
         ProtocolPayloadRegistry.register("40", YkcV20TransactionConfirmRequest.class);
-        ProtocolEngine<YkcV20BasePayload> engine = ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        ProtocolEngine<YkcV20BasePayload> engine =
+                ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         YkcV20TransactionConfirmRequest detail = new YkcV20TransactionConfirmRequest();
         detail.setTransactionSerialNumber("1234567890123456789012345678901");
@@ -48,7 +50,8 @@ public class YkcV20TransactionConfirmRequestTest {
         assertEquals("40", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20TransactionConfirmRequest parsedDetail = assertInstanceOf(YkcV20TransactionConfirmRequest.class, parsed.getDetail());
+        YkcV20TransactionConfirmRequest parsedDetail =
+                assertInstanceOf(YkcV20TransactionConfirmRequest.class, parsed.getDetail());
         assertEquals("1234567890123456789012345678901", parsedDetail.getTransactionSerialNumber());
         assertEquals(1, parsedDetail.getConfirmResult());
 
