@@ -12,7 +12,7 @@ import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CountedListMessageTest {
+public class CompositeListMessageTest {
     @BeforeEach
     public void setUp() {
         ProtocolEngineFactory.addEngine(
@@ -20,19 +20,20 @@ public class CountedListMessageTest {
     }
 
     @Test
-    public void parse_shouldRespectListElementSizeField() throws Exception {
-        ProtocolEngine<CountedListMessage> engine =
+    public void parse_shouldHandleCompositeListWithSizeField() throws Exception {
+        ProtocolEngine<CompositeListMessage> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        byte[] raw = HexUtil.decodeHex("03010203");
+        byte[] raw = HexUtil.decodeHex("0201020304");
         ByteBuf in = Unpooled.wrappedBuffer(raw);
 
-        CountedListMessage msg = engine.parse(in, CountedListMessage.class);
-        assertEquals(3, msg.getCount());
-        assertEquals(3, msg.getValues().size());
-        assertEquals(1, msg.getValues().get(0));
-        assertEquals(2, msg.getValues().get(1));
-        assertEquals(3, msg.getValues().get(2));
+        CompositeListMessage msg = engine.parse(in, CompositeListMessage.class);
+        assertEquals(2, msg.getCount());
+        assertEquals(2, msg.getItems().size());
+        assertEquals(1, msg.getItems().get(0).getA());
+        assertEquals(2, msg.getItems().get(0).getB());
+        assertEquals(3, msg.getItems().get(1).getA());
+        assertEquals(4, msg.getItems().get(1).getB());
 
         ByteBuf out = Unpooled.buffer();
         engine.serialize(msg, out);

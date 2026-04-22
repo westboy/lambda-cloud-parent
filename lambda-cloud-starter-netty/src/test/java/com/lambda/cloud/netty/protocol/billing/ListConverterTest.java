@@ -1,5 +1,8 @@
 package com.lambda.cloud.netty.protocol.billing;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
@@ -27,19 +30,17 @@ class ListConverterTest {
         ProtocolEngine<BillingModelMessage> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        byte[] bytes = {0x09, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-
-        ByteBuf byteBuf = Unpooled.wrappedBuffer(HexUtil.decodeHex("0902030405"));
+        byte[] raw = HexUtil.decodeHex("0102090203");
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(raw);
 
         BillingModelMessage record = engine.parse(byteBuf, BillingModelMessage.class);
-
-        System.out.println(record.getTimeSlotRateNumbers());
-        System.out.println(record.getFees());
+        assertEquals(1, record.getFees().size());
+        assertEquals(3, record.getTimeSlotRateNumbers().size());
 
         ByteBuf serializeBuffer = Unpooled.buffer();
         engine.serialize(record, serializeBuffer);
         byte[] serializedBytes = new byte[serializeBuffer.readableBytes()];
         serializeBuffer.readBytes(serializedBytes);
-        System.out.println("序列化报文： " + HexUtil.encodeHexStr(serializedBytes, false));
+        assertArrayEquals(raw, serializedBytes);
     }
 }

@@ -35,8 +35,10 @@ public class BillingModelMessage implements ProtocolMessage {
      */
     @ProtocolField(
             order = 1,
-            listElementSize = 1,
+            length = 2,
             composite = true,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = BillingModelFee.class,
             dataType = ProtocolDataType.LIST,
             description = "电费费率")
     private List<BillingModelFee> fees;

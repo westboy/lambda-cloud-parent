@@ -44,7 +44,10 @@ public record ProtocolPayloadMetadata(
         for (ProtocolFieldMetadata field : fields) {
             fieldMap.put(field.getOrder(), field);
             if (!field.isOptional()) {
-                totalLength += field.getLength();
+                int fixedLength = getFixedFieldLength(field);
+                if (fixedLength > 0) {
+                    totalLength += fixedLength;
+                }
             }
         }
 
@@ -126,7 +129,7 @@ public record ProtocolPayloadMetadata(
     public Integer getRemainingLengthAfter(int order) {
         return fields.stream()
                 .filter(e -> e.getOrder() > order)
-                .mapToInt(ProtocolFieldMetadata::getLength)
+                .mapToInt(ProtocolPayloadMetadata::getFixedFieldLength)
                 .sum();
     }
 
@@ -137,7 +140,7 @@ public record ProtocolPayloadMetadata(
      * @return true 表示存在未知长度字段
      */
     public boolean hasUnknownLengthFieldsAfter(int order) {
-        return fields.stream().filter(e -> e.getOrder() > order).anyMatch(e -> e.getLength() <= 0);
+        return fields.stream().filter(e -> e.getOrder() > order).anyMatch(ProtocolPayloadMetadata::isUnknownLength);
     }
 
     /**
@@ -168,5 +171,31 @@ public record ProtocolPayloadMetadata(
     @SuppressWarnings("unused")
     public String getDefaultCharset() {
         return protocolMessage.defaultCharset();
+    }
+
+    private static int getFixedFieldLength(ProtocolFieldMetadata field) {
+        int length = field.getLength();
+        if (length <= 0) {
+            return 0;
+        }
+        if (field.isList()) {
+            int size = field.getListElementSize();
+            if (size > 0) {
+                return length * size;
+            }
+            return 0;
+        }
+        return length;
+    }
+
+    private static boolean isUnknownLength(ProtocolFieldMetadata field) {
+        if (field.getLength() <= 0) {
+            return true;
+        }
+        if (field.isList()) {
+            int size = field.getListElementSize();
+            return size <= 0;
+        }
+        return false;
     }
 }

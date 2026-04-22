@@ -63,18 +63,16 @@ public class ProtocolFieldProcessor {
             boolean isEncryptionEnabled)
             throws ProtocolException, IOException {
 
-        // 验证缓冲区数据
-        if (!validateBufferData(byteBuf, fieldMetadata)) {
-            handleInsufficientData(instance, fieldMetadata);
-            return;
-        }
-
-        // 特殊处理 List 字段
         if (fieldMetadata.isList()) {
-            // List 字段需要特殊处理，计算实际需要读取的数据长度
             Object value =
                     parseListField(byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
+            return;
+        }
+
+        if (!validateBufferData(byteBuf, fieldMetadata)) {
+            handleInsufficientData(instance, fieldMetadata);
+            return;
         } else if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
             Object value = parseCompositeFieldWithDynamicLength(
@@ -474,26 +472,30 @@ public class ProtocolFieldProcessor {
             boolean isEncryptionEnabled)
             throws ProtocolException {
 
-        log.info(
-                "解析List字段: fieldName={}, length={}, listElementSize={}, isComposite={}",
-                fieldMetadata.getFieldName(),
-                fieldMetadata.getLength(),
-                fieldMetadata.getListElementSize(),
-                fieldMetadata.isComposite());
-
-        if (fieldMetadata.isComposite()) {
-            return parseCompositeFieldWithDynamicLength(
-                    byteBuf, instance, fieldMetadata, frameMetadata, converter, isEncryptionEnabled);
-        } else {
-            // 计算 List 字段需要读取的总字节数
-            int totalBytes = calculateListFieldLength(byteBuf, instance, fieldMetadata, frameMetadata);
-            log.info("计算得到的总字节数: {}", totalBytes);
-
-            // 使用 ListConverter 解析数据
-            Object result = convertFieldData(byteBuf, totalBytes, fieldMetadata, converter, isEncryptionEnabled);
-            log.info("解析结果类型: {}, 值: {}", result != null ? result.getClass().getName() : "null", result);
-            return result;
+        // 计算 List 字段需要读取的总字节数
+        int totalBytes = calculateListFieldLength(byteBuf, instance, fieldMetadata, frameMetadata);
+        if (byteBuf.readableBytes() < totalBytes) {
+            if (fieldMetadata.isOptional()) {
+                return java.util.Collections.emptyList();
+            }
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.BUFFER_UNDERFLOW,
+                    "缓冲区数据不足，字段: " + fieldMetadata.getFieldName(),
+                    fieldMetadata.getFieldName());
         }
+
+        // 使用 ListConverter 解析数据
+        Object result = convertFieldData(byteBuf, totalBytes, fieldMetadata, converter, isEncryptionEnabled);
+        if (log.isDebugEnabled()) {
+            int size = (result instanceof java.util.List<?> list) ? list.size() : -1;
+            log.debug(
+                    "解析List字段完成: fieldName={}, totalBytes={}, resultType={}, size={}",
+                    fieldMetadata.getFieldName(),
+                    totalBytes,
+                    result != null ? result.getClass().getName() : "null",
+                    size);
+        }
+        return result;
     }
 
     /**
@@ -515,7 +517,16 @@ public class ProtocolFieldProcessor {
         String elementSizeField = fieldMetadata.getListElementSizeField();
         if ((elementSize <= 0) && (elementSizeField != null) && (!elementSizeField.isBlank())) {
             try {
-                Field field = instance.getClass().getDeclaredField(elementSizeField);
+                String cacheKey = "ListElementSizeField#" + elementSizeField;
+                Object cached = fieldMetadata.extParam().get(cacheKey);
+                Field field;
+                if (cached instanceof Field f) {
+                    field = f;
+                } else {
+                    field = instance.getClass().getDeclaredField(elementSizeField);
+                    field.setAccessible(true);
+                    fieldMetadata.extParam().put(cacheKey, field);
+                }
                 field.setAccessible(true);
                 Object value = field.get(instance);
                 if (value instanceof Number number) {
