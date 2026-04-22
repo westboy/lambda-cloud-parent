@@ -1,4 +1,4 @@
-package com.lambda.cloud.ykc.protocol.v20.req;
+package com.lambda.cloud.ykc.protocol.v20.resp;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,16 +9,13 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v20.YkcV20BasePayload;
-import com.lambda.cloud.ykc.message.v20.model.YkcV20OfflineCardSyncCard;
-import com.lambda.cloud.ykc.message.v20.req.YkcV20OfflineCardSyncRequest;
+import com.lambda.cloud.ykc.message.v20.resp.YkcV20VinCodeReportResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class YkcV20OfflineCardSyncRequestTest {
+public class YkcV20VinCodeReportResponseTest {
     @BeforeEach
     public void setUp() {
         ProtocolEngineFactory.addEngine(
@@ -27,26 +24,20 @@ public class YkcV20OfflineCardSyncRequestTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("44", YkcV20OfflineCardSyncRequest.class);
+        ProtocolPayloadRegistry.register("AA", YkcV20VinCodeReportResponse.class);
         ProtocolEngine<YkcV20BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV20OfflineCardSyncRequest detail = new YkcV20OfflineCardSyncRequest();
+        YkcV20VinCodeReportResponse detail = new YkcV20VinCodeReportResponse();
         detail.setEquipmentId("1234567890123");
-        detail.setCardCount(3);
-        List<YkcV20OfflineCardSyncCard> cardsList = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            YkcV20OfflineCardSyncCard item = new YkcV20OfflineCardSyncCard();
-            item.setLogicalCardNo("1234567812345678");
-            item.setPhysicalCardNo("0123456789abcdef");
-            cardsList.add(item);
-        }
-        detail.setCards(cardsList);
+        detail.setConnectorId("1");
+        detail.setAuthSuccessFlag(1);
+        detail.setTransactionSerialNumber("1234567812345678");
 
         YkcV20BasePayload base = new YkcV20BasePayload();
         base.setStartFlag("68");
         base.setEncryptFlag("00");
-        base.setFrameType("44");
+        base.setFrameType("AA");
         base.setSerialNumber(1);
         base.setDetail(detail);
 
@@ -58,13 +49,12 @@ public class YkcV20OfflineCardSyncRequestTest {
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV20BasePayload parsed = engine.parse(in, YkcV20BasePayload.class);
 
-        assertEquals("44", parsed.getFrameType());
+        assertEquals("AA", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20OfflineCardSyncRequest parsedDetail =
-                assertInstanceOf(YkcV20OfflineCardSyncRequest.class, parsed.getDetail());
+        YkcV20VinCodeReportResponse parsedDetail =
+                assertInstanceOf(YkcV20VinCodeReportResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
-        assertEquals(3, parsedDetail.getCardCount());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

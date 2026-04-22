@@ -28,6 +28,13 @@ public class YkcV16MonitoringDataResponse {
     @ProtocolField(order = 1, length = 16, computed = true, dataType = ProtocolDataType.BCD, description = "交易流水号")
     private String transactionId;
 
+    public String getTransactionId() {
+        if (transactionId == null) {
+            return null;
+        }
+        return String.format("%32s", transactionId).replace(' ', '0');
+    }
+
     /**
      * 桩编号 (7字节)
      * BCD码，不足7位补0

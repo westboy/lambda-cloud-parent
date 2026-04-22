@@ -31,7 +31,6 @@ public class YkcV20KeyUpdateRequestTest {
 
         YkcV20KeyUpdateRequest detail = new YkcV20KeyUpdateRequest();
         detail.setEquipmentId("1234567890123");
-        detail.setKeyLength(1);
         detail.setExecuteControl(1);
         detail.setKeyLength(3);
         detail.setLatestKey(Arrays.asList(1, 2, 3));
@@ -56,7 +55,7 @@ public class YkcV20KeyUpdateRequestTest {
 
         YkcV20KeyUpdateRequest parsedDetail = assertInstanceOf(YkcV20KeyUpdateRequest.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
-        assertEquals(1, parsedDetail.getKeyLength());
+        assertEquals(3, parsedDetail.getKeyLength());
         assertEquals(1, parsedDetail.getExecuteControl());
 
         ByteBuf out2 = Unpooled.buffer();

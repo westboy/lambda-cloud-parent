@@ -33,4 +33,11 @@ public class YkcV16BillingModelVerificationRequest {
      */
     @ProtocolField(order = 2, length = 2, computed = true, dataType = ProtocolDataType.BCD, description = "计费模型编码")
     private String billingModelCode;
+
+    public String getBillingModelCode() {
+        if (billingModelCode == null) {
+            return null;
+        }
+        return String.format("%4s", billingModelCode).replace(' ', '0');
+    }
 }

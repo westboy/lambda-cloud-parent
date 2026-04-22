@@ -51,7 +51,7 @@ public class YkcV16BmsAbortResponseTest {
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV16BasePayload parsed = engine.parse(in, YkcV16BasePayload.class);
 
-        assertEquals("1D", parsed.getFrameType());
+        assertEquals("1D", parsed.getFrameType().toUpperCase());
         assertEquals(24, parsed.getSerialNumber());
 
         YkcV16BmsAbortResponse detail = assertInstanceOf(YkcV16BmsAbortResponse.class, parsed.getDetail());

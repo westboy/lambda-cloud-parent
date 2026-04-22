@@ -10,12 +10,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ProtocolPayload(name = "离线卡")
-public class YkcV20OfflineCardSyncCard {
-
-    @ProtocolField(order = 1, length = 8, dataType = ProtocolDataType.BCD, description = "逻辑卡号")
-    private String logicalCardNo;
-
-    @ProtocolField(order = 2, length = 8, dataType = ProtocolDataType.HEX, description = "物理卡号")
+@ProtocolPayload(name = "离线卡查询结果")
+public class YkcV20OfflineCardQueryResult {
+    @ProtocolField(order = 1, length = 8, dataType = ProtocolDataType.HEX, description = "物理卡号")
     private String physicalCardNo;
+
+    @ProtocolField(order = 2, length = 1, dataType = ProtocolDataType.UINT8, description = "查询结果")
+    private Integer queryResult;
 }

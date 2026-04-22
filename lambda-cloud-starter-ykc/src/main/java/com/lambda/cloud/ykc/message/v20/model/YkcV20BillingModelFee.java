@@ -2,6 +2,7 @@ package com.lambda.cloud.ykc.message.v20.model;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@ProtocolPayload(name = "计费模型费率")
 public class YkcV20BillingModelFee {
 
     @ProtocolField(

@@ -2,6 +2,7 @@ package com.lambda.cloud.ykc.message.v20.model;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
+import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,6 +10,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@ProtocolPayload(name = "交易费率时段")
 public class YkcV20TransactionRatePeriod {
 
     @ProtocolField(

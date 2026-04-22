@@ -24,7 +24,7 @@ public class YkcV16BillingModelSetRequest {
     private String equipmentId;
 
     /** 计费模型编码 (2字节) BCD码 */
-    @ProtocolField(order = 2, length = 2, computed = true, dataType = ProtocolDataType.BCD, description = "计费模型编码")
+    @ProtocolField(order = 2, length = 2, computed = true, dataType = ProtocolDataType.HEX, description = "计费模型编码")
     private String billingModelCode;
 
     /** 尖电费费率 (4字节) BIN，精确到五位小数 */

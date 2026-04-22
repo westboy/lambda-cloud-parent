@@ -48,7 +48,7 @@ public class YkcV20PlatformConnectConfigResponseTest {
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV20BasePayload parsed = engine.parse(in, YkcV20BasePayload.class);
 
-        assertEquals("5c", parsed.getFrameType());
+        assertEquals("5C", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
         YkcV20PlatformConnectConfigResponse parsedDetail =

@@ -17,4 +17,11 @@ public class YkcV16OfflineCardSyncCard {
 
     @ProtocolField(order = 2, length = 8, computed = true, dataType = ProtocolDataType.HEX, description = "物理卡号")
     private String physicalCardNo;
+
+    public String getPhysicalCardNo() {
+        if (physicalCardNo == null) {
+            return null;
+        }
+        return String.format("%16s", physicalCardNo).replace(' ', '0');
+    }
 }

@@ -35,7 +35,6 @@ public class YkcV20BillingModelResponseTest {
         YkcV20BillingModelResponse detail = new YkcV20BillingModelResponse();
         detail.setEquipmentId("1234567890123");
         detail.setBillingModelNumber("123");
-        detail.setRateCount(1);
         detail.setLossRatio(1);
         detail.setRateCount(3);
         List<YkcV20BillingModelFee> feesList = new ArrayList<>();
@@ -70,7 +69,7 @@ public class YkcV20BillingModelResponseTest {
                 assertInstanceOf(YkcV20BillingModelResponse.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("123", parsedDetail.getBillingModelNumber());
-        assertEquals(1, parsedDetail.getRateCount());
+        assertEquals(3, parsedDetail.getRateCount());
         assertEquals(48, parsedDetail.getTimeSlotRateNumbers().size());
 
         ByteBuf out2 = Unpooled.buffer();

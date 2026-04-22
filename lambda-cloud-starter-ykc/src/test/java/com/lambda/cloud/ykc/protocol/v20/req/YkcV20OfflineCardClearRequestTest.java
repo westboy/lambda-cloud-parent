@@ -33,7 +33,6 @@ public class YkcV20OfflineCardClearRequestTest {
 
         YkcV20OfflineCardClearRequest detail = new YkcV20OfflineCardClearRequest();
         detail.setEquipmentId("1234567890123");
-        detail.setCardCount(1);
         detail.setCardCount(3);
         List<YkcV20OfflineCardSyncCard> cardsList = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
@@ -65,7 +64,7 @@ public class YkcV20OfflineCardClearRequestTest {
         YkcV20OfflineCardClearRequest parsedDetail =
                 assertInstanceOf(YkcV20OfflineCardClearRequest.class, parsed.getDetail());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
-        assertEquals(1, parsedDetail.getCardCount());
+        assertEquals(3, parsedDetail.getCardCount());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

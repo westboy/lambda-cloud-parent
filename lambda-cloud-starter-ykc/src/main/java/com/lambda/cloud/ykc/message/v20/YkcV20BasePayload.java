@@ -112,4 +112,9 @@ public class YkcV20BasePayload implements ProtocolMessage, RawPayloadAware {
     public void setRawPayload(byte[] rawPayload) {
         this.rawPayload = rawPayload;
     }
+
+    @Override
+    public String getFrameType() {
+        return frameType == null ? null : frameType.toUpperCase();
+    }
 }

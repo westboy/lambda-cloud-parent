@@ -50,7 +50,7 @@ public class YkcV20WorkingParamsSetRequestTest {
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV20BasePayload parsed = engine.parse(in, YkcV20BasePayload.class);
 
-        assertEquals("5f", parsed.getFrameType());
+        assertEquals("5F", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
         YkcV20WorkingParamsSetRequest parsedDetail =
