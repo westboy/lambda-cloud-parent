@@ -49,7 +49,13 @@ public class HexConverter implements DataTypeConverter {
             Class<?> fieldType = fieldMetadata.getFieldType();
 
             if (fieldType == String.class) {
-                return (precision > 0) ? decimalValue.stripTrailingZeros().toPlainString() : hexString;
+                if (precision > 0) {
+                    return decimalValue.stripTrailingZeros().toPlainString();
+                }
+                if ("frameType".equalsIgnoreCase(fieldMetadata.getFieldName())) {
+                    return hexString.toUpperCase();
+                }
+                return hexString;
 
             } else if (fieldType == Integer.class || fieldType == int.class) {
                 return decimalValue.intValue();

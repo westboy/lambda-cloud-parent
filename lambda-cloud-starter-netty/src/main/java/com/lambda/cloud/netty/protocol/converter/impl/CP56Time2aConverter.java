@@ -111,6 +111,16 @@ public class CP56Time2aConverter implements DataTypeConverter {
 
     @Override
     public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        if (value instanceof byte[] bytes) {
+            if (bytes.length != fieldMetadata.getLength()) {
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                        "CP56TIME2A数据长度不匹配，期望: " + fieldMetadata.getLength() + ", 实际: " + bytes.length,
+                        fieldMetadata.getFieldName());
+            }
+            buffer.writeBytes(bytes);
+            return;
+        }
         byte[] result = serialize(value, fieldMetadata, false, false);
         buffer.writeBytes(result);
     }

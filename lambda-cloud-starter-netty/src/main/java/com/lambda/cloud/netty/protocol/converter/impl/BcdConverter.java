@@ -41,11 +41,13 @@ public class BcdConverter implements DataTypeConverter {
 
         String result = sb.toString();
 
-        // 移除前导零（但保留至少一个数字）
-        result = result.replaceFirst("^0+(?!$)", "");
-
         Class<?> fieldType = fieldMetadata.getFieldType();
         try {
+            if (fieldType == String.class) {
+                return result;
+            }
+
+            result = result.replaceFirst("^0+(?!$)", "");
             if (PrimitiveTypeUtils.isLongType(fieldType)) {
                 long value = Long.parseLong(result);
                 // 验证长整型范围
