@@ -380,8 +380,8 @@ public class ProtocolFieldProcessor {
                                     "无法确定List字段长度: " + fieldMetadata.getFieldName(),
                                     fieldMetadata.getFieldName());
                         }
-                        int remaining =
-                                byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
+                        int remaining = byteBuf.readableBytes()
+                                - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
                         if (remaining <= 0) {
                             return null;
                         }
@@ -403,7 +403,8 @@ public class ProtocolFieldProcessor {
                                 "动态解析Payload失败: " + fieldMetadata.getFieldName(),
                                 fieldMetadata.getFieldName());
                     }
-                    actualLength = byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
+                    actualLength =
+                            byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
                 } else {
                     actualLength = calculateCompositeFieldLength(targetType);
                 }

@@ -41,6 +41,10 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
         log.debug("开始解析List字段: {}, 数据长度: {}", fieldMetadata.getFieldName(), length);
 
         try {
+            if (length <= 0) {
+                return new ArrayList<>();
+            }
+
             DataTypeConverter elementConverter = getElementConverter(fieldMetadata);
 
             List<Object> result = new ArrayList<>(fieldMetadata.getListElementSize());
@@ -81,9 +85,11 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
                     result.add(element);
                 }
             } else {
-                int listSize = determineListSize(length, fieldMetadata);
+                int configuredSize = fieldMetadata.getListElementSize();
+                int elementLength = calculateElementLength(length, fieldMetadata, configuredSize);
+                int listSize =
+                        configuredSize > 0 ? configuredSize : determineListSize(length, fieldMetadata, elementLength);
                 log.debug("List字段 {} 元素数量: {}", fieldMetadata.getFieldName(), listSize);
-                int elementLength = calculateElementLength(length, fieldMetadata, listSize);
                 log.debug("List字段 {} 元素长度: {}", fieldMetadata.getFieldName(), elementLength);
                 int offset = 0;
                 for (int i = 0; i < listSize; i++) {
@@ -108,6 +114,8 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
                 log.debug("List字段 {} 解析完成，共 {} 个元素", fieldMetadata.getFieldName(), result.size());
             }
             return result;
+        } catch (ProtocolException e) {
+            throw e;
         } catch (Exception e) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
@@ -133,6 +141,14 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
         log.debug("开始序列化List字段: {}, 元素数量: {}", fieldMetadata.getFieldName(), list.size());
 
         try {
+            int expectedSize = fieldMetadata.getListElementSize();
+            if (expectedSize > 0 && list.size() != expectedSize) {
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.SERIALIZE_ERROR,
+                        "List元素数量不匹配: 期望=" + expectedSize + ", 实际=" + list.size(),
+                        fieldMetadata.getFieldName());
+            }
+
             // 1. 获取元素转换器
             DataTypeConverter elementConverter = getElementConverter(fieldMetadata);
 
@@ -181,18 +197,25 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
         return result;
     }
 
-    /**
-     * 确定 List 长度
-     *
-     * @param totalLength   总数据长度
-     * @param fieldMetadata 字段元数据
-     * @return List长度
-     */
-    private int determineListSize(int totalLength, ProtocolFieldMetadata fieldMetadata) {
+    private int determineListSize(int totalLength, ProtocolFieldMetadata fieldMetadata, int elementLength)
+            throws ProtocolException {
         if (fieldMetadata.isComposite()) {
             return totalLength;
         }
-        return totalLength / fieldMetadata.getLength();
+
+        if (elementLength <= 0) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR, "无法确定 List 元素长度", fieldMetadata.getFieldName());
+        }
+
+        if (totalLength % elementLength != 0) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "List字段长度无法整除元素长度: " + fieldMetadata.getFieldName(),
+                    fieldMetadata.getFieldName());
+        }
+
+        return totalLength / elementLength;
     }
 
     /**
@@ -206,6 +229,11 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
     private int calculateElementLength(int totalLength, ProtocolFieldMetadata fieldMetadata, int listSize)
             throws ProtocolException {
 
+        int configuredElementLength = fieldMetadata.getLength();
+        if (configuredElementLength > 0) {
+            return configuredElementLength;
+        }
+
         // 根据数据类型获取默认长度
         int defaultLength = ValidationUtils.getDefaultElementLength(fieldMetadata.getListElementDataType());
         if (defaultLength > 0) {
@@ -216,6 +244,12 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
         if (listSize > 0) {
             if (fieldMetadata.isComposite()) {
                 return totalLength;
+            }
+            if (totalLength % listSize != 0) {
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.PARSE_ERROR,
+                        "List字段长度无法整除元素数量: " + fieldMetadata.getFieldName(),
+                        fieldMetadata.getFieldName());
             }
             return totalLength / listSize;
         }
@@ -256,7 +290,10 @@ public record ListConverter(DataTypeConverterResolver converterResolver) impleme
             }
         }
         ProtocolFieldMetadata elementMetadata = new ProtocolFieldMetadata(
-                fieldAccessor, new ProtocolFieldProxy(listMetadata), listMetadata.validation(), new ConcurrentHashMap<>(8));
+                fieldAccessor,
+                new ProtocolFieldProxy(listMetadata),
+                listMetadata.validation(),
+                new ConcurrentHashMap<>(8));
         if (listMetadata.isComposite()) {
             Class<?> elementClass = listMetadata.getListElementClass();
             if (elementClass != null) {
