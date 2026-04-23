@@ -145,7 +145,7 @@ public class AsciiConverter implements DataTypeConverter {
      * @return 移除填充后的字符串
      */
     private String removePadding(String str, char paddingChar, ProtocolFieldMetadata fieldMetadata) {
-        if (str == null || str.isEmpty()) {
+        if (str == null || str.isEmpty() || PaddingDirection.NONE == fieldMetadata.getPaddingDirection()) {
             return str;
         }
 

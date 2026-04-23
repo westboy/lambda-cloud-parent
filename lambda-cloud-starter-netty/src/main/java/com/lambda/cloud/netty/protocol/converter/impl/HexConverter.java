@@ -4,6 +4,7 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
+import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.ValidationUtils;
 import io.netty.buffer.ByteBuf;
@@ -33,7 +34,9 @@ public class HexConverter implements DataTypeConverter {
         try {
             // 修正：先处理字节序，再调整长度（避免双重字节序处理）
             byte[] processedData = convertEndianness(data, fieldMetadata.isLittleEndian());
-            byte[] adjustedResult = adjustLength(processedData, fieldMetadata.getLength(), false); // 已处理字节序，传false
+            byte[] adjustedResult = fieldMetadata.getLength() > 0
+                    ? adjustLength(processedData, fieldMetadata.getLength(), false)
+                    : processedData;
             String hexString = HexUtil.encodeHexStr(adjustedResult);
             // 根据字段类型返回不同的对象
 
@@ -55,7 +58,7 @@ public class HexConverter implements DataTypeConverter {
                 if ("frameType".equalsIgnoreCase(fieldMetadata.getFieldName())) {
                     return hexString.toUpperCase();
                 }
-                return hexString;
+                return normalizeHexStringForStringField(hexString, fieldMetadata);
 
             } else if (fieldType == Integer.class || fieldType == int.class) {
                 return decimalValue.intValue();
@@ -103,6 +106,9 @@ public class HexConverter implements DataTypeConverter {
                     // 移除可能的空格和0x前缀
                     str = str.replaceAll("\\s+", "").replaceAll("^0x", "");
                     if (HexUtil.isHexNumber(str)) {
+                        if (str.length() % 2 != 0) {
+                            str = "0" + str;
+                        }
                         result = HexUtil.decodeHex(str);
                     } else {
                         String hexStr = HexUtil.encodeHexStr(str);
@@ -219,6 +225,23 @@ public class HexConverter implements DataTypeConverter {
             return ArrayUtil.reverse(bytes);
         }
         return bytes;
+    }
+
+    private static String normalizeHexStringForStringField(String hexString, ProtocolFieldMetadata fieldMetadata) {
+        if (hexString == null || hexString.isEmpty()) {
+            return hexString;
+        }
+        if (fieldMetadata.getPaddingDirection() != PaddingDirection.NONE) {
+            return hexString;
+        }
+        int firstNonZeroIndex = 0;
+        while (firstNonZeroIndex < hexString.length() && hexString.charAt(firstNonZeroIndex) == '0') {
+            firstNonZeroIndex++;
+        }
+        if (firstNonZeroIndex == 0 || firstNonZeroIndex == hexString.length()) {
+            return hexString;
+        }
+        return hexString.substring(firstNonZeroIndex);
     }
 
     @Override

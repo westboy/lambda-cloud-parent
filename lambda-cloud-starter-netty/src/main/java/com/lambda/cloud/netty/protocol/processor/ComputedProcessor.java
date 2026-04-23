@@ -1,7 +1,6 @@
 package com.lambda.cloud.netty.protocol.processor;
 
 import cn.hutool.core.util.HexUtil;
-import cn.hutool.core.util.ReflectUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.pool.ByteBufPool;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
@@ -20,6 +19,8 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +38,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SuppressFBWarnings("EI_EXPOSE_REP")
 public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
+
+    private static final Map<Class<?>, List<ComputedSubField>> compositeComputedFieldCache = new ConcurrentHashMap<>();
+
+    private record ComputedSubField(
+            FieldAccessor fieldAccessor, ProtocolField protocolField, ProtocolValidation validation) {}
 
     /**
      * 在序列化时计算并设置CRC值
@@ -322,42 +328,40 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
         }
 
         try {
-            // 获取复合字段的类型
             Class<?> compositeType = compositeValue.getClass();
-
-            // 获取复合字段内部的所有字段
-            Field[] fields = compositeType.getDeclaredFields();
-
-            log.debug("开始处理复合字段 {} 的子字段，共 {} 个字段", fieldMetadata.getFieldName(), fields.length);
-
-            for (Field field : fields) {
-                ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
-
-                // 只处理有ProtocolField注解且checksum=true的字段
-                if (protocolField != null && protocolField.computed()) {
-                    Object subFieldValue = ReflectUtil.getFieldValue(compositeValue, field);
-
-                    // 创建子字段的元数据
-                    ProtocolValidation subValidation = field.getAnnotation(ProtocolValidation.class);
-                    FieldAccessor fieldAccessor = FieldAccessorFactory.createAccessor(field);
-                    ProtocolFieldMetadata subFieldMetadata = new ProtocolFieldMetadata(
-                            fieldAccessor, protocolField, subValidation, new ConcurrentHashMap<>(8));
-
-                    // 递归处理子字段
-                    if (subFieldMetadata.isComposite()) {
-                        // 如果子字段也是复合字段，继续递归
-                        this.serializeCompositeFieldForCrc(tempBuf, subFieldValue, subFieldMetadata);
-                    } else {
-                        // 普通子字段直接序列化
-                        this.serializeFieldValue(tempBuf, subFieldValue, subFieldMetadata);
+            List<ComputedSubField> computedSubFields = compositeComputedFieldCache.computeIfAbsent(compositeType, k -> {
+                Field[] fields = k.getDeclaredFields();
+                ArrayList<ComputedSubField> list = new ArrayList<>(fields.length);
+                for (Field field : fields) {
+                    ProtocolField protocolField = field.getAnnotation(ProtocolField.class);
+                    if (protocolField == null || !protocolField.computed()) {
+                        continue;
                     }
-
-                    log.debug(
-                            "复合字段 {} 的子字段 {} 参与CRC计算，值: {}",
-                            fieldMetadata.getFieldName(),
-                            field.getName(),
-                            subFieldValue);
+                    ProtocolValidation validation = field.getAnnotation(ProtocolValidation.class);
+                    FieldAccessor accessor = FieldAccessorFactory.createAccessor(field);
+                    list.add(new ComputedSubField(accessor, protocolField, validation));
                 }
+                list.sort(Comparator.comparingInt(e -> e.protocolField().order()));
+                return list;
+            });
+
+            for (ComputedSubField computedSubField : computedSubFields) {
+                Object subFieldValue = computedSubField.fieldAccessor().getValue(compositeValue);
+                ProtocolFieldMetadata subFieldMetadata = new ProtocolFieldMetadata(
+                        computedSubField.fieldAccessor(),
+                        computedSubField.protocolField(),
+                        computedSubField.validation(),
+                        new ConcurrentHashMap<>(8));
+                if (subFieldMetadata.isComposite()) {
+                    serializeCompositeFieldForCrc(tempBuf, subFieldValue, subFieldMetadata);
+                } else {
+                    serializeFieldValue(tempBuf, subFieldValue, subFieldMetadata);
+                }
+                log.debug(
+                        "复合字段 {} 的子字段 {} 参与CRC计算，值: {}",
+                        fieldMetadata.getFieldName(),
+                        subFieldMetadata.getFieldName(),
+                        subFieldValue);
             }
 
         } catch (Exception e) {

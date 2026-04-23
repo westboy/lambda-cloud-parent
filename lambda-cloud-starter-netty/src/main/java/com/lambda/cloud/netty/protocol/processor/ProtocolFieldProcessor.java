@@ -71,8 +71,7 @@ public class ProtocolFieldProcessor {
         }
 
         if (!validateBufferData(byteBuf, fieldMetadata)) {
-            handleInsufficientData(instance, fieldMetadata);
-            return;
+            handleInsufficientData(instance, fieldMetadata, converter);
         } else if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
             Object value = parseCompositeFieldWithDynamicLength(
@@ -126,25 +125,6 @@ public class ProtocolFieldProcessor {
      */
     private boolean validateBufferData(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
         return byteBuf.readableBytes() >= fieldMetadata.getLength();
-    }
-
-    /**
-     * 处理数据不足的情况
-     *
-     * @param instance      目标实例
-     * @param fieldMetadata 字段元数据
-     * @throws ProtocolException 解析异常
-     */
-    private void handleInsufficientData(Object instance, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        if (fieldMetadata.isOptional()) {
-            // 可选字段，使用默认值
-            setDefaultValue(instance, fieldMetadata);
-        } else {
-            throw new ProtocolException(
-                    ProtocolException.ErrorCode.BUFFER_UNDERFLOW,
-                    "缓冲区数据不足，字段: " + fieldMetadata.getFieldName(),
-                    fieldMetadata.getFieldName());
-        }
     }
 
     /**
@@ -283,30 +263,85 @@ public class ProtocolFieldProcessor {
      * @param fieldMetadata 字段元数据
      * @throws ProtocolException 设置异常
      */
-    @SuppressWarnings("unused")
-    private void setDefaultValue(Object instance, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+    private void setDefaultValue(Object instance, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
+            throws ProtocolException {
         String defaultValue = fieldMetadata.getDefaultValue();
-        if (defaultValue != null && !defaultValue.isEmpty()) {
-            try {
-                // 这里需要获取转换器，但为了保持方法简洁，暂时使用简单的处理方式
-                // 在实际使用中，可以通过依赖注入或工厂模式获取转换器
-                log.debug("设置默认值: {} = {}", fieldMetadata.getFieldName(), defaultValue);
-                // TODO: 实现默认值设置逻辑
-            } catch (Exception e) {
-                throw new ProtocolException(
-                        ProtocolException.ErrorCode.PARSE_ERROR,
-                        "设置默认值失败: " + fieldMetadata.getFieldName(),
-                        fieldMetadata.getFieldName(),
-                        e);
+        try {
+            Object value;
+            if (defaultValue != null && !defaultValue.isEmpty()) {
+                String cacheKey = "DefaultValueParsed#" + defaultValue;
+                Object cached = fieldMetadata.extParam().get(cacheKey);
+                if (cached != null) {
+                    value = cached;
+                } else {
+                    value = converter.parseFromString(defaultValue, fieldMetadata);
+                    if (value != null) {
+                        fieldMetadata.extParam().put(cacheKey, value);
+                    }
+                }
+            } else if (fieldMetadata.getFieldType().isPrimitive()) {
+                value = primitiveDefaultValue(fieldMetadata.getFieldType());
+            } else {
+                value = null;
             }
+            setFieldValue(instance, fieldMetadata, value);
+        } catch (ProtocolException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "设置默认值失败: " + fieldMetadata.getFieldName(),
+                    fieldMetadata.getFieldName(),
+                    e);
         }
+    }
+
+    private void handleInsufficientData(
+            Object instance, ProtocolFieldMetadata fieldMetadata, DataTypeConverter converter)
+            throws ProtocolException {
+        if (fieldMetadata.isOptional()) {
+            setDefaultValue(instance, fieldMetadata, converter);
+            return;
+        }
+        throw new ProtocolException(
+                ProtocolException.ErrorCode.BUFFER_UNDERFLOW,
+                "缓冲区数据不足，字段: " + fieldMetadata.getFieldName(),
+                fieldMetadata.getFieldName());
+    }
+
+    private Object primitiveDefaultValue(Class<?> primitiveType) {
+        if (primitiveType == boolean.class) {
+            return false;
+        }
+        if (primitiveType == char.class) {
+            return '\0';
+        }
+        if (primitiveType == byte.class) {
+            return (byte) 0;
+        }
+        if (primitiveType == short.class) {
+            return (short) 0;
+        }
+        if (primitiveType == int.class) {
+            return 0;
+        }
+        if (primitiveType == long.class) {
+            return 0L;
+        }
+        if (primitiveType == float.class) {
+            return 0F;
+        }
+        if (primitiveType == double.class) {
+            return 0D;
+        }
+        return null;
     }
 
     /**
      * 解析长度为0的复合字段，动态计算实际长度
      *
      * @param byteBuf       字节缓冲区
-     * @param instance
+     * @param instance      示例
      * @param fieldMetadata 字段元数据
      * @param frameMetadata 元数据
      * @param converter     转换器
@@ -454,12 +489,11 @@ public class ProtocolFieldProcessor {
      * 解析List字段
      *
      * @param byteBuf             字节缓冲区
-     * @param instance
+     * @param instance            对象
      * @param fieldMetadata       字段元数据
      * @param frameMetadata       帧元数据
      * @param converter           转换器
      * @param isEncryptionEnabled 是否启用加密
-     * @param outputStream        原文
      * @return 解析后的 List 对象
      * @throws ProtocolException 解析异常
      */
@@ -551,10 +585,7 @@ public class ProtocolFieldProcessor {
                         fieldMetadata.getFieldName());
             }
             int remaining = byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder());
-            if (remaining <= 0) {
-                return 0;
-            }
-            return remaining;
+            return Math.max(remaining, 0);
         }
     }
 }
