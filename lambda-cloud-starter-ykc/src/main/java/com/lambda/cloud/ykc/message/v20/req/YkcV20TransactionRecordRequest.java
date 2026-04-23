@@ -1,4 +1,4 @@
-package com.lambda.cloud.ykc.message.v20.resp;
+package com.lambda.cloud.ykc.message.v20.req;
 
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
@@ -15,7 +15,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @ProtocolPayload(frameType = "3D", name = "交易记录", description = "交易记录响应详细信息")
-public class YkcV20TransactionRecordResponse {
+public class YkcV20TransactionRecordRequest {
 
     @ProtocolField(order = 1, length = 16, dataType = ProtocolDataType.BCD, description = "交易流水号")
     private String transactionSerialNumber;

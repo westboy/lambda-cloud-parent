@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
@@ -66,5 +67,8 @@ public class YkcV20StartChargingRequestTest {
         byte[] raw2 = new byte[out2.readableBytes()];
         out2.readBytes(raw2);
         assertArrayEquals(raw, raw2);
+
+        String hexString = HexUtil.encodeHexStr(raw, false);
+        System.out.println(hexString);
     }
 }

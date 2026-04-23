@@ -1,9 +1,10 @@
-package com.lambda.cloud.ykc.protocol.v20.resp;
+package com.lambda.cloud.ykc.protocol.v20.req;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
@@ -11,7 +12,7 @@ import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v20.YkcV20BasePayload;
 import com.lambda.cloud.ykc.message.v20.model.YkcV20HalfHourEnergy;
 import com.lambda.cloud.ykc.message.v20.model.YkcV20TransactionRatePeriod;
-import com.lambda.cloud.ykc.message.v20.resp.YkcV20TransactionRecordResponse;
+import com.lambda.cloud.ykc.message.v20.req.YkcV20TransactionRecordRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.time.LocalDateTime;
@@ -20,7 +21,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class YkcV20TransactionRecordResponseTest {
+public class YkcV20TransactionRecordRequestTest {
     @BeforeEach
     public void setUp() {
         ProtocolEngineFactory.addEngine(
@@ -29,11 +30,11 @@ public class YkcV20TransactionRecordResponseTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("3D", YkcV20TransactionRecordResponse.class);
+        ProtocolPayloadRegistry.register("3D", YkcV20TransactionRecordRequest.class);
         ProtocolEngine<YkcV20BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV20TransactionRecordResponse detail = new YkcV20TransactionRecordResponse();
+        YkcV20TransactionRecordRequest detail = new YkcV20TransactionRecordRequest();
         detail.setTransactionSerialNumber("1234567890123456789012345678901");
         detail.setEquipmentId("1234567890123");
         detail.setConnectorId("1");
@@ -52,7 +53,7 @@ public class YkcV20TransactionRecordResponseTest {
         detail.setTransactionType(1);
         detail.setTransactionDateTime(LocalDateTime.of(2026, 1, 2, 3, 4, 5));
         detail.setStopReason(1);
-        detail.setPhysicalCardNumber("0123456789abcdef");
+        detail.setPhysicalCardNumber("012345");
         detail.setRatePeriodCount(1);
         detail.setRatePeriodCount(3);
         List<YkcV20TransactionRatePeriod> ratePeriodsList = new ArrayList<>();
@@ -91,8 +92,8 @@ public class YkcV20TransactionRecordResponseTest {
         assertEquals("3D", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20TransactionRecordResponse parsedDetail =
-                assertInstanceOf(YkcV20TransactionRecordResponse.class, parsed.getDetail());
+        YkcV20TransactionRecordRequest parsedDetail =
+                assertInstanceOf(YkcV20TransactionRecordRequest.class, parsed.getDetail());
         assertEquals("1234567890123456789012345678901", parsedDetail.getTransactionSerialNumber());
         assertEquals("1234567890123", parsedDetail.getEquipmentId());
         assertEquals("1", parsedDetail.getConnectorId());
@@ -103,5 +104,7 @@ public class YkcV20TransactionRecordResponseTest {
         byte[] raw2 = new byte[out2.readableBytes()];
         out2.readBytes(raw2);
         assertArrayEquals(raw, raw2);
+        String hexString = HexUtil.encodeHexStr(raw, false);
+        System.out.println(hexString);
     }
 }
