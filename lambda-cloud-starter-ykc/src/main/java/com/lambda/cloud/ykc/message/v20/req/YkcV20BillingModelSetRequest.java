@@ -1,5 +1,6 @@
 package com.lambda.cloud.ykc.message.v20.req;
 
+import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
@@ -15,7 +16,12 @@ import lombok.ToString;
 @ProtocolPayload(frameType = "58", name = "计费模型设置", description = "运营平台下发计费模型（费率与时段费率号）")
 public class YkcV20BillingModelSetRequest {
 
-    @ProtocolField(order = 1, length = 7, dataType = ProtocolDataType.BCD, description = "桩编号")
+    @ProtocolField(
+            order = 1,
+            length = 7,
+            dataType = ProtocolDataType.HEX,
+            padding = PaddingDirection.NONE,
+            description = "桩编号")
     private String equipmentId;
 
     @ProtocolField(order = 2, length = 2, dataType = ProtocolDataType.BCD, description = "计费模型编码")
