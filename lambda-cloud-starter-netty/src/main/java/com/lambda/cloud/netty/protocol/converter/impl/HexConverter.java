@@ -234,6 +234,9 @@ public class HexConverter implements DataTypeConverter {
         if (fieldMetadata.getPaddingDirection() != PaddingDirection.NONE) {
             return hexString;
         }
+        if (!"0".equals(fieldMetadata.getPaddingChar())) {
+            return hexString;
+        }
         int firstNonZeroIndex = 0;
         while (firstNonZeroIndex < hexString.length() && hexString.charAt(firstNonZeroIndex) == '0') {
             firstNonZeroIndex++;
