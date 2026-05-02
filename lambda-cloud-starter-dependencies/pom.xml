@@ -127,6 +127,16 @@
                 <artifactId>lambda-cloud-starter-cache</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.lambda.cloud</groupId>
+                <artifactId>lambda-cloud-starter-netty</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lambda.cloud</groupId>
+                <artifactId>lambda-cloud-starter-ykc</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
