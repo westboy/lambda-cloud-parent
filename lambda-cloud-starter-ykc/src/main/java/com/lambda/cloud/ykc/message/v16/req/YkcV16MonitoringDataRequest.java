@@ -25,7 +25,7 @@ public class YkcV16MonitoringDataRequest {
      * 交易流水号 (16字节)
      * BCD码，见名词解释
      */
-    @ProtocolField(order = 1, length = 16, computed = true, dataType = ProtocolDataType.BCD, description = "交易流水号")
+    @ProtocolField(order = 1, length = 16, computed = true, dataType = ProtocolDataType.HEX, description = "交易流水号")
     private String transactionId;
 
     /**

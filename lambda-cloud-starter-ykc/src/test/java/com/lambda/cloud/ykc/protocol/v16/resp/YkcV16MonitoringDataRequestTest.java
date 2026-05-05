@@ -15,7 +15,7 @@ import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class YkcV16MonitoringDataResponseTest {
+public class YkcV16MonitoringDataRequestTest {
     @BeforeEach
     public void setUp() {
         ProtocolEngineFactory.addEngine(

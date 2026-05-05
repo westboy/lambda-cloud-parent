@@ -1,8 +1,6 @@
 package com.lambda.cloud.ykc.protocol.v16.req;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
@@ -24,20 +22,36 @@ public class YkcV16MonitoringDataRequestTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("12", YkcV16MonitoringDataRequest.class);
+        ProtocolPayloadRegistry.register("13", YkcV16MonitoringDataRequest.class);
         ProtocolEngine<YkcV16BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV16MonitoringDataRequest req = new YkcV16MonitoringDataRequest();
-        req.setEquipmentId("32010200000001");
-        req.setConnectorId(1);
+        YkcV16MonitoringDataRequest resp = new YkcV16MonitoringDataRequest();
+        resp.setTransactionId("00000000000000000000000000000000");
+        resp.setEquipmentId("55031412782305");
+        resp.setConnectorId(1);
+        resp.setStatus(0);
+        resp.setGunInPlace(1);
+        resp.setGunPlugged(1);
+        resp.setOutputVoltage(0);
+        resp.setOutputCurrent(0);
+        resp.setCableTemperature(10);
+        resp.setCableCode("0000000000000000");
+        resp.setSoc(0);
+        resp.setBatteryMaxTemperature(0);
+        resp.setTotalChargingTime(0);
+        resp.setRemainingTime(0);
+        resp.setChargingEnergy(0L);
+        resp.setLossAdjustedEnergy(0L);
+        resp.setChargedAmount(0L);
+        resp.setHardwareFault(0);
 
         YkcV16BasePayload base = new YkcV16BasePayload();
         base.setStartFlag("68");
         base.setEncryptFlag("00");
-        base.setFrameType("12");
-        base.setSerialNumber(0);
-        base.setDetail(req);
+        base.setFrameType("13");
+        base.setSerialNumber(794);
+        base.setDetail(resp);
 
         ByteBuf out = Unpooled.buffer();
         engine.serialize(base, out);
@@ -46,11 +60,12 @@ public class YkcV16MonitoringDataRequestTest {
 
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV16BasePayload parsed = engine.parse(in, YkcV16BasePayload.class);
-        assertEquals("12", parsed.getFrameType());
-        assertEquals(0, parsed.getSerialNumber());
+        assertEquals("13", parsed.getFrameType());
+        assertEquals(794, parsed.getSerialNumber());
 
         YkcV16MonitoringDataRequest detail = assertInstanceOf(YkcV16MonitoringDataRequest.class, parsed.getDetail());
-        assertEquals("32010200000001", detail.getEquipmentId());
+        assertEquals("00000000000000000000000000000000", detail.getTransactionId());
+        assertEquals("55031412782305", detail.getEquipmentId());
         assertEquals(1, detail.getConnectorId());
 
         ByteBuf out2 = Unpooled.buffer();
