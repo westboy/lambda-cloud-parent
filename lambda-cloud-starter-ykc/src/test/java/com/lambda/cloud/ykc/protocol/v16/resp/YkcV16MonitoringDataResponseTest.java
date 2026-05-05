@@ -9,7 +9,7 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
-import com.lambda.cloud.ykc.message.v16.resp.YkcV16MonitoringDataResponse;
+import com.lambda.cloud.ykc.message.v16.req.YkcV16MonitoringDataRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,11 +24,11 @@ public class YkcV16MonitoringDataResponseTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("13", YkcV16MonitoringDataResponse.class);
+        ProtocolPayloadRegistry.register("13", YkcV16MonitoringDataRequest.class);
         ProtocolEngine<YkcV16BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV16MonitoringDataResponse resp = new YkcV16MonitoringDataResponse();
+        YkcV16MonitoringDataRequest resp = new YkcV16MonitoringDataRequest();
         resp.setTransactionId("00000000000000000000000000000000");
         resp.setEquipmentId("55031412782305");
         resp.setConnectorId(1);
@@ -65,7 +65,7 @@ public class YkcV16MonitoringDataResponseTest {
         assertEquals("13", parsed.getFrameType());
         assertEquals(794, parsed.getSerialNumber());
 
-        YkcV16MonitoringDataResponse detail = assertInstanceOf(YkcV16MonitoringDataResponse.class, parsed.getDetail());
+        YkcV16MonitoringDataRequest detail = assertInstanceOf(YkcV16MonitoringDataRequest.class, parsed.getDetail());
         assertEquals("00000000000000000000000000000000", detail.getTransactionId());
         assertEquals("55031412782305", detail.getEquipmentId());
         assertEquals(1, detail.getConnectorId());
