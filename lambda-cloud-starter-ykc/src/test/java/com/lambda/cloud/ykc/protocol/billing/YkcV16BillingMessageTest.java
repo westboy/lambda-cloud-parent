@@ -12,8 +12,8 @@ import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.netty.protocol.processor.ProtocolFieldProcessor;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
-import com.lambda.cloud.ykc.message.v16.resp.YkcV16BillingModelResponse;
-import com.lambda.cloud.ykc.message.v16.resp.YkcV16StartChargingResponse;
+import com.lambda.cloud.ykc.message.v16.down.YkcV16BillingModelDown;
+import com.lambda.cloud.ykc.message.v16.down.YkcV16StartChargingDown;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +48,7 @@ public class YkcV16BillingMessageTest {
                     "685e00070058111177777777770062a08601008038010068360200204e000098ab0200204e0000e09f0200204e000000000000000000000000000000000000000101010101010101020202020202020202020202030303030303030303030303CE40");
 
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-            ProtocolPayloadRegistry.register("58", YkcV16BillingModelResponse.class);
+            ProtocolPayloadRegistry.register("58", YkcV16BillingModelDown.class);
             // 使用协议引擎解析消息
             YkcV16BasePayload record = engine.parse(byteBuf, YkcV16BasePayload.class);
 
@@ -81,7 +81,7 @@ public class YkcV16BillingMessageTest {
                     "682a286B00321812000000292602258910132969472018120000002926020000000000000000a0860100010040A6");
 
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-            ProtocolPayloadRegistry.register("32", YkcV16StartChargingResponse.class);
+            ProtocolPayloadRegistry.register("32", YkcV16StartChargingDown.class);
             // 使用协议引擎解析消息
             YkcV16BasePayload record = engine.parse(byteBuf, YkcV16BasePayload.class);
 
@@ -134,7 +134,7 @@ public class YkcV16BillingMessageTest {
             ProtocolEngine<YkcV16BasePayload> engine =
                     ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-            ProtocolPayloadRegistry.register("58", YkcV16BillingModelResponse.class);
+            ProtocolPayloadRegistry.register("58", YkcV16BillingModelDown.class);
 
             // 将十六进制字符串转换为字节数组
             byte[] bytes = HexUtil.decodeHex(format);
