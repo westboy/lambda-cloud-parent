@@ -10,6 +10,7 @@ import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
 import com.lambda.cloud.ykc.message.v16.down.YkcV16RemoteRebootDown;
+import com.lambda.cloud.ykc.message.v16.up.YkcV16RemoteRebootReplyUp;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +25,13 @@ public class YkcV16RemoteRebootResponseTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("91", YkcV16RemoteRebootDown.class);
+        ProtocolPayloadRegistry.register("91", YkcV16RemoteRebootReplyUp.class);
         ProtocolEngine<YkcV16BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV16RemoteRebootDown resp = new YkcV16RemoteRebootDown();
+        YkcV16RemoteRebootReplyUp resp = new YkcV16RemoteRebootReplyUp();
         resp.setEquipmentId("32010200000001");
-        resp.setExecuteControl(1);
+        resp.setRebootResult(1);
 
         YkcV16BasePayload base = new YkcV16BasePayload();
         base.setStartFlag("68");
@@ -50,9 +51,9 @@ public class YkcV16RemoteRebootResponseTest {
         assertEquals(12, parsed.getDataLength());
         assertEquals(17, parsed.getSerialNumber());
 
-        YkcV16RemoteRebootDown detail = assertInstanceOf(YkcV16RemoteRebootDown.class, parsed.getDetail());
+        YkcV16RemoteRebootReplyUp detail = assertInstanceOf(YkcV16RemoteRebootReplyUp.class, parsed.getDetail());
         assertEquals("32010200000001", detail.getEquipmentId());
-        assertEquals(1, detail.getExecuteControl());
+        assertEquals(1, detail.getRebootResult());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

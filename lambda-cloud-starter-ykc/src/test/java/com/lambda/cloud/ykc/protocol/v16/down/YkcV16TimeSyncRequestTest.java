@@ -10,6 +10,7 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
+import com.lambda.cloud.ykc.message.v16.down.YkcV16TimeSyncDown;
 import com.lambda.cloud.ykc.message.v16.up.YkcV16TimeSyncUp;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -25,13 +26,13 @@ public class YkcV16TimeSyncRequestTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("56", YkcV16TimeSyncUp.class);
+        ProtocolPayloadRegistry.register("56", YkcV16TimeSyncDown.class);
         ProtocolEngine<YkcV16BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
         byte[] time = new byte[] {(byte) 0x98, (byte) 0xB7, 0x0E, 0x11, 0x10, 0x03, 0x14};
 
-        YkcV16TimeSyncUp req = new YkcV16TimeSyncUp();
+        YkcV16TimeSyncDown req = new YkcV16TimeSyncDown();
         req.setEquipmentId("55031412782305");
         req.setCurrentTime(time);
 
@@ -53,7 +54,7 @@ public class YkcV16TimeSyncRequestTest {
         assertEquals("56", parsed.getFrameType());
         assertEquals(223, parsed.getSerialNumber());
 
-        YkcV16TimeSyncUp detail = assertInstanceOf(YkcV16TimeSyncUp.class, parsed.getDetail());
+        YkcV16TimeSyncDown detail = assertInstanceOf(YkcV16TimeSyncDown.class, parsed.getDetail());
         assertEquals("55031412782305", detail.getEquipmentId());
         assertArrayEquals(time, detail.getCurrentTime());
 
