@@ -12,6 +12,7 @@ import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
 import com.lambda.cloud.ykc.message.v16.up.YkcV16MonitoringDataUp;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,17 +36,17 @@ public class YkcV16MonitoringDataUpTest {
         resp.setStatus(0);
         resp.setGunInPlace(1);
         resp.setGunPlugged(1);
-        resp.setOutputVoltage(0);
-        resp.setOutputCurrent(0);
+        resp.setOutputVoltage(BigDecimal.valueOf(0));
+        resp.setOutputCurrent(BigDecimal.valueOf(0));
         resp.setCableTemperature(10);
         resp.setCableCode("0000000000000000");
         resp.setSoc(0);
         resp.setBatteryMaxTemperature(0);
         resp.setTotalChargingTime(0);
         resp.setRemainingTime(0);
-        resp.setChargingEnergy(0L);
-        resp.setLossAdjustedEnergy(0L);
-        resp.setChargedAmount(0L);
+        resp.setChargingEnergy(BigDecimal.valueOf(0L));
+        resp.setLossAdjustedEnergy(BigDecimal.valueOf(0L));
+        resp.setChargedAmount(BigDecimal.valueOf(0L));
         resp.setHardwareFault(0);
 
         YkcV16BasePayload base = new YkcV16BasePayload();
