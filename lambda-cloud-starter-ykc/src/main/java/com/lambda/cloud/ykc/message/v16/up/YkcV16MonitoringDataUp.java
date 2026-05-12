@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * 云快充1.6协议上传实时监测数据响应消息体
  * <p>
@@ -75,7 +77,7 @@ public class YkcV16MonitoringDataUp {
             littleEndian = true,
             precision = 1,
             description = "输出电压")
-    private Integer outputVoltage;
+    private BigDecimal outputVoltage;
 
     /**
      * 输出电流 (2字节)
@@ -89,7 +91,7 @@ public class YkcV16MonitoringDataUp {
             littleEndian = true,
             precision = 1,
             description = "输出电流")
-    private Integer outputCurrent;
+    private BigDecimal outputCurrent;
 
     /**
      * 枪线温度 (1字节)
@@ -157,7 +159,7 @@ public class YkcV16MonitoringDataUp {
             littleEndian = true,
             precision = 4,
             description = "充电度数")
-    private Long chargingEnergy;
+    private BigDecimal chargingEnergy;
 
     /**
      * 计损充电度数 (4字节)
@@ -171,7 +173,7 @@ public class YkcV16MonitoringDataUp {
             littleEndian = true,
             precision = 4,
             description = "计损充电度数")
-    private Long lossAdjustedEnergy;
+    private BigDecimal lossAdjustedEnergy;
 
     /**
      * 已充金额 (4字节)
@@ -185,7 +187,7 @@ public class YkcV16MonitoringDataUp {
             littleEndian = true,
             precision = 4,
             description = "已充金额")
-    private Long chargedAmount;
+    private BigDecimal chargedAmount;
 
     /**
      * 硬件故障 (2字节)
