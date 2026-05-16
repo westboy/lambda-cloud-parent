@@ -23,7 +23,7 @@
             <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
-        <!-- spring boot3 引入可选模块 -->
+        <!-- spring boot4 引入可选模块 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
