@@ -42,7 +42,12 @@ public class YkcV20LogCallDown {
      * 上传服务器端口 (2字节)
      * BIN码，不足2位补零
      */
-    @ProtocolField(order = 3, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "上传服务器端口")
+    @ProtocolField(
+            order = 3,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "上传服务器端口")
     private Integer uploadServerPort;
 
     /**
@@ -70,14 +75,24 @@ public class YkcV20LogCallDown {
      * 日志文件开始时间 (7字节)
      * CP56Time2a格式
      */
-    @ProtocolField(order = 7, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "日志文件开始时间")
+    @ProtocolField(
+            order = 7,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "日志文件开始时间")
     private String logStartTime;
 
     /**
      * 日志文件结束时间 (7字节)
      * CP56Time2a格式
      */
-    @ProtocolField(order = 8, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "日志文件结束时间")
+    @ProtocolField(
+            order = 8,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "日志文件结束时间")
     private String logEndTime;
 
     /**

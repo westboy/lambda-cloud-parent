@@ -25,7 +25,13 @@ public class YkcV20StartChargingDown {
     @ProtocolField(order = 4, length = 8, dataType = ProtocolDataType.BCD, description = "逻辑卡号")
     private String logicalCardNumber;
 
-    @ProtocolField(order = 5, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 2, description = "账户余额")
+    @ProtocolField(
+            order = 5,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 2,
+            description = "账户余额")
     private Integer accountBalance;
 
     @ProtocolField(order = 6, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "最大功率")
@@ -34,7 +40,13 @@ public class YkcV20StartChargingDown {
     @ProtocolField(order = 7, length = 1, dataType = ProtocolDataType.UINT8, description = "SOC限制")
     private Integer socLimit;
 
-    @ProtocolField(order = 8, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 2, description = "充电电量限制")
+    @ProtocolField(
+            order = 8,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 2,
+            description = "充电电量限制")
     private Integer chargingEnergyLimit;
 
     @ProtocolField(order = 9, length = 1, dataType = ProtocolDataType.UINT8, description = "鉴权成功标志")

@@ -52,7 +52,12 @@ public class YkcV20LogCallReplyUp {
      * 日志文件数量 (2字节)
      * BIN码
      */
-    @ProtocolField(order = 4, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "日志文件数量")
+    @ProtocolField(
+            order = 4,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "日志文件数量")
     private Integer logFileCount;
 
     /**
@@ -67,6 +72,11 @@ public class YkcV20LogCallReplyUp {
      * Bit7：使用UTF-16
      * Bit8：使用UTF-32
      */
-    @ProtocolField(order = 5, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "日志文件编码")
+    @ProtocolField(
+            order = 5,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "日志文件编码")
     private Integer logFileCode;
 }

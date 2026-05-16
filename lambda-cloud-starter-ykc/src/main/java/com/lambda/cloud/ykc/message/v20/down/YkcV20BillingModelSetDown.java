@@ -40,7 +40,12 @@ public class YkcV20BillingModelSetDown {
     @ProtocolField(order = 2, length = 2, dataType = ProtocolDataType.BCD, description = "计费模型编号")
     private String billingModelNumber;
 
-    @ProtocolField(order = 3, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "开始时间")
+    @ProtocolField(
+            order = 3,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "开始时间")
     private String startTime;
 
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.UINT8, description = "费率数量")
@@ -55,18 +60,36 @@ public class YkcV20BillingModelSetDown {
     @ProtocolField(order = 7, length = 1, dataType = ProtocolDataType.UINT8, description = "状态变化原因")
     private Integer statusChangeReason;
 
-    @ProtocolField(order = 8, length = 255, composite = true, dataType = ProtocolDataType.LIST,
-            listElementType = ProtocolDataType.COMPOSITE, listElementClass = YkcV20BillingModelFee.class,
-            listElementSizeField = "feeCount", description = "费率列表")
+    @ProtocolField(
+            order = 8,
+            length = 255,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20BillingModelFee.class,
+            listElementSizeField = "feeCount",
+            description = "费率列表")
     private List<YkcV20BillingModelFee> fee;
 
-    @ProtocolField(order = 9, length = 255, composite = true, dataType = ProtocolDataType.LIST,
-            listElementType = ProtocolDataType.COMPOSITE, listElementClass = YkcV20BillingModelFee.class,
-            listElementSizeField = "serviceFeeCount", description = "服务费列表")
+    @ProtocolField(
+            order = 9,
+            length = 255,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20BillingModelFee.class,
+            listElementSizeField = "serviceFeeCount",
+            description = "服务费列表")
     private List<YkcV20BillingModelFee> serviceFee;
 
-    @ProtocolField(order = 10, length = 255, composite = true, dataType = ProtocolDataType.LIST,
-            listElementType = ProtocolDataType.COMPOSITE, listElementClass = YkcV20BillingModelFee.class,
-            listElementSizeField = "parkingFeeCount", description = "停车费列表")
+    @ProtocolField(
+            order = 10,
+            length = 255,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20BillingModelFee.class,
+            listElementSizeField = "parkingFeeCount",
+            description = "停车费列表")
     private List<YkcV20BillingModelFee> parkingFee;
 }

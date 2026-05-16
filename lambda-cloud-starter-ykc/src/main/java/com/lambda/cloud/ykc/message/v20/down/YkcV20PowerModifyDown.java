@@ -42,7 +42,12 @@ public class YkcV20PowerModifyDown {
      * 允许最大功率 (2字节)
      * BIN码，单位：kW
      */
-    @ProtocolField(order = 3, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "允许最大功率")
+    @ProtocolField(
+            order = 3,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "允许最大功率")
     private Integer maxPower;
 
     /**

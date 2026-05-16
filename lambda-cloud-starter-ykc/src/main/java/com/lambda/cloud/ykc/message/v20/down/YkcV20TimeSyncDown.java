@@ -35,6 +35,11 @@ public class YkcV20TimeSyncDown {
      * 当前时间 (7字节)
      * CP56Time2a格式
      */
-    @ProtocolField(order = 2, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "对时时间")
+    @ProtocolField(
+            order = 2,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "对时时间")
     private String syncTime;
 }

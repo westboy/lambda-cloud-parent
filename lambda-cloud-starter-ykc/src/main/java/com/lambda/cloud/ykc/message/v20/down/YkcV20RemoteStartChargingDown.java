@@ -63,7 +63,13 @@ public class YkcV20RemoteStartChargingDown {
      * 账户余额 (4字节)
      * BIN码，保留到小数点两位
      */
-    @ProtocolField(order = 6, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 2, description = "账户余额")
+    @ProtocolField(
+            order = 6,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 2,
+            description = "账户余额")
     private Integer accountBalance;
 
     /**
@@ -85,6 +91,12 @@ public class YkcV20RemoteStartChargingDown {
      * 充电电量限制 (4字节)
      * BIN码，精确到小数点后四位；默认全0，不限制
      */
-    @ProtocolField(order = 9, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 2, description = "充电电量限制")
+    @ProtocolField(
+            order = 9,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 2,
+            description = "充电电量限制")
     private Integer chargingEnergyLimit;
 }

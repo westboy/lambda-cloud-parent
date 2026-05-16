@@ -56,7 +56,13 @@ public class YkcV20ParallelStartChargingDown {
      * 账户余额 (4字节)
      * BIN码，保留两位小数
      */
-    @ProtocolField(order = 5, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 2, description = "账户余额")
+    @ProtocolField(
+            order = 5,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 2,
+            description = "账户余额")
     private Integer accountBalance;
 
     /**

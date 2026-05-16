@@ -42,20 +42,35 @@ public class YkcV20DefaultMaxPowerDown {
      * 默认最大功率 (2字节)
      * BIN码，单位：kW
      */
-    @ProtocolField(order = 3, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "默认最大功率")
+    @ProtocolField(
+            order = 3,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "默认最大功率")
     private Integer defaultMaxPower;
 
     /**
      * 开始时间 (7字节)
      * CP56Time2a格式，到达此时间后按最大功率执行
      */
-    @ProtocolField(order = 4, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "开始时间")
+    @ProtocolField(
+            order = 4,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "开始时间")
     private String startTime;
 
     /**
      * 结束时间 (7字节)
      * CP56Time2a格式，到达此时间后解除最大功率执行限制
      */
-    @ProtocolField(order = 5, length = 7, dataType = ProtocolDataType.CP56TIME2A, littleEndian = true, description = "结束时间")
+    @ProtocolField(
+            order = 5,
+            length = 7,
+            dataType = ProtocolDataType.CP56TIME2A,
+            littleEndian = true,
+            description = "结束时间")
     private String endTime;
 }

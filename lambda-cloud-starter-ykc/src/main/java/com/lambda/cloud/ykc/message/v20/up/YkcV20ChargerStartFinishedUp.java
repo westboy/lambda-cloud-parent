@@ -71,7 +71,12 @@ public class YkcV20ChargerStartFinishedUp {
      * 最大允许充电总电压 (2字节)
      * BIN码，0.1V/位，0V偏移量（BHM）
      */
-    @ProtocolField(order = 7, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "最大允许充电总电压")
+    @ProtocolField(
+            order = 7,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "最大允许充电总电压")
     private Integer maxAllowChargeVoltage;
 
     /**

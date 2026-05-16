@@ -17,8 +17,13 @@ public class YkcV20OfflineCardClearReplyUp {
     @ProtocolField(order = 1, length = 7, dataType = ProtocolDataType.BCD, description = "桩编号")
     private String equipmentId;
 
-    @ProtocolField(order = 2, length = 10, composite = true, dataType = ProtocolDataType.LIST,
-            listElementType = ProtocolDataType.COMPOSITE, listElementClass = YkcV20OfflineCardClearResult.class,
+    @ProtocolField(
+            order = 2,
+            length = 10,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20OfflineCardClearResult.class,
             description = "清除结果列表")
     private List<YkcV20OfflineCardClearResult> results;
 }

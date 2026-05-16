@@ -51,6 +51,12 @@ public class YkcV20AccountBalanceUpdateDown {
      * 修改后账户金额 (4字节)
      * BIN码，保留两位小数
      */
-    @ProtocolField(order = 4, length = 4, dataType = ProtocolDataType.UINT32, littleEndian = true, precision = 2, description = "修改后账户金额")
+    @ProtocolField(
+            order = 4,
+            length = 4,
+            dataType = ProtocolDataType.UINT32,
+            littleEndian = true,
+            precision = 2,
+            description = "修改后账户金额")
     private Integer updatedBalance;
 }

@@ -57,7 +57,12 @@ public class YkcV20RemoteUpdateDown {
      * 升级服务器端口 (2字节)
      * BIN码，不足2位补零
      */
-    @ProtocolField(order = 5, length = 2, dataType = ProtocolDataType.UINT16, littleEndian = true, description = "升级服务器端口")
+    @ProtocolField(
+            order = 5,
+            length = 2,
+            dataType = ProtocolDataType.UINT16,
+            littleEndian = true,
+            description = "升级服务器端口")
     private Integer serverPort;
 
     /**

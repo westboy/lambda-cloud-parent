@@ -54,8 +54,14 @@ public class YkcV20OfflineCardSyncDown {
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.UINT8, description = "升级用途")
     private Integer purpose;
 
-    @ProtocolField(order = 5, length = 170, composite = true, dataType = ProtocolDataType.LIST,
-            listElementType = ProtocolDataType.COMPOSITE, listElementClass = YkcV20OfflineCardSyncCard.class,
-            listElementSizeField = "cardCount", description = "卡片列表")
+    @ProtocolField(
+            order = 5,
+            length = 170,
+            composite = true,
+            dataType = ProtocolDataType.LIST,
+            listElementType = ProtocolDataType.COMPOSITE,
+            listElementClass = YkcV20OfflineCardSyncCard.class,
+            listElementSizeField = "cardCount",
+            description = "卡片列表")
     private List<YkcV20OfflineCardSyncCard> cards;
 }
