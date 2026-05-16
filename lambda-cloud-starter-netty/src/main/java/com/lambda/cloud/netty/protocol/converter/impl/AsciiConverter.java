@@ -96,7 +96,7 @@ public class AsciiConverter implements DataTypeConverter {
      */
     public void validateLength(int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         int expectedLength = fieldMetadata.getLength();
-        if (expectedLength != -1 && length != expectedLength) {
+        if (expectedLength > 0 && length != expectedLength) {
             throw new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR,
                     "ASCII数据长度不匹配，期望: " + expectedLength + ", 实际: " + length,
@@ -177,6 +177,10 @@ public class AsciiConverter implements DataTypeConverter {
      * @return 调整后的数据
      */
     private byte[] adjustLength(byte[] data, int targetLength, ProtocolFieldMetadata fieldMetadata) {
+        if (targetLength <= 0) {
+            return data;
+        }
+
         if (data.length == targetLength) {
             return data;
         }
