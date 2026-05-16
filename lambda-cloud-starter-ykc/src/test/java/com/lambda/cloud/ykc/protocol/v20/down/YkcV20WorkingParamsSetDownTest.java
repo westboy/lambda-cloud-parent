@@ -55,7 +55,7 @@ public class YkcV20WorkingParamsSetDownTest {
 
         YkcV20WorkingParamsSetDown detail = assertInstanceOf(YkcV20WorkingParamsSetDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(0, detail.getPlugAndChargeSwitch());
         assertEquals(30, detail.getAuthTimeout());
 

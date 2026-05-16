@@ -55,7 +55,7 @@ public class YkcV20AccountBalanceUpdateDownTest {
         YkcV20AccountBalanceUpdateDown detail =
                 assertInstanceOf(YkcV20AccountBalanceUpdateDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(20000, detail.getUpdatedBalance());
 
         ByteBuf out2 = Unpooled.buffer();

@@ -52,7 +52,7 @@ public class YkcV20ReadRealtimeDataDownTest {
 
         YkcV20ReadRealtimeDataDown detail = assertInstanceOf(YkcV20ReadRealtimeDataDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

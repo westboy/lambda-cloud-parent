@@ -55,7 +55,7 @@ public class YkcV20PowerModifyDownTest {
 
         YkcV20PowerModifyDown detail = assertInstanceOf(YkcV20PowerModifyDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(120, detail.getMaxPower());
         assertEquals(1, detail.getPriority());
         assertEquals(60, detail.getLimitTime());

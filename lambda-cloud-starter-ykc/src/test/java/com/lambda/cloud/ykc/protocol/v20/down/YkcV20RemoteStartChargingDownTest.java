@@ -61,7 +61,7 @@ public class YkcV20RemoteStartChargingDownTest {
                 assertInstanceOf(YkcV20RemoteStartChargingDown.class, parsed.getDetail());
         assertEquals("55031412782305012018061910262392", detail.getTransactionSerialNumber());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(120, detail.getMaxPower());
         assertEquals(0, detail.getSocLimit());
 

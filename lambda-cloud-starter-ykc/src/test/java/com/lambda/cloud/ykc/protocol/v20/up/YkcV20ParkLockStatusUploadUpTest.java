@@ -57,7 +57,7 @@ public class YkcV20ParkLockStatusUploadUpTest {
 
         YkcV20ParkLockStatusUploadUp detail = assertInstanceOf(YkcV20ParkLockStatusUploadUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(85, detail.getParkLockStatus());
         assertEquals(255, detail.getParkingSpaceStatus());
         assertEquals(80, detail.getParkLockBatteryLevel());

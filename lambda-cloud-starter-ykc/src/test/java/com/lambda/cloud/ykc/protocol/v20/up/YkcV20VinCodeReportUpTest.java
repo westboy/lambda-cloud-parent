@@ -53,7 +53,7 @@ public class YkcV20VinCodeReportUpTest {
 
         YkcV20VinCodeReportUp detail = assertInstanceOf(YkcV20VinCodeReportUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals("12345678901234567", detail.getVin());
 
         ByteBuf out2 = Unpooled.buffer();

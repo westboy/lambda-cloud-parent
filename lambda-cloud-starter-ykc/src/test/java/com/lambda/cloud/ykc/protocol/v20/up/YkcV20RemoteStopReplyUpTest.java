@@ -54,7 +54,7 @@ public class YkcV20RemoteStopReplyUpTest {
 
         YkcV20RemoteStopReplyUp detail = assertInstanceOf(YkcV20RemoteStopReplyUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(1, detail.getStopResult());
         assertEquals(0, detail.getFailureReason());
 

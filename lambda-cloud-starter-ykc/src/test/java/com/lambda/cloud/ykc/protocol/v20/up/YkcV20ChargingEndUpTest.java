@@ -62,7 +62,7 @@ public class YkcV20ChargingEndUpTest {
         YkcV20ChargingEndUp detail = assertInstanceOf(YkcV20ChargingEndUp.class, parsed.getDetail());
         assertEquals("55031412782305012018061910262392", detail.getTransactionSerialNumber());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(80, detail.getBmsEndSoc());
         assertEquals(60, detail.getChargingDuration());
 

@@ -3,6 +3,7 @@ package com.lambda.cloud.ykc.protocol.v20.down;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
@@ -12,6 +13,7 @@ import com.lambda.cloud.ykc.message.v20.YkcV20BasePayload;
 import com.lambda.cloud.ykc.message.v20.down.YkcV20KeyUpdateDown;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,11 +29,11 @@ public class YkcV20KeyUpdateDownTest {
         ProtocolPayloadRegistry.register("96", YkcV20KeyUpdateDown.class);
         ProtocolEngine<YkcV20BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        String latestKey = "NEWKEY";
 
         YkcV20KeyUpdateDown resp = new YkcV20KeyUpdateDown();
         resp.setEquipmentId("15031412782305");
-        resp.setKeyLength(88);
-        resp.setLatestKey("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+        resp.setLatestKey(latestKey);
         resp.setExecutionControl(2);
 
         YkcV20BasePayload base = new YkcV20BasePayload();
@@ -54,8 +56,10 @@ public class YkcV20KeyUpdateDownTest {
 
         YkcV20KeyUpdateDown detail = assertInstanceOf(YkcV20KeyUpdateDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals(88, detail.getKeyLength());
+        assertEquals(latestKey.length(), detail.getKeyLength());
+        assertEquals(latestKey, detail.getLatestKey());
         assertEquals(2, detail.getExecutionControl());
+        assertTrue(new String(raw, StandardCharsets.ISO_8859_1).contains(latestKey));
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

@@ -59,7 +59,7 @@ public class YkcV20ParallelRemoteStartChargingDownTest {
                 assertInstanceOf(YkcV20ParallelRemoteStartChargingDown.class, parsed.getDetail());
         assertEquals("55031412782305012018061910262392", detail.getTransactionSerialNumber());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

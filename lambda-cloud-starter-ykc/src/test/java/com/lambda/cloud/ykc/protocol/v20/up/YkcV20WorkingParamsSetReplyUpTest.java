@@ -54,7 +54,7 @@ public class YkcV20WorkingParamsSetReplyUpTest {
         YkcV20WorkingParamsSetReplyUp detail =
                 assertInstanceOf(YkcV20WorkingParamsSetReplyUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(1, detail.getResult());
 
         ByteBuf out2 = Unpooled.buffer();

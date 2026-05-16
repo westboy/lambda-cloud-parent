@@ -3,6 +3,7 @@ package com.lambda.cloud.ykc.protocol.v20.up;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngine;
 import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
@@ -12,6 +13,7 @@ import com.lambda.cloud.ykc.message.v20.YkcV20BasePayload;
 import com.lambda.cloud.ykc.message.v20.up.YkcV20ParallelStartChargingUp;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,15 +29,17 @@ public class YkcV20ParallelStartChargingUpTest {
         ProtocolPayloadRegistry.register("A1", YkcV20ParallelStartChargingUp.class);
         ProtocolEngine<YkcV20BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
+        String vin = "LJ12ABC34DEF56789";
+        String reversedVin = new StringBuilder(vin).reverse().toString();
 
         YkcV20ParallelStartChargingUp req = new YkcV20ParallelStartChargingUp();
         req.setEquipmentId("15031412782305");
         req.setConnectorId("01");
-        req.setStartMethod(1);
+        req.setStartMethod(3);
         req.setNeedPassword(0);
         req.setAccountOrCardNumber("0000000000000000");
         req.setInputPassword("0000000000000000");
-        req.setVin("00000000000000000");
+        req.setVin(vin);
         req.setMasterSlaveMark(0);
         req.setParallelSerialNumber("230619102623");
 
@@ -60,9 +64,11 @@ public class YkcV20ParallelStartChargingUpTest {
         YkcV20ParallelStartChargingUp detail =
                 assertInstanceOf(YkcV20ParallelStartChargingUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
-        assertEquals(1, detail.getStartMethod());
+        assertEquals("01", detail.getConnectorId());
+        assertEquals(3, detail.getStartMethod());
         assertEquals(0, detail.getMasterSlaveMark());
+        assertEquals(vin, detail.getVin());
+        assertTrue(new String(raw, StandardCharsets.ISO_8859_1).contains(reversedVin));
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

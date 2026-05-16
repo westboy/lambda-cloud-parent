@@ -55,7 +55,7 @@ public class YkcV20QrCodeIssueDownTest {
 
         YkcV20QrCodeIssueDown detail = assertInstanceOf(YkcV20QrCodeIssueDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(0, detail.getQrCodeFormat());
 
         ByteBuf out2 = Unpooled.buffer();

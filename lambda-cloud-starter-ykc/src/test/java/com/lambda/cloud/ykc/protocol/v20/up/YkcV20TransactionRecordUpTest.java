@@ -93,7 +93,7 @@ public class YkcV20TransactionRecordUpTest {
         YkcV20TransactionRecordUp detail = assertInstanceOf(YkcV20TransactionRecordUp.class, parsed.getDetail());
         assertEquals("55031412782305012018061910262392", detail.getTransactionSerialNumber());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(1, detail.getRatePeriodCount());
 
         ByteBuf out2 = Unpooled.buffer();

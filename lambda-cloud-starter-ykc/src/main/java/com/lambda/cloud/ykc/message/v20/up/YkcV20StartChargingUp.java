@@ -3,6 +3,7 @@ package com.lambda.cloud.ykc.message.v20.up;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
+import java.nio.charset.StandardCharsets;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -75,4 +76,24 @@ public class YkcV20StartChargingUp {
      */
     @ProtocolField(order = 7, length = 17, dataType = ProtocolDataType.ASCII, description = "VIN码")
     private String vin;
+
+    public String getVin() {
+        return reverseVin(vin);
+    }
+
+    public void setVin(String vin) {
+        this.vin = reverseVin(vin);
+    }
+
+    private static String reverseVin(String vin) {
+        if (vin == null || vin.isEmpty()) {
+            return vin;
+        }
+        byte[] bytes = vin.getBytes(StandardCharsets.UTF_8);
+        byte[] reversed = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            reversed[i] = bytes[bytes.length - 1 - i];
+        }
+        return new String(reversed, StandardCharsets.UTF_8);
+    }
 }

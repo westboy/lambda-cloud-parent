@@ -54,7 +54,7 @@ public class YkcV20FaultResetReportConfirmDownTest {
         YkcV20FaultResetReportConfirmDown detail =
                 assertInstanceOf(YkcV20FaultResetReportConfirmDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(0, detail.getConfirmResult());
 
         ByteBuf out2 = Unpooled.buffer();

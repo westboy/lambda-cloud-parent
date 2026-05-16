@@ -53,7 +53,7 @@ public class YkcV20BillingModelVerificationUpTest {
         YkcV20BillingModelVerificationUp detail =
                 assertInstanceOf(YkcV20BillingModelVerificationUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("100", detail.getBillingModelNumber());
+        assertEquals("0100", detail.getBillingModelNumber());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

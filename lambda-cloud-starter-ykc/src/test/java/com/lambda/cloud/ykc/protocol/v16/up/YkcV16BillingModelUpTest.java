@@ -63,7 +63,7 @@ public class YkcV16BillingModelUpTest {
 
         YkcV16BillingModelDown detail = assertInstanceOf(YkcV16BillingModelDown.class, parsed.getDetail());
         assertEquals("55031412782305", detail.getEquipmentId());
-        assertEquals("100", detail.getBillingModelCode());
+        assertEquals("0100", detail.getBillingModelCode());
         assertEquals(0, detail.getLossRatio());
         assertEquals(48, detail.getTimeSlotRates().size());
         assertEquals(0, detail.getTimeSlotRates().getFirst());

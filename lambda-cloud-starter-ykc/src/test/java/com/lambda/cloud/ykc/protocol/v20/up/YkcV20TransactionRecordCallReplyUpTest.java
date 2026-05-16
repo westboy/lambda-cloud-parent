@@ -57,7 +57,7 @@ public class YkcV20TransactionRecordCallReplyUpTest {
                 assertInstanceOf(YkcV20TransactionRecordCallReplyUp.class, parsed.getDetail());
         assertEquals("55031412782305012018061910262392", detail.getTransactionSerialNumber());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(0, detail.getCallResult());
         assertEquals(0, detail.getFailReason());
 

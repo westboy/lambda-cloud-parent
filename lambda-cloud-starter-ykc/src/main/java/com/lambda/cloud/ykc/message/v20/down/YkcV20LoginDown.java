@@ -3,6 +3,7 @@ package com.lambda.cloud.ykc.message.v20.down;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
+import java.nio.charset.StandardCharsets;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -50,6 +51,11 @@ public class YkcV20LoginDown {
      * 最新密钥 (N字节)
      * ASCII码，RSA配置公钥
      */
-    @ProtocolField(order = 4, length = 88, dataType = ProtocolDataType.ASCII, description = "最新密钥")
+    @ProtocolField(order = 4, length = 0, dataType = ProtocolDataType.ASCII, description = "最新密钥")
     private String latestKey;
+
+    public void setLatestKey(String latestKey) {
+        this.latestKey = latestKey;
+        this.keyLength = latestKey == null ? 0 : latestKey.getBytes(StandardCharsets.UTF_8).length;
+    }
 }

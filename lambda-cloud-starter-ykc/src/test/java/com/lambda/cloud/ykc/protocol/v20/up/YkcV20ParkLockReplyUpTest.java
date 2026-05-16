@@ -54,7 +54,7 @@ public class YkcV20ParkLockReplyUpTest {
 
         YkcV20ParkLockReplyUp detail = assertInstanceOf(YkcV20ParkLockReplyUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(1, detail.getControlResult());
 
         ByteBuf out2 = Unpooled.buffer();

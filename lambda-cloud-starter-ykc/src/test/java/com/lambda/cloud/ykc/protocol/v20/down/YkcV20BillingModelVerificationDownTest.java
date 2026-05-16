@@ -54,7 +54,7 @@ public class YkcV20BillingModelVerificationDownTest {
         YkcV20BillingModelVerificationDown detail =
                 assertInstanceOf(YkcV20BillingModelVerificationDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("100", detail.getBillingModelNumber());
+        assertEquals("0100", detail.getBillingModelNumber());
         assertEquals(0, detail.getResult());
 
         ByteBuf out2 = Unpooled.buffer();

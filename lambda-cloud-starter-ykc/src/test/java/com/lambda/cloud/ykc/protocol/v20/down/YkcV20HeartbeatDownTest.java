@@ -53,7 +53,7 @@ public class YkcV20HeartbeatDownTest {
 
         YkcV20HeartbeatDown detail = assertInstanceOf(YkcV20HeartbeatDown.class, parsed.getDetail());
         assertEquals("32010200000001", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(0, detail.getHeartbeatResponse());
 
         ByteBuf out2 = Unpooled.buffer();

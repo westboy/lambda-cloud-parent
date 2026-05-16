@@ -59,7 +59,7 @@ public class YkcV20ParallelRemoteStartReplyUpTest {
                 assertInstanceOf(YkcV20ParallelRemoteStartReplyUp.class, parsed.getDetail());
         assertEquals("55031412782305012018061910262392", detail.getTransactionSerialNumber());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(1, detail.getStartResult());
 
         ByteBuf out2 = Unpooled.buffer();

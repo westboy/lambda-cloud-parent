@@ -53,7 +53,7 @@ public class YkcV20QrCodeSetReplyUpTest {
 
         YkcV20QrCodeSetReplyUp detail = assertInstanceOf(YkcV20QrCodeSetReplyUp.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals("1", detail.getConnectorId());
+        assertEquals("01", detail.getConnectorId());
         assertEquals(1, detail.getResult());
 
         ByteBuf out2 = Unpooled.buffer();
