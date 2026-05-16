@@ -70,7 +70,9 @@ public class ProtocolFieldProcessor {
             return;
         }
 
-        if (!validateBufferData(byteBuf, fieldMetadata)) {
+        int resolvedLength = resolveFieldLength(byteBuf, fieldMetadata, frameMetadata);
+
+        if (!validateBufferData(byteBuf, resolvedLength)) {
             handleInsufficientData(instance, fieldMetadata, converter);
         } else if (fieldMetadata.isComposite() && fieldMetadata.getLength() == 0) {
             // 复合字段长度为0时，动态计算实际长度
@@ -79,8 +81,7 @@ public class ProtocolFieldProcessor {
             setFieldValue(instance, fieldMetadata, value);
         } else {
             // 普通字段或长度固定复合字段
-            Object value =
-                    convertFieldData(byteBuf, fieldMetadata.getLength(), fieldMetadata, converter, isEncryptionEnabled);
+            Object value = convertFieldData(byteBuf, resolvedLength, fieldMetadata, converter, isEncryptionEnabled);
             setFieldValue(instance, fieldMetadata, value);
         }
     }
@@ -120,11 +121,29 @@ public class ProtocolFieldProcessor {
      * 验证缓冲区数据是否足够
      *
      * @param byteBuf       字节缓冲区
-     * @param fieldMetadata 字段元数据
+     * @param length 字段元数据
      * @return 是否有足够数据
      */
-    private boolean validateBufferData(ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata) {
-        return byteBuf.readableBytes() >= fieldMetadata.getLength();
+    private boolean validateBufferData(ByteBuf byteBuf, int length) {
+        return byteBuf.readableBytes() >= length;
+    }
+
+    private int resolveFieldLength(
+            ByteBuf byteBuf, ProtocolFieldMetadata fieldMetadata, ProtocolPayloadMetadata frameMetadata)
+            throws ProtocolException {
+        int length = fieldMetadata.getLength();
+        if (length > 0 || fieldMetadata.isComposite()) {
+            return length;
+        }
+
+        if (frameMetadata.hasUnknownLengthFieldsAfter(fieldMetadata.getOrder())) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "动态解析字段失败: " + fieldMetadata.getFieldName() + ", 原因: 后续存在未知长度字段，无法确定边界",
+                    fieldMetadata.getFieldName());
+        }
+
+        return Math.max(byteBuf.readableBytes() - frameMetadata.getRemainingLengthAfter(fieldMetadata.getOrder()), 0);
     }
 
     /**
