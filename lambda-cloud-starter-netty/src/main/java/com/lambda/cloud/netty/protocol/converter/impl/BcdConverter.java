@@ -2,7 +2,6 @@ package com.lambda.cloud.netty.protocol.converter.impl;
 
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
-import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
 import com.lambda.cloud.netty.utils.PrimitiveTypeUtils;
 import com.lambda.cloud.netty.utils.ValidationUtils;
@@ -45,10 +44,6 @@ public class BcdConverter implements DataTypeConverter {
         Class<?> fieldType = fieldMetadata.getFieldType();
         try {
             if (fieldType == String.class) {
-                if (fieldMetadata.getPaddingDirection() != PaddingDirection.NONE
-                        && "0".equals(fieldMetadata.getPaddingChar())) {
-                    return result.replaceFirst("^0+(?!$)", "");
-                }
                 return result;
             }
 
