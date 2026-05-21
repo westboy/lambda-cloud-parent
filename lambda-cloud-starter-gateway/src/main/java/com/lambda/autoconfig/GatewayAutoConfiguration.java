@@ -20,6 +20,8 @@ import com.lambda.cloud.gateway.predicate.BackendRoutePredicateFactory;
 import com.lambda.cloud.gateway.properties.GatewayFirewallProperties;
 import com.lambda.cloud.gateway.service.RouterEnhancer;
 import com.lambda.cloud.gateway.swagger.SwaggerResourceController;
+import com.lambda.cloud.gateway.listener.DynamicRouteConfigChangedListener;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -225,5 +227,15 @@ public class GatewayAutoConfiguration {
     @Bean
     public SwaggerResourceController swaggerResourceController(GatewayProperties gatewayProperties) {
         return new SwaggerResourceController(gatewayProperties);
+    }
+
+    @Bean
+    public DynamicRouteConfigChangedListener dynamicRouteConfigChangedListener(
+            Environment environment,
+            RouteDefinitionWriter routeDefinitionWriter,
+            ApplicationEventPublisher applicationEventPublisher,
+            ObjectMapper objectMapper) {
+        return new DynamicRouteConfigChangedListener(
+                environment, routeDefinitionWriter, applicationEventPublisher, objectMapper);
     }
 }
