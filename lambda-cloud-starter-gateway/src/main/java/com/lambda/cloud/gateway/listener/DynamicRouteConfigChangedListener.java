@@ -1,7 +1,5 @@
 package com.lambda.cloud.gateway.listener;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -16,6 +14,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -86,10 +86,13 @@ public class DynamicRouteConfigChangedListener {
         List<String> routeIds = new ArrayList<>(currentRouteIds);
         currentRouteIds.clear();
         for (String routeId : routeIds) {
-            routeDefinitionWriter.delete(Mono.just(routeId)).onErrorResume(ex -> {
-                log.warn("Failed to delete dynamic route: {}", routeId, ex);
-                return Mono.empty();
-            }).block();
+            routeDefinitionWriter
+                    .delete(Mono.just(routeId))
+                    .onErrorResume(ex -> {
+                        log.warn("Failed to delete dynamic route: {}", routeId, ex);
+                        return Mono.empty();
+                    })
+                    .block();
         }
     }
 

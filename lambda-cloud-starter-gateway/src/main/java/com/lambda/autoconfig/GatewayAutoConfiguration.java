@@ -16,12 +16,11 @@ import com.lambda.cloud.core.shared.CorsProperty;
 import com.lambda.cloud.core.shared.KeyValue;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.gateway.filter.*;
+import com.lambda.cloud.gateway.listener.DynamicRouteConfigChangedListener;
 import com.lambda.cloud.gateway.predicate.BackendRoutePredicateFactory;
 import com.lambda.cloud.gateway.properties.GatewayFirewallProperties;
 import com.lambda.cloud.gateway.service.RouterEnhancer;
 import com.lambda.cloud.gateway.swagger.SwaggerResourceController;
-import com.lambda.cloud.gateway.listener.DynamicRouteConfigChangedListener;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -39,11 +38,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.reactor.netty.NettyServerCustomizer;
 import org.springframework.cloud.gateway.config.GatewayProperties;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
+import org.springframework.cloud.gateway.route.RouteDefinitionWriter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.unit.DataSize;
@@ -56,6 +58,7 @@ import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClien
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.WebsocketClientSpec;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * GatewayAutoConfiguration
