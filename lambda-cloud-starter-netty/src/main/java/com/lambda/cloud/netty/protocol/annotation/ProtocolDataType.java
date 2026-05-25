@@ -70,7 +70,12 @@ public enum ProtocolDataType {
     /**
      * 列表类型（支持List集合）
      */
-    LIST("列表类型");
+    LIST("列表类型"),
+
+    /**
+     * 字节偏移数据
+     */
+    DATA_OFFSET("字节偏移数据");
 
     /**
      * 获取数据类型描述

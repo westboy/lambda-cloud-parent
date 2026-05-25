@@ -105,5 +105,6 @@ public class DataTypeConverterResolver {
         registerConverter(ProtocolDataType.UINT64, new UInt64Converter());
         registerConverter(ProtocolDataType.CP56TIME2A, new CP56Time2aConverter());
         registerConverter(ProtocolDataType.LIST, new ListConverter(this));
+        registerConverter(ProtocolDataType.DATA_OFFSET, new DataOffsetConverter());
     }
 }
