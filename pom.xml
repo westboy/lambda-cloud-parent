@@ -99,6 +99,7 @@
         <module>lambda-cloud-processor</module>
         <module>lambda-cloud-starter-nacos</module>
         <module>lambda-cloud-starter-ykc</module>
+        <module>lambda-cloud-starter-t645</module>
     </modules>
 
     <dependencyManagement>
