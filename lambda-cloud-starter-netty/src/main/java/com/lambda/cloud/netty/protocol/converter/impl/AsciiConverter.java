@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * ASCII 字符串转换器
@@ -18,6 +19,7 @@ import java.util.Arrays;
  *
  * @author Jin
  */
+@Slf4j
 public class AsciiConverter implements DataTypeConverter {
 
     @Override
@@ -57,17 +59,29 @@ public class AsciiConverter implements DataTypeConverter {
 
     @Override
     public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
-        if (value == null) {
-            value = "";
-        }
+        // 基本输入验证
+        ValidationUtils.validateSerializeValue(value, fieldMetadata, "ASCII");
 
         try {
             String stringValue = value.toString();
             Charset charset = getCharset(fieldMetadata);
+
+            // 安全的字符串层面截断，避免字节截断导致多字节字符乱码
+            int targetLength = fieldMetadata.getLength();
+            if (targetLength > 0) {
+                byte[] tempBytes = stringValue.getBytes(charset);
+                if (tempBytes.length > targetLength) {
+                    // 如果超过目标长度，需要截取，通过不断缩短字符串来保证边界安全
+                    while (!stringValue.isEmpty() && stringValue.getBytes(charset).length > targetLength) {
+                        stringValue = stringValue.substring(0, stringValue.length() - 1);
+                    }
+                }
+            }
+
             byte[] data = stringValue.getBytes(charset);
 
-            // 调整长度
-            byte[] result = adjustLength(data, fieldMetadata.getLength(), fieldMetadata);
+            // 调整长度 (这里只处理不足补齐的情况，超长已在上方安全处理)
+            byte[] result = adjustLength(data, targetLength, fieldMetadata);
             buffer.writeBytes(result);
 
         } catch (Exception e) {
@@ -116,7 +130,7 @@ public class AsciiConverter implements DataTypeConverter {
             try {
                 return Charset.forName(charsetName);
             } catch (Exception e) {
-                // 使用默认字符集
+                log.warn("不支持的字符集配置: [{}], 已回退使用默认字符集 UTF-8. 字段名: {}", charsetName, fieldMetadata.getFieldName());
             }
         }
         return StandardCharsets.UTF_8;

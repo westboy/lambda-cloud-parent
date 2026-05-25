@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import cn.hutool.core.util.ArrayUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.converter.DataTypeConverter;
@@ -20,16 +21,17 @@ public class BcdConverter implements DataTypeConverter {
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "BCD");
 
         if (data.length == 0) {
+            Class<?> fieldType = fieldMetadata.getFieldType();
+            if (fieldType == String.class) return "";
+            if (PrimitiveTypeUtils.isLongType(fieldType)) return 0L;
+            if (PrimitiveTypeUtils.isIntegerType(fieldType)) return 0;
+            if (fieldType == java.math.BigDecimal.class) return java.math.BigDecimal.ZERO;
             return "";
         }
 
         // 处理小端序反转
         if (fieldMetadata.isLittleEndian()) {
-            for (int i = 0; i < data.length / 2; i++) {
-                byte temp = data[i];
-                data[i] = data[data.length - 1 - i];
-                data[data.length - 1 - i] = temp;
-            }
+            ArrayUtil.reverse(data);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -87,6 +89,7 @@ public class BcdConverter implements DataTypeConverter {
 
     @Override
     public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
+        ValidationUtils.validateSerializeValue(value, fieldMetadata, "BCD");
         try {
             String bcdString;
             if (value instanceof java.math.BigDecimal decimalValue) {
@@ -94,7 +97,7 @@ public class BcdConverter implements DataTypeConverter {
                 if (precision > 0) {
                     decimalValue = decimalValue.multiply(java.math.BigDecimal.TEN.pow(precision));
                 }
-                bcdString = String.valueOf(decimalValue.longValue());
+                bcdString = decimalValue.toBigIntegerExact().toString();
             } else {
                 bcdString = value.toString();
             }
@@ -121,8 +124,9 @@ public class BcdConverter implements DataTypeConverter {
             }
 
             // 调整长度
-            if (result.length != fieldMetadata.getLength()) {
-                byte[] adjusted = new byte[fieldMetadata.getLength()];
+            int targetLength = fieldMetadata.getLength();
+            if (targetLength > 0 && result.length != targetLength) {
+                byte[] adjusted = new byte[targetLength];
                 if (result.length < adjusted.length) {
                     // 左填充0
                     System.arraycopy(result, 0, adjusted, adjusted.length - result.length, result.length);
@@ -135,11 +139,7 @@ public class BcdConverter implements DataTypeConverter {
 
             // 处理小端序反转
             if (fieldMetadata.isLittleEndian()) {
-                for (int i = 0; i < result.length / 2; i++) {
-                    byte temp = result[i];
-                    result[i] = result[result.length - 1 - i];
-                    result[result.length - 1 - i] = temp;
-                }
+                cn.hutool.core.util.ArrayUtil.reverse(result);
             }
 
             buffer.writeBytes(result);
@@ -158,7 +158,7 @@ public class BcdConverter implements DataTypeConverter {
     @Override
     public Object parseFromString(String value, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         if (value == null || value.trim().isEmpty()) {
-            return "0";
+            return defaultValue(fieldMetadata.getFieldType());
         }
 
         String trimmed = value.trim();
@@ -168,11 +168,39 @@ public class BcdConverter implements DataTypeConverter {
         }
 
         Class<?> fieldType = fieldMetadata.getFieldType();
-        if (fieldType == Long.class || fieldType == long.class) {
-            return Long.parseLong(trimmed);
-        } else if (fieldType == Integer.class || fieldType == int.class) {
-            return Integer.parseInt(trimmed);
+        try {
+            if (fieldType == Long.class || fieldType == long.class) {
+                return Long.parseLong(trimmed);
+            } else if (fieldType == Integer.class || fieldType == int.class) {
+                return Integer.parseInt(trimmed);
+            } else if (fieldType == java.math.BigDecimal.class) {
+                java.math.BigDecimal decimalValue = new java.math.BigDecimal(trimmed);
+                int precision = fieldMetadata.getPrecision();
+                if (precision > 0) {
+                    decimalValue = decimalValue.divide(java.math.BigDecimal.TEN.pow(precision));
+                }
+                return decimalValue;
+            }
+            return trimmed;
+        } catch (NumberFormatException e) {
+            throw new ProtocolException(
+                    ProtocolException.ErrorCode.PARSE_ERROR,
+                    "BCD字符串转换为数字失败: " + trimmed,
+                    fieldMetadata.getFieldName(),
+                    e);
         }
-        return trimmed;
+    }
+
+    private Object defaultValue(Class<?> fieldType) {
+        if (PrimitiveTypeUtils.isLongType(fieldType)) {
+            return 0L;
+        }
+        if (PrimitiveTypeUtils.isIntegerType(fieldType)) {
+            return 0;
+        }
+        if (fieldType == java.math.BigDecimal.class) {
+            return java.math.BigDecimal.ZERO;
+        }
+        return "0";
     }
 }

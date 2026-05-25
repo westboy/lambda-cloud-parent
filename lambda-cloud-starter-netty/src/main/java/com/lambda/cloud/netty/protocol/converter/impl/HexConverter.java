@@ -32,7 +32,7 @@ public class HexConverter implements DataTypeConverter {
         ValidationUtils.validateBasicInputs(data, fieldMetadata, "十六进制");
 
         try {
-            // 修正：先处理字节序，再调整长度（避免双重字节序处理）
+            // 先处理字节序，再调整长度（避免双重字节序处理）
             byte[] processedData = convertEndianness(data, fieldMetadata.isLittleEndian());
             byte[] adjustedResult = fieldMetadata.getLength() > 0
                     ? adjustLength(processedData, fieldMetadata.getLength(), false)
@@ -60,7 +60,7 @@ public class HexConverter implements DataTypeConverter {
                 return "0";
             }
 
-            BigInteger integerData = new BigInteger(hexString, 16);
+            BigInteger integerData = parseIntegerValue(hexString, adjustedResult.length, fieldType);
 
             // 修正：使用BigDecimal.TEN.pow避免精度损失
             BigDecimal decimalValue = (precision > 0)
@@ -188,6 +188,14 @@ public class HexConverter implements DataTypeConverter {
                     // 转换为BigInteger（去除小数部分）
                     BigInteger integerValue = scaledValue.toBigInteger();
 
+                    if (integerValue.signum() < 0) {
+                        int len = fieldMetadata.getLength() > 0
+                                ? fieldMetadata.getLength()
+                                : Math.max(8, integerValue.toByteArray().length);
+                        BigInteger mask = BigInteger.ONE.shiftLeft(len * 8).subtract(BigInteger.ONE);
+                        integerValue = integerValue.and(mask);
+                    }
+
                     // 转换为十六进制字符串
                     String hexString = integerValue.toString(16);
 
@@ -220,8 +228,9 @@ public class HexConverter implements DataTypeConverter {
                             fieldMetadata.getFieldName());
             }
 
-            // 修正：先调整长度，再处理字节序（避免双重字节序处理）
-            byte[] adjustedResult = adjustLength(result, fieldMetadata.getLength(), false); // 传false避免内部字节序处理
+            // 先调整长度，再处理字节序（避免双重字节序处理）
+            byte[] adjustedResult =
+                    fieldMetadata.getLength() > 0 ? adjustLength(result, fieldMetadata.getLength(), false) : result;
             byte[] finalResult = convertEndianness(adjustedResult, fieldMetadata.isLittleEndian());
             buffer.writeBytes(finalResult);
 
@@ -269,12 +278,14 @@ public class HexConverter implements DataTypeConverter {
         }
 
         try {
-            // 优化：使用StringBuilder避免多次字符串操作
             String trimmed = value.trim();
             if (trimmed.startsWith("0x") || trimmed.startsWith("0X")) {
                 trimmed = trimmed.substring(2);
             }
             String hexString = trimmed.replaceAll("\\s+", "");
+            if (hexString.length() % 2 != 0) {
+                hexString = "0" + hexString;
+            }
 
             byte[] data = HexUtil.decodeHex(hexString);
             ByteBuf buffer = Unpooled.wrappedBuffer(data);
@@ -301,7 +312,11 @@ public class HexConverter implements DataTypeConverter {
      * @return 调整后的数据
      */
     private byte[] adjustLength(byte[] data, int targetLength, boolean isLittleEndian) {
-        // 性能优化：早期返回避免不必要的数组复制
+        if (targetLength <= 0) {
+            return data;
+        }
+
+        // 性能早期返回避免不必要的数组复制
         if (data.length == targetLength) {
             return data;
         }
@@ -329,5 +344,33 @@ public class HexConverter implements DataTypeConverter {
         }
 
         return result;
+    }
+
+    private static BigInteger parseIntegerValue(String hexString, int byteLength, Class<?> fieldType) {
+        BigInteger integerData = new BigInteger(hexString, 16);
+        if (!isSignedNumericType(fieldType) || byteLength <= 0) {
+            return integerData;
+        }
+
+        int signBitIndex = byteLength * 8 - 1;
+        if (!integerData.testBit(signBitIndex)) {
+            return integerData;
+        }
+
+        return integerData.subtract(BigInteger.ONE.shiftLeft(byteLength * 8));
+    }
+
+    private static boolean isSignedNumericType(Class<?> fieldType) {
+        return fieldType == Integer.class
+                || fieldType == int.class
+                || fieldType == Long.class
+                || fieldType == long.class
+                || fieldType == Byte.class
+                || fieldType == byte.class
+                || fieldType == Double.class
+                || fieldType == double.class
+                || fieldType == Float.class
+                || fieldType == float.class
+                || fieldType == BigDecimal.class;
     }
 }
