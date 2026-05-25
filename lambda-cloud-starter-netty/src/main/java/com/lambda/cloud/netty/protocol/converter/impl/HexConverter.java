@@ -40,7 +40,25 @@ public class HexConverter implements DataTypeConverter {
             String hexString = HexUtil.encodeHexStr(adjustedResult);
             // 根据字段类型返回不同的对象
 
+            Class<?> fieldType = fieldMetadata.getFieldType();
+
+            if (fieldType == byte[].class) {
+                return data;
+            }
+
             int precision = fieldMetadata.getPrecision();
+
+            // 如果非 byte[] 类型且数据为空，直接返回默认值或抛异常，避免 Zero length BigInteger
+            if (hexString.isEmpty()) {
+                if (fieldType == String.class) return "";
+                if (fieldType == Integer.class || fieldType == int.class) return 0;
+                if (fieldType == Long.class || fieldType == long.class) return 0L;
+                if (fieldType == Byte.class || fieldType == byte.class) return (byte) 0;
+                if (fieldType == Double.class || fieldType == double.class) return 0.0d;
+                if (fieldType == Float.class || fieldType == float.class) return 0.0f;
+                if (fieldType == BigDecimal.class) return BigDecimal.ZERO;
+                return "0";
+            }
 
             BigInteger integerData = new BigInteger(hexString, 16);
 
@@ -48,8 +66,6 @@ public class HexConverter implements DataTypeConverter {
             BigDecimal decimalValue = (precision > 0)
                     ? new BigDecimal(integerData).divide(BigDecimal.TEN.pow(precision), precision, RoundingMode.DOWN)
                     : new BigDecimal(integerData);
-
-            Class<?> fieldType = fieldMetadata.getFieldType();
 
             if (fieldType == String.class) {
                 if (precision > 0) {
@@ -77,8 +93,6 @@ public class HexConverter implements DataTypeConverter {
 
             } else if (fieldType == BigDecimal.class) {
                 return decimalValue;
-            } else if (fieldType == byte[].class) {
-                return data;
             } else {
                 return decimalValue.stripTrailingZeros().toPlainString();
             }

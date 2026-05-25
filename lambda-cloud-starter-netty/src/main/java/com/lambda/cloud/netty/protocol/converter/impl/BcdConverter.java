@@ -23,6 +23,15 @@ public class BcdConverter implements DataTypeConverter {
             return "";
         }
 
+        // 处理小端序反转
+        if (fieldMetadata.isLittleEndian()) {
+            for (int i = 0; i < data.length / 2; i++) {
+                byte temp = data[i];
+                data[i] = data[data.length - 1 - i];
+                data[data.length - 1 - i] = temp;
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
         for (byte b : data) {
             int high = (b >> 4) & 0x0F;
@@ -58,6 +67,13 @@ public class BcdConverter implements DataTypeConverter {
                 // 验证整型范围
                 ValidationUtils.validateNumberRange(value, 0, Integer.MAX_VALUE, fieldMetadata, "BCD整型");
                 return value;
+            } else if (fieldType == java.math.BigDecimal.class) {
+                java.math.BigDecimal decimalValue = new java.math.BigDecimal(result);
+                int precision = fieldMetadata.getPrecision();
+                if (precision > 0) {
+                    decimalValue = decimalValue.divide(java.math.BigDecimal.TEN.pow(precision));
+                }
+                return decimalValue;
             }
         } catch (NumberFormatException e) {
             throw new ProtocolException(
@@ -72,7 +88,16 @@ public class BcdConverter implements DataTypeConverter {
     @Override
     public void serialize(Object value, ByteBuf buffer, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         try {
-            String bcdString = value.toString();
+            String bcdString;
+            if (value instanceof java.math.BigDecimal decimalValue) {
+                int precision = fieldMetadata.getPrecision();
+                if (precision > 0) {
+                    decimalValue = decimalValue.multiply(java.math.BigDecimal.TEN.pow(precision));
+                }
+                bcdString = String.valueOf(decimalValue.longValue());
+            } else {
+                bcdString = value.toString();
+            }
 
             // 验证是否为数字
             if (!bcdString.matches("\\d+")) {
@@ -106,6 +131,15 @@ public class BcdConverter implements DataTypeConverter {
                     System.arraycopy(result, result.length - adjusted.length, adjusted, 0, adjusted.length);
                 }
                 result = adjusted;
+            }
+
+            // 处理小端序反转
+            if (fieldMetadata.isLittleEndian()) {
+                for (int i = 0; i < result.length / 2; i++) {
+                    byte temp = result[i];
+                    result[i] = result[result.length - 1 - i];
+                    result[result.length - 1 - i] = temp;
+                }
             }
 
             buffer.writeBytes(result);
