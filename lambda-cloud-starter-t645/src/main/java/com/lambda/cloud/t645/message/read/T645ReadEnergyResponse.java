@@ -23,6 +23,7 @@ public class T645ReadEnergyResponse implements T645DataBody {
             length = 4,
             dataType = ProtocolDataType.BCD,
             computed = true,
+            littleEndian = true,
             precision = 2,
             description = "当前组合有功总电能")
     private BigDecimal totalEnergy;

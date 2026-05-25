@@ -39,7 +39,7 @@ public class T645Frame implements RawPayloadAware {
     @ProtocolField(order = 4, length = 1, dataType = ProtocolDataType.UINT8, computed = true, description = "数据域长度")
     private Integer dataLength;
 
-    @ProtocolField(order = 5, dataType = ProtocolDataType.DATA_OFFSET, computed = true, description = "数据域（已解码-33H）")
+    @ProtocolField(order = 5, dataType = ProtocolDataType.HEX, computed = true, description = "数据域（原始字节，未偏移）")
     private byte[] data;
 
     @ProtocolField(order = 6, length = 1, dataType = ProtocolDataType.UINT8, crcFiled = true, description = "校验和CS")
@@ -49,6 +49,11 @@ public class T645Frame implements RawPayloadAware {
     private String endFlag;
 
     private transient byte[] rawPayload;
+
+    /**
+     * 业务分发层解码后存储的实体对象（如 T645HeartbeatRequest 等）
+     */
+    private transient Object body;
 
     @Override
     public byte[] getRawPayload() {

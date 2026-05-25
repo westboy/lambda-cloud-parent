@@ -22,6 +22,11 @@ public final class T645PayloadRegistry {
         return REGISTRY.get(buildKey(controlCode, di));
     }
 
+    public static boolean isStandardControlCode(int controlCode) {
+        // 心跳上报(0x00)和应答(0x80)属于私有报文，数据域保留原始字节
+        return controlCode != 0x00 && controlCode != 0x80;
+    }
+
     public static Map<String, Class<?>> getAll() {
         return new ConcurrentHashMap<>(REGISTRY);
     }
@@ -31,6 +36,9 @@ public final class T645PayloadRegistry {
     }
 
     private static String buildKey(int controlCode, String di) {
+        if (di == null || di.isEmpty()) {
+            return String.format("%02X:NONE", controlCode & 0xFF);
+        }
         return String.format("%02X:%s", controlCode & 0xFF, di.toUpperCase(Locale.ROOT));
     }
 }

@@ -3,6 +3,8 @@ package com.lambda.autoconfig;
 import com.lambda.cloud.netty.protocol.scanner.ProtocolPayloadScanner;
 import com.lambda.cloud.t645.message.T645PayloadRegistry;
 import com.lambda.cloud.t645.message.control.T645BroadcastTime;
+import com.lambda.cloud.t645.message.heartbeat.T645HeartbeatRequest;
+import com.lambda.cloud.t645.message.heartbeat.T645HeartbeatResponse;
 import com.lambda.cloud.t645.message.read.T645ReadAddressRequest;
 import com.lambda.cloud.t645.message.read.T645ReadAddressResponse;
 import com.lambda.cloud.t645.message.read.T645ReadEnergyRequest;
@@ -68,6 +70,11 @@ public class T645AutoConfiguration {
         T645PayloadRegistry.register(0x13, "C0320000", T645ReadAddressRequest.class);
         T645PayloadRegistry.register(0x93, "C0320000", T645ReadAddressResponse.class);
         T645PayloadRegistry.register(0x08, "BROADCAST_TIME", T645BroadcastTime.class);
-        log.info("Registered {} built-in T645 payloads", 5);
+
+        // 4G/NB 心跳
+        T645PayloadRegistry.register(0x00, "NONE", T645HeartbeatRequest.class);
+        T645PayloadRegistry.register(0x80, "NONE", T645HeartbeatResponse.class);
+
+        log.info("Registered {} built-in T645 payloads", 7);
     }
 }
