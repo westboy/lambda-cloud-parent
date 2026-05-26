@@ -6,6 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * 4G/NB 心跳应答报文。
+ *
+ * <p>控制码 {@code 0x80}，无标准 DI。服务器收到心跳上报后返回此应答，
+ * 告知表计连接状态正常。数据域不做 +0x33 偏移处理。</p>
+ */
 @Getter
 @Setter
 @ToString

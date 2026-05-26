@@ -3,12 +3,12 @@ package com.lambda.autoconfig;
 import com.lambda.cloud.netty.protocol.scanner.ProtocolPayloadScanner;
 import com.lambda.cloud.t645.message.T645PayloadRegistry;
 import com.lambda.cloud.t645.message.control.T645BroadcastTime;
+import com.lambda.cloud.t645.message.heartbeat.T645HeartbeatRequest;
+import com.lambda.cloud.t645.message.heartbeat.T645HeartbeatResponse;
 import com.lambda.cloud.t645.message.read.T645ReadAddressRequest;
 import com.lambda.cloud.t645.message.read.T645ReadAddressResponse;
 import com.lambda.cloud.t645.message.read.T645ReadEnergyRequest;
 import com.lambda.cloud.t645.message.read.T645ReadEnergyResponse;
-import com.lambda.cloud.t645.message.heartbeat.T645HeartbeatRequest;
-import com.lambda.cloud.t645.message.heartbeat.T645HeartbeatResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +35,9 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(T645Properties.class)
 @RequiredArgsConstructor
 public class T645AutoConfiguration {
+
+    private static final String ENERGY_DI = "00010000";
+    private static final String LEGACY_ENERGY_DI = "00000000";
 
     private final T645Properties properties;
 
@@ -104,16 +107,16 @@ public class T645AutoConfiguration {
      * </ul>
      */
     private void registerBuiltinPayloads() {
-        T645PayloadRegistry.register(0x11, "00010000", T645ReadEnergyRequest.class);
-        T645PayloadRegistry.register(0x91, "00010000", T645ReadEnergyResponse.class);
+        T645PayloadRegistry.register(0x11, ENERGY_DI, T645ReadEnergyRequest.class);
+        T645PayloadRegistry.register(0x91, ENERGY_DI, T645ReadEnergyResponse.class);
+        T645PayloadRegistry.register(0x91, LEGACY_ENERGY_DI, T645ReadEnergyResponse.class);
         T645PayloadRegistry.register(0x13, "C0320000", T645ReadAddressRequest.class);
         T645PayloadRegistry.register(0x93, "C0320000", T645ReadAddressResponse.class);
-        T645PayloadRegistry.register(0x08, "BROADCAST_TIME", T645BroadcastTime.class);
-        
-        // 4G/NB 心跳
+        T645PayloadRegistry.register(0x08, T645BroadcastTime.DI, T645BroadcastTime.class);
+
         T645PayloadRegistry.register(0x00, "NONE", T645HeartbeatRequest.class);
         T645PayloadRegistry.register(0x80, "NONE", T645HeartbeatResponse.class);
-        
-        log.info("Registered {} built-in T645 payloads", 7);
+
+        log.info("Registered {} built-in T645 payloads", 8);
     }
 }
