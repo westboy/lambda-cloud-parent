@@ -58,7 +58,7 @@ class T645BodyDecoderTest {
 
         Object body = frame.getBody();
         assertNotNull(body, "Body should be parsed");
-        assertTrue(body instanceof T645HeartbeatRequest);
+        assertInstanceOf(T645HeartbeatRequest.class, body);
 
         T645HeartbeatRequest request = (T645HeartbeatRequest) body;
         assertEquals(0x01, request.getSubFunctionCode());
@@ -79,7 +79,7 @@ class T645BodyDecoderTest {
 
         Object body = frame.getBody();
         assertNotNull(body, "Body should be parsed even if data is empty");
-        assertTrue(body instanceof T645HeartbeatRequest);
+        assertInstanceOf(T645HeartbeatRequest.class, body);
     }
 
     @Test
@@ -96,7 +96,7 @@ class T645BodyDecoderTest {
 
         Object body = frame.getBody();
         assertNotNull(body);
-        assertTrue(body instanceof T645HeartbeatResponse);
+        assertInstanceOf(T645HeartbeatResponse.class, body);
     }
 
     @Test
@@ -113,7 +113,7 @@ class T645BodyDecoderTest {
 
         Object body = frame.getBody();
         assertNotNull(body);
-        assertTrue(body instanceof T645ReadEnergyResponse);
+        assertInstanceOf(T645ReadEnergyResponse.class, body);
 
         T645ReadEnergyResponse response = (T645ReadEnergyResponse) body;
         assertEquals("00000000", response.getDi());
