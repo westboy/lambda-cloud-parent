@@ -9,9 +9,10 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
-import com.lambda.cloud.ykc.message.v16.up.YkcV16ParallelStartChargingUp;
+import com.lambda.cloud.ykc.message.v16.down.YkcV16ParallelStartChargingDown;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,25 +25,24 @@ public class YkcV16ParallelStartChargingDownTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("A1", YkcV16ParallelStartChargingUp.class);
+        ProtocolPayloadRegistry.register("A2", YkcV16ParallelStartChargingDown.class);
         ProtocolEngine<YkcV16BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV16ParallelStartChargingUp req = new YkcV16ParallelStartChargingUp();
+        YkcV16ParallelStartChargingDown req = new YkcV16ParallelStartChargingDown();
+        req.setTransactionId("32010200000001012018061219595785");
         req.setEquipmentId("32010200000001");
         req.setConnectorId(1);
-        req.setStartMethod(1);
-        req.setPasswordRequired(0);
-        req.setAccountOrCardNumber("00000000d14b0a54");
-        req.setPassword("00000000000000000000000000000000");
-        req.setVinCode("");
-        req.setMainOrSubGunFlag(0);
+        req.setLogicalCardNumber("0000000000000000");
+        req.setAccountBalance(new BigDecimal("0"));
+        req.setAuthResult(0);
+        req.setFailureReason(1);
         req.setParallelSequence("201029112801");
 
         YkcV16BasePayload base = new YkcV16BasePayload();
         base.setStartFlag("68");
         base.setEncryptFlag("00");
-        base.setFrameType("A1");
+        base.setFrameType("A2");
         base.setSerialNumber(1024);
         base.setDetail(req);
 
@@ -53,11 +53,12 @@ public class YkcV16ParallelStartChargingDownTest {
 
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV16BasePayload parsed = engine.parse(in, YkcV16BasePayload.class);
-        assertEquals("A1", parsed.getFrameType());
+        assertEquals("A2", parsed.getFrameType());
         assertEquals(1024, parsed.getSerialNumber());
 
-        YkcV16ParallelStartChargingUp detail =
-                assertInstanceOf(YkcV16ParallelStartChargingUp.class, parsed.getDetail());
+        YkcV16ParallelStartChargingDown detail =
+                assertInstanceOf(YkcV16ParallelStartChargingDown.class, parsed.getDetail());
+        assertEquals("32010200000001012018061219595785", detail.getTransactionId());
         assertEquals("32010200000001", detail.getEquipmentId());
         assertEquals(1, detail.getConnectorId());
         assertEquals("201029112801", detail.getParallelSequence());

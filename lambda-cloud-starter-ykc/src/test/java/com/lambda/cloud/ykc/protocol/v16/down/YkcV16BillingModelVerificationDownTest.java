@@ -9,7 +9,7 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v16.YkcV16BasePayload;
-import com.lambda.cloud.ykc.message.v16.up.YkcV16BillingModelVerificationUp;
+import com.lambda.cloud.ykc.message.v16.down.YkcV16BillingModelVerificationDown;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,20 +24,21 @@ public class YkcV16BillingModelVerificationDownTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("05", YkcV16BillingModelVerificationUp.class);
+        ProtocolPayloadRegistry.register("06", YkcV16BillingModelVerificationDown.class);
         ProtocolEngine<YkcV16BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV16BillingModelVerificationUp req = new YkcV16BillingModelVerificationUp();
-        req.setEquipmentId("32010200000001");
-        req.setBillingModelCode("0001");
+        YkcV16BillingModelVerificationDown resp = new YkcV16BillingModelVerificationDown();
+        resp.setEquipmentId("55031412782305");
+        resp.setBillingModelCode("0001");
+        resp.setVerificationResult(0);
 
         YkcV16BasePayload base = new YkcV16BasePayload();
         base.setStartFlag("68");
         base.setEncryptFlag("00");
-        base.setFrameType("05");
-        base.setSerialNumber(2);
-        base.setDetail(req);
+        base.setFrameType("06");
+        base.setSerialNumber(1230);
+        base.setDetail(resp);
 
         ByteBuf out = Unpooled.buffer();
         engine.serialize(base, out);
@@ -46,14 +47,15 @@ public class YkcV16BillingModelVerificationDownTest {
 
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV16BasePayload parsed = engine.parse(in, YkcV16BasePayload.class);
-        assertEquals("05", parsed.getFrameType());
-        assertEquals(13, parsed.getDataLength());
-        assertEquals(2, parsed.getSerialNumber());
 
-        YkcV16BillingModelVerificationUp detail =
-                assertInstanceOf(YkcV16BillingModelVerificationUp.class, parsed.getDetail());
-        assertEquals("32010200000001", detail.getEquipmentId());
+        assertEquals("06", parsed.getFrameType());
+        assertEquals(1230, parsed.getSerialNumber());
+
+        YkcV16BillingModelVerificationDown detail =
+                assertInstanceOf(YkcV16BillingModelVerificationDown.class, parsed.getDetail());
+        assertEquals("55031412782305", detail.getEquipmentId());
         assertEquals("0001", detail.getBillingModelCode());
+        assertEquals(0, detail.getVerificationResult());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);
