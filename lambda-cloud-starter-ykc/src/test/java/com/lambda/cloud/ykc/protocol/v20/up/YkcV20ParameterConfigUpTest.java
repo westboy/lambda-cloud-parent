@@ -1,4 +1,4 @@
-package com.lambda.cloud.ykc.protocol.v20.down;
+package com.lambda.cloud.ykc.protocol.v20.up;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,17 +9,13 @@ import com.lambda.cloud.netty.protocol.engine.ProtocolEngineFactory;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v20.YkcV20BasePayload;
-import com.lambda.cloud.ykc.message.v20.down.YkcV20OfflineCardSyncDown;
-import com.lambda.cloud.ykc.message.v20.model.YkcV20OfflineCardSyncCard;
+import com.lambda.cloud.ykc.message.v20.up.YkcV20ParameterConfigUp;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class YkcV20OfflineCardSyncDownTest {
+public class YkcV20ParameterConfigUpTest {
     @BeforeEach
     public void setUp() {
         ProtocolEngineFactory.addEngine(
@@ -28,23 +24,30 @@ public class YkcV20OfflineCardSyncDownTest {
 
     @Test
     public void serialize_thenParse_shouldRoundTrip() throws Exception {
-        ProtocolPayloadRegistry.register("44", YkcV20OfflineCardSyncDown.class);
+        ProtocolPayloadRegistry.register("17", YkcV20ParameterConfigUp.class);
         ProtocolEngine<YkcV20BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-        YkcV20OfflineCardSyncCard card1 = new YkcV20OfflineCardSyncCard();
-        card1.setLogicalCardNo("0000000087654321");
-        card1.setPhysicalCardNo("0000000000000002");
-
-        YkcV20OfflineCardSyncDown resp = new YkcV20OfflineCardSyncDown();
+        YkcV20ParameterConfigUp resp = new YkcV20ParameterConfigUp();
+        resp.setTransactionSerialNumber("55031412782305012018061910262392");
         resp.setEquipmentId("15031412782305");
-        resp.setCardCount(1);
-        resp.setCards(List.of(card1));
+        resp.setConnectorId("01");
+        resp.setBmsMaxCellVoltage(420);
+        resp.setBmsMaxChargingCurrent(2500);
+        resp.setBmsNominalTotalEnergy(600);
+        resp.setBmsMaxTotalVoltage(4200);
+        resp.setBmsMaxTemperature(100);
+        resp.setBmsSoc(500);
+        resp.setBmsCurrentVoltage(3600);
+        resp.setChargerMaxOutputVoltage(7500);
+        resp.setChargerMinOutputVoltage(2000);
+        resp.setChargerMaxOutputCurrent(2500);
+        resp.setChargerMinOutputCurrent(100);
 
         YkcV20BasePayload base = new YkcV20BasePayload();
         base.setStartFlag("68");
         base.setEncryptFlag("00");
-        base.setFrameType("44");
+        base.setFrameType("17");
         base.setSerialNumber(1);
         base.setDetail(resp);
 
@@ -56,13 +59,13 @@ public class YkcV20OfflineCardSyncDownTest {
         ByteBuf in = Unpooled.wrappedBuffer(raw);
         YkcV20BasePayload parsed = engine.parse(in, YkcV20BasePayload.class);
 
-        assertEquals("44", parsed.getFrameType());
+        assertEquals("17", parsed.getFrameType());
         assertEquals(1, parsed.getSerialNumber());
 
-        YkcV20OfflineCardSyncDown detail = assertInstanceOf(YkcV20OfflineCardSyncDown.class, parsed.getDetail());
+        YkcV20ParameterConfigUp detail = assertInstanceOf(YkcV20ParameterConfigUp.class, parsed.getDetail());
+        assertEquals("55031412782305012018061910262392", detail.getTransactionSerialNumber());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals(1, detail.getCardCount());
-        assertEquals("0000000087654321", detail.getCards().getFirst().getLogicalCardNo());
+        assertEquals("01", detail.getConnectorId());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);

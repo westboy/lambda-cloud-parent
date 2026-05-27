@@ -10,8 +10,10 @@ import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.netty.protocol.message.ProtocolPayloadRegistry;
 import com.lambda.cloud.ykc.message.v20.YkcV20BasePayload;
 import com.lambda.cloud.ykc.message.v20.down.YkcV20OfflineCardClearDown;
+import com.lambda.cloud.ykc.message.v20.model.YkcV20OfflineCardSyncCard;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +30,14 @@ public class YkcV20OfflineCardClearDownTest {
         ProtocolEngine<YkcV20BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
+        YkcV20OfflineCardSyncCard card1 = new YkcV20OfflineCardSyncCard();
+        card1.setLogicalCardNo("0000000012345678");
+        card1.setPhysicalCardNo("0000000000000001");
+
         YkcV20OfflineCardClearDown resp = new YkcV20OfflineCardClearDown();
         resp.setEquipmentId("15031412782305");
-        resp.setClearType(0);
+        resp.setClearCardCount(1);
+        resp.setCards(Arrays.asList(card1));
 
         YkcV20BasePayload base = new YkcV20BasePayload();
         base.setStartFlag("68");
@@ -52,7 +59,8 @@ public class YkcV20OfflineCardClearDownTest {
 
         YkcV20OfflineCardClearDown detail = assertInstanceOf(YkcV20OfflineCardClearDown.class, parsed.getDetail());
         assertEquals("15031412782305", detail.getEquipmentId());
-        assertEquals(0, detail.getClearType());
+        assertEquals(1, detail.getClearCardCount());
+        assertEquals("0000000012345678", detail.getCards().get(0).getLogicalCardNo());
 
         ByteBuf out2 = Unpooled.buffer();
         engine.serialize(parsed, out2);
