@@ -13,9 +13,7 @@ import com.lambda.cloud.ykc.message.v20.down.YkcV20OfflineCardSyncDown;
 import com.lambda.cloud.ykc.message.v20.model.YkcV20OfflineCardSyncCard;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.Arrays;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
