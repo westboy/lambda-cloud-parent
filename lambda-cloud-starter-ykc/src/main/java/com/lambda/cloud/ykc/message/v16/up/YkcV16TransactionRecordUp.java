@@ -4,6 +4,8 @@ import com.lambda.cloud.netty.protocol.annotation.ProtocolDataType;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolField;
 import com.lambda.cloud.netty.protocol.annotation.ProtocolPayload;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -42,7 +44,7 @@ public class YkcV16TransactionRecordUp {
             dataType = ProtocolDataType.CP56TIME2A,
             littleEndian = true,
             description = "开始时间")
-    private byte[] startTime;
+    private LocalDateTime startTime;
 
     /** 结束时间 (7字节) CP56Time2a格式 */
     @ProtocolField(
@@ -52,7 +54,7 @@ public class YkcV16TransactionRecordUp {
             dataType = ProtocolDataType.CP56TIME2A,
             littleEndian = true,
             description = "结束时间")
-    private byte[] endTime;
+    private LocalDateTime endTime;
 
     /** 尖单价 (4字节) 精确到小数点后五位 */
     @ProtocolField(
@@ -304,7 +306,7 @@ public class YkcV16TransactionRecordUp {
             dataType = ProtocolDataType.CP56TIME2A,
             littleEndian = true,
             description = "交易日期、时间")
-    private byte[] transactionDateTime;
+    private LocalDateTime transactionDateTime;
 
     /** 停止原因 (1字节) BIN码 */
     @ProtocolField(order = 30, length = 1, computed = true, dataType = ProtocolDataType.UINT8, description = "停止原因")
