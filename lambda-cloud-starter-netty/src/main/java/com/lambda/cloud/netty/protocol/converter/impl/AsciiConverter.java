@@ -1,5 +1,6 @@
 package com.lambda.cloud.netty.protocol.converter.impl;
 
+import cn.hutool.core.util.ArrayUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.annotation.PaddingDirection;
@@ -26,6 +27,10 @@ public class AsciiConverter implements DataTypeConverter {
     public Object parse(ByteBuf buffer, int length, ProtocolFieldMetadata fieldMetadata) throws ProtocolException {
         byte[] data = new byte[length];
         buffer.readBytes(data);
+
+        if (fieldMetadata.isLittleEndian()) {
+            ArrayUtil.reverse(data);
+        }
 
         if (ValidationUtils.isAllZero(data)) {
             return "";
@@ -82,6 +87,9 @@ public class AsciiConverter implements DataTypeConverter {
 
             // 调整长度 (这里只处理不足补齐的情况，超长已在上方安全处理)
             byte[] result = adjustLength(data, targetLength, fieldMetadata);
+            if (fieldMetadata.isLittleEndian()) {
+                ArrayUtil.reverse(result);
+            }
             buffer.writeBytes(result);
 
         } catch (Exception e) {
