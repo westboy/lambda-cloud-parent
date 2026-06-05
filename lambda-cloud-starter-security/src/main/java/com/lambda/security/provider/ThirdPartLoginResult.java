@@ -50,7 +50,7 @@ import lombok.Data;
  *
  * @author Jin
  * @see AbstractThirdPartLoginProvider
- * @see ThirdPartyLoginService
+ * @see ThirdPartLoginProvider
  */
 @Data
 public class ThirdPartLoginResult {

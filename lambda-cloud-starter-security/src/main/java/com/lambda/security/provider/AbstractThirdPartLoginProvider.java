@@ -1,6 +1,7 @@
 package com.lambda.security.provider;
 
 import com.lambda.cloud.core.principal.LoginUser;
+import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.service.ThirdPartyLoginService;
 import lombok.RequiredArgsConstructor;
 
@@ -63,126 +64,33 @@ import lombok.RequiredArgsConstructor;
  * @see ThirdPartyLoginService
  */
 @RequiredArgsConstructor
-public abstract class AbstractThirdPartLoginProvider implements ThirdPartLoginProvider {
+public abstract class AbstractThirdPartLoginProvider<T extends ThirdPartLoginHandler>
+        implements ThirdPartLoginProvider {
 
-    /**
-     * 第三方登录服务
-     *
-     * <p>功能说明：
-     * <ul>
-     *   <li>用户加载：根据第三方登录结果加载系统用户</li>
-     *   <li>账号绑定：处理第三方账号与系统账号的绑定关系</li>
-     *   <li>信息同步：同步第三方平台的用户信息</li>
-     *   <li>权限设置：为第三方登录用户设置相应权限</li>
-     * </ul>
-     *
-     * <p>使用场景：
-     * <ul>
-     *   <li>新用户注册：第一次使用第三方登录时自动创建账号</li>
-     *   <li>老用户登录：已绑定第三方账号的用户直接登录</li>
-     *   <li>账号绑定：将第三方账号绑定到现有系统账号</li>
-     * </ul>
-     */
     private final ThirdPartyLoginService thirdPartyLoginService;
 
-    /**
-     * 执行第三方登录认证
-     *
-     * <p>认证流程：
-     * <ol>
-     *   <li>调用子类实现的getThirdLoginParam方法获取第三方登录参数</li>
-     *   <li>将登录参数传递给ThirdPartyLoginService进行用户加载</li>
-     *   <li>返回认证成功的用户对象</li>
-     * </ol>
-     *
-     * <p>实现说明：
-     * <ul>
-     *   <li>模板方法：定义了通用的认证流程模板</li>
-     *   <li>参数转换：将token转换为ThirdPartLoginResult对象</li>
-     *   <li>异常处理：认证失败时会抛出相应的异常</li>
-     * </ul>
-     *
-     * @param token 第三方平台返回的认证token或code
-     * @param loginType 登录类型，用于区分不同的登录场景
-     * @return 认证成功的登录用户对象
-     * @throws RuntimeException 当认证失败或用户不存在时抛出
-     */
+    protected final T thirdPartLoginHandler;
+
+    @Override
+    public boolean support(String thirdId) {
+        return getThirdType().equals(thirdId);
+    }
+
     @Override
     public LoginUser authenticate(String token, String loginType) {
         ThirdPartLoginResult thirdPartLoginResult = getThirdLoginParam(token);
         return thirdPartyLoginService.loadByThirdLoginResult(thirdPartLoginResult, loginType);
     }
 
-    /**
-     * 获取第三方登录参数（抽象方法）
-     *
-     * <p>实现要求：
-     * <ul>
-     *   <li>参数获取：根据code/token从第三方平台获取用户信息</li>
-     *   <li>数据转换：将第三方平台的用户数据转换为标准格式</li>
-     *   <li>异常处理：处理第三方API调用可能出现的异常</li>
-     *   <li>数据验证：验证获取到的用户数据的完整性</li>
-     * </ul>
-     *
-     * <p>实现示例：
-     * <pre>{@code
-     * @Override
-     * public ThirdPartLoginResult getThirdLoginParam(String code) {
-     *     try {
-     *         // 1. 通过code获取access_token
-     *         String accessToken = getAccessToken(code);
-     *
-     *         // 2. 通过access_token获取用户信息
-     *         UserInfo userInfo = getUserInfo(accessToken);
-     *
-     *         // 3. 构造登录结果
-     *         return new ThirdPartLoginResult("wechat", userInfo);
-     *     } catch (Exception e) {
-     *         throw new ThirdPartLoginException("获取微信用户信息失败", e);
-     *     }
-     * }
-     * }</pre>
-     *
-     * @param code 第三方平台返回的授权码或访问令牌
-     * @return 包含第三方登录信息的结果对象
-     * @throws RuntimeException 当获取第三方登录参数失败时抛出
-     */
-    public abstract ThirdPartLoginResult getThirdLoginParam(String code);
+    public ThirdPartLoginResult getThirdLoginParam(String loginParam) {
+        try {
+            Object result = thirdPartLoginHandler.handle(loginParam);
+            return new ThirdPartLoginResult(getThirdType(), result);
+        } catch (Exception e) {
+            throw new AuthenticationException(e.getMessage());
+        }
+    }
 
-    /**
-     * 构建授权URL（可选实现）
-     *
-     * <p>功能说明：
-     * <ul>
-     *   <li>URL构建：构建第三方平台的授权登录URL</li>
-     *   <li>参数设置：设置state、scope、redirectUri等参数</li>
-     *   <li>安全性：确保授权URL的安全性和有效性</li>
-     * </ul>
-     *
-     * <p>默认实现：
-     * <ul>
-     *   <li>抛出UnsupportedOperationException异常</li>
-     *   <li>子类可以根据需要重写此方法</li>
-     *   <li>适用于不需要动态构建授权URL的场景</li>
-     * </ul>
-     *
-     * <p>重写示例：
-     * <pre>{@code
-     * @Override
-     * public String buildAuthorizationUrl(String state, String scope, String redirectUri) {
-     *     return String.format(
-     *         "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=code&scope=%s&state=%s",
-     *         appId, URLEncoder.encode(redirectUri, "UTF-8"), scope, state
-     *     );
-     * }
-     * }</pre>
-     *
-     * @param state 状态参数，用于防止CSRF攻击
-     * @param scope 授权范围，定义需要获取的用户信息权限
-     * @param redirectUri 授权成功后的回调地址
-     * @return 构建好的授权URL
-     * @throws UnsupportedOperationException 默认实现抛出此异常
-     */
     public String buildAuthorizationUrl(String state, String scope, String redirectUri) {
         throw new UnsupportedOperationException("Not support buildAuthorizationUrl");
     }

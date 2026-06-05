@@ -2,9 +2,6 @@ package com.lambda.autoconfig;
 
 import static com.lambda.cloud.core.Constants.GSON;
 
-import cn.binarywang.wx.miniapp.api.WxMaService;
-import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
-import cn.binarywang.wx.miniapp.config.impl.WxMaRedissonConfigImpl;
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.exception.SaTokenException;
@@ -32,16 +29,9 @@ import com.lambda.security.handler.impl.CommonLogoutSuccessHandler;
 import com.lambda.security.inteceptor.SaTokenInterceptor;
 import com.lambda.security.inteceptor.SecureInterceptor;
 import com.lambda.security.provider.ThirdPartLoginProvider;
-import com.lambda.security.provider.wx.WxMaLoginHandler;
-import com.lambda.security.provider.wx.WxMaLoginProvider;
 import com.lambda.security.service.HmacClientService;
-import com.lambda.security.service.ThirdPartyLoginService;
 import com.lambda.security.service.UserDetailService;
-import com.lambda.security.web.form.CaptchaTriggerStrategy;
-import com.lambda.security.web.form.FormAuthenticationProcessingFilter;
-import com.lambda.security.web.form.FormLockingStrategy;
-import com.lambda.security.web.form.FormLoginValidator;
-import com.lambda.security.web.form.FormLogoutFilter;
+import com.lambda.security.web.form.*;
 import com.lambda.security.web.form.locking.RedisCaptchaTriggerStrategy;
 import com.lambda.security.web.form.locking.RedisLockingStrategy;
 import com.lambda.security.web.form.validator.DynamicCaptchaValidator;
@@ -67,7 +57,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -974,119 +963,6 @@ public class SecurityAutoConfiguration {
         @Autowired
         public void setSecurityProperties(SecurityProperties securityProperties) {
             this.securityProperties = securityProperties;
-        }
-
-        /**
-         * 微信小程序登录配置类
-         * <p>
-         * 当启用微信小程序登录功能时，提供微信小程序的登录集成配置。
-         * 基于微信小程序的code换取session_key机制实现用户身份验证。
-         * </p>
-         *
-         * <h3>登录流程：</h3>
-         * <ol>
-         *   <li>小程序端调用wx.login()获取code</li>
-         *   <li>将code发送到后端服务</li>
-         *   <li>后端使用code换取session_key和openid</li>
-         *   <li>验证用户身份并生成登录凭证</li>
-         * </ol>
-         *
-         * <h3>安全特性：</h3>
-         * <ul>
-         *   <li>基于微信官方API</li>
-         *   <li>session_key安全存储</li>
-         *   <li>openid唯一标识</li>
-         *   <li>Redis缓存支持</li>
-         * </ul>
-         */
-        @Configuration
-        @ConditionalOnProperty(prefix = "lambda.security.thirdPartLogin.wxMa", name = "enabled")
-        public static class WxMaConfiguration {
-
-            private SecurityProperties securityProperties;
-
-            @Autowired
-            public void setSecurityProperties(SecurityProperties securityProperties) {
-                this.securityProperties = securityProperties;
-            }
-
-            /**
-             * 微信小程序服务
-             * <p>
-             * 创建微信小程序API服务，用于与微信小程序后台进行交互。
-             * 基于Redisson实现配置信息的分布式缓存存储。
-             * </p>
-             *
-             * <h3>主要功能：</h3>
-             * <ul>
-             *   <li>code换取session_key</li>
-             *   <li>获取用户openid</li>
-             *   <li>access_token管理</li>
-             *   <li>API调用封装</li>
-             * </ul>
-             *
-             * @param redissonClient Redisson客户端
-             * @return 微信小程序服务实例
-             */
-            @Bean
-            public WxMaService wxMaService(RedissonClient redissonClient) {
-                SecurityProperties.ThirdPartLogin thirdPartLogin = securityProperties.getThirdPartLogin();
-                WxMaServiceImpl wxMaService = new WxMaServiceImpl();
-                WxMaRedissonConfigImpl wxMaRedissonConfig = new WxMaRedissonConfigImpl(redissonClient);
-                wxMaRedissonConfig.setAppid(thirdPartLogin.getWxMa().getAppId());
-                wxMaRedissonConfig.setSecret(thirdPartLogin.getWxMa().getSecret());
-                wxMaService.setWxMaConfig(wxMaRedissonConfig);
-                return wxMaService;
-            }
-
-            /**
-             * 微信小程序登录提供者
-             * <p>
-             * 创建微信小程序的登录提供者，负责处理微信小程序的登录逻辑。
-             * 集成第三方登录服务、微信小程序API服务和登录处理器。
-             * </p>
-             *
-             * <h3>处理流程：</h3>
-             * <ol>
-             *   <li>接收小程序登录code</li>
-             *   <li>调用微信API换取用户信息</li>
-             *   <li>执行用户登录处理逻辑</li>
-             *   <li>返回登录结果</li>
-             * </ol>
-             *
-             * @param thirdPartyLoginService 第三方登录服务
-             * @param wxMaLoginHandler       微信小程序登录处理器
-             * @return 微信小程序登录提供者
-             */
-            @Bean
-            @ConditionalOnMissingBean
-            public WxMaLoginProvider<WxMaLoginHandler> wxMaLoginProvider(
-                    ThirdPartyLoginService thirdPartyLoginService, WxMaLoginHandler wxMaLoginHandler) {
-                return new WxMaLoginProvider<>(thirdPartyLoginService, wxMaLoginHandler);
-            }
-
-            /**
-             * 微信小程序登录处理器
-             * <p>
-             * 创建微信小程序的登录处理器，定义具体的登录处理逻辑。
-             * 可以通过自定义Bean来覆盖默认的处理行为。
-             * </p>
-             *
-             * <h3>处理职责：</h3>
-             * <ul>
-             *   <li>用户信息处理</li>
-             *   <li>登录状态管理</li>
-             *   <li>业务逻辑集成</li>
-             *   <li>响应数据构建</li>
-             * </ul>
-             *
-             * @return 微信小程序登录处理器
-             */
-            @Bean
-            @ConditionalOnMissingBean
-            public WxMaLoginHandler wxMaLoginHandler() {
-                return new WxMaLoginHandler() {};
-            }
         }
 
         /**
