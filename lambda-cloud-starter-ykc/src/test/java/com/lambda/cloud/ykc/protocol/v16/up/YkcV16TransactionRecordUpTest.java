@@ -14,7 +14,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +30,7 @@ public class YkcV16TransactionRecordUpTest {
         ProtocolEngine<YkcV16BasePayload> engine =
                 ProtocolEngineFactory.getEngine(ProtocolEngineFactory.EngineType.REFLECTION);
 
-//        byte[] t = new byte[] {(byte) 0x98, (byte) 0xB7, 0x0E, 0x11, 0x10, 0x03, 0x14};
+        //        byte[] t = new byte[] {(byte) 0x98, (byte) 0xB7, 0x0E, 0x11, 0x10, 0x03, 0x14};
 
         YkcV16TransactionRecordUp req = new YkcV16TransactionRecordUp();
         req.setTransactionId("55031412782305012018061910262392");
