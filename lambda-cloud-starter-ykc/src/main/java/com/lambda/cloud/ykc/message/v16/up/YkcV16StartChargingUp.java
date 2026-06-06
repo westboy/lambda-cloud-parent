@@ -67,6 +67,12 @@ public class YkcV16StartChargingUp {
      * VIN码 (17字节)
      * ASCII码，启动方式为vin码启动充电时上送，其他方式置零，VIN码需要反序上送
      */
-    @ProtocolField(order = 7, length = 17, computed = true, dataType = ProtocolDataType.ASCII, littleEndian = true, description = "VIN码")
+    @ProtocolField(
+            order = 7,
+            length = 17,
+            computed = true,
+            dataType = ProtocolDataType.ASCII,
+            littleEndian = true,
+            description = "VIN码")
     private String vinCode;
 }
