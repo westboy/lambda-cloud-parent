@@ -4,6 +4,7 @@ import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.service.ThirdPartyLoginService;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * 第三方登录提供者抽象基类
@@ -63,13 +64,14 @@ import lombok.RequiredArgsConstructor;
  * @see ThirdPartLoginResult
  * @see ThirdPartyLoginService
  */
+@Setter
 @RequiredArgsConstructor
 public abstract class AbstractThirdPartLoginProvider<T extends ThirdPartLoginHandler>
         implements ThirdPartLoginProvider {
 
     private final ThirdPartyLoginService thirdPartyLoginService;
 
-    protected final T thirdPartLoginHandler;
+    protected T thirdPartLoginHandler;
 
     @Override
     public boolean support(String thirdId) {
