@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.ProblemDetail;
 
 /**
  * 错误响应模型类
@@ -21,13 +22,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ErrorModel {
-
-    /**
-     * HTTP状态码
-     * <p>如：400（客户端错误）、500（服务器错误）等
-     */
-    private int status;
+public class ErrorModel extends ProblemDetail {
 
     /**
      * 错误发生时间戳
