@@ -2,6 +2,7 @@ package com.lambda.cloud.core.exception.model;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.ProblemDetail;
@@ -22,6 +23,7 @@ import org.springframework.http.ProblemDetail;
  */
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public class ErrorModel extends ProblemDetail {
 
     /**

@@ -19,33 +19,15 @@ import lombok.*;
  *   <li>提供统一的分页参数（页码、页大小）</li>
  *   <li>支持参数验证，确保分页参数有效</li>
  *   <li>提供MyBatis-Plus分页对象的创建</li>
- *   <li>提供Lambda查询构造器的创建</li>
  * </ul>
  *
- * <h3>使用示例：</h3>
- * <pre>{@code
- * public class UserPageDTO extends BasePageDTO<User> {
- *     private String username;
- *     private Integer status;
- *
- *     public LambdaQueryWrapper<User> buildQueryWrapper() {
- *         LambdaQueryWrapper<User> wrapper = getLambdaQueryWrapper();
- *         wrapper.like(StringUtils.hasText(username), User::getUsername, username)
- *                .eq(status != null, User::getStatus, status);
- *         return wrapper;
- *     }
- * }
- * }</pre>
- *
- * @param <T> 实体类型
  * @author Jin
  * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
- * @see com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class BasePageDTO<T> implements PageRequest<T> {
+public abstract class BasePageDTO implements PageRequest {
 
     /**
      * 默认页码

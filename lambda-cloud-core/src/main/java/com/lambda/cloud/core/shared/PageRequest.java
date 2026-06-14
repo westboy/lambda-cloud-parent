@@ -8,9 +8,8 @@ import java.io.Serializable;
 /**
  * 分页请求
  *
- * @param <T>
  */
-public interface PageRequest<T> extends Serializable {
+public interface PageRequest extends Serializable {
 
     /**
      * 页码
@@ -33,7 +32,7 @@ public interface PageRequest<T> extends Serializable {
      * @see com.baomidou.mybatisplus.extension.plugins.pagination.Page
      */
     @JsonIgnore
-    default IPage<T> getPage() {
+    default <T> IPage<T> getPage() {
         return new Page<>(getPageNum(), getPageSize());
     }
 }
