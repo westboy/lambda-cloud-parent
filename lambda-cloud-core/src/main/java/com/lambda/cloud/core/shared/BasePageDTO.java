@@ -1,8 +1,5 @@
 package com.lambda.cloud.core.shared;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.Constants;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -96,26 +93,4 @@ public abstract class BasePageDTO<T> implements PageRequest<T> {
     @Min(value = MIN_PAGE_SIZE, message = "每页条数必须大于等于1")
     @Max(value = MAX_PAGE_SIZE, message = "每页条数不能超过1000")
     protected Integer pageSize = DEFAULT_PAGE_SIZE;
-
-    /**
-     * 创建Lambda查询构造器
-     * <p>
-     * 创建一个新的Lambda查询构造器，用于构建类型安全的查询条件。
-     * 子类可以基于此构造器添加具体的查询条件。
-     * </p>
-     *
-     * <h3>使用建议：</h3>
-     * <ul>
-     *   <li>在子类中重写此方法或创建新的查询构造方法</li>
-     *   <li>使用Lambda表达式避免硬编码字段名</li>
-     *   <li>合理使用条件判断，避免无效查询条件</li>
-     * </ul>
-     *
-     * @return Lambda查询构造器
-     * @see com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
-     */
-    @JsonIgnore
-    public LambdaQueryWrapper<T> getLambdaQueryWrapper() {
-        return Wrappers.lambdaQuery();
-    }
 }
