@@ -29,13 +29,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 反射协议引擎
@@ -249,7 +248,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
                 // 记录参与CRC计算的数据范围
                 if (fieldMetadata.isComputed()) {
-                    computedRanges.add(new int[]{start, end - start});
+                    computedRanges.add(new int[] {start, end - start});
                 }
             }
 
