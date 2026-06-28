@@ -2,7 +2,8 @@ package com.lambda.cloud.netty.protocol.engine.impl;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
-import cn.hutool.core.util.*;
+import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.TypeUtil;
 import com.lambda.cloud.netty.exception.ProtocolException;
 import com.lambda.cloud.netty.protocol.ProtocolFieldMetadata;
 import com.lambda.cloud.netty.protocol.ProtocolPayloadMetadata;
@@ -28,12 +29,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 反射协议引擎
@@ -171,13 +173,15 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             }
             return protocolMessage;
         } catch (Throwable e) {
-            // 记录解析失败和性能指标
-            long duration = System.nanoTime() - startTime;
-            log.error(
-                    "协议帧解析失败 - 类型: {}, 耗时: {}μs, 错误: {}",
-                    messageClass.getSimpleName(),
-                    duration / 1000,
-                    e.getMessage());
+            if (log.isDebugEnabled()) {
+                // 记录解析失败和性能指标
+                long duration = System.nanoTime() - startTime;
+                log.debug(
+                        "协议帧解析失败 - 类型: {}, 耗时: {}μs, 错误: {}",
+                        messageClass.getSimpleName(),
+                        duration / 1000,
+                        e.getMessage());
+            }
 
             ProtocolException protocolException = new ProtocolException(
                     ProtocolException.ErrorCode.PARSE_ERROR, "解析消息失败: " + messageClass.getSimpleName(), e);
@@ -245,7 +249,7 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
 
                 // 记录参与CRC计算的数据范围
                 if (fieldMetadata.isComputed()) {
-                    computedRanges.add(new int[] {start, end - start});
+                    computedRanges.add(new int[]{start, end - start});
                 }
             }
 
@@ -265,15 +269,17 @@ public class ReflectionProtocolEngine implements ProtocolEngine<Object> {
             }
 
         } catch (Exception e) {
-            // 记录序列化失败和性能指标
-            long duration = System.nanoTime() - startTime;
-            int bytesWritten = byteBuf.writerIndex() - initialWriterIndex;
-            log.error(
-                    "协议帧序列化失败 - 类型: {}, 耗时: {}μs, 已写入字节: {}, 错误: {}",
-                    message.getClass().getSimpleName(),
-                    duration / 1000,
-                    bytesWritten,
-                    e.getMessage());
+            if (log.isDebugEnabled()) {
+                // 记录序列化失败和性能指标
+                long duration = System.nanoTime() - startTime;
+                int bytesWritten = byteBuf.writerIndex() - initialWriterIndex;
+                log.debug(
+                        "协议帧序列化失败 - 类型: {}, 耗时: {}μs, 已写入字节: {}, 错误: {}",
+                        message.getClass().getSimpleName(),
+                        duration / 1000,
+                        bytesWritten,
+                        e.getMessage());
+            }
 
             throw new ProtocolException(
                     ProtocolException.ErrorCode.SERIALIZE_ERROR,
