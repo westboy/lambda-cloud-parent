@@ -1,7 +1,6 @@
 package com.lambda.autoconfig;
 
 import cn.dev33.satoken.config.SaTokenConfig;
-import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.lambda.cloud.core.shared.KeyValue;
@@ -13,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -120,10 +120,10 @@ public class SecurityProperties {
          * @return 完整的忽略路径列表
          */
         public List<String> getAllIgnoreList() {
-            if (CollUtil.isEmpty(ignored)) {
+            if (CollectionUtils.isEmpty(ignored)) {
                 return DEFAULT_IGNORE_PATH_LIST;
             }
-            return CollUtil.addAllIfNotContains(DEFAULT_IGNORE_PATH_LIST, ignored);
+            return CollectionUtils.collate(DEFAULT_IGNORE_PATH_LIST, ignored, false);
         }
 
         /**
