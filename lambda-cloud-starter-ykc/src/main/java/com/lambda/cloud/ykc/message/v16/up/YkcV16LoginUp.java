@@ -67,7 +67,7 @@ public class YkcV16LoginUp {
      * Sim卡 (10字节)
      * BCD码，不足10位补零，取不到置零
      */
-    @ProtocolField(order = 7, length = 10, computed = true, dataType = ProtocolDataType.BCD, description = "Sim卡")
+    @ProtocolField(order = 7, length = 10, computed = true, dataType = ProtocolDataType.HEX, description = "Sim卡")
     private String simCardNumber;
 
     /**
