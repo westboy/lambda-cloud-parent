@@ -2,7 +2,8 @@
 
 <included>
     <!-- ======================= 日志格式 ======================= -->
-    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %level %logger{36} - %msg%n"/>
+    <!-- pattern 含 [%X{traceId:-}]：traceId 缺失时输出 - -->
+    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{traceId:-}] %level %logger{36} - %msg%n"/>
 
     <!-- ===================== INFO 级别日志 ===================== -->
     <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">
