@@ -100,6 +100,7 @@
         <module>lambda-cloud-starter-nacos</module>
         <module>lambda-cloud-starter-ykc</module>
         <module>lambda-cloud-starter-t645</module>
+        <module>lambda-cloud-starter-ocpp</module>
     </modules>
 
     <dependencyManagement>
