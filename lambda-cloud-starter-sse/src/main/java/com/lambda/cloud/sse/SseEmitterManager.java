@@ -14,12 +14,15 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 /**
  * 安全版 SSE 管理器
  * 自动处理客户端断开、IO 异常
+ *
+ * <p>同一个 clientId 允许多条并发连接（多端 / 多标签），互不踢除；连接级清理按 emitter
+ * 实例进行，避免 onCompletion 误删同 clientId 下的其他连接。
  */
 @Slf4j
 @SuppressFBWarnings("EI_EXPOSE_REP2")
 public class SseEmitterManager {
 
-    private final Map<String, WrappedEmitter> emitters = new ConcurrentHashMap<>();
+    private final Map<String, Set<WrappedEmitter>> emitters = new ConcurrentHashMap<>();
     private final List<SseEventListener> listeners = new CopyOnWriteArrayList<>();
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -40,76 +43,99 @@ public class SseEmitterManager {
     /** 创建 SSE Emitter */
     public SseEmitter createEmitter(String clientId) {
         SseEmitter emitter = new SseEmitter(properties.getTimeout());
+        WrappedEmitter wrapped = new WrappedEmitter(emitter);
 
-        // 异步异常 / 断开回调
-        emitter.onCompletion(() -> removeEmitter(clientId));
-        emitter.onTimeout(() -> removeEmitter(clientId));
+        // 异步异常 / 断开回调：按实例清理，避免误删同 clientId 下的其他连接
+        emitter.onCompletion(() -> removeEmitter(clientId, wrapped, true));
+        emitter.onTimeout(() -> removeEmitter(clientId, wrapped, true));
         emitter.onError(ex -> {
             log.warn("SSE 客户端 {} 异常: {}", clientId, ex.getClass().getSimpleName());
-            removeEmitter(clientId, false);
+            removeEmitter(clientId, wrapped, false);
         });
 
-        WrappedEmitter wrapped = new WrappedEmitter(emitter);
-        WrappedEmitter old = emitters.put(clientId, wrapped);
-
-        if (old != null) old.complete();
-
+        emitters.computeIfAbsent(clientId, key -> ConcurrentHashMap.newKeySet()).add(wrapped);
         connectionCount.incrementAndGet();
         listeners.forEach(listener -> safeOnConnect(listener, clientId));
 
         return emitter;
     }
 
-    /** 发送消息给单个客户端 */
+    /** 发送消息给单个客户端（投递到其所有在线连接） */
     public void sendEvent(String clientId, String eventName, Object data) {
-        WrappedEmitter wrapped = emitters.get(clientId);
-        if (wrapped == null || wrapped.isComplete()) return;
+        Set<WrappedEmitter> set = emitters.get(clientId);
+        if (set == null || set.isEmpty()) return;
 
         executor.execute(() -> {
-            try {
-                wrapped.emitter.send(SseEmitter.event().name(eventName).data(data));
-                totalMessagesSent.incrementAndGet();
-                listeners.forEach(listener -> safeOnMessageSent(listener, clientId, eventName));
-            } catch (IOException e) {
-                log.warn("发送给客户端 {} 失败: {}", clientId, e.getMessage());
-                failedMessages.incrementAndGet();
-                removeEmitter(clientId, false);
+            for (WrappedEmitter wrapped : set) {
+                if (wrapped.isComplete()) {
+                    removeEmitter(clientId, wrapped, true);
+                    continue;
+                }
+                try {
+                    wrapped.emitter.send(SseEmitter.event().name(eventName).data(data));
+                    totalMessagesSent.incrementAndGet();
+                    listeners.forEach(listener -> safeOnMessageSent(listener, clientId, eventName));
+                } catch (IOException e) {
+                    log.warn("发送给客户端 {} 失败: {}", clientId, e.getMessage());
+                    failedMessages.incrementAndGet();
+                    removeEmitter(clientId, wrapped, false);
+                }
             }
         });
     }
 
     /** 广播消息给所有客户端 */
     public void broadcast(String eventName, Object data) {
-        executor.execute(() -> emitters.forEach((clientId, wrapped) -> {
-            if (wrapped.isComplete()) {
-                removeEmitter(clientId);
-                return;
-            }
-            try {
-                wrapped.emitter.send(SseEmitter.event().name(eventName).data(data));
-                totalMessagesSent.incrementAndGet();
-                listeners.forEach(listener -> safeOnMessageSent(listener, clientId, eventName));
-            } catch (IOException e) {
-                log.warn("广播客户端 {} 失败: {}", clientId, e.getMessage());
-                failedMessages.incrementAndGet();
-                removeEmitter(clientId, false);
+        executor.execute(() -> emitters.forEach((clientId, set) -> {
+            for (WrappedEmitter wrapped : set) {
+                if (wrapped.isComplete()) {
+                    removeEmitter(clientId, wrapped, true);
+                    continue;
+                }
+                try {
+                    wrapped.emitter.send(SseEmitter.event().name(eventName).data(data));
+                    totalMessagesSent.incrementAndGet();
+                    listeners.forEach(listener -> safeOnMessageSent(listener, clientId, eventName));
+                } catch (IOException e) {
+                    log.warn("广播客户端 {} 失败: {}", clientId, e.getMessage());
+                    failedMessages.incrementAndGet();
+                    removeEmitter(clientId, wrapped, false);
+                }
             }
         }));
     }
 
-    /** 移除客户端 */
+    /** 强制移除客户端的所有连接 */
     public void removeEmitter(String clientId) {
-        removeEmitter(clientId, true);
+        Set<WrappedEmitter> set = emitters.remove(clientId);
+        if (set == null) return;
+        for (WrappedEmitter wrapped : set) {
+            connectionCount.decrementAndGet();
+            wrapped.complete();
+            listeners.forEach(listener -> safeOnDisconnect(listener, clientId));
+        }
     }
 
-    public void removeEmitter(String clientId, boolean complete) {
-        WrappedEmitter wrapped = emitters.remove(clientId);
-        if (wrapped == null) return;
+    /**
+     * 按实例移除单条连接。
+     *
+     * <p>使用 {@link ConcurrentHashMap#compute} 原子地移除实例并在集合空时清理整个 entry，
+     * 保证与 {@link #createEmitter} 的 computeIfAbsent 互斥，避免新增连接被误删。
+     * 仅在实际移除成功时才触发计数与回调，保证幂等（onTimeout 与 onCompletion 可能先后触发）。
+     */
+    private void removeEmitter(String clientId, WrappedEmitter wrapped, boolean complete) {
+        boolean[] removed = {false};
+        emitters.compute(clientId, (key, set) -> {
+            if (set == null) return null;
+            if (set.remove(wrapped)) {
+                removed[0] = true;
+            }
+            return set.isEmpty() ? null : set;
+        });
+        if (!removed[0]) return;
 
         connectionCount.decrementAndGet();
-
         if (complete) wrapped.complete();
-
         listeners.forEach(listener -> safeOnDisconnect(listener, clientId));
     }
 
@@ -150,7 +176,8 @@ public class SseEmitterManager {
     /** 获取统计信息 */
     public Map<String, Object> getStatistics() {
         return Map.of(
-                "activeConnections", emitters.size(),
+                "activeConnections",
+                        emitters.values().stream().mapToInt(Set::size).sum(),
                 "totalConnections", connectionCount.get(),
                 "totalMessagesSent", totalMessagesSent.get(),
                 "failedMessages", failedMessages.get(),
@@ -175,7 +202,7 @@ public class SseEmitterManager {
     public void shutdown() {
         scheduler.shutdown();
         executor.shutdown();
-        emitters.values().forEach(WrappedEmitter::complete);
+        emitters.values().forEach(set -> set.forEach(WrappedEmitter::complete));
         emitters.clear();
     }
 

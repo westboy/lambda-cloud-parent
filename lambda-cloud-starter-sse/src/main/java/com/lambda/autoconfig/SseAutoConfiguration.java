@@ -4,6 +4,7 @@ import com.lambda.cloud.sse.SseEmitterManager;
 import com.lambda.cloud.sse.cluster.ClusterSseEmitterManager;
 import com.lambda.cloud.sse.controller.SseController;
 import com.lambda.cloud.sse.initializer.SseEmitterInitializer;
+import com.lambda.cloud.sse.interceptor.SseResponseHeadersInterceptor;
 import com.lambda.cloud.sse.service.SseService;
 import com.lambda.cloud.sse.service.SseServiceImpl;
 import org.redisson.api.RedissonClient;
@@ -13,6 +14,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * SSE自动配置
@@ -39,6 +42,18 @@ public class SseAutoConfiguration {
     @ConditionalOnProperty(name = "lambda.sse.enable-endpoint", havingValue = "true", matchIfMissing = true)
     public SseController sseController(SseService sseService) {
         return new SseController(sseService);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "lambda.sse.enable-endpoint", havingValue = "true", matchIfMissing = true)
+    public WebMvcConfigurer sseWebMvcConfigurer(SseProperties properties) {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                String pattern = properties.getEndpointPrefix() + properties.getSubscribePath() + "/**";
+                registry.addInterceptor(new SseResponseHeadersInterceptor()).addPathPatterns(pattern);
+            }
+        };
     }
 
     @Bean
