@@ -6,9 +6,13 @@ import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.strategy.SaAnnotationStrategy;
 import com.lambda.cloud.core.utils.OperatorUtils;
 import com.lambda.cloud.core.utils.StpLogicUtils;
+import jakarta.servlet.DispatcherType;
 import java.lang.reflect.Method;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
@@ -33,7 +37,17 @@ public record SaTokenInterceptor(SecureInterceptor secureInterceptor) implements
      */
     @Override
     public void run(Object handler) {
-        // ========== 处理器类型过滤 ==========
+
+        // SSE 等异步端点在“完成”时会触发 ASYNC 分发回到 DispatcherServlet，此时
+        // Sa-Token 的 ThreadLocal 上下文不会被过滤器初始化，继续鉴权会抛
+        // SaTokenContextException(“上下文尚未初始化”)。初始 REQUEST 分发已做过
+        // 鉴权，ASYNC 分发只是用来收尾，直接放行即可。
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes instanceof ServletRequestAttributes servletRequestAttributes
+                && servletRequestAttributes.getRequest().getDispatcherType() == DispatcherType.ASYNC) {
+            return;
+        }
+
         // 跳过静态资源请求处理器
         if (handler instanceof ResourceHttpRequestHandler) {
             log.debug("Skipping handler: {}", handler);
