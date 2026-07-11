@@ -17,8 +17,6 @@ feign:
         read-timeout: 3000
         connect-timeout: 2000
 dubbo:
-  cloud:
-    subscribed-services:
   protocol:
     name: dubbo
     port: -1
@@ -29,9 +27,9 @@ dubbo:
     check: false
   registry:
     address: 'nacos://${spring.cloud.nacos.discovery.server-addr}?username=${spring.cloud.nacos.username}&password=${spring.cloud.nacos.password}'
-    group: ${spring.cloud.nacos.discovery.group}
+    group: ${DUBBO_GROUP:DUBBO_GROUP}
     parameters:
-      namespace: ${spring.cloud.nacos.discovery.namespace}
+      namespace: ${DUBBO_GROUP:DUBBO_GROUP}
 spring:
   config:
     import: "optional:dbconfig:"
