@@ -1,5 +1,5 @@
 <p align="center">
-	<img alt="logo" src="assets/logo.png" width="512" height="320">
+	<img alt="logo" src="assets/logo.png" width="300" height="300">
 </p>
 <p align="center">
   <a href="https://gitee.com/lamuda-cloud/lamuda-cloud-parent">
