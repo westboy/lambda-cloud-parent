@@ -1,6 +1,12 @@
+<div align="center">
 <p align="center">
-	<img alt="logo" src="assets/logo.png" width="300" height="300">
+	<img alt="logo" src="assets/logo.png" width="250" height="250">
 </p>
+
+# 🚀 Lambda Cloud Framework
+
+**基于 Spring Boot 4.0 + JDK 21 构建的全栈企业级微服务开发框架**
+
 <p align="center">
   <a href="https://gitee.com/lamuda-cloud/lamuda-cloud-parent">
     <img src="https://img.shields.io/badge/lambda--cloud-2026.1.1--SNAPSHOT-brightgreen" alt="Lambda Cloud">
@@ -15,6 +21,7 @@
     <img src="https://img.shields.io/badge/JDK-21-blue" alt="JDK">
   </a>
 </p>
+</div>
 
 **Lambda Cloud** 是一个基于 **Spring Boot 4.0.2** 和 **Spring Cloud 2025.1.1** 构建的企业级微服务开发框架。它旨在帮助中小型企业降低微服务架构的开发与运维成本。框架对多种主流中间件进行了统一封装与自动化配置，具备 开箱即用、高度模块化、易于扩展 等特性，是快速搭建稳定、可维护的企业级分布式系统的理想选择。
 
