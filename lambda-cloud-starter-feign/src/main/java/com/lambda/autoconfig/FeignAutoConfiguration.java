@@ -9,16 +9,12 @@ import feign.Contract;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.Retryer;
-import feign.codec.Decoder;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
-import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,11 +63,6 @@ public class FeignAutoConfiguration {
     @Bean
     public Contract feignContract() {
         return new SpringMvcContract();
-    }
-
-    @Bean
-    public Decoder springDecoder(ObjectProvider<FeignHttpMessageConverters> messageConverters) {
-        return new SpringDecoder(messageConverters);
     }
 
     @Bean
