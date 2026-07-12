@@ -63,6 +63,12 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public interface LogoutHandler {
 
+    /** 当前请求已完成登录状态检查的标记。 */
+    String LOGIN_CHECKED_ATTRIBUTE = LogoutHandler.class.getName() + ".LOGIN_CHECKED";
+
+    /** 当前请求解析出的活跃登录逻辑。 */
+    String ACTIVE_STP_LOGIC_ATTRIBUTE = LogoutHandler.class.getName() + ".ACTIVE_STP_LOGIC";
+
     /**
      * 处理用户登出事件
      * <p>

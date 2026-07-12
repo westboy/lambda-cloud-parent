@@ -1,5 +1,8 @@
 package com.lambda.security.handler.impl;
 
+import static com.lambda.security.handler.LogoutHandler.ACTIVE_STP_LOGIC_ATTRIBUTE;
+import static com.lambda.security.handler.LogoutHandler.LOGIN_CHECKED_ATTRIBUTE;
+
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.hutool.extra.servlet.JakartaServletUtil;
@@ -106,20 +109,27 @@ public class CommonLogoutHandler implements LogoutHandler {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
         try {
-            StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
+            Object resolvedStpLogic = request.getAttribute(ACTIVE_STP_LOGIC_ATTRIBUTE);
+            if (resolvedStpLogic == null && Boolean.TRUE.equals(request.getAttribute(LOGIN_CHECKED_ATTRIBUTE))) {
+                logoutByCookie(request);
+                return;
+            }
+            StpLogic stpLogic = resolvedStpLogic instanceof StpLogic logic ? logic : StpLogicUtils.getActiveStpLogic();
             stpLogic.logout();
         } catch (NotLoginException e) {
-            // 用户未登录，尝试通过 Cookie 登出
-            Cookie cookie = JakartaServletUtil.getCookie(request, "Authorization");
-            if (cookie != null) {
-                String cookieValue = cookie.getValue();
-                StpLogicUtils.logoutByTokenValue(cookieValue);
-            } else {
-                log.info("用户未登录，无需登出");
-            }
+            logoutByCookie(request);
         } catch (Exception e) {
             log.error("用户 {} 登出失败", loginUser != null ? loginUser.getName() : "未知用户", e);
             throw e;
+        }
+    }
+
+    private void logoutByCookie(HttpServletRequest request) {
+        Cookie cookie = JakartaServletUtil.getCookie(request, "Authorization");
+        if (cookie != null) {
+            StpLogicUtils.logoutByTokenValue(cookie.getValue());
+        } else {
+            log.info("用户未登录，无需登出");
         }
     }
 }

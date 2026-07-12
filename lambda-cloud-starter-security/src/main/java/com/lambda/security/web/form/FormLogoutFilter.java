@@ -1,7 +1,14 @@
 package com.lambda.security.web.form;
 
+import static com.lambda.cloud.core.Constants.ANONYMOUS_USER;
+import static com.lambda.security.handler.LogoutHandler.ACTIVE_STP_LOGIC_ATTRIBUTE;
+import static com.lambda.security.handler.LogoutHandler.LOGIN_CHECKED_ATTRIBUTE;
+
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.OperatorUtils;
+import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.security.handler.LogoutHandler;
 import com.lambda.security.handler.LogoutSuccessHandler;
 import com.lambda.security.handler.impl.CompositeLogoutHandler;
@@ -215,7 +222,7 @@ public class FormLogoutFilter extends GenericFilterBean {
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         if (this.requiresLogout(request)) {
-            LoginUser loginUser = OperatorUtils.getOperator();
+            LoginUser loginUser = getLoginUser(request);
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug(LogMessage.format("Logging out [%s]", loginUser));
             }
@@ -223,6 +230,23 @@ public class FormLogoutFilter extends GenericFilterBean {
             this.logoutSuccessHandler.onLogoutSuccess(request, response, loginUser);
         } else {
             chain.doFilter(request, response);
+        }
+    }
+
+    /**
+     * 安全获取退出用户。令牌缺失或失效时返回匿名用户，使退出操作保持幂等。
+     *
+     * @param request 当前退出请求
+     * @return 当前登录用户；未登录时返回匿名用户
+     */
+    protected LoginUser getLoginUser(HttpServletRequest request) {
+        request.setAttribute(LOGIN_CHECKED_ATTRIBUTE, true);
+        try {
+            StpLogic stpLogic = StpLogicUtils.getActiveStpLogic();
+            request.setAttribute(ACTIVE_STP_LOGIC_ATTRIBUTE, stpLogic);
+            return OperatorUtils.getLoginUser(stpLogic);
+        } catch (NotLoginException exception) {
+            return ANONYMOUS_USER;
         }
     }
 
