@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.lambda.cloud.feign.codec.CustomErrorDecoder;
 import com.lambda.cloud.feign.interceptors.AuthorizationRequestHeaderInterceptor;
+import com.lambda.cloud.feign.interceptors.SaSameTokenRequestInterceptor;
 import com.lambda.cloud.feign.webflux.AttributeHolder;
 import feign.Contract;
 import feign.Logger;
@@ -69,5 +70,11 @@ public class FeignAutoConfiguration {
     public RequestInterceptor defaultHeaderInterceptor() {
         log.trace("default request header interceptor is initializing...");
         return new AuthorizationRequestHeaderInterceptor();
+    }
+
+    @Bean
+    public RequestInterceptor saSameTokenRequestInterceptor() {
+        log.trace("sa-token same-token request interceptor is initializing...");
+        return new SaSameTokenRequestInterceptor();
     }
 }
