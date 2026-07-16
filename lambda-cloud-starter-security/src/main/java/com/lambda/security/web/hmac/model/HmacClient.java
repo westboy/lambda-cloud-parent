@@ -1,5 +1,6 @@
 package com.lambda.security.web.hmac.model;
 
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.HmacGenerator;
@@ -12,7 +13,6 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * HMAC客户端认证信息模型类
@@ -490,7 +490,7 @@ public class HmacClient implements LoginUser {
      */
     @JsonIgnore
     public Set<String> getWhitelist() {
-        if (StringUtils.isBlank(hosts)) {
+        if (StrUtil.isBlank(hosts)) {
             return new HashSet<>();
         }
         return new HashSet<>(Arrays.asList(hosts.split(",")));

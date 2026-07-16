@@ -17,30 +17,30 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
         <spring-ai.version>1.1.2</spring-ai.version>
-        <spring-boot.version>4.0.2</spring-boot.version>
-        <spring-cloud.version>2025.1.1</spring-cloud.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
+        <spring-cloud.version>2025.1.2</spring-cloud.version>
         <spring-cloud-alibaba.version>2025.1.0.0</spring-cloud-alibaba.version>
-        <gson.version>2.11.0</gson.version>
-        <langchain4j.version>1.12.2</langchain4j.version>
-        <langchain4j-spring-boot.version>1.12.2-beta22</langchain4j-spring-boot.version>
-        <langgraph4j.version>1.8.12</langgraph4j.version>
+        <gson.version>2.14.0</gson.version>
+        <langchain4j.version>1.17.2</langchain4j.version>
+        <langchain4j-spring-boot.version>1.17.2-beta27</langchain4j-spring-boot.version>
+        <langgraph4j.version>1.8.20</langgraph4j.version>
         <slf4j.version>2.0.16</slf4j.version>
         <mysql.version>8.2.0</mysql.version>
-        <bcpkix.version>1.77</bcpkix.version>
-        <bcprov.version>1.77</bcprov.version>
+        <bcpkix.version>1.85</bcpkix.version>
+        <bcprov.version>1.85</bcprov.version>
         <jsr305.version>3.0.2</jsr305.version>
         <quartz.version>2.3.2</quartz.version>
-        <okhttp.version>4.12.0</okhttp.version>
+        <okhttp.version>5.4.0</okhttp.version>
         <lombok.version>1.18.34</lombok.version>
-        <swagger.version>2.2.43</swagger.version>
-        <springdoc.version>3.0.2</springdoc.version>
-        <calcite.version>1.35.0</calcite.version>
-        <guava.version>33.2.1-jre</guava.version>
-        <redisson.version>4.3.0</redisson.version>
-        <liquibase.version>5.0.2</liquibase.version>
-        <jackson-bom.version>3.0.4</jackson-bom.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
-        <mybatis-plus.version>3.5.15</mybatis-plus.version>
+        <swagger.version>2.2.52</swagger.version>
+        <springdoc.version>3.0.3</springdoc.version>
+        <calcite.version>1.42.0</calcite.version>
+        <guava.version>33.6.0-jre</guava.version>
+        <redisson.version>4.6.1</redisson.version>
+        <liquibase.version>5.0.3</liquibase.version>
+        <jackson-bom.version>3.2.1</jackson-bom.version>
+        <mapstruct.version>1.7.0.Beta2</mapstruct.version>
+        <mybatis-plus.version>3.5.17</mybatis-plus.version>
         <google-collections.version>1.0</google-collections.version>
         <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
         <satoken.version>1.45.0</satoken.version>
@@ -49,23 +49,23 @@
         <dubbo.version>3.3.6</dubbo.version>
         <rocketmq.version>2.3.4</rocketmq.version>
         <iotdb.version>2.0.3</iotdb.version>
-        <iotdb-jdbc.version>1.3.1</iotdb-jdbc.version>
         <!-- 插件版本 -->
+        <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
         <maven-jxr-plugin.version>3.6.0</maven-jxr-plugin.version>
-        <maven-help-plugin.version>3.5.1</maven-help-plugin.version>
+        <maven-help-plugin.version>3.5.2</maven-help-plugin.version>
         <maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
         <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
         <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
-        <maven-jacoco-plugin.version>0.8.14</maven-jacoco-plugin.version>
+        <maven-jacoco-plugin.version>0.8.15</maven-jacoco-plugin.version>
         <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
         <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
-        <maven-spotless.version>3.5.0</maven-spotless.version>
-        <maven-spotbugs.version>4.9.8.3</maven-spotbugs.version>
+        <maven-spotless.version>3.8.0</maven-spotless.version>
+        <maven-spotbugs.version>4.10.3.0</maven-spotbugs.version>
         <maven-spotbugs.excludeFilterFile>
             ${project.basedir}/spotbugs-exclude.xml
         </maven-spotbugs.excludeFilterFile>
@@ -181,7 +181,7 @@
             <dependency>
                 <groupId>com.playtika.testcontainers</groupId>
                 <artifactId>testcontainers-spring-boot-bom</artifactId>
-                <version>2.3.2</version>
+                <version>4.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -193,7 +193,7 @@
             <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
-                <version>1.9.22.1</version>
+                <version>1.9.25.1</version>
             </dependency>
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
@@ -208,22 +208,22 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.20.0</version>
+                <version>20030203.000550</version>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>
                 <artifactId>commons-net</artifactId>
-                <version>3.11.1</version>
+                <version>20030805.205232</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
-                <version>1.3.5</version>
+                <version>1.4.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
-                <version>2.6</version>
+                <version>20030203.000129</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
@@ -233,42 +233,42 @@
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
-                <version>1.11.0</version>
+                <version>20030211.134440</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>1.14.0</version>
+                <version>1.15.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>1.10.0</version>
+                <version>1.14.1</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.19.0</version>
+                <version>20041127.091804</version>
             </dependency>
             <dependency>
                 <artifactId>commons-collections</artifactId>
                 <groupId>commons-collections</groupId>
-                <version>3.2.2</version>
+                <version>20040616</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
-                <version>4.4</version>
+                <version>4.5.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
-                <version>1.10</version>
+                <version>20041012.002804</version>
             </dependency>
             <dependency>
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
-                <version>1.5</version>
+                <version>1.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -288,17 +288,17 @@
             <dependency>
                 <groupId>org.pf4j</groupId>
                 <artifactId>pf4j</artifactId>
-                <version>3.10.0</version>
+                <version>3.15.0</version>
             </dependency>
             <dependency>
                 <groupId>org.dom4j</groupId>
                 <artifactId>dom4j</artifactId>
-                <version>2.1.4</version>
+                <version>2.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.xerial.snappy</groupId>
                 <artifactId>snappy-java</artifactId>
-                <version>1.1.10.5</version>
+                <version>1.1.10.8</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
@@ -375,12 +375,12 @@
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>9.7.1</version>
+                <version>9.10.1</version>
             </dependency>
             <dependency>
                 <artifactId>ognl</artifactId>
                 <groupId>ognl</groupId>
-                <version>3.2.21</version>
+                <version>3.5.0-BETA4</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba.spring</groupId>
@@ -390,7 +390,7 @@
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
-                <version>5.8.41</version>
+                <version>5.8.47</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
@@ -421,32 +421,32 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-bootstrap</artifactId>
-                <version>3.1.2</version>
+                <version>5.0.2</version>
             </dependency>
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
-                <version>2.4</version>
+                <version>2.6</version>
             </dependency>
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>2.9.3</version>
+                <version>3.2.4</version>
             </dependency>
             <dependency>
                 <groupId>org.checkerframework</groupId>
                 <artifactId>checker-qual</artifactId>
-                <version>3.49.0</version>
+                <version>4.2.1</version>
             </dependency>
             <dependency>
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_annotations</artifactId>
-                <version>2.36.0</version>
+                <version>2.50.0</version>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>4.29.0</version>
+                <version>4.36.0-RC1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.calcite</groupId>
@@ -461,17 +461,17 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-junit-jupiter</artifactId>
-                <version>5.12.0</version>
+                <version>5.23.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.17.0</version>
+                <version>5.23.0</version>
             </dependency>
             <dependency>
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
-                <version>1.5.3</version>
+                <version>2.0-rc1</version>
             </dependency>
             <dependency>
                 <groupId>p6spy</groupId>
@@ -502,7 +502,7 @@
             <dependency>
                 <groupId>org.apache.iotdb</groupId>
                 <artifactId>iotdb-jdbc</artifactId>
-                <version>${iotdb-jdbc.version}</version>
+                <version>${iotdb.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.lambda.cloud</groupId>
@@ -806,6 +806,11 @@
                     <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
+            <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>versions-maven-plugin</artifactId>
+            <version>${versions-maven-plugin.version}</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -818,6 +823,19 @@
                     <reportSet>
                         <reports>
                             <report>report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependency-updates-report</report>
+                            <report>plugin-updates-report</report>
+                            <report>property-updates-report</report>
                         </reports>
                     </reportSet>
                 </reportSets>

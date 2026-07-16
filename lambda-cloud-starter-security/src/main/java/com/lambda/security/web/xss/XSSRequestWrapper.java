@@ -1,5 +1,7 @@
 package com.lambda.security.web.xss;
 
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.web.LambdaServletInputStream;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,9 +12,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import org.owasp.esapi.ESAPI;
@@ -103,7 +103,7 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public String[] getParameterValues(String parameter) {
         String[] values = super.getParameterValues(parameter);
-        if (ArrayUtils.isNotEmpty(values)) {
+        if (ArrayUtil.isNotEmpty(values)) {
             return Arrays.stream(values).map(this::encode).toArray(String[]::new);
         }
         return values;
@@ -189,7 +189,7 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
      */
     @Override
     public BufferedReader getReader() throws IOException {
-        String body = IOUtils.toString(super.getReader());
+        String body = IOUtil.toString(super.getReader());
         return new BufferedReader(new StringReader(encode(body)));
     }
 
@@ -223,7 +223,7 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
      */
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        String body = IOUtils.toString(super.getInputStream(), StandardCharsets.UTF_8);
+        String body = IOUtil.toString(super.getInputStream(), StandardCharsets.UTF_8.name());
         return new LambdaServletInputStream(encode(body));
     }
 
@@ -280,17 +280,17 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
      * @see org.owasp.esapi.errors.IntrusionException
      */
     public String encode(String value) {
-        if (StringUtils.isBlank(value)) {
+        if (StrUtil.isBlank(value)) {
             return value;
         }
         try {
-            value = ESAPI.encoder().canonicalize(value).replace("\0", StringUtils.EMPTY);
+            value = ESAPI.encoder().canonicalize(value).replace("\0", StrUtil.EMPTY);
             return Jsoup.clean(value, Safelist.none());
         } catch (IntrusionException e) {
             log.info(
                     "If you are sure to trust the request, add the following:\nspring:\n  security:\n    xss-protected:\n      trusted: {}",
                     this.getRequestURI());
-            return StringUtils.EMPTY;
+            return StrUtil.EMPTY;
         }
     }
 }

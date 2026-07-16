@@ -1,5 +1,6 @@
 package com.lambda.cloud.actuator;
 
+import cn.hutool.core.util.ArrayUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.micrometer.core.instrument.*;
 import java.util.Map;
@@ -7,7 +8,6 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  * @author jin
@@ -24,7 +24,7 @@ public record MeterHelper(MeterRegistry registry) {
 
     public Counter counter(@Nonnull String name, @Nonnull String description, String... tags) {
         Counter.Builder builder = Counter.builder(name).description(description);
-        if (ArrayUtils.isNotEmpty(tags)) {
+        if (ArrayUtil.isNotEmpty(tags)) {
             builder.tags(tags);
         }
         return builder.register(registry);

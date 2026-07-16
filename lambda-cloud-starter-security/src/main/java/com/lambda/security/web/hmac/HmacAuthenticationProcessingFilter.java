@@ -5,6 +5,7 @@ import cn.dev33.satoken.servlet.model.SaRequestForServlet;
 import cn.dev33.satoken.servlet.model.SaResponseForServlet;
 import cn.dev33.satoken.servlet.model.SaStorageForServlet;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.principal.LoginUser;
 import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
@@ -27,7 +28,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * HMAC认证处理过滤器
@@ -179,7 +179,7 @@ public class HmacAuthenticationProcessingFilter extends AbstractAuthenticationPr
     protected HmacClient retrieveUser(String username, String remoteAddr) {
         LoginUser loadedUser = this.hmacClientService.loadClientByAppid(username);
         if (loadedUser instanceof HmacClient client) {
-            if (StringUtils.isNotBlank(client.getHosts())) {
+            if (StrUtil.isNotBlank(client.getHosts())) {
                 Set<String> hosts = client.getWhitelist();
                 if (!hosts.contains(remoteAddr)) {
                     log.debug("actual: {}, expected: {}", remoteAddr, hosts);

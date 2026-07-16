@@ -3,7 +3,7 @@ package com.lambda.cloud.cache.support;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.lambda.cloud.cache.CacheConfig;
 import java.time.Duration;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Caffeine构建工厂

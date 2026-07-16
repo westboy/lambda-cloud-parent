@@ -1,6 +1,7 @@
 package com.lambda.cloud.sms.sender;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aliyuncs.CommonRequest;
 import com.aliyuncs.CommonResponse;
 import com.aliyuncs.DefaultAcsClient;
@@ -20,7 +21,6 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -84,7 +84,7 @@ public class AliYunSmsMessageSender implements SmsMessageSender, InitializingBea
         request.putQueryParameter("SignName", properties.getAliyun().getSignName());
         request.putQueryParameter("TemplateCode", templateId);
         request.putQueryParameter("OutId", id);
-        if (StringUtils.isNotBlank(params)) {
+        if (StrUtil.isNotBlank(params)) {
             request.putQueryParameter("TemplateParam", params);
         }
         SmsSendResult res = new SmsSendResult();

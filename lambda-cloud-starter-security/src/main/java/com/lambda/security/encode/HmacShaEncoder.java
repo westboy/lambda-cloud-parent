@@ -1,11 +1,11 @@
 package com.lambda.security.encode;
 
+import cn.hutool.core.codec.Base64;
+import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.crypto.digest.HmacAlgorithm;
 import com.lambda.cloud.core.utils.Assert;
 import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.HmacAlgorithms;
-import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 
@@ -118,9 +118,8 @@ public class HmacShaEncoder implements PasswordEncoder {
         Assert.notNull(password, "password must not be null");
         final byte[] key = password.getBytes(StandardCharsets.UTF_8);
         final byte[] digest = salt.getBytes(StandardCharsets.UTF_8);
-        byte[] bytes =
-                HmacUtils.getInitializedMac(HmacAlgorithms.HMAC_SHA_1, key).doFinal(digest);
-        return Base64.encodeBase64String(bytes);
+        byte[] bytes = DigestUtil.hmac(HmacAlgorithm.HmacSHA1, key).digest(digest);
+        return Base64.encode(bytes);
     }
 
     /**

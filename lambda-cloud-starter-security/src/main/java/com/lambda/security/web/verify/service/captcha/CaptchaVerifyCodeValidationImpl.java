@@ -17,7 +17,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -381,11 +380,11 @@ public class CaptchaVerifyCodeValidationImpl implements VerifyCodeService {
         String verifyCode = obtainVerifyCode(requestParam);
         String verifyToken = obtainVerifyToken(requestParam);
 
-        if (StringUtils.isBlank(verifyCode)) {
+        if (StrUtil.isBlank(verifyCode)) {
             throw new VerifyCodeValidationException("验证码不能为空!");
         }
 
-        if (StringUtils.isBlank(verifyToken)) {
+        if (StrUtil.isBlank(verifyToken)) {
             throw new VerifyCodeValidationException("__TOKEN不能为空!");
         }
 

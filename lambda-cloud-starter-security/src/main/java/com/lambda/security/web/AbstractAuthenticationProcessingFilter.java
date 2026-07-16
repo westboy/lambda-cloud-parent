@@ -244,7 +244,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
      *     String password = request.getParameter("password");
      *
      *     // 2. 参数验证
-     *     if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
+     *     if (StrUtil.isBlank(username) || StrUtil.isBlank(password)) {
      *         throw new AuthenticationException("用户名或密码不能为空");
      *     }
      *

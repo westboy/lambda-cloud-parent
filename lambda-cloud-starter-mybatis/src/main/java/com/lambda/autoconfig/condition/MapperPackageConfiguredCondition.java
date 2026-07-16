@@ -1,7 +1,7 @@
 package com.lambda.autoconfig.condition;
 
 import cn.hutool.core.util.StrUtil;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;

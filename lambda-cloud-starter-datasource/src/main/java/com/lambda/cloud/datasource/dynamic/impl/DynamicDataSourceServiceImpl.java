@@ -1,5 +1,6 @@
 package com.lambda.cloud.datasource.dynamic.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
 import com.lambda.cloud.datasource.dynamic.DynamicDataSourceService;
 import com.lambda.cloud.datasource.property.DataSourceProperty;
@@ -9,7 +10,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * DynamicDataSourceServiceImpl
@@ -30,7 +30,7 @@ public record DynamicDataSourceServiceImpl(DynamicRoutingDataSource dynamicRouti
         configuration.setUsername(property.getUsername());
         configuration.setPassword(property.getPassword());
         String driverClassName = property.getDriverClassName();
-        if (StringUtils.isNotBlank(driverClassName)) {
+        if (StrUtil.isNotBlank(driverClassName)) {
             configuration.setDriverClassName(driverClassName);
         }
         try {

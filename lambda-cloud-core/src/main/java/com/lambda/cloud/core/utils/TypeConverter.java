@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.util.ClassUtils;
 
 /**

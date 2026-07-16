@@ -1,5 +1,6 @@
 package com.lambda.cloud.core.utils;
 
+import cn.hutool.core.util.StrUtil;
 import com.lambda.cloud.core.exception.IllegalArgumentException;
 import com.lambda.cloud.core.exception.IllegalStateException;
 import java.util.Collection;
@@ -127,7 +128,7 @@ public class Assert {
      * <pre class="code">
      * Assert.isFalse(i == 0, "The value must not be zero");
      * Assert.isFalse(user.isDeleted(), "用户已被删除，无法执行操作");
-     * Assert.isFalse(StringUtils.isEmpty(email), "邮箱地址不能为空");
+     * Assert.isFalse(StrUtil.isEmpty(email), "邮箱地址不能为空");
      * </pre>
      *
      * @param expression 要验证的布尔表达式，期望为false
@@ -629,7 +630,7 @@ public class Assert {
      * @since 2.0
      */
     public static void isBlank(String content, String message) {
-        if (org.apache.commons.lang.StringUtils.isBlank(content)) {
+        if (StrUtil.isBlank(content)) {
             throw new IllegalArgumentException(message);
         }
     }

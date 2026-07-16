@@ -4,7 +4,7 @@ import static com.baomidou.mybatisplus.core.toolkit.StringPool.*;
 
 import java.lang.annotation.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 数据权限注解

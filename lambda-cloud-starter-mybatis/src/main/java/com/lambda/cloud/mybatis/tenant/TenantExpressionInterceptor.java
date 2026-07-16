@@ -5,7 +5,7 @@ import com.lambda.cloud.core.utils.TypeConverter;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;

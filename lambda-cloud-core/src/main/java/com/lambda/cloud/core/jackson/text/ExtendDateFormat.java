@@ -3,6 +3,7 @@ package com.lambda.cloud.core.jackson.text;
 import static com.lambda.cloud.core.Constants.*;
 
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.util.ArrayUtil;
 import com.lambda.cloud.core.exception.NotSupportedException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -12,7 +13,6 @@ import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  * @author jin
@@ -36,7 +36,7 @@ public class ExtendDateFormat extends SimpleDateFormat {
     @Override
     @SneakyThrows
     public Date parse(@Nonnull String source, @Nonnull ParsePosition pos) {
-        if (ArrayUtils.contains(EXCLUDES, source)) {
+        if (ArrayUtil.contains(EXCLUDES, source)) {
             return null;
         }
         if (source.matches(TIME_STAMP_REGEX)) {

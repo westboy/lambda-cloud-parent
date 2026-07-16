@@ -10,7 +10,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.support.AbstractCacheManager;

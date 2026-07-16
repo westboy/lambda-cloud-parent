@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
+import cn.hutool.core.util.ArrayUtil;
 import com.google.common.collect.Maps;
 import com.lambda.cloud.core.utils.HmacGenerator;
 import feign.RequestInterceptor;
@@ -16,7 +17,6 @@ import javax.annotation.Nullable;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -42,7 +42,7 @@ public record HmacClientRequestInterceptor(String appid, String secret) implemen
     @Nullable
     private String getRequestBody(byte[] body, String methodName) {
         HttpMethod method = HttpMethod.valueOf(methodName);
-        boolean existing = ArrayUtils.isNotEmpty(body) && (POST.equals(method) || PUT.equals(method));
+        boolean existing = ArrayUtil.isNotEmpty(body) && (POST.equals(method) || PUT.equals(method));
         if (existing) {
             return new String(body, UTF_8);
         }

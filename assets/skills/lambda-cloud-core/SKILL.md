@@ -187,7 +187,7 @@ public class UserPageDTO extends BasePageDTO<User> {
 
     public LambdaQueryWrapper<User> buildQueryWrapper() {
         LambdaQueryWrapper<User> wrapper = getLambdaQueryWrapper();
-        wrapper.like(StringUtils.hasText(username), User::getUsername, username)
+        wrapper.like(StrUtil.hasText(username), User::getUsername, username)
                .eq(status != null, User::getStatus, status);
         return wrapper;
     }

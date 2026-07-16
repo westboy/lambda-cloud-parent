@@ -18,7 +18,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -420,11 +419,11 @@ public class SmsVerifyCodeValidationImpl implements VerifyCodeService {
         }
 
         String mobile = requestParam.getStr(securityProperties.getSms().getMobile());
-        if (StringUtils.isBlank(mobile)) {
+        if (StrUtil.isBlank(mobile)) {
             throw new VerifyCodeValidationException("手机号不能为空");
         }
         String code = requestParam.getStr(securityProperties.getSms().getCode());
-        if (StringUtils.isBlank(code)) {
+        if (StrUtil.isBlank(code)) {
             throw new VerifyCodeValidationException("验证码不能为空");
         }
 

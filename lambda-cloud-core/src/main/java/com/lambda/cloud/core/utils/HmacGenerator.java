@@ -2,6 +2,11 @@ package com.lambda.cloud.core.utils;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import cn.hutool.core.codec.Base64;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.crypto.digest.HmacAlgorithm;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -10,12 +15,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.HmacAlgorithms;
-import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * HMAC签名生成器
@@ -79,7 +79,7 @@ public final class HmacGenerator {
         if (MapUtils.isNotEmpty(queries)) {
             queries.keySet().stream().sorted().forEach(key -> {
                 String[] values = queries.get(key);
-                if (ArrayUtils.isNotEmpty(values)) {
+                if (ArrayUtil.isNotEmpty(values)) {
                     baseString.append(key).append("=");
                     baseString.append(values.length == 1 ? values[0] : Arrays.toString(values));
                     baseString.append("&");
@@ -88,7 +88,7 @@ public final class HmacGenerator {
         }
         baseString.append("appid=").append(appid).append("&");
         baseString.append("timestamp=").append(timestamp);
-        if (StringUtils.isNotBlank(body)) {
+        if (StrUtil.isNotEmpty(body)) {
             body = body.replaceAll(REGEX, EMPTY);
             baseString.append("&body=").append(body);
         }
@@ -129,9 +129,8 @@ public final class HmacGenerator {
         builder.append(":");
         final byte[] key = secret.getBytes(StandardCharsets.UTF_8);
         final byte[] digest = baseString.getBytes(StandardCharsets.UTF_8);
-        byte[] bytes =
-                HmacUtils.getInitializedMac(HmacAlgorithms.HMAC_SHA_1, key).doFinal(digest);
-        builder.append(Base64.encodeBase64String(bytes));
+        byte[] bytes = DigestUtil.hmac(HmacAlgorithm.HmacSHA1, key).digest(digest);
+        builder.append(Base64.encode(bytes));
         return builder.toString();
     }
 }
