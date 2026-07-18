@@ -2,6 +2,7 @@ package com.lambda.cloud.t645.netty;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import cn.hutool.core.util.HexUtil;
 import com.lambda.cloud.netty.protocol.encrypt.impl.DefaultEncryptionService;
 import com.lambda.cloud.netty.protocol.engine.impl.ReflectionProtocolEngine;
 import com.lambda.cloud.t645.message.T645Frame;
@@ -14,7 +15,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.math.BigDecimal;
-import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ class T645BodyDecoderTest {
 
     @Test
     void testHeartbeatWithSignalStrength() throws Exception {
-        byte[] bytes = Hex.decodeHex("680000000000006800020116E916");
+        byte[] bytes = HexUtil.decodeHex("680000000000006800020116E916");
         ByteBuf buf = Unpooled.wrappedBuffer(bytes);
 
         assertTrue(channel.writeInbound(buf));
@@ -67,7 +67,7 @@ class T645BodyDecoderTest {
 
     @Test
     void testHeartbeatWithoutSignalStrength() throws Exception {
-        byte[] bytes = Hex.decodeHex("68000000000000680000D016");
+        byte[] bytes = HexUtil.decodeHex("68000000000000680000D016");
         ByteBuf buf = Unpooled.wrappedBuffer(bytes);
 
         assertTrue(channel.writeInbound(buf));
@@ -83,7 +83,7 @@ class T645BodyDecoderTest {
 
     @Test
     void testHeartbeatResponse() throws Exception {
-        byte[] bytes = Hex.decodeHex("680000000000006880005016");
+        byte[] bytes = HexUtil.decodeHex("680000000000006880005016");
         ByteBuf buf = Unpooled.wrappedBuffer(bytes);
 
         assertTrue(channel.writeInbound(buf));
@@ -99,7 +99,7 @@ class T645BodyDecoderTest {
 
     @Test
     void testStandardReadEnergyResponseLegacyDi() throws Exception {
-        byte[] bytes = Hex.decodeHex("6801000000000068910833333333773433334716");
+        byte[] bytes = HexUtil.decodeHex("6801000000000068910833333333773433334716");
         ByteBuf buf = Unpooled.wrappedBuffer(bytes);
 
         assertTrue(channel.writeInbound(buf));
@@ -119,7 +119,7 @@ class T645BodyDecoderTest {
 
     @Test
     void testBroadcastTimePayload() throws Exception {
-        byte[] bytes = Hex.decodeHex("680000000000006808063435363738392516");
+        byte[] bytes = HexUtil.decodeHex("680000000000006808063435363738392516");
         ByteBuf buf = Unpooled.wrappedBuffer(bytes);
 
         assertTrue(channel.writeInbound(buf));
