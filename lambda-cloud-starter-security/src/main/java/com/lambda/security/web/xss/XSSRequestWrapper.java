@@ -12,7 +12,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtil;
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import org.owasp.esapi.ESAPI;
@@ -189,7 +189,7 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
      */
     @Override
     public BufferedReader getReader() throws IOException {
-        String body = IOUtil.toString(super.getReader());
+        String body = IOUtils.toString(super.getReader());
         return new BufferedReader(new StringReader(encode(body)));
     }
 
@@ -223,7 +223,7 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
      */
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        String body = IOUtil.toString(super.getInputStream(), StandardCharsets.UTF_8.name());
+        String body = IOUtils.toString(super.getInputStream(), StandardCharsets.UTF_8);
         return new LambdaServletInputStream(encode(body));
     }
 
