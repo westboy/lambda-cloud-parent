@@ -6,10 +6,9 @@ import com.baomidou.mybatisplus.core.injector.methods.*;
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.lambda.cloud.mybatis.injector.method.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.ibatis.session.Configuration;
 
 /**
@@ -27,28 +26,16 @@ public class LambdaSqlInjector extends DefaultSqlInjector {
      */
     @Override
     public List<AbstractMethod> getMethodList(Configuration configuration, Class<?> mapperClass, TableInfo tableInfo) {
-        Stream.Builder<AbstractMethod> builder = Stream.<AbstractMethod>builder()
-                .add(new Insert())
-                .add(new Delete())
-                .add(new Update())
-                .add(new Exists())
-                .add(new SelectCount())
-                .add(new SelectMaps())
-                .add(new SelectObjs())
-                .add(new SelectList())
-                .add(new InsertAll());
-        if (tableInfo.havePK()) {
-            builder.add(new DeleteById())
-                    .add(new DeleteByIds())
-                    .add(new UpdateById())
-                    .add(new SelectById())
-                    .add(new SelectByIds());
-        }
+        List<AbstractMethod> methodList = new ArrayList<>(super.getMethodList(configuration, mapperClass, tableInfo));
+        methodList.add(new Exists());
+        methodList.add(new InsertAll());
         Optional<TableFieldInfo> optional = getCodeField(tableInfo);
-        optional.ifPresent(codeField -> builder.add(new SelectByCode(codeField))
-                .add(new UpdateByCode(codeField))
-                .add(new DeleteByCode(codeField)));
-        return builder.build().collect(Collectors.toList());
+        optional.ifPresent(codeField -> {
+            methodList.add(new SelectByCode(codeField));
+            methodList.add(new UpdateByCode(codeField));
+            methodList.add(new DeleteByCode(codeField));
+        });
+        return methodList;
     }
 
     private Optional<TableFieldInfo> getCodeField(TableInfo tableInfo) {
