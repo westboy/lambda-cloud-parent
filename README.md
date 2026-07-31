@@ -5,17 +5,17 @@
 
 # 🚀 Lambda Cloud Framework
 
-**基于 Spring Boot 4.0 + JDK 21 构建的全栈企业级微服务开发框架**
+**基于 Spring Boot 4.1 + JDK 21 构建的全栈企业级微服务开发框架**
 
 <p align="center">
   <a href="https://gitee.com/lamuda-cloud/lamuda-cloud-parent">
     <img src="https://img.shields.io/badge/lambda--cloud-2026.1.1--SNAPSHOT-brightgreen" alt="Lambda Cloud">
   </a>
   <a href="https://spring.io/projects/spring-boot">
-    <img src="https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen" alt="Spring Boot">
+    <img src="https://img.shields.io/badge/Spring%20Boot-4.1.0-brightgreen" alt="Spring Boot">
   </a>
   <a href="https://spring.io/projects/spring-cloud">
-    <img src="https://img.shields.io/badge/Spring%20Cloud-2025.1.1-brightgreen" alt="Spring Cloud">
+    <img src="https://img.shields.io/badge/Spring%20Cloud-2025.1.2-brightgreen" alt="Spring Cloud">
   </a>
   <a href="https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html">
     <img src="https://img.shields.io/badge/JDK-21-blue" alt="JDK">
@@ -25,19 +25,19 @@
 
 ---
 
-**Lambda Cloud** 是一个基于 **Spring Boot 4.0.2** 和 **Spring Cloud 2025.1.1** 构建的企业级微服务开发框架。它旨在帮助中小型企业降低微服务架构的开发与运维成本。框架对多种主流中间件进行了统一封装与自动化配置，具备 开箱即用、高度模块化、易于扩展 等特性，是快速搭建稳定、可维护的企业级分布式系统的理想选择。
+**Lambda Cloud** 是一个基于 **Spring Boot 4.1.0** 和 **Spring Cloud 2025.1.2** 构建的企业级微服务开发框架。它旨在帮助中小型企业降低微服务架构的开发与运维成本。框架对多种主流中间件进行了统一封装与自动化配置，具备 开箱即用、高度模块化、易于扩展 等特性，是快速搭建稳定、可维护的企业级分布式系统的理想选择。
 
 ## 核心优势 
 
-- 🚀 **现代化技术栈**：基于 Spring Boot 4.0.2、Spring Cloud 2025.1.1、Spring Cloud Alibaba 2025.1.0.0、JDK 21
-- 🧩 **高度模块化**：27 个独立模块（含 core/processor/BOM 与各 starter），支持灵活组合，按需引入，避免依赖膨胀
+- 🚀 **现代化技术栈**：基于 Spring Boot 4.1.0、Spring Cloud 2025.1.2、Spring Cloud Alibaba 2025.1.0.0、JDK 21
+- 🧩 **高度模块化**：29 个独立模块（含 core/processor/BOM 与各 starter），支持灵活组合，按需引入，避免依赖膨胀
 - 🔐 **企业级安全**：集成 Sa-Token 1.45.0，支持表单登录、短信登录、HMAC 签名认证、第三方登录（微信小程序）、XSS 防护等多种认证方式
 - 💾 **MyBatis Plus 增强**：扩展 Mapper（批量插入、编码字段操作、Exists 判断）、自动填充、多租户行级隔离、字段加密、数据权限改写等企业级功能
 - 🔧 **自动化配置**：所有中间件均提供自动配置，零配置即可快速启动，支持细粒度定制和条件装配
 - 🌐 **微服务全栈支持**：Dubbo 3.3.6、OpenFeign 双 RPC、Nacos 注册中心、Gateway 网关、RocketMQ 消息队列
 - 📦 **统一依赖管理**：通过 `lambda-cloud-starter-dependencies` 管理所有组件版本，避免依赖冲突
 - 🎯 **协议引擎**：基于 Netty 的高性能二进制协议解析引擎，支持注解驱动的协议定义、CRC 校验、字段加解密、List/Composite 复合结构解析
-- 💡 **智能对象转换**：基于 MapStruct 1.6.3 的编译期对象转换，支持 @AutoConverter 注解驱动、@FieldMapping 字段映射和自定义转换函数
+- 💡 **智能对象转换**：基于 MapStruct 1.7.0.Beta2 的编译期对象转换，支持 @AutoConverter 注解驱动、@FieldMapping 字段映射和自定义转换函数
 - 📊 **多级缓存**：统一缓存抽象层，支持 Redis、Caffeine 和 L1+L2 多级缓存架构，提供跨节点 L1 失效同步能力（Redis Pub/Sub）
 - 🔄 **动态数据源**：支持单数据源和动态多数据源，提供运行时数据源增删改查与连通性测试能力
 - 📡 **增强 RPC**：Dubbo 增强支持认证透传、租户上下文、调用日志、调用指标、健康检查与重试；Feign 支持请求头透传、错误解码与重试
@@ -48,40 +48,40 @@
 | 分类 | 技术 | 版本 | 说明 |
 | --- | --- | --- | --- |
 | **核心框架** | JDK | 21 | 运行环境，支持虚拟线程 |
-| | Spring Boot | 4.0.2 | 应用框架 |
+| | Spring Boot | 4.1.0 | 应用框架 |
 | | Spring Cloud | 2025.1.1 | 微服务框架 |
 | | Spring Cloud Alibaba | 2025.1.0.0 | 阿里巴巴微服务解决方案 |
 | | Spring AI | 1.1.2 | AI 应用开发支持 |
-| **数据持久化** | MyBatis Plus | 3.5.15 | ORM 框架，支持扩展 Mapper、多租户、字段加密、数据权限 |
+| **数据持久化** | MyBatis Plus | 3.5.17 | ORM 框架，支持扩展 Mapper、多租户、字段加密、数据权限 |
 | | Dynamic Datasource | 4.5.0 | 动态数据源管理 |
 | | MySQL | 8.2.0 | 关系型数据库 |
-| | Liquibase | 5.0.2 | 数据库版本管理 |
+| | Liquibase | 5.0.3 | 数据库版本管理 |
 | | Apache IoTDB | 2.0.3 | 时序数据库，支持 Tree/Table 模型和订阅功能 |
 | | P6Spy | 3.9.1 | SQL 性能监控 |
 | **缓存** | Redis | - | 分布式缓存 |
-| | Redisson | 4.3.0 | Redis 客户端，支持分布式锁和延迟队列 |
+| | Redisson | 4.6.1 | Redis 客户端，支持分布式锁和延迟队列 |
 | | Caffeine | - | 本地缓存 |
 | | Lambda Cache | - | 统一缓存抽象层，支持 Redis/Caffeine/多级缓存 |
 | | RocketMQ | 2.3.4 | 分布式消息中间件 |
 | **RPC 框架** | Dubbo | 3.3.6 | 高性能 RPC 框架，支持认证透传、租户上下文、调用日志、指标、健康检查 |
 | | OpenFeign | - | 声明式 HTTP 客户端，支持请求头透传、错误解码、重试 |
 | **安全认证** | Sa-Token | 1.45.0 | 权限认证框架，支持表单登录、短信登录、HMAC 签名认证、第三方登录、XSS 防护 |
-| | BouncyCastle | 1.77 | 加密算法库 |
+| | BouncyCastle | 1.85 | 加密算法库 |
 | **网络通信** | Netty | - | 高性能网络框架，支持协议引擎、CRC 校验、字段加解密、List/Composite 解析 |
-| | OkHttp | 4.12.0 | HTTP 客户端 |
-| **对象映射** | MapStruct | 1.6.3 | Java Bean 映射工具，编译期代码生成 |
+| | OkHttp | 5.4.0 | HTTP 客户端 |
+| **对象映射** | MapStruct | 1.7.0.Beta2 | Java Bean 映射工具，编译期代码生成 |
 | **API 文档** | Knife4j | - | Swagger 增强工具 |
 | | SpringDoc | - | OpenAPI 3 文档生成 |
 | **微信开发** | WxJava | 4.7.0 | 微信开发 Java SDK |
 | **工具库** | Lombok | 1.18.34 | 简化 Java 代码 |
-| | Guava | 33.2.1-jre | Google 核心工具库 |
-| | Gson | 2.11.0 | JSON 序列化库 |
+| | Guava | 33.6.0-jre | Google 核心工具库 |
+| | Gson | 2.14.0 | JSON 序列化库 |
 | | Fastjson | 1.2.83 | JSON 序列化库 |
 | **日志** | SLF4J | 2.0.16 | 日志门面接口 |
 | **监控** | Actuator | - | 应用监控和管理，支持 Micrometer 指标切面 |
-| | Jacoco | 0.8.12 | 代码覆盖率 |
-| **代码质量** | Spotless | 2.44.4 | 代码格式化 |
-| | Spotbugs | 4.9.3.0 | 代码静态分析 |
+| | Jacoco | 0.8.15 | 代码覆盖率 |
+| **代码质量** | Spotless | 3.8.0 | 代码格式化 |
+| | Spotbugs | 4.10.3.0 | 代码静态分析 |
 | **云原生** | Nacos | - | 服务注册与配置中心 |
 
 ## 模块概览
@@ -136,6 +136,10 @@ lambda-cloud-parent
 ├── lambda-cloud-starter-sms             # 短信网关支持
 │
 ├── lambda-cloud-starter-ykc             # 云快充协议支持（基于 Netty 协议引擎）
+│
+├── lambda-cloud-starter-t645            # DL/T 645 协议支持（基于 Netty 协议引擎）
+│
+├── lambda-cloud-starter-ocpp            # OCPP 协议支持（基于 Netty 协议引擎）
 │
 ├── lambda-cloud-starter-webclient       # WebClient HTTP 客户端支持
 │
@@ -205,6 +209,52 @@ lambda-cloud-parent
 </dependencies>
 ```
 
+## 构建与测试
+
+本仓无 Maven wrapper，使用系统 `mvn`（Maven 3.6+、JDK 21）。
+
+```bash
+mvn clean install                       # 构建并安装到本地仓库（下游依赖前必做）
+mvn clean install -DskipTests           # 跳过测试构建
+cd lambda-cloud-starter-mybatis && mvn clean install   # 单模块构建
+mvn spotless:apply                      # 格式化（Palantir Java Format）
+mvn spotless:check                      # 格式检查
+mvn spotbugs:check                      # 静态分析
+mvn test                                # 全部测试
+mvn clean verify                        # 测试 + jacoco 覆盖率（target/site/jacoco/index.html）
+mvn -pl lambda-cloud-starter-netty test # 单模块测试（协议模块 netty/ykc/t645/iotdb 有测试）
+```
+
+> 本仓 parent/BOM 为 `2026.1.1-SNAPSHOT`，下游项目依赖前须先 `mvn clean install` 本仓。`mvn compile` 已在 compile 阶段绑定 Spotless（Palantir 2.67.0）+ SpotBugs（4.10.3.0），违规即失败（见 `.rule/engineering-contract.md` §14）。修改 `@AutoConverter`/协议注解/权限注解后须 `mvn clean compile` 重新生成处理器产物（见 §5）。
+
+## 架构与核心能力
+
+### 自动配置模式
+
+所有 starter 遵循 Spring Boot 自动配置：入口统一在 `com.lambda.autoconfig`，注册于 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`；经 `@ConditionalOnProperty`/`@ConditionalOnMissingBean`/`@ConditionalOnClass`/`@ConditionalOnWebApplication` 条件装配；属性用 `@ConfigurationProperties`，kebab-case 命名，`matchIfMissing` 向后兼容。
+
+### `lambda-cloud-core` 基础库
+
+- **基类**：`BaseDO`（审计字段 `createUser`/`createTime`/`updateUser`/`updateTime`）、`BaseDTO<T>`（`toEntity()`）、`BaseVO<T>`（`fromEntity()`）、`BasePageDTO`、`BaseEnum`
+- **对象转换**：`@AutoConverter` + `AutoConverterProcessor`（编译期生成 MapStruct）+ `ConverterResolver` + `ConvertFunctions`；`isReverse=false`（DTO->Entity）/`isReverse=true`（Entity->VO）
+- **工具与异常**：`Constants`、`HmacGenerator`、`TypeConverter`、`Assert`；`ErrorModel`/`ErrorCode` 标准化错误响应
+
+### MyBatis Plus 增强（`lambda-cloud-starter-mybatis`）
+
+- `LambdaSqlInjector` 注入 `insertAll`/`selectByCode`/`updateByCode`/`deleteByCode`/`exists`（基于 `@TableCodeField`），Mapper 继承 `LambdaBaseMapper`
+- 字段加密 `AesEncryptHandler`（`mybatis-plus.encrypt.*`）；多租户 `TenantLineInnerInterceptor`+`TenantHandler`（`mybatis-plus.tenant.enabled`）
+- 自动填充 `GlobalMetaObjectHandler`+`EntityMetaFiller`；拦截器顺序 9/10/20/30；多数据库 `DatabaseIdProvider`（MySQL/Oracle/PostgreSQL/H2/DM）
+
+### 安全认证（`lambda-cloud-starter-security`）
+
+Sa-Token 多登录类型（`loginUser`/`hmac`），四种策略条件装配：表单（`lambda.security.form.enabled`）/短信验证码（`lambda.security.verify.enabled`）/HMAC 签名（`lambda.security.hmac.enabled`）/第三方登录（`lambda.security.third-party.*.enabled`）；XSS 防护 `XSSDefendFilter`；授权 `@RequiresAuth`/`@RequiresPermission`/`@RequiresRole`；同源校验 `SaSameUtil`。
+
+### Netty 协议引擎（`lambda-cloud-starter-netty`）
+
+注解驱动二进制协议：`@ProtocolPayload`+`@ProtocolField`；`ProtocolEngine` 提供 `parse`/`serialize`/`validate`；`ByteCodeFieldAccessor`（ASM 零反射，回退 `ReflectionFieldAccessor`）；CRC 校验（`Crc16Algorithm` 等）；`NettyServer`（`SmartLifecycle`，EPOLL/NIO）；扩展点 `ServerBootstrapConfigurationCustomizer`/`ChannelPipelineConfigurationCustomizer`。协议业务 starter（`ocpp`/`t645`/`ykc`）复用此引擎，不重复实现编解码。
+
+> 完整工程规则见 [`.rule/engineering-contract.md`](.rule/engineering-contract.md)，包结构细则见 [`.rule/package-structure.md`](.rule/package-structure.md)。
+
 ## 应用场景
 
 - 🏢 **企业级微服务与 SaaS 平台**  
@@ -233,7 +283,7 @@ lambda-cloud-parent
 
 - 当前版本：2026.1.1-SNAPSHOT
 - Java 版本：21+
-- Spring Boot 版本：4.0.2
+- Spring Boot 版本：4.1.0
 - Spring Cloud 版本：2025.1.1
 
 ## 贡献指南
