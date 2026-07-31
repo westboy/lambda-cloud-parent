@@ -72,7 +72,7 @@
 
 - 变更必须满足工程契约。
 - 若规则冲突或规则缺失，必须在执行前发起澄清或变更请求，不得按历史习惯自行补充实现。
-- 执行 Git 提交前必须遵守工程契约 §17（Git 代码提交规范）。
+- 执行 Git 提交前必须遵守工程契约 §10（Git 代码提交规范）。
 
 ## 6. 交付物结构（Deliverables）
 
@@ -81,7 +81,7 @@
 - `project-charter.md`：项目宪章（目标、范围、原则、权责、规则等级）
 - `engineering-contract.md`：工程契约（可执行条款：依赖、模块独立、core 能力、转换、注解处理器、自动配置、MyBatis、安全、Netty、协议、跨服务、Liquibase、静态检查、测试、安全红线、Git 等）
 - `contract-index.md`：工程契约索引（条款索引 / 关键词索引）
-- `package-structure.md`：标准包分层结构（以 core / mybatis / security / netty 为参考标准，工程契约 §18 配套）
+- `package-structure.md`：标准包分层结构（以 core / mybatis / security / netty 为参考标准，工程契约 §11 配套）
 
 模块能力说明（自动配置入口、配置项、关键机制、how-to）位于 `README.md`；规则文件负责“怎么做”，README 负责“框架长什么样、怎么用”。
 

@@ -1,11 +1,11 @@
 # 标准包分层结构
 
-> 本文以 `lambda-cloud-core` / `lambda-cloud-starter-mybatis` / `lambda-cloud-starter-security` / `lambda-cloud-starter-netty` 为参考标准，是 [engineering-contract.md](engineering-contract.md) §18 的配套细则。
-> 冲突时以工程契约 §18 为准；本文负责把「长什么样」说具体。
+> 本文以 `lambda-cloud-core` / `lambda-cloud-starter-mybatis` / `lambda-cloud-starter-security` / `lambda-cloud-starter-netty` 为参考标准，是 [engineering-contract.md](engineering-contract.md) §11 的配套细则。
+> 冲突时以工程契约 §11 为准；本文负责把「长什么样」说具体。
 
 ## 1. 总体原则
 
-- **自动配置入口统一**放在 `com.lambda.autoconfig`，业务域包内不得放置 `@AutoConfiguration`（见工程契约 §6.3）。
+- **自动配置入口统一**放在 `com.lambda.autoconfig`，业务域包内不得放置 `@AutoConfiguration`（见工程契约 §3.3）。
 - **基础库** `lambda-cloud-core` 在 `com.lambda.cloud.core.*`，不套用业务子域分层。
 - **业务域**在 `com.lambda.cloud.<domain>`（mybatis/netty/iotdb 等）；**安全域**因历史原因在 `com.lambda.security`（非 `com.lambda.cloud.security`，见 §5 例外）。
 - **注解处理器**在 `com.lambda.cloud.processor.*`。
@@ -94,7 +94,7 @@ com.lambda.cloud.processor
 
 ## 4. 命名
 
-见工程契约 §18.2。重点：自动配置 `*AutoConfiguration`、属性 `*Properties`、实体 `*DO`（继承 `BaseDO`）、DTO `*DTO`（继承 `BaseDTO`）、VO `*VO`（继承 `BaseVO`）、Mapper 继承 `LambdaBaseMapper`、注解处理器 `*Processor`。
+见工程契约 §11.2。重点：自动配置 `*AutoConfiguration`、属性 `*Properties`、实体 `*DO`（继承 `BaseDO`）、DTO `*DTO`（继承 `BaseDTO`）、VO `*VO`（继承 `BaseVO`）、Mapper 继承 `LambdaBaseMapper`、注解处理器 `*Processor`。
 
 ## 5. 参考实现与例外
 

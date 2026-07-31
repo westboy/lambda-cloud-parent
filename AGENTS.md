@@ -11,7 +11,7 @@
 1. [.rule/project-charter.md](.rule/project-charter.md) - 项目宪章
 2. [.rule/engineering-contract.md](.rule/engineering-contract.md) - 工程契约
 3. [.rule/contract-index.md](.rule/contract-index.md) - 附录索引
-4. [.rule/package-structure.md](.rule/package-structure.md) - 包结构细则（工程契约 §18 配套）
+4. [.rule/package-structure.md](.rule/package-structure.md) - 包结构细则（工程契约 §11 配套）
 
 ## 2. 文件职责
 
@@ -20,7 +20,7 @@
 | `.rule/project-charter.md` | 项目宪章：定义工程治理目标、适用范围、规则等级、迁移态、权责与例外处理原则 |
 | `.rule/engineering-contract.md` | 工程契约：定义可执行条款，包括依赖治理、模块独立、core 能力、转换、注解处理器、自动配置、MyBatis、安全、Netty、协议、跨服务、Liquibase、静态检查、测试、安全红线、Git 等规则 |
 | `.rule/contract-index.md` | 附录索引：提供主题索引与关键词索引，用于快速定位工程契约条款 |
-| `.rule/package-structure.md` | 包结构细则：工程契约 §18 的配套细则，把标准包分层结构说具体；冲突时以工程契约 §18 为准 |
+| `.rule/package-structure.md` | 包结构细则：工程契约 §11 的配套细则，把标准包分层结构说具体；冲突时以工程契约 §11 为准 |
 | `README.md` | 框架入门与能力说明：构建与测试、架构与模块组织、core 转换体系、MyBatis/Security/Netty 能力、常见开发任务；规则文件负责“怎么做”，README 负责“框架长什么样、怎么用” |
 
 ## 3. 规则优先级
@@ -41,7 +41,7 @@
 3. 必要时读取 `.rule/contract-index.md`，通过关键词定位相关规则。
 4. 若用户要求与 `.rule` 规则冲突，必须先说明冲突点并请求确认，不得直接违反禁止条款。
 5. 若 `.rule` 存在缺失、冲突或不可执行之处，应优先提出规则修订建议，而不是按历史习惯自行补充实现。
-6. 执行 Git 提交前，必须遵守 [工程契约 §17 Git 代码提交规范](.rule/engineering-contract.md)（Conventional Commits 格式、scope 优先模块名、subject 中英文、原子提交、提交前 `mvn compile` 通过、规则文件独立提交）。
+6. 执行 Git 提交前，必须遵守 [工程契约 §10 Git 代码提交规范](.rule/engineering-contract.md)（Conventional Commits 格式、scope 优先模块名、subject 中英文、原子提交、提交前 `mvn compile` 通过、规则文件独立提交）。
 
 ## 5. 构建与运行速查
 
@@ -49,10 +49,10 @@
 
 - 构建：`mvn clean install`（本仓 parent/BOM 为 SNAPSHOT，下游依赖前必须先 install 本仓到本地仓库）。
 - 单模块：`cd <module> && mvn clean install`，或 `mvn -pl <module> -am clean install`。
-- 静态检查：`mvn compile` 已绑定 Spotless（Palantir 2.67.0）+ SpotBugs（4.10.3.0）；修复用 `mvn spotless:apply`（见工程契约 §14）。
-- 测试：`mvn -pl <module> test`（协议模块 netty/ykc/t645/iotdb 有测试，见工程契约 §15）。
+- 静态检查：`mvn compile` 已绑定 Spotless（Palantir 2.67.0）+ SpotBugs（4.10.3.0）；修复用 `mvn spotless:apply`（见工程契约 §7）。
+- 测试：`mvn -pl <module> test`（协议模块 netty/ykc/t645/iotdb 有测试，见工程契约 §8）。
 - 覆盖率：`mvn clean verify`，查看 `target/site/jacoco/index.html`。
-- 注解处理器：改 `@AutoConverter`/`@FieldMapping`/协议注解/权限注解后须 `mvn clean compile` 重新生成产物（见工程契约 §5）。
+- 注解处理器：改 `@AutoConverter`/`@FieldMapping`/协议注解/权限注解后须 `mvn clean compile` 重新生成产物（见工程契约 §4）。
 
 ## 6. 规则维护
 
