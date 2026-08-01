@@ -36,9 +36,9 @@ import lombok.Getter;
  * }</pre>
  *
  * @author jin
- * @since 2025-07-23
  * @see ErrorModel
  * @see feign.FeignException
+ * @since 2025-07-23
  */
 @Getter
 public abstract class AbstractFeignException extends RuntimeException {
@@ -77,14 +77,19 @@ public abstract class AbstractFeignException extends RuntimeException {
      * 包含完整的路径信息，便于问题排查。
      * </p>
      * -- GETTER --
-     *  获取请求路径
-     *  <p>
-     *  返回发生异常的HTTP请求路径。该路径信息来源于构造时传入的错误模型。
-     *  </p>
+     * 获取请求路径
+     * <p>
+     * 返回发生异常的HTTP请求路径。该路径信息来源于构造时传入的错误模型。
+     * </p>
      *
      *
      */
     private final String path;
+
+    /**
+     * 状态码
+     */
+    private final Integer code;
 
     /**
      * 构造方法
@@ -99,6 +104,7 @@ public abstract class AbstractFeignException extends RuntimeException {
     protected AbstractFeignException(ErrorModel model) {
         super(model.getMessage());
         this.path = model.getPath();
+        this.code = model.getCode();
         this.error = model.getError();
         this.message = model.getMessage();
         this.timestamp = model.getTimestamp();
