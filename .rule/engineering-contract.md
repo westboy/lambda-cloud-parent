@@ -111,6 +111,7 @@
 - `LambdaSqlInjector` 新增 SQL 注入方法须注册到 `injector/method/` 并经注入器启用，不得散落在 mapper 外定义。
 - 拦截器链顺序（Order 9 租户 handler -> Order 10 租户 line interceptor -> Order 20 分页 -> Order `Short.MAX_VALUE` 租户表达式拦截器）**不得随意打乱**；新增拦截器须明确 Order 值。
 - 字段加密（`AesEncryptHandler`）、多租户（`TenantLineInnerInterceptor`+`TenantHandler`）、自动填充（`GlobalMetaObjectHandler`+`EntityMetaFiller`）的扩展点接口保持稳定，破坏性变更须评估下游影响。
+- 空租户上下文（`TenantContextHolder` 无租户，即平台管理员跨租户查询 / 系统内部调用）由 `MissingTenantStrategy` 决定行为，默认 `SkipOnMissingTenantStrategy` **跳过租户拼接查全**；下游可注册自定义 bean 改为 FAIL（抛异常）。实现只允许「跳过 / 拒绝」二选一，**禁止**「不跳过且 `getTenantId()` 返回 null」——那会拼出 `tenant_id = NULL` 恒假条件导致查空（已修复缺陷，不得回退）。匿名用户在 web 层 `@SaCheckPermission` 已被拦截，不会到达 SQL 层。
 
 ### 6.2 Netty 与协议业务 starter（MUST）
 
