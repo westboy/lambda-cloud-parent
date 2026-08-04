@@ -12,6 +12,8 @@ import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
 import com.lambda.cloud.mybatis.handler.EntityMetaFiller;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
 import com.lambda.cloud.mybatis.injector.LambdaSqlInjector;
+import com.lambda.cloud.mybatis.tenant.MissingTenantStrategy;
+import com.lambda.cloud.mybatis.tenant.SkipOnMissingTenantStrategy;
 import com.lambda.cloud.mybatis.tenant.TenantExpressionInterceptor;
 import com.lambda.cloud.mybatis.tenant.TenantHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -183,11 +185,22 @@ public class MyBatisAutoConfiguration {
     @ConditionalOnProperty(prefix = "mybatis-plus.tenant", name = "enabled")
     public static class TenantConfig {
 
+        /**
+         * 无租户上下文处理策略（窄扩展点）。默认跳过租户拼接（平台管理员跨租户监管 / 内部调用），
+         * 下游注册自定义 {@link MissingTenantStrategy} bean 可改为 FAIL（抛异常）等语义。
+         */
+        @Bean
+        @ConditionalOnMissingBean
+        public MissingTenantStrategy missingTenantStrategy() {
+            return new SkipOnMissingTenantStrategy();
+        }
+
         @Bean
         @Order(9)
         @ConditionalOnMissingBean
-        public TenantLineHandler tenantLineHandler(MybatisPlusExtendProperties mybatisProperties) {
-            return new TenantHandler(mybatisProperties);
+        public TenantLineHandler tenantLineHandler(
+                MybatisPlusExtendProperties mybatisProperties, MissingTenantStrategy missingTenantStrategy) {
+            return new TenantHandler(mybatisProperties.getTenant(), missingTenantStrategy);
         }
 
         @Bean
