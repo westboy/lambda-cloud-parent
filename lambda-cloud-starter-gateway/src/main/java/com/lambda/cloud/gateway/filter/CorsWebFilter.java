@@ -35,20 +35,11 @@ public record CorsWebFilter(CorsConfigurationSource configSource, CorsProcessor 
         ServerHttpRequest request = exchange.getRequest();
         CorsConfiguration corsConfiguration = this.configSource.getCorsConfiguration(exchange);
 
-        if (CorsUtils.isPreFlightRequest(request)) {
-            this.processor.process(corsConfiguration, exchange);
+        boolean isValid = this.processor.process(corsConfiguration, exchange);
+        if (!isValid || CorsUtils.isPreFlightRequest(request)) {
             return Mono.empty();
         }
 
-        if (CorsUtils.isCorsRequest(request) && !exchange.getResponse().isCommitted()) {
-            return chain.filter(exchange)
-                    .then(Mono.just(exchange))
-                    .map(serverWebExchange -> {
-                        this.processor.process(corsConfiguration, serverWebExchange);
-                        return serverWebExchange;
-                    })
-                    .then();
-        }
         return chain.filter(exchange);
     }
 }

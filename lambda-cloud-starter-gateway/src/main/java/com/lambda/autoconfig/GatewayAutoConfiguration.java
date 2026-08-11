@@ -181,10 +181,10 @@ public class GatewayAutoConfiguration {
     public CorsWebFilter corsWebFilter(CorsProperty corsProperty) {
         CorsConfiguration corsConfig = new CorsConfiguration();
         List<String> allowedOrigins = corsProperty.getAllowedOrigins();
-        if (CollectionUtils.isNotEmpty(allowedOrigins)) {
-            corsConfig.setAllowedOrigins(allowedOrigins);
+        if (CollectionUtils.isEmpty(allowedOrigins) || allowedOrigins.contains(CorsProperty.ALL)) {
+            corsConfig.setAllowedOriginPatterns(Collections.singletonList(CorsProperty.ALL));
         } else {
-            corsConfig.setAllowedOrigins(Collections.singletonList(CorsProperty.ALL));
+            corsConfig.setAllowedOrigins(allowedOrigins);
         }
         corsConfig.setMaxAge(corsProperty.getMaxAge());
         CorsProperty.ALLOWED_METHOD.forEach(method -> corsConfig.addAllowedMethod(HttpMethod.valueOf(method)));
