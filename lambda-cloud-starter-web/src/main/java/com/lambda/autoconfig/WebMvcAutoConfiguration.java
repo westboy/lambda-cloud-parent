@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lambda.cloud.core.jackson.JacksonModuleConfigurer;
 import com.lambda.cloud.core.jackson.text.ExtendDateFormat;
 import com.lambda.cloud.core.shared.CorsProperty;
+import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.mvc.StringToDateConverter;
 import com.lambda.cloud.mvc.execption.GlobalControllerAdvice;
 import com.lambda.cloud.mvc.filter.OrderedTimeHandlerFilter;
@@ -75,13 +76,16 @@ public class WebMvcAutoConfiguration {
                 if (corsProperty.isEnabled()) {
                     CorsRegistration registration = registry.addMapping(CorsProperty.ALL_PATH);
                     List<String> allowedOrigins = corsProperty.getAllowedOrigins();
-                    if (CollectionUtils.isNotEmpty(allowedOrigins)) {
-                        registration.allowedOriginPatterns(allowedOrigins.toArray(new String[0]));
-                    } else {
-                        registration.allowedOriginPatterns(CorsProperty.ALL);
+                    Assert.state(
+                            CollectionUtils.isNotEmpty(allowedOrigins),
+                            "allowedOrigins must not be empty when lambda.web.cors.enabled is true");
+                    if (corsProperty.isAllowCredentials() && allowedOrigins.contains(CorsProperty.ALL)) {
+                        throw new IllegalStateException(
+                                "allowedOrigins must not be empty when allowCredentials is true");
                     }
                     registration
-                            .allowCredentials(true)
+                            .allowedOrigins(allowedOrigins.toArray(new String[0]))
+                            .allowCredentials(corsProperty.isAllowCredentials())
                             .allowedMethods(CorsProperty.ALLOWED_METHOD.toArray(new String[0]))
                             .exposedHeaders(CorsProperty.EXPOSED_HEADERS.toArray(new String[0]))
                             .allowedHeaders(CorsProperty.ALLOWED_HEADERS.toArray(new String[0]))

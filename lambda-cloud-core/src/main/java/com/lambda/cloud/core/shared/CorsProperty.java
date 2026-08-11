@@ -75,6 +75,13 @@ public class CorsProperty {
     private List<String> allowedOrigins;
 
     /**
+     * 是否允许携带凭据（Cookie、Authorization 等）
+     * <p>开启后跨域请求可携带凭据，此时 allowedOrigins 不可使用通配符 "*"，必须配置具体源
+     * 默认为 true
+     */
+    private boolean allowCredentials = true;
+
+    /**
      * 预检请求的缓存时间（秒）
      * <p>浏览器会缓存预检请求的结果，避免频繁发送OPTIONS请求
      * 默认值为3600秒（1小时）

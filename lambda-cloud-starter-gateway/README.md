@@ -167,6 +167,7 @@ com.lambda.autoconfig.GatewayAutoConfiguration
 
 - `enabled`
 - `allowed-origins`
+- `allow-credentials`
 - `max-age`
 
 ### lambda.security.sa-token

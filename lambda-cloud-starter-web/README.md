@@ -167,6 +167,7 @@ SSE 特殊处理：
 
 - `enabled`
 - `allowedOrigins`
+- `allowCredentials`
 - `maxAge`
 
 ## 依赖说明

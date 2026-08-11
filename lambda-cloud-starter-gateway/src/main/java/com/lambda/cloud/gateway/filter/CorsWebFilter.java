@@ -1,7 +1,7 @@
 package com.lambda.cloud.gateway.filter;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;

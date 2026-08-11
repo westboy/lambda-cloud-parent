@@ -14,6 +14,7 @@ import cn.dev33.satoken.stp.StpLogic;
 import com.lambda.cloud.core.exception.model.ErrorModel;
 import com.lambda.cloud.core.shared.CorsProperty;
 import com.lambda.cloud.core.shared.KeyValue;
+import com.lambda.cloud.core.utils.Assert;
 import com.lambda.cloud.core.utils.StpLogicUtils;
 import com.lambda.cloud.gateway.filter.*;
 import com.lambda.cloud.gateway.listener.DynamicRouteConfigChangedListener;
@@ -24,7 +25,6 @@ import com.lambda.cloud.gateway.swagger.SwaggerResourceController;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -181,16 +181,16 @@ public class GatewayAutoConfiguration {
     public CorsWebFilter corsWebFilter(CorsProperty corsProperty) {
         CorsConfiguration corsConfig = new CorsConfiguration();
         List<String> allowedOrigins = corsProperty.getAllowedOrigins();
-        if (CollectionUtils.isEmpty(allowedOrigins) || allowedOrigins.contains(CorsProperty.ALL)) {
-            corsConfig.setAllowedOriginPatterns(Collections.singletonList(CorsProperty.ALL));
-        } else {
-            corsConfig.setAllowedOrigins(allowedOrigins);
-        }
+        Assert.state(
+                CollectionUtils.isNotEmpty(allowedOrigins),
+                "allowedOrigins must not be empty when lambda.web.cors.enabled is true");
+        corsConfig.setAllowedOrigins(allowedOrigins);
+        corsConfig.setAllowCredentials(corsProperty.isAllowCredentials());
+        corsConfig.validateAllowCredentials();
         corsConfig.setMaxAge(corsProperty.getMaxAge());
         CorsProperty.ALLOWED_METHOD.forEach(method -> corsConfig.addAllowedMethod(HttpMethod.valueOf(method)));
         CorsProperty.ALLOWED_HEADERS.forEach(corsConfig::addAllowedHeader);
         CorsProperty.EXPOSED_HEADERS.forEach(corsConfig::addExposedHeader);
-        corsConfig.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(CorsProperty.ALL_PATH, corsConfig);
         return new CorsWebFilter(source);
