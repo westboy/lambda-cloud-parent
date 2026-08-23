@@ -1,7 +1,7 @@
 package com.lambda.cloud.oss.service;
 
-import com.amazonaws.services.s3.model.S3Object;
 import com.lambda.cloud.oss.enums.AccessPolicyType;
+import com.lambda.cloud.oss.model.OssObject;
 import com.lambda.cloud.oss.model.UploadObjectResult;
 import java.io.File;
 import java.io.InputStream;
@@ -122,15 +122,15 @@ public interface OssService {
     /**
      * 获取文件对象
      *
-     * <p>返回的 S3Object 包含文件元数据和输入流
-     * <p>注意：调用者负责关闭返回的 S3Object
+     * <p>返回的 {@link OssObject} 包含文件元数据和输入流
+     * <p>注意：调用者负责关闭返回的 {@link OssObject}（推荐 try-with-resources）
      *
      * @param objectKey 对象键（不能为空）
-     * @return S3 对象，包含文件内容和元数据
+     * @return OSS 对象，包含文件内容和元数据
      * @throws IllegalArgumentException 如果参数无效
      * @throws com.lambda.cloud.oss.exception.OssException 如果获取失败
      */
-    S3Object getObject(String objectKey);
+    OssObject getObject(String objectKey);
 
     /**
      * 下载文件到输出流

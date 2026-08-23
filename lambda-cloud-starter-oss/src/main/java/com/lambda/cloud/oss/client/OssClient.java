@@ -2,24 +2,13 @@ package com.lambda.cloud.oss.client;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.HttpMethod;
-import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.*;
 import com.lambda.autoconfig.OssProperties;
 import com.lambda.cloud.oss.enums.AccessPolicyType;
 import com.lambda.cloud.oss.enums.OssType;
 import com.lambda.cloud.oss.enums.PolicyType;
 import com.lambda.cloud.oss.exception.OssException;
+import com.lambda.cloud.oss.model.OssObject;
+import com.lambda.cloud.oss.model.PartTag;
 import com.lambda.cloud.oss.model.UploadObjectResult;
 import com.lambda.cloud.oss.policy.MinIOPolicyBuilder;
 import com.lambda.cloud.oss.service.OssService;
@@ -30,17 +19,46 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.util.Date;
+import java.net.URI;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.BucketCannedACL;
+import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.PutBucketPolicyRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.UploadPartRequest;
+import software.amazon.awssdk.services.s3.model.UploadPartResponse;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 /**
  * OSS 客户端实现
  * 提供对象存储的核心操作功能
  *
- * <p>该类实现了 {@link OssService} 接口，基于 AWS S3 SDK 提供统一的对象存储操作。
+ * <p>该类实现了 {@link OssService} 接口，基于 AWS SDK for Java v2（S3）提供统一的对象存储操作。
  * 支持多种 OSS 类型：MinIO、阿里云 OSS、腾讯云 COS、七牛云等。
  *
  * <p>主要功能：
@@ -70,7 +88,6 @@ import lombok.extern.slf4j.Slf4j;
  * String url = client.getPrivateUrl("path/to/file.txt", 3600);
  * }</pre>
  *
- * @author westboy
  * @author jpjoo
  * @see OssService
  * @see com.lambda.cloud.oss.manager.OssClientManager
@@ -80,51 +97,94 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
 public class OssClient implements OssService {
 
+    /**
+     * 默认区域（MinIO 等 S3 兼容服务未配置 region 时使用，签名必需）
+     */
+    private static final String DEFAULT_REGION = "us-east-1";
+
     private final OssProperties.Config config;
 
-    private final AmazonS3 client;
+    private final S3Client client;
+
+    private final S3Presigner presigner;
 
     @Setter
     private MultipartUploadStateManager multipartUploadStateManager;
 
     public OssClient(OssProperties.Config config) {
         this.config = config;
-        this.client = buildAmazonS3();
+        this.client = buildS3Client();
+        this.presigner = buildPresigner();
     }
 
-    private AmazonS3 buildAmazonS3() {
-        AwsClientBuilder.EndpointConfiguration endpointConfig =
-                new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion());
-        AWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
-        AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
-        ClientConfiguration clientConfig = new ClientConfiguration();
-        if (config.getIsHttps()) {
-            if (!StrUtil.startWith(config.getEndpoint(), "https")) {
-                log.error("Endpoint 配置不正确，https 已开启！");
-            }
-            clientConfig.setProtocol(Protocol.HTTPS);
-        } else {
-            clientConfig.setProtocol(Protocol.HTTP);
+    private S3Client buildS3Client() {
+        OssProperties.Config.ClientConfig httpClientConfig = config.getHttpClientConfig();
+
+        ApacheHttpClient.Builder httpClient = ApacheHttpClient.builder()
+                .maxConnections(httpClientConfig.getMaxConnections())
+                .connectionTimeout(Duration.ofMillis(httpClientConfig.getConnectionTimeout()))
+                .socketTimeout(Duration.ofMillis(httpClientConfig.getSocketTimeout()))
+                .connectionMaxIdleTime(Duration.ofMillis(httpClientConfig.getConnectionMaxIdleMillis()));
+        // connectionTTL <= 0 表示不限制，与 SDK 1.x 语义一致
+        if (httpClientConfig.getConnectionTTL() > 0) {
+            httpClient.connectionTimeToLive(Duration.ofMillis(httpClientConfig.getConnectionTTL()));
         }
 
-        clientConfig.setConnectionTimeout(config.getHttpClientConfig().getConnectionTimeout());
-        clientConfig.setSocketTimeout(config.getHttpClientConfig().getSocketTimeout());
-        clientConfig.setMaxConnections(config.getHttpClientConfig().getMaxConnections());
-        clientConfig.setRequestTimeout(config.getHttpClientConfig().getRequestTimeout());
-        clientConfig.setClientExecutionTimeout(config.getHttpClientConfig().getClientExecutionTimeout());
-        clientConfig.setConnectionTTL(config.getHttpClientConfig().getConnectionTTL());
-        clientConfig.setConnectionMaxIdleMillis(config.getHttpClientConfig().getConnectionMaxIdleMillis());
-        AmazonS3ClientBuilder build = AmazonS3Client.builder()
-                .withEndpointConfiguration(endpointConfig)
-                .withClientConfiguration(clientConfig)
-                .withCredentials(credentialsProvider)
-                .enablePathStyleAccess()
-                .disableChunkedEncoding();
-        if (OssType.MINIO.equals(config.getType()) || config.getEnablePathStyleAccess()) {
-            build.enablePathStyleAccess();
+        ClientOverrideConfiguration.Builder overrideConfig = ClientOverrideConfiguration.builder();
+        // requestTimeout 映射为单次尝试超时，clientExecutionTimeout 映射为整次调用超时（0 表示无限制）
+        if (httpClientConfig.getRequestTimeout() > 0) {
+            overrideConfig.apiCallAttemptTimeout(Duration.ofMillis(httpClientConfig.getRequestTimeout()));
+        }
+        if (httpClientConfig.getClientExecutionTimeout() > 0) {
+            overrideConfig.apiCallTimeout(Duration.ofMillis(httpClientConfig.getClientExecutionTimeout()));
         }
 
-        return build.build();
+        if (config.getIsHttps() && !StrUtil.startWith(config.getEndpoint(), "https")) {
+            log.error("Endpoint 配置不正确，https 已开启！");
+        }
+
+        // forcePathStyle 保持与 SDK 1.x 的 path-style 访问行为一致（MinIO 必需）
+        return S3Client.builder()
+                .region(Region.of(resolveRegion()))
+                .endpointOverride(URI.create(config.getEndpoint()))
+                .credentialsProvider(buildCredentialsProvider())
+                .httpClientBuilder(httpClient)
+                .overrideConfiguration(overrideConfig.build())
+                .forcePathStyle(true)
+                .build();
+    }
+
+    private S3Presigner buildPresigner() {
+        return S3Presigner.builder()
+                .region(Region.of(resolveRegion()))
+                .endpointOverride(buildEndpointUri())
+                .credentialsProvider(buildCredentialsProvider())
+                .serviceConfiguration(
+                        S3Configuration.builder().pathStyleAccessEnabled(true).build())
+                .build();
+    }
+
+    private StaticCredentialsProvider buildCredentialsProvider() {
+        return StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(config.getAccessKey(), config.getSecretKey()));
+    }
+
+    /**
+     * 解析 endpoint 为完整 URI
+     *
+     * <p>AWS SDK v2 的 endpointOverride 要求 URI 必须包含协议（scheme），
+     * 此处兼容省略协议的配置写法：缺省时按 is-https 补全，与 SDK 1.x 行为对齐
+     */
+    private URI buildEndpointUri() {
+        String endpoint = config.getEndpoint().trim();
+        if (!StrUtil.startWithIgnoreCase(endpoint, "http://") && !StrUtil.startWithIgnoreCase(endpoint, "https://")) {
+            endpoint = (Boolean.TRUE.equals(config.getIsHttps()) ? "https://" : "http://") + endpoint;
+        }
+        return URI.create(endpoint);
+    }
+
+    private String resolveRegion() {
+        return StrUtil.isNotBlank(config.getRegion()) ? config.getRegion() : DEFAULT_REGION;
     }
 
     /**
@@ -141,21 +201,34 @@ public class OssClient implements OssService {
         if (OssType.MINIO.equals(config.getType())) {
             try {
                 String bucketName = config.getBucket();
-                if (client.doesBucketExistV2(bucketName)) {
+                if (bucketExists(bucketName)) {
                     log.debug("存储桶已存在: {}", bucketName);
                     return;
                 }
-                CreateBucketRequest createBucketRequest = new CreateBucketRequest(bucketName);
-                AccessPolicyType accessPolicy = getAccessPolicy();
-                createBucketRequest.setCannedAcl(accessPolicy.getAcl());
+                CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
+                        .bucket(bucketName)
+                        .acl(getBucketAcl())
+                        .build();
                 client.createBucket(createBucketRequest);
-                client.setBucketPolicy(bucketName, getPolicy(bucketName, accessPolicy.getPolicyType()));
+                client.putBucketPolicy(PutBucketPolicyRequest.builder()
+                        .bucket(bucketName)
+                        .policy(getPolicy(bucketName, getAccessPolicy().getPolicyType()))
+                        .build());
                 log.info("存储桶创建成功: {}", bucketName);
-            } catch (AmazonServiceException e) {
-                throw new OssException(String.format("创建存储桶失败: %s, 错误码: %s", config.getBucket(), e.getErrorCode()), e);
+            } catch (S3Exception e) {
+                throw new OssException(String.format("创建存储桶失败: %s, 错误码: %s", config.getBucket(), errorCode(e)), e);
             } catch (Exception e) {
                 throw new OssException("创建存储桶异常: " + config.getBucket(), e);
             }
+        }
+    }
+
+    private boolean bucketExists(String bucketName) {
+        try {
+            client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+            return true;
+        } catch (NoSuchBucketException e) {
+            return false;
         }
     }
 
@@ -207,18 +280,14 @@ public class OssClient implements OssService {
                 contentLength = bytes.length;
             }
 
-            // 创建元数据
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType(contentType);
-            metadata.setContentLength(contentLength);
-
-            // 创建上传请求
-            PutObjectRequest putObjectRequest =
-                    new PutObjectRequest(config.getBucket(), objectKey, inputStream, metadata);
-            putObjectRequest.setCannedAcl(getAccessPolicy().getAcl());
-
-            // 执行上传
-            client.putObject(putObjectRequest);
+            // 创建上传请求并执行
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(config.getBucket())
+                    .key(objectKey)
+                    .contentType(contentType)
+                    .acl(getObjectAcl())
+                    .build();
+            client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, contentLength));
 
             // 构建返回结果
             return UploadObjectResult.builder()
@@ -226,10 +295,9 @@ public class OssClient implements OssService {
                     .key(objectKey)
                     .build();
 
-        } catch (AmazonS3Exception e) {
+        } catch (S3Exception e) {
             throw new OssException(
-                    String.format("上传文件失败: %s, 错误码: %s, 错误信息: %s", objectKey, e.getErrorCode(), e.getErrorMessage()),
-                    e);
+                    String.format("上传文件失败: %s, 错误码: %s, 错误信息: %s", objectKey, errorCode(e), e.getMessage()), e);
         } catch (Exception e) {
             throw new OssException("上传文件失败: " + objectKey, e);
         }
@@ -293,54 +361,63 @@ public class OssClient implements OssService {
             // 获取或初始化上传 ID
             String uploadId = multipartUploadStateManager.getUploadId(stateKey);
             if (uploadId == null) {
-                InitiateMultipartUploadRequest initRequest =
-                        new InitiateMultipartUploadRequest(config.getBucket(), objectKey);
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentType(contentType);
-                initRequest.withObjectMetadata(metadata);
-                InitiateMultipartUploadResult initResponse = client.initiateMultipartUpload(initRequest);
-                uploadId = initResponse.getUploadId();
+                CreateMultipartUploadRequest initRequest = CreateMultipartUploadRequest.builder()
+                        .bucket(config.getBucket())
+                        .key(objectKey)
+                        .contentType(contentType)
+                        .build();
+                uploadId = client.createMultipartUpload(initRequest).uploadId();
                 multipartUploadStateManager.saveUploadId(stateKey, uploadId);
                 log.debug("初始化分片上传: objectKey={}, uploadId={}", objectKey, uploadId);
             }
 
             // 获取已上传的分片标签
-            List<PartETag> partETags = multipartUploadStateManager.getPartETags(stateKey);
-            if (partETags == null) {
-                partETags = new java.util.ArrayList<>();
+            List<PartTag> partTags = multipartUploadStateManager.getPartETags(stateKey);
+            if (partTags == null) {
+                partTags = new ArrayList<>();
             }
 
             // 上传当前分片
-            UploadPartRequest uploadRequest = new UploadPartRequest()
-                    .withBucketName(config.getBucket())
-                    .withKey(objectKey)
-                    .withUploadId(uploadId)
-                    .withPartNumber(partNumber)
-                    .withFile(file)
-                    .withPartSize(file.length());
-
-            UploadPartResult uploadResult = client.uploadPart(uploadRequest);
-            partETags.add(uploadResult.getPartETag());
+            UploadPartRequest uploadRequest = UploadPartRequest.builder()
+                    .bucket(config.getBucket())
+                    .key(objectKey)
+                    .uploadId(uploadId)
+                    .partNumber(partNumber)
+                    .contentLength(file.length())
+                    .build();
+            UploadPartResponse uploadResult = client.uploadPart(uploadRequest, RequestBody.fromFile(file));
+            partTags.add(new PartTag(partNumber, uploadResult.eTag()));
 
             log.debug("分片上传成功: objectKey={}, part={}/{}", objectKey, partNumber, partTotalNumber);
 
             // 如果是最后一个分片，完成上传
             if (partNumber == partTotalNumber) {
-                CompleteMultipartUploadRequest compRequest =
-                        new CompleteMultipartUploadRequest(config.getBucket(), objectKey, uploadId, partETags);
+                List<CompletedPart> completedParts = partTags.stream()
+                        .map(tag -> CompletedPart.builder()
+                                .partNumber(tag.getPartNumber())
+                                .eTag(tag.getETag())
+                                .build())
+                        .toList();
+                CompleteMultipartUploadRequest compRequest = CompleteMultipartUploadRequest.builder()
+                        .bucket(config.getBucket())
+                        .key(objectKey)
+                        .uploadId(uploadId)
+                        .multipartUpload(CompletedMultipartUpload.builder()
+                                .parts(completedParts)
+                                .build())
+                        .build();
                 client.completeMultipartUpload(compRequest);
                 multipartUploadStateManager.deleteState(stateKey);
                 log.info("分片上传完成: objectKey={}, totalParts={}", objectKey, partTotalNumber);
             } else {
                 // 保存分片标签
-                multipartUploadStateManager.savePartETags(stateKey, partETags);
+                multipartUploadStateManager.savePartETags(stateKey, partTags);
             }
 
-        } catch (AmazonS3Exception e) {
+        } catch (S3Exception e) {
             throw new OssException(
                     String.format(
-                            "分片上传失败: %s, part=%d/%d, 错误码: %s",
-                            objectKey, partNumber, partTotalNumber, e.getErrorCode()),
+                            "分片上传失败: %s, part=%d/%d, 错误码: %s", objectKey, partNumber, partTotalNumber, errorCode(e)),
                     e);
         } catch (Exception e) {
             throw new OssException(String.format("分片上传失败: %s, part=%d/%d", objectKey, partNumber, partTotalNumber), e);
@@ -369,9 +446,12 @@ public class OssClient implements OssService {
         }
 
         try {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(config.getBucket(), objectKey, file);
-            putObjectRequest.setCannedAcl(getAccessPolicy().getAcl());
-            client.putObject(putObjectRequest);
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(config.getBucket())
+                    .key(objectKey)
+                    .acl(getObjectAcl())
+                    .build();
+            client.putObject(putObjectRequest, RequestBody.fromFile(file));
 
             log.debug("文件上传成功: {}", objectKey);
 
@@ -380,8 +460,8 @@ public class OssClient implements OssService {
                     .key(objectKey)
                     .build();
 
-        } catch (AmazonS3Exception e) {
-            throw new OssException(String.format("上传文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
+        } catch (S3Exception e) {
+            throw new OssException(String.format("上传文件失败: %s, 错误码: %s", objectKey, errorCode(e)), e);
         } catch (Exception e) {
             throw new OssException("上传文件失败: " + objectKey, e);
         }
@@ -399,10 +479,13 @@ public class OssClient implements OssService {
         ValidationUtils.validateObjectKey(objectKey);
 
         try {
-            client.deleteObject(config.getBucket(), objectKey);
+            client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(config.getBucket())
+                    .key(objectKey)
+                    .build());
             log.debug("文件删除成功: {}", objectKey);
-        } catch (AmazonS3Exception e) {
-            throw new OssException(String.format("删除文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
+        } catch (S3Exception e) {
+            throw new OssException(String.format("删除文件失败: %s, 错误码: %s", objectKey, errorCode(e)), e);
         } catch (Exception e) {
             throw new OssException("删除文件失败: " + objectKey, e);
         }
@@ -412,18 +495,34 @@ public class OssClient implements OssService {
      * 获取文件对象
      *
      * @param objectKey 对象键
-     * @return S3 对象
+     * @return OSS 对象（调用者负责关闭）
      * @throws IllegalArgumentException 参数校验失败
      * @throws OssException             获取失败
      */
     @Override
-    public S3Object getObject(String objectKey) {
+    public OssObject getObject(String objectKey) {
         ValidationUtils.validateObjectKey(objectKey);
 
         try {
-            return client.getObject(config.getBucket(), objectKey);
-        } catch (AmazonS3Exception e) {
-            throw new OssException(String.format("获取文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
+            ResponseInputStream<GetObjectResponse> stream = client.getObject(GetObjectRequest.builder()
+                    .bucket(config.getBucket())
+                    .key(objectKey)
+                    .build());
+            try {
+                GetObjectResponse response = stream.response();
+                return OssObject.builder()
+                        .bucket(config.getBucket())
+                        .key(objectKey)
+                        .contentType(response.contentType())
+                        .contentLength(response.contentLength())
+                        .content(stream)
+                        .build();
+            } catch (RuntimeException e) {
+                stream.close();
+                throw e;
+            }
+        } catch (S3Exception e) {
+            throw new OssException(String.format("获取文件失败: %s, 错误码: %s", objectKey, errorCode(e)), e);
         } catch (Exception e) {
             throw new OssException("获取文件失败: " + objectKey, e);
         }
@@ -442,16 +541,18 @@ public class OssClient implements OssService {
         ValidationUtils.validateObjectKey(objectKey);
         ValidationUtils.validateNotNull(outputStream, "outputStream");
 
-        try (S3Object s3Object = client.getObject(config.getBucket(), objectKey);
-                S3ObjectInputStream s3is = s3Object.getObjectContent()) {
+        try (ResponseInputStream<GetObjectResponse> stream = client.getObject(GetObjectRequest.builder()
+                .bucket(config.getBucket())
+                .key(objectKey)
+                .build())) {
 
-            IoUtil.copy(s3is, outputStream);
+            IoUtil.copy(stream, outputStream);
             outputStream.flush();
 
             log.debug("文件下载成功: {}", objectKey);
 
-        } catch (AmazonS3Exception e) {
-            throw new OssException(String.format("下载文件失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
+        } catch (S3Exception e) {
+            throw new OssException(String.format("下载文件失败: %s, 错误码: %s", objectKey, errorCode(e)), e);
         } catch (Exception e) {
             throw new OssException("下载文件失败: " + objectKey, e);
         }
@@ -472,17 +573,20 @@ public class OssClient implements OssService {
         ValidationUtils.validateExpirationSeconds(expirationSeconds);
 
         try {
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(
-                            config.getBucket(), objectKey)
-                    .withMethod(HttpMethod.GET)
-                    .withExpiration(new Date(System.currentTimeMillis() + 1000L * expirationSeconds));
-            URL url = client.generatePresignedUrl(generatePresignedUrlRequest);
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofSeconds(expirationSeconds))
+                    .getObjectRequest(GetObjectRequest.builder()
+                            .bucket(config.getBucket())
+                            .key(objectKey)
+                            .build())
+                    .build();
+            String url = presigner.presignGetObject(presignRequest).url().toString();
 
             log.debug("生成预签名 URL: objectKey={}, expiration={}s", objectKey, expirationSeconds);
 
-            return url.toString();
-        } catch (AmazonS3Exception e) {
-            throw new OssException(String.format("生成预签名 URL 失败: %s, 错误码: %s", objectKey, e.getErrorCode()), e);
+            return url;
+        } catch (S3Exception e) {
+            throw new OssException(String.format("生成预签名 URL 失败: %s, 错误码: %s", objectKey, errorCode(e)), e);
         } catch (Exception e) {
             throw new OssException("生成预签名 URL 失败: " + objectKey, e);
         }
@@ -496,6 +600,40 @@ public class OssClient implements OssService {
     @Override
     public AccessPolicyType getAccessPolicy() {
         return AccessPolicyType.getByType(config.getAccessPolicy());
+    }
+
+    /**
+     * 获取对象级 ACL（对应 SDK 1.x CannedAccessControlList 映射）
+     *
+     * @return 对象 ACL
+     */
+    private ObjectCannedACL getObjectAcl() {
+        return switch (getAccessPolicy()) {
+            case PRIVATE -> ObjectCannedACL.PRIVATE;
+            case PUBLIC, CUSTOM -> ObjectCannedACL.PUBLIC_READ;
+        };
+    }
+
+    /**
+     * 获取桶级 ACL（对应 SDK 1.x CannedAccessControlList 映射）
+     *
+     * @return 桶 ACL
+     */
+    private BucketCannedACL getBucketAcl() {
+        return switch (getAccessPolicy()) {
+            case PRIVATE -> BucketCannedACL.PRIVATE;
+            case PUBLIC, CUSTOM -> BucketCannedACL.PUBLIC_READ;
+        };
+    }
+
+    /**
+     * 提取 S3 异常错误码
+     *
+     * @param e S3 异常
+     * @return 错误码（无法解析时返回 HTTP 状态码）
+     */
+    private static String errorCode(S3Exception e) {
+        return e.awsErrorDetails() != null ? e.awsErrorDetails().errorCode() : String.valueOf(e.statusCode());
     }
 
     /**

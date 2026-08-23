@@ -4,6 +4,8 @@ import static com.lambda.cloud.core.Constants.GSON;
 
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
+import cn.dev33.satoken.dao.SaTokenDao;
+import cn.dev33.satoken.dao.SaTokenDaoForRedisTemplate;
 import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
@@ -55,6 +57,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -187,6 +190,28 @@ public class SecurityAutoConfiguration {
         @Autowired
         public void setSecurityProperties(SecurityProperties securityProperties) {
             this.securityProperties = securityProperties;
+        }
+
+        @Bean
+        @Primary
+        public SaTokenDao saTokenDao() {
+            return new SaTokenDaoForRedisTemplate() {
+                @Override
+                public void update(String key, String value) {
+                    String finalKey = wrapKey(key);
+                    long expireMs = stringRedisTemplate.getExpire(finalKey, TimeUnit.MILLISECONDS);
+                    // -2 = 无此键
+                    if (expireMs == SaTokenDao.NOT_VALUE_EXPIRE) {
+                        return;
+                    }
+                    // -1 = 永不过期
+                    if (expireMs == SaTokenDao.NEVER_EXPIRE) {
+                        stringRedisTemplate.opsForValue().set(finalKey, value);
+                    } else {
+                        stringRedisTemplate.opsForValue().set(finalKey, value, expireMs, TimeUnit.MILLISECONDS);
+                    }
+                }
+            };
         }
 
         /**
@@ -327,14 +352,19 @@ public class SecurityAutoConfiguration {
         return GSON.toJson(errorModel);
     }
 
-    @Bean
+    @Configuration
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    public SaReactorFilter getSaReactorFilter(SecurityProperties securityProperties) {
-        return new SaReactorFilter()
-                .addInclude("/**")
-                .addExclude(securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
-                .setAuth(run -> StpLogicUtils.getActiveStpLogic().checkLogin())
-                .setError(SecurityAutoConfiguration::toErrorModel);
+    public static class SaReactorFilterConfiguration {
+
+        @Bean
+        public SaReactorFilter getSaReactorFilter(SecurityProperties securityProperties) {
+            return new SaReactorFilter()
+                    .addInclude("/**")
+                    .addExclude(
+                            securityProperties.getSaToken().getAllIgnoreList().toArray(new String[0]))
+                    .setAuth(run -> StpLogicUtils.getActiveStpLogic().checkLogin())
+                    .setError(SecurityAutoConfiguration::toErrorModel);
+        }
     }
 
     /**

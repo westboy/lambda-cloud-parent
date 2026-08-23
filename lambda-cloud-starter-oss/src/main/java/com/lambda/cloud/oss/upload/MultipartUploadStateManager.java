@@ -1,6 +1,6 @@
 package com.lambda.cloud.oss.upload;
 
-import com.amazonaws.services.s3.model.PartETag;
+import com.lambda.cloud.oss.model.PartTag;
 import java.util.List;
 
 /**
@@ -31,9 +31,9 @@ public interface MultipartUploadStateManager {
      * 保存已上传的分片标签
      *
      * @param stateKey 状态键
-     * @param partETags 分片标签列表
+     * @param partTags 分片标签列表
      */
-    void savePartETags(String stateKey, List<PartETag> partETags);
+    void savePartETags(String stateKey, List<PartTag> partTags);
 
     /**
      * 获取已上传的分片标签
@@ -41,7 +41,7 @@ public interface MultipartUploadStateManager {
      * @param stateKey 状态键
      * @return 分片标签列表，如果不存在则返回 null
      */
-    List<PartETag> getPartETags(String stateKey);
+    List<PartTag> getPartETags(String stateKey);
 
     /**
      * 删除上传状态

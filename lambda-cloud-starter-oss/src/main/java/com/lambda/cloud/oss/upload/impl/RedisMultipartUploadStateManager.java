@@ -1,7 +1,7 @@
 package com.lambda.cloud.oss.upload.impl;
 
 import cn.hutool.json.JSONUtil;
-import com.amazonaws.services.s3.model.PartETag;
+import com.lambda.cloud.oss.model.PartTag;
 import com.lambda.cloud.oss.upload.MultipartUploadStateManager;
 import com.lambda.cloud.redis.helper.RedisHelper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -49,23 +49,23 @@ public class RedisMultipartUploadStateManager implements MultipartUploadStateMan
     }
 
     @Override
-    public void savePartETags(String stateKey, List<PartETag> partETags) {
+    public void savePartETags(String stateKey, List<PartTag> partTags) {
         String key = buildKey(stateKey);
-        redisHelper.hPut(key, "partETags", JSONUtil.toJsonStr(partETags));
+        redisHelper.hPut(key, "partETags", JSONUtil.toJsonStr(partTags));
         redisHelper.expire(key, DEFAULT_EXPIRE_HOURS, TimeUnit.HOURS);
-        log.debug("保存分片标签: key={}, count={}", stateKey, partETags.size());
+        log.debug("保存分片标签: key={}, count={}", stateKey, partTags.size());
     }
 
     @Override
-    public List<PartETag> getPartETags(String stateKey) {
+    public List<PartTag> getPartETags(String stateKey) {
         String json = (String) redisHelper.hGet(buildKey(stateKey), "partETags");
         if (json == null) {
             log.debug("获取分片标签: key={}, result=null", stateKey);
             return null;
         }
-        List<PartETag> partETags = JSONUtil.toList(json, PartETag.class);
-        log.debug("获取分片标签: key={}, count={}", stateKey, partETags.size());
-        return partETags;
+        List<PartTag> partTags = JSONUtil.toList(json, PartTag.class);
+        log.debug("获取分片标签: key={}, count={}", stateKey, partTags.size());
+        return partTags;
     }
 
     @Override

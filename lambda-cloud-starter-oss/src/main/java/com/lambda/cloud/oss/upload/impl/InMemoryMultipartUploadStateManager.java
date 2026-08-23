@@ -1,6 +1,6 @@
 package com.lambda.cloud.oss.upload.impl;
 
-import com.amazonaws.services.s3.model.PartETag;
+import com.lambda.cloud.oss.model.PartTag;
 import com.lambda.cloud.oss.upload.MultipartUploadStateManager;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,25 +40,25 @@ public class InMemoryMultipartUploadStateManager implements MultipartUploadState
     }
 
     @Override
-    public void savePartETags(String stateKey, List<PartETag> partETags) {
+    public void savePartETags(String stateKey, List<PartTag> partTags) {
         // 创建副本以避免外部修改
-        List<PartETag> copy = new ArrayList<>(partETags);
+        List<PartTag> copy = new ArrayList<>(partTags);
         stateMap.computeIfAbsent(stateKey, k -> new UploadState()).partETags = copy;
-        log.debug("保存分片标签: key={}, count={}", stateKey, partETags.size());
+        log.debug("保存分片标签: key={}, count={}", stateKey, partTags.size());
     }
 
     @Override
-    public List<PartETag> getPartETags(String stateKey) {
+    public List<PartTag> getPartETags(String stateKey) {
         UploadState state = stateMap.get(stateKey);
-        List<PartETag> partETags = state != null ? state.partETags : null;
-        if (partETags != null) {
+        List<PartTag> partTags = state != null ? state.partETags : null;
+        if (partTags != null) {
             // 返回副本以避免外部修改
-            partETags = new ArrayList<>(partETags);
-            log.debug("获取分片标签: key={}, count={}", stateKey, partETags.size());
+            partTags = new ArrayList<>(partTags);
+            log.debug("获取分片标签: key={}, count={}", stateKey, partTags.size());
         } else {
             log.debug("获取分片标签: key={}, result=null", stateKey);
         }
-        return partETags;
+        return partTags;
     }
 
     @Override
@@ -97,6 +97,6 @@ public class InMemoryMultipartUploadStateManager implements MultipartUploadState
      */
     private static class UploadState {
         String uploadId;
-        List<PartETag> partETags;
+        List<PartTag> partETags;
     }
 }

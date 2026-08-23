@@ -51,6 +51,7 @@
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-reactor-spring-boot4-starter</artifactId>
             <version>${satoken.version}</version>
+            <optional>true</optional>
         </dependency>
         <!-- Sa-Token 整合 Redis （使用 jackson 序列化方式） -->
         <dependency>

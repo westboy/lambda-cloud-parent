@@ -51,6 +51,7 @@
         <dubbo.version>3.3.6</dubbo.version>
         <rocketmq.version>2.3.4</rocketmq.version>
         <iotdb.version>2.0.3</iotdb.version>
+        <aws-sdk-v2.version>2.52.1</aws-sdk-v2.version>
         <!-- 插件版本 -->
         <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
@@ -174,6 +175,13 @@
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp-bom</artifactId>
                 <version>${okhttp.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk-v2.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
