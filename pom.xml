@@ -45,7 +45,7 @@
         <mybatis-plus.version>3.5.17</mybatis-plus.version>
         <google-collections.version>1.0</google-collections.version>
         <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
-        <satoken.version>1.45.0</satoken.version>
+        <satoken.version>1.46.0</satoken.version>
         <wxjava.version>4.7.0</wxjava.version>
         <p6spy.version>3.9.1</p6spy.version>
         <dubbo.version>3.3.6</dubbo.version>
