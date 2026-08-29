@@ -123,6 +123,8 @@ lambda-cloud-parent
 │
 ├── lambda-cloud-starter-netty           # Netty 网络通信框架
 │
+├── lambda-cloud-starter-lucene           # Lucene 本地全文索引与多索引生命周期
+│
 ├── lambda-cloud-starter-websocket       # WebSocket 通信支持
 │
 ├── lambda-cloud-starter-sse             # Server-Sent Events 支持
@@ -252,6 +254,19 @@ Sa-Token 多登录类型（`loginUser`/`hmac`），四种策略条件装配：�
 ### Netty 协议引擎（`lambda-cloud-starter-netty`）
 
 注解驱动二进制协议：`@ProtocolPayload`+`@ProtocolField`；`ProtocolEngine` 提供 `parse`/`serialize`/`validate`；`ByteCodeFieldAccessor`（ASM 零反射，回退 `ReflectionFieldAccessor`）；CRC 校验（`Crc16Algorithm` 等）；`NettyServer`（`SmartLifecycle`，EPOLL/NIO）；扩展点 `ServerBootstrapConfigurationCustomizer`/`ChannelPipelineConfigurationCustomizer`。协议业务 starter（`ocpp`/`t645`/`ykc`）复用此引擎，不重复实现编解码。
+
+### Lucene 本地全文索引（`lambda-cloud-starter-lucene`）
+
+`LuceneManagerFactory` 在 `lambda.lucene.directory` 根目录下按逻辑名称创建相互隔离的索引，单个索引由长生命周期的 `LuceneManager` 管理 `IndexWriter`、近实时搜索器、提交和关闭。默认使用 `SmartChineseAnalyzer`，下游可注册 `LuceneAnalyzerFactory` Bean 覆盖分词器。
+
+```yaml
+lambda:
+  lucene:
+    enabled: true
+    directory: ${LUCENE_DIRECTORY:${user.home}/.lambda/lucene}
+```
+
+该能力面向单机本地文件系统；索引是可重建投影，不应使用共享网络目录模拟多节点写入。
 
 > 完整工程规则见 [`.rule/engineering-contract.md`](.rule/engineering-contract.md)，包结构细则见 [`.rule/package-structure.md`](.rule/package-structure.md)。
 

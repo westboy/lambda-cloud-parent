@@ -52,7 +52,7 @@
         <rocketmq.version>2.3.4</rocketmq.version>
         <iotdb.version>2.0.3</iotdb.version>
         <aws-sdk-v2.version>2.52.1</aws-sdk-v2.version>
-        <lucene.version>7.3.0</lucene.version>
+        <lucene.version>10.5.1</lucene.version>
         <!-- 插件版本 -->
         <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
@@ -186,6 +186,31 @@
                 <version>${aws-sdk-v2.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analysis-common</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analysis-smartcn</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-highlighter</artifactId>
+                <version>${lucene.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.playtika.testcontainers</groupId>

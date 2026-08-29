@@ -1,233 +1,291 @@
 package com.lambda.cloud.lucene.manager;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lambda.cloud.lucene.model.IndexObject;
+import com.lambda.cloud.lucene.model.LuceneSearchHit;
 import com.lambda.cloud.lucene.utils.IndexObjectUtil;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.*;
-import org.apache.lucene.search.highlight.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.search.highlight.SimpleSpanFragmenter;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 /**
- * LuceneManager
+ * 单个 Lucene 逻辑索引的生命周期管理器。
  *
- * @author Jin
+ * <p>实例长期持有 {@link IndexWriter} 与 {@link SearcherManager}，写操作提交后同步刷新搜索器；关闭操作与在途读写互斥。
  */
-@Setter
-@Getter
-@Slf4j
-@SuppressFBWarnings("EI_EXPOSE_REP")
-public class LuceneManager {
+public final class LuceneManager implements AutoCloseable {
 
-    private Path directoryPath = null;
-    private Analyzer analyzer = null;
+    private static final int MAX_BOOLEAN_CLAUSES = 32768;
 
-    /**
-     * 创建索引
-     *
-     * @param indexObject
-     * @throws IOException
-     */
-    @SneakyThrows
+    private final Path directoryPath;
+    private final Analyzer analyzer;
+    private final Directory directory;
+    private final IndexWriter indexWriter;
+    private final SearcherManager searcherManager;
+    private final Object writeMonitor = new Object();
+    private final ReentrantReadWriteLock lifecycleLock = new ReentrantReadWriteLock();
+    private final AtomicBoolean closed = new AtomicBoolean();
+
+    public LuceneManager(Path directoryPath, Analyzer analyzer) throws IOException {
+        this.directoryPath = directoryPath.toAbsolutePath().normalize();
+        this.analyzer = analyzer;
+        Directory openedDirectory = null;
+        IndexWriter openedWriter = null;
+        SearcherManager openedSearcherManager = null;
+        try {
+            openedDirectory = FSDirectory.open(this.directoryPath);
+            IndexWriterConfig writerConfig = new IndexWriterConfig(analyzer);
+            writerConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+            openedWriter = new IndexWriter(openedDirectory, writerConfig);
+            openedSearcherManager = new SearcherManager(openedWriter, null);
+        } catch (IOException | RuntimeException e) {
+            closeOnInitializationFailure(openedSearcherManager, openedWriter, openedDirectory, analyzer, e);
+            throw e;
+        }
+        this.directory = openedDirectory;
+        this.indexWriter = openedWriter;
+        this.searcherManager = openedSearcherManager;
+    }
+
+    public Path getDirectoryPath() {
+        return directoryPath;
+    }
+
+    public Analyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    /** 兼容既有对象模型的新增入口。 */
     public void create(IndexObject indexObject) throws IOException {
-        IndexWriter indexWriter = getIndexWriter();
-        try {
-            Long result = indexWriter.addDocument(IndexObjectUtil.indexObjectToDocument(indexObject));
-            log.info("====[ 创建索引: {} ]====", result);
-            indexWriter.commit();
-        } catch (Exception e) {
-            log.error("创建索引失败！", e);
-            indexWriter.rollback();
-        } finally {
-            indexWriter.close();
-        }
+        addDocuments(List.of(IndexObjectUtil.indexObjectToDocument(indexObject)));
     }
 
-    /**
-     * 更新索引
-     *
-     * @param indexObject
-     * @throws IOException
-     */
+    /** 兼容既有对象模型的更新入口。 */
     public void update(IndexObject indexObject) throws IOException {
-        IndexWriter indexWriter = getIndexWriter();
-        try {
-            Long result = indexWriter.updateDocument(
-                    new Term("id", indexObject.getId()), IndexObjectUtil.indexObjectToDocument(indexObject));
-            log.info("====[ 更新索引: {} ]====", result);
-            indexWriter.commit();
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            indexWriter.rollback();
-        } finally {
-            indexWriter.close();
-        }
+        updateDocument(new Term("id", indexObject.getId()), IndexObjectUtil.indexObjectToDocument(indexObject));
     }
 
-    /**
-     * 删除索引
-     *
-     * @param id
-     * @throws IOException
-     */
+    /** 兼容既有对象模型的删除入口。 */
     public void delete(String id) throws IOException {
-        IndexWriter indexWriter = getIndexWriter();
-        try {
-            Long result = indexWriter.deleteDocuments(new Term("id", id));
-            log.info("====[ 删除索引: {} ]====", result);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            indexWriter.rollback();
-        } finally {
-            indexWriter.close();
-        }
+        deleteDocuments(new Term("id", id));
     }
 
-    /**
-     * 删除全部索引
-     *
-     * @throws IOException
-     */
+    public void addDocuments(List<Document> documents) throws IOException {
+        if (documents.isEmpty()) {
+            return;
+        }
+        write(() -> indexWriter.addDocuments(documents));
+    }
+
+    public void updateDocument(Term selector, Document document) throws IOException {
+        write(() -> indexWriter.updateDocument(selector, document));
+    }
+
+    /** 原子替换 selector 命中的全部文档；新集合为空时等同删除。 */
+    public void replaceDocuments(Term selector, List<Document> documents) throws IOException {
+        write(() -> {
+            if (documents.isEmpty()) {
+                indexWriter.deleteDocuments(selector);
+            } else {
+                indexWriter.updateDocuments(selector, documents);
+            }
+        });
+    }
+
+    public void deleteDocuments(Term selector) throws IOException {
+        write(() -> indexWriter.deleteDocuments(selector));
+    }
+
     public void deleteAll() throws IOException {
-        IndexWriter indexWriter = getIndexWriter();
-        try {
-            Long result = indexWriter.deleteAll();
-            log.info("====[ 清空索引: {} ]====", result);
-            // 清空回收站
-            indexWriter.forceMergeDeletes();
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            indexWriter.rollback();
-        } finally {
-            indexWriter.close();
-        }
+        write(indexWriter::deleteAll);
     }
 
-    /**
-     * 检索分页
-     *
-     * @param current
-     * @param size
-     * @param keyword
-     * @param fields
-     * @return page
-     * @throws IOException
-     */
+    /** 使用当前索引分词器解析纯文本查询，调用方无需处理 QueryParser 语法。 */
+    public Query parseQuery(String query, String... fields) throws ParseException {
+        IndexSearcher.setMaxClauseCount(MAX_BOOLEAN_CLAUSES);
+        MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer);
+        return parser.parse(QueryParser.escape(query));
+    }
+
+    /** 返回已存储字段和 BM25 分数，结果顺序与 Lucene 排名一致。 */
+    public List<LuceneSearchHit> search(Query query, int limit) throws IOException {
+        if (limit <= 0) {
+            throw new IllegalArgumentException("limit must be greater than 0");
+        }
+        return withSearcher(searcher -> {
+            TopDocs topDocs = searcher.search(query, limit);
+            List<LuceneSearchHit> hits = new ArrayList<>(topDocs.scoreDocs.length);
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                hits.add(new LuceneSearchHit(searcher.storedFields().document(scoreDoc.doc), scoreDoc.score));
+            }
+            return hits;
+        });
+    }
+
+    /** 兼容既有 MyBatis-Plus 分页入口。 */
     public <T extends IndexObject> IPage<T> page(
             String keyword, Integer current, Integer size, Class<T> clazz, String... fields) throws IOException {
-        IndexReader indexReader = getIndexReader();
-        IPage<T> page = new Page<>(current, size);
+        Query query;
         try {
-            List<T> searchResultList = new ArrayList<>();
-            IndexSearcher indexSearcher = new IndexSearcher(indexReader);
-            Query query = getQuery(keyword, getAnalyzer(), fields);
-            // 根据页码和分页大小获取上一次的最后一个ScoreDoc
-            ScoreDoc lastScoreDoc = getLastScoreDoc(current, size, query, indexSearcher);
-            TopDocs topDocs = indexSearcher.searchAfter(lastScoreDoc, query, size);
-            page.setTotal(topDocs.totalHits);
-            // 遍历转换
-            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document document = indexSearcher.doc(scoreDoc.doc);
-                searchResultList.add(IndexObjectUtil.documentToIndexObject(
-                        getAnalyzer(), getHighlighter(query), document, scoreDoc.score, clazz));
-            }
-            // 根据相似分数排序
-            Collections.sort(searchResultList);
-            page.setRecords(searchResultList);
-            return page;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        } finally {
-            indexReader.close();
+            query = parseQuery(keyword, fields);
+        } catch (ParseException e) {
+            throw new IOException("Lucene query parse failed", e);
         }
-        return page;
+        return withSearcher(searcher -> {
+            IPage<T> page = new Page<>(current, size);
+            ScoreDoc lastScoreDoc = getLastScoreDoc(current, size, query, searcher);
+            TopDocs topDocs = searcher.searchAfter(lastScoreDoc, query, size);
+            page.setTotal(topDocs.totalHits.value());
+            List<T> results = new ArrayList<>(topDocs.scoreDocs.length);
+            Highlighter highlighter = getHighlighter(query);
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Document document = searcher.storedFields().document(scoreDoc.doc);
+                results.add(
+                        IndexObjectUtil.documentToIndexObject(analyzer, highlighter, document, scoreDoc.score, clazz));
+            }
+            Collections.sort(results);
+            page.setRecords(results);
+            return page;
+        });
     }
 
-    /**
-     * getIndexWriter
-     *
-     * @return
-     * @throws IOException
-     */
-    IndexWriter getIndexWriter() throws IOException {
-        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(getAnalyzer());
-        indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-        return new IndexWriter(FSDirectory.open(getDirectoryPath()), indexWriterConfig);
-    }
-
-    /**
-     * getIndexReader
-     *
-     * @return
-     * @throws IOException
-     */
-    IndexReader getIndexReader() throws IOException {
-        return DirectoryReader.open(FSDirectory.open(getDirectoryPath()));
-    }
-
-    /**
-     * 根据页码和分页大小获取上一次的最后一个ScoreDoc
-     *
-     * @param pageNumber
-     * @param pageSize
-     * @param query
-     * @param searcher
-     * @return
-     * @throws IOException
-     */
-    ScoreDoc getLastScoreDoc(Integer pageNumber, Integer pageSize, Query query, IndexSearcher searcher)
+    private ScoreDoc getLastScoreDoc(int pageNumber, int pageSize, Query query, IndexSearcher searcher)
             throws IOException {
-        if (ObjectUtil.equal(pageNumber, 1)) return null;
-        int total = pageSize * (pageNumber - 1);
-        TopDocs topDocs = searcher.search(query, total);
-        return topDocs.scoreDocs[total - 1];
+        if (pageNumber <= 1) {
+            return null;
+        }
+        int preceding = Math.multiplyExact(pageSize, pageNumber - 1);
+        TopDocs topDocs = searcher.search(query, preceding);
+        return topDocs.scoreDocs.length < preceding ? null : topDocs.scoreDocs[preceding - 1];
     }
 
-    /**
-     * getQuery
-     *
-     * @param query
-     * @param analyzer
-     * @param fields
-     * @return
-     * @throws ParseException
-     */
-    Query getQuery(String query, Analyzer analyzer, String... fields) throws ParseException {
-        BooleanQuery.setMaxClauseCount(32768);
-        query = QueryParser.escape(query);
-        MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer);
-        return parser.parse(query);
-    }
-
-    /**
-     * 设置字符串高亮
-     *
-     * @param query
-     * @return
-     */
-    Highlighter getHighlighter(Query query) {
+    private Highlighter getHighlighter(Query query) {
         QueryScorer scorer = new QueryScorer(query);
-        Fragmenter fragmenter = new SimpleSpanFragmenter(scorer);
-        SimpleHTMLFormatter simpleHTMLFormatter = new SimpleHTMLFormatter("<font color='red'>", "</font>");
-        Highlighter highlighter = new Highlighter(simpleHTMLFormatter, scorer);
+        SimpleSpanFragmenter fragmenter = new SimpleSpanFragmenter(scorer);
+        Highlighter highlighter = new Highlighter(new SimpleHTMLFormatter("<em>", "</em>"), scorer);
         highlighter.setTextFragmenter(fragmenter);
         return highlighter;
+    }
+
+    private void write(IoOperation operation) throws IOException {
+        lifecycleLock.readLock().lock();
+        try {
+            ensureOpen();
+            synchronized (writeMonitor) {
+                operation.run();
+                indexWriter.commit();
+                searcherManager.maybeRefreshBlocking();
+            }
+        } finally {
+            lifecycleLock.readLock().unlock();
+        }
+    }
+
+    private <T> T withSearcher(SearchOperation<T> operation) throws IOException {
+        lifecycleLock.readLock().lock();
+        try {
+            ensureOpen();
+            IndexSearcher searcher = searcherManager.acquire();
+            try {
+                return operation.apply(searcher);
+            } finally {
+                searcherManager.release(searcher);
+            }
+        } finally {
+            lifecycleLock.readLock().unlock();
+        }
+    }
+
+    private void ensureOpen() {
+        if (closed.get()) {
+            throw new IllegalStateException("Lucene index is closed: " + directoryPath);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        lifecycleLock.writeLock().lock();
+        try {
+            if (!closed.compareAndSet(false, true)) {
+                return;
+            }
+            IOException failure = null;
+            failure = close(searcherManager, failure);
+            failure = close(indexWriter, failure);
+            failure = close(directory, failure);
+            failure = close(analyzer, failure);
+            if (failure != null) {
+                throw failure;
+            }
+        } finally {
+            lifecycleLock.writeLock().unlock();
+        }
+    }
+
+    private static IOException close(AutoCloseable closeable, IOException failure) {
+        try {
+            closeable.close();
+        } catch (Exception e) {
+            IOException closeError = e instanceof IOException ioException
+                    ? ioException
+                    : new IOException("Lucene resource close failed", e);
+            if (failure == null) {
+                return closeError;
+            }
+            failure.addSuppressed(closeError);
+        }
+        return failure;
+    }
+
+    private static void closeOnInitializationFailure(
+            SearcherManager searcherManager,
+            IndexWriter indexWriter,
+            Directory directory,
+            Analyzer analyzer,
+            Exception original) {
+        for (AutoCloseable resource : new AutoCloseable[] {searcherManager, indexWriter, directory, analyzer}) {
+            if (resource == null) {
+                continue;
+            }
+            try {
+                resource.close();
+            } catch (Exception closeError) {
+                original.addSuppressed(closeError);
+            }
+        }
+    }
+
+    @FunctionalInterface
+    private interface IoOperation {
+        void run() throws IOException;
+    }
+
+    @FunctionalInterface
+    private interface SearchOperation<T> {
+        T apply(IndexSearcher searcher) throws IOException;
     }
 }
