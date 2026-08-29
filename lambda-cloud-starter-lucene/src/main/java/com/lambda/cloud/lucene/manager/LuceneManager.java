@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lambda.cloud.lucene.model.IndexObject;
 import com.lambda.cloud.lucene.utils.IndexObjectUtil;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import org.apache.lucene.store.FSDirectory;
 @Setter
 @Getter
 @Slf4j
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class LuceneManager {
 
     private Path directoryPath = null;

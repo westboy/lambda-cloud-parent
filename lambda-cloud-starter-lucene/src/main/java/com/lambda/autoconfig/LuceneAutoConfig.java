@@ -1,6 +1,7 @@
 package com.lambda.autoconfig;
 
 import com.lambda.cloud.lucene.manager.LuceneManager;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Jin
  */
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 @Configuration
 @EnableConfigurationProperties({LuceneProperties.class})
 public class LuceneAutoConfig {
