@@ -53,6 +53,7 @@
         <iotdb.version>2.0.3</iotdb.version>
         <aws-sdk-v2.version>2.52.1</aws-sdk-v2.version>
         <lucene.version>10.5.1</lucene.version>
+        <xxl-job.version>3.4.2</xxl-job.version>
         <!-- 插件版本 -->
         <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
@@ -106,6 +107,7 @@
         <module>lambda-cloud-starter-t645</module>
         <module>lambda-cloud-starter-ocpp</module>
         <module>lambda-cloud-starter-lucene</module>
+        <module>lambda-cloud-starter-xxljob</module>
     </modules>
 
     <dependencyManagement>
@@ -553,6 +555,11 @@
                 <artifactId>lambda-cloud-processor</artifactId>
                 <version>${lambda-cloud.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>${xxl-job.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
