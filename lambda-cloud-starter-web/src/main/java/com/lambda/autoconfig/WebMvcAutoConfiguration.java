@@ -41,7 +41,6 @@ import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import tools.jackson.core.json.JsonReadFeature;
 import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.MapperFeature;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -103,7 +102,7 @@ public class WebMvcAutoConfiguration {
 
     @Primary
     @Bean("jacksonJsonMapper")
-    public ObjectMapper jacksonJsonMapper(List<JacksonModule> customModules) {
+    public JsonMapper jacksonJsonMapper(List<JacksonModule> customModules) {
         JsonMapper.Builder builder = JsonMapper.builder()
                 .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
                 .defaultDateFormat(new ExtendDateFormat())

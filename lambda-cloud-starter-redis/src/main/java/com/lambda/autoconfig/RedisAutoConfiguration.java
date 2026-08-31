@@ -118,7 +118,7 @@ public class RedisAutoConfiguration {
 
     @Bean("jacksonJsonMapper")
     @ConditionalOnMissingBean
-    public ObjectMapper jacksonJsonMapper() {
+    public JsonMapper jacksonJsonMapper() {
         return JsonMapper.builder()
                 .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
                 .build();
