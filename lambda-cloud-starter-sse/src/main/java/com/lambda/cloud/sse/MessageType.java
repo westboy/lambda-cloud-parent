@@ -6,5 +6,8 @@ package com.lambda.cloud.sse;
  */
 public enum MessageType {
     BROADCAST,
-    HEARTBEAT
+    HEARTBEAT,
+
+    /** 定向消息：投递给 targetClientIds 中在本节点有连接的客户端 */
+    TO_CLIENTS
 }
