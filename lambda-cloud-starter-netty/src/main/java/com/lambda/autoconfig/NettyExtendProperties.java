@@ -17,6 +17,8 @@ public class NettyExtendProperties {
 
     NettyServerConfig server = new NettyServerConfig();
 
+    ProtocolConfig protocol = new ProtocolConfig();
+
     @Setter
     @Getter
     public static class NettyServerConfig {
@@ -59,6 +61,20 @@ public class NettyExtendProperties {
          * 空闲状态配置
          */
         private IdleConfig idleConfig = new IdleConfig();
+    }
+
+    @Data
+    public static class ProtocolConfig {
+        /**
+         * CRC 字节序兼容开关
+         * <p>
+         * 开启后，CRC 校验失败时会按 CRC 字段长度对计算值做字节交换后再比对一次，
+         * 用于兼容按小端序存储 CRC 的设备；命中时输出 WARN 日志。
+         * 注意：仅作用于校验方向，下行报文的 CRC 字段字节序仍由字段的
+         * littleEndian 属性控制。
+         * </p>
+         */
+        private boolean crcByteSwap = false;
     }
 
     @Data

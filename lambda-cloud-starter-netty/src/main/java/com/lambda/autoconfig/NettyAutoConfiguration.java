@@ -4,6 +4,7 @@ import com.lambda.cloud.netty.NettyChannelInitializer;
 import com.lambda.cloud.netty.NettyServer;
 import com.lambda.cloud.netty.customizer.ChannelPipelineConfigurationCustomizer;
 import com.lambda.cloud.netty.customizer.ServerBootstrapConfigurationCustomizer;
+import com.lambda.cloud.netty.protocol.processor.ComputedProcessor;
 import com.lambda.cloud.netty.repository.ChannelRepository;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
@@ -17,6 +18,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import java.net.InetSocketAddress;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -35,6 +37,23 @@ public class NettyAutoConfiguration {
     @Primary
     public NettyExtendProperties nettyProperties() {
         return new NettyExtendProperties();
+    }
+
+    /**
+     * 将协议层全局配置同步到协议引擎（ComputedProcessor 为静态开关）
+     * <p>
+     * 使用 SmartInitializingSingleton 保证在所有单例初始化完成后、
+     * NettyServer（SmartLifecycle）启动监听前生效
+     * </p>
+     */
+    @Bean
+    public SmartInitializingSingleton protocolGlobalConfigInitializer(
+            @Qualifier("nettyProperties") NettyExtendProperties nettyProperties) {
+        return () -> {
+            boolean crcByteSwap = nettyProperties.getProtocol().isCrcByteSwap();
+            ComputedProcessor.setCrcByteSwap(crcByteSwap);
+            log.info("协议全局配置同步完成: spring.netty.protocol.crc-byte-swap={}", crcByteSwap);
+        };
     }
 
     @Bean("shouldEpoll")

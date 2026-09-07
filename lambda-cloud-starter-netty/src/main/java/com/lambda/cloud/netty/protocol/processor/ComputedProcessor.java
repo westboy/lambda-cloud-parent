@@ -41,6 +41,24 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
 
     private static final Map<Class<?>, List<ComputedSubField>> compositeComputedFieldCache = new ConcurrentHashMap<>();
 
+    /**
+     * CRC 字节序兼容开关（全局）
+     * <p>
+     * 由 `spring.netty.protocol.crc-byte-swap` 配置驱动（见 NettyAutoConfiguration 同步逻辑）。
+     * 开启后，CRC 校验失败时会按 CRC 字段长度对计算值做字节交换后再比对一次，
+     * 用于兼容按小端序存储 CRC 的设备；命中时输出 WARN 日志提示核对协议定义。
+     * </p>
+     */
+    private static volatile boolean crcByteSwap = false;
+
+    public static void setCrcByteSwap(boolean enable) {
+        crcByteSwap = enable;
+    }
+
+    public static boolean isCrcByteSwap() {
+        return crcByteSwap;
+    }
+
     private record ComputedSubField(
             FieldAccessor fieldAccessor, ProtocolField protocolField, ProtocolValidation validation) {}
 
@@ -125,16 +143,26 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
                 long expectedCrc = getCrcValueFromInstance(instance, crcField);
 
                 // 验证 CRC 值
-                if (expectedCrc != calculatedCrc) {
-                    throw new ProtocolException(
-                            ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,
-                            String.format(
-                                    "原始报文%s CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
-                                    ByteBufUtil.hexDump(raw), crcField.getFieldName(), expectedCrc, calculatedCrc),
-                            crcField.getFieldName());
+                if (expectedCrc == calculatedCrc) {
+                    log.debug("CRC校验通过: {} = {}", crcField.getFieldName(), expectedCrc);
+                    continue;
                 }
 
-                log.debug("CRC校验通过: {} = {}", crcField.getFieldName(), expectedCrc);
+                // 字节序兼容：开启开关时，按 CRC 字段长度交换计算值字节序后再比对一次
+                if (crcByteSwap && expectedCrc == swapCrcBytes(calculatedCrc, crcField.getLength())) {
+                    log.warn(String.format(
+                            "CRC校验在字节序兼容模式下通过: %s, 期望值=0x%04X, 实际值=0x%04X(交换后命中), "
+                                    + "建议核对设备CRC字节序或协议字段 littleEndian 定义",
+                            crcField.getFieldName(), expectedCrc, calculatedCrc));
+                    continue;
+                }
+
+                throw new ProtocolException(
+                        ProtocolException.ErrorCode.CRC_VALIDATION_ERROR,
+                        String.format(
+                                "原始报文%s CRC校验失败: %s, 期望值=0x%04X, 实际值=0x%04X",
+                                ByteBufUtil.hexDump(raw), crcField.getFieldName(), expectedCrc, calculatedCrc),
+                        crcField.getFieldName());
 
             } catch (ProtocolException e) {
                 throw e;
@@ -162,6 +190,25 @@ public record ComputedProcessor(DataTypeConverterResolver converterResolver) {
         } catch (Exception e) {
             throw new RuntimeException("计算CRC失败", e);
         }
+    }
+
+    /**
+     * 按指定字节长度交换 long 值的字节序（小端↔大端）
+     * <p>
+     * 例如 2 字节值 0xABCD 交换后为 0xCDAB；4 字节值 0x11223344 交换后为 0x44332211
+     * </p>
+     *
+     * @param value      原始值
+     * @param byteLength 交换的字节长度（取字段字节长度，最大 8）
+     * @return 字节交换后的值
+     */
+    private long swapCrcBytes(long value, int byteLength) {
+        int length = Math.min(byteLength, 8);
+        long swapped = 0;
+        for (int i = 0; i < length; i++) {
+            swapped = (swapped << 8) | ((value >>> (i * 8)) & 0xFF);
+        }
+        return swapped;
     }
 
     /**
