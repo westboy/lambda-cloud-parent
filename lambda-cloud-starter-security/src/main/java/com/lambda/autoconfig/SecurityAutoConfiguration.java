@@ -67,6 +67,7 @@ import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -538,7 +539,9 @@ public class SecurityAutoConfiguration {
          */
         @Bean
         public FilterRegistrationBean<SmsAuthenticationProcessingFilter> smsAuthenticationProcessingFilter(
-                ObjectMapper objectMapper, @Autowired(required = false) UserDetailService userDetailService) {
+                ObjectMapper objectMapper,
+                ApplicationEventPublisher eventPublisher,
+                @Autowired(required = false) UserDetailService userDetailService) {
             Assert.notNull(userDetailService, "userDetailService must not be null");
             FilterRegistrationBean<SmsAuthenticationProcessingFilter> filterRegistrationBean =
                     new FilterRegistrationBean<>();
@@ -546,6 +549,7 @@ public class SecurityAutoConfiguration {
                     securityProperties.getSms().getLoginPath());
             processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            processingFilter.setEventPublisher(eventPublisher);
             processingFilter.setUserDetailService(userDetailService);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
@@ -714,13 +718,16 @@ public class SecurityAutoConfiguration {
          */
         @Bean
         public FilterRegistrationBean<HmacAuthenticationProcessingFilter> hmacAuthenticationProcessingFilter(
-                ObjectMapper objectMapper, @Autowired(required = false) HmacClientService hmacClientService) {
+                ObjectMapper objectMapper,
+                ApplicationEventPublisher eventPublisher,
+                @Autowired(required = false) HmacClientService hmacClientService) {
             FilterRegistrationBean<HmacAuthenticationProcessingFilter> filterRegistrationBean =
                     new FilterRegistrationBean<>();
             HmacAuthenticationProcessingFilter processingFilter =
                     new HmacAuthenticationProcessingFilter(hmacClientService, new HmacShaEncoder());
             processingFilter.setAuthenticationSuccessHandler(new HmacAuthenticationSuccessHandler());
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            processingFilter.setEventPublisher(eventPublisher);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
@@ -877,6 +884,7 @@ public class SecurityAutoConfiguration {
                 FormLockingStrategy formLockingStrategy,
                 ObjectMapper objectMapper,
                 PasswordEncoder passwordEncoder,
+                ApplicationEventPublisher eventPublisher,
                 @Autowired(required = false) List<FormLoginValidator> formLoginValidators,
                 @Autowired(required = false) UserDetailService userDetailService) {
             FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean =
@@ -886,6 +894,7 @@ public class SecurityAutoConfiguration {
             processingFilter.setFormLockingStrategy(formLockingStrategy);
             processingFilter.setAuthenticationSuccessHandler(new CommonAuthenticationSuccessHandler(objectMapper));
             processingFilter.setAuthenticationFailureHandler(new CommonAuthenticationFailureHandler(objectMapper));
+            processingFilter.setEventPublisher(eventPublisher);
             processingFilter.setFormLoginValidators(formLoginValidators);
             processingFilter.setUserDetailService(userDetailService);
             processingFilter.setPasswordEncoder(passwordEncoder);
@@ -1018,14 +1027,15 @@ public class SecurityAutoConfiguration {
         @Bean
         public FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> thirdPartAuthenticationFilter(
                 @Autowired(required = false) List<ThirdPartLoginProvider> thirdPartLoginProviders,
-                ObjectMapper objectMapper) {
+                ObjectMapper objectMapper,
+                ApplicationEventPublisher eventPublisher) {
             if (thirdPartLoginProviders == null || thirdPartLoginProviders.isEmpty()) {
                 throw new IllegalStateException("thirdPartLoginProviders must not be empty");
             }
             FilterRegistrationBean<ThirdPartAuthenticationProcessingFilter> filterRegistrationBean =
                     new FilterRegistrationBean<>();
             ThirdPartAuthenticationProcessingFilter thirdPartAuthenticationProcessingFilter =
-                    getThirdPartAuthenticationProcessingFilter(thirdPartLoginProviders, objectMapper);
+                    getThirdPartAuthenticationProcessingFilter(thirdPartLoginProviders, objectMapper, eventPublisher);
             filterRegistrationBean.setFilter(thirdPartAuthenticationProcessingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
@@ -1041,10 +1051,13 @@ public class SecurityAutoConfiguration {
          *
          * @param thirdPartLoginProviders 第三方登录提供者列表
          * @param objectMapper            JSON序列化工具
+         * @param eventPublisher          Spring 应用事件发布器，用于发布登录成功/失败事件
          * @return 配置完成的第三方认证处理过滤器
          */
         private ThirdPartAuthenticationProcessingFilter getThirdPartAuthenticationProcessingFilter(
-                List<ThirdPartLoginProvider> thirdPartLoginProviders, ObjectMapper objectMapper) {
+                List<ThirdPartLoginProvider> thirdPartLoginProviders,
+                ObjectMapper objectMapper,
+                ApplicationEventPublisher eventPublisher) {
             ThirdPartAuthenticationProcessingFilter thirdPartAuthenticationProcessingFilter =
                     new ThirdPartAuthenticationProcessingFilter(
                             securityProperties.getThirdPartLogin(), thirdPartLoginProviders);
@@ -1052,6 +1065,7 @@ public class SecurityAutoConfiguration {
                     new CommonAuthenticationSuccessHandler(objectMapper));
             thirdPartAuthenticationProcessingFilter.setAuthenticationFailureHandler(
                     new CommonAuthenticationFailureHandler(objectMapper));
+            thirdPartAuthenticationProcessingFilter.setEventPublisher(eventPublisher);
             return thirdPartAuthenticationProcessingFilter;
         }
     }

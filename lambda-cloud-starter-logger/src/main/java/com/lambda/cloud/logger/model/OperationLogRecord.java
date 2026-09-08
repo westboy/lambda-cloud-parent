@@ -3,6 +3,8 @@ package com.lambda.cloud.logger.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +34,10 @@ import lombok.ToString;
 @ToString
 @Schema(description = "操作日志记录模型")
 @SuppressFBWarnings("EI_EXPOSE_REP")
-public class OperationLogRecord {
+public class OperationLogRecord implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 日志记录的唯一标识。

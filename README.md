@@ -253,7 +253,7 @@ Sa-Token 多登录类型（`loginUser`/`hmac`），四种策略条件装配：�
 
 ### Netty 协议引擎（`lambda-cloud-starter-netty`）
 
-注解驱动二进制协议：`@ProtocolPayload`+`@ProtocolField`；`ProtocolEngine` 提供 `parse`/`serialize`/`validate`；`ByteCodeFieldAccessor`（ASM 零反射，回退 `ReflectionFieldAccessor`）；CRC 校验（`Crc16Algorithm` 等）；`NettyServer`（`SmartLifecycle`，EPOLL/NIO）；扩展点 `ServerBootstrapConfigurationCustomizer`/`ChannelPipelineConfigurationCustomizer`。协议业务 starter（`ocpp`/`t645`/`ykc`）复用此引擎，不重复实现编解码。
+注解驱动二进制协议：`@ProtocolPayload`+`@ProtocolField`；`ProtocolEngine` 提供 `parse`/`serialize`/`validate`；`ByteCodeFieldAccessor`（ASM 零反射，回退 `ReflectionFieldAccessor`）；CRC 校验（`Crc16Algorithm` 等）；`NettyServer`（`SmartLifecycle`，EPOLL/NIO）；扩展点 `ServerBootstrapConfigurationCustomizer`/`ChannelPipelineConfigurationCustomizer`。协议业务 starter（`ocpp`/`t645`/`ykc`）复用此引擎，不重复实现编解码。CRC 字节序兼容开关 `spring.netty.protocol.crc-byte-swap`（默认 `false`）：开启后 CRC 校验失败时会按 CRC 字段长度对计算值做字节交换后再比对一次，用于兼容按小端序存储 CRC 的设备，命中时输出 WARN 日志；仅作用于校验方向，下行报文 CRC 字段字节序仍由字段 `littleEndian` 属性控制。
 
 ### Lucene 本地全文索引（`lambda-cloud-starter-lucene`）
 

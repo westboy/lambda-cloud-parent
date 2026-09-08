@@ -5,6 +5,8 @@ import com.lambda.cloud.mvc.WebHttpUtils;
 import com.lambda.security.exception.AuthenticationException;
 import com.lambda.security.handler.AuthenticationFailureHandler;
 import com.lambda.security.handler.AuthenticationSuccessHandler;
+import com.lambda.security.web.event.LoginFailureEvent;
+import com.lambda.security.web.event.LoginSuccessEvent;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -15,7 +17,9 @@ import java.io.IOException;
 import java.util.Map;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.log.LogMessage;
+import org.springframework.lang.Nullable;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
@@ -102,6 +106,16 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     /** 过滤器处理的URL模式 */
     @Setter
     private String filterProcessesUrl;
+
+    /**
+     * Spring 应用事件发布器，用于发布登录成功/失败事件。
+     *
+     * <p>由自动配置在装配过滤器时注入；为 null 时静默跳过事件发布，
+     * 保证过滤器在非 Spring 环境或未注入时仍可正常工作。</p>
+     */
+    @Setter
+    @Nullable
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * 构造函数
@@ -286,6 +300,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     protected void successfulAuthentication(
             HttpServletRequest request, HttpServletResponse response, FilterChain chain, LoginUser loginUser)
             throws IOException, ServletException {
+        publishLoginSuccess(request, loginUser);
         this.successHandler.onAuthenticationSuccess(request, response, loginUser);
     }
 
@@ -311,7 +326,99 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
     protected void unsuccessfulAuthentication(
             HttpServletRequest request, HttpServletResponse response, AuthenticationException failed)
             throws IOException, ServletException {
+        publishLoginFailure(request, failed);
         this.failureHandler.onAuthenticationFailure(request, response, failed);
+    }
+
+    /**
+     * 发布登录成功事件。
+     *
+     * <p>未注入事件发布器时静默跳过；事件仅携带非敏感标识（用户名/IP/登录类型/租户）。</p>
+     *
+     * @param request   HTTP 请求
+     * @param loginUser 登录成功的用户主体
+     */
+    private void publishLoginSuccess(HttpServletRequest request, LoginUser loginUser) {
+        if (this.eventPublisher != null) {
+            this.eventPublisher.publishEvent(
+                    new LoginSuccessEvent(this, loginUser, resolveClientIp(request), resolveLoginType()));
+        }
+    }
+
+    /**
+     * 发布登录失败事件。
+     *
+     * <p>用户名从请求属性 {@link #LOGIN_PARAMETERS} 中提取（JSON 登录体已被
+     * {@link #getUserLoginForRequestBody} 缓存）；事件不携带密码、凭证等敏感信息。</p>
+     *
+     * @param request HTTP 请求
+     * @param failed  认证失败异常
+     */
+    private void publishLoginFailure(HttpServletRequest request, AuthenticationException failed) {
+        if (this.eventPublisher != null) {
+            this.eventPublisher.publishEvent(new LoginFailureEvent(
+                    this,
+                    resolveLoginUsername(request),
+                    resolveClientIp(request),
+                    resolveLoginType(),
+                    failed.getMessage()));
+        }
+    }
+
+    /**
+     * 解析当前过滤器对应的登录类型。
+     *
+     * <p>默认取过滤器处理 URL 的最后一段路径（如 {@code /login/form} → {@code form}），
+     * 子类可覆盖以提供更精确的类型标识。</p>
+     *
+     * @return 登录类型标识
+     */
+    protected String resolveLoginType() {
+        String url = this.filterProcessesUrl;
+        if (url == null || url.isBlank()) {
+            return "unknown";
+        }
+        int idx = url.lastIndexOf('/');
+        return idx >= 0 && idx < url.length() - 1 ? url.substring(idx + 1) : url;
+    }
+
+    /**
+     * 从请求属性 {@link #LOGIN_PARAMETERS} 中提取登录用户名。
+     *
+     * @param request HTTP 请求
+     * @return 登录用户名，未提取到时返回 null
+     */
+    @Nullable
+    private String resolveLoginUsername(HttpServletRequest request) {
+        Object params = request.getAttribute(LOGIN_PARAMETERS);
+        if (params instanceof Map<?, ?> map) {
+            Object username = map.get("username");
+            return username != null ? username.toString() : null;
+        }
+        return null;
+    }
+
+    /**
+     * 解析客户端真实 IP。
+     *
+     * <p>优先取反向代理透传头 {@code X-Forwarded-For} 的首个地址，
+     * 其次 {@code X-Real-IP}，最后回退 {@link HttpServletRequest#getRemoteAddr()}。</p>
+     *
+     * @param request HTTP 请求
+     * @return 客户端 IP 地址
+     */
+    @Nullable
+    private String resolveClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            int comma = forwarded.indexOf(',');
+            return (comma > 0 ? forwarded.substring(0, comma) : forwarded).trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
+        }
+        return request.getRemoteAddr();
     }
 
     /**
