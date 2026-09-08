@@ -149,7 +149,7 @@ public class GatewayAutoConfiguration {
                     errorModel.setStatus(HttpStatus.UNAUTHORIZED.value());
                     errorModel.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
                     if (e instanceof SaTokenException saTokenException) {
-                        errorModel.setError(String.valueOf(saTokenException.getCode()));
+                        errorModel.setCode(saTokenException.getCode());
                     }
                     errorModel.setTimestamp(System.currentTimeMillis());
                     errorModel.setMessage(e.getMessage());
