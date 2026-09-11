@@ -253,6 +253,18 @@ mvn -pl lambda-cloud-starter-netty test # 单模块测试（协议模块 netty/y
 
 Sa-Token 多登录类型（`loginUser`/`hmac`），四种策略条件装配：表单（`lambda.security.form.enabled`）/短信验证码（`lambda.security.verify.enabled`）/HMAC 签名（`lambda.security.hmac.enabled`）/第三方登录（`lambda.security.third-party.*.enabled`）；XSS 防护 `XSSDefendFilter`；授权 `@RequiresAuth`/`@RequiresPermission`/`@RequiresRole`；同源校验 `SaSameUtil`。
 
+表单登录支持凭据传输加密（依赖 `lambda-cloud-starter-crypto`）：`lambda.security.form.credentials-encrypt.enabled=true` 后，username/password 字段提交为密文（服务端 RSA 公钥加密 + Base64 编码），过滤器在参数提取后自动解密，后续锁定检查与密码校验流程不变；未启用或 crypto 不在 classpath 时行为与明文提交一致。
+
+```yaml
+lambda:
+  security:
+    form:
+      enabled: true
+      credentials-encrypt:
+        enabled: true
+        key-id: default        # 对应 lambda.crypto.keys 的非对称密钥
+```
+
 ### Netty 协议引擎（`lambda-cloud-starter-netty`）
 
 注解驱动二进制协议：`@ProtocolPayload`+`@ProtocolField`；`ProtocolEngine` 提供 `parse`/`serialize`/`validate`；`ByteCodeFieldAccessor`（ASM 零反射，回退 `ReflectionFieldAccessor`）；CRC 校验（`Crc16Algorithm` 等）；`NettyServer`（`SmartLifecycle`，EPOLL/NIO）；扩展点 `ServerBootstrapConfigurationCustomizer`/`ChannelPipelineConfigurationCustomizer`。协议业务 starter（`ocpp`/`t645`/`ykc`）复用此引擎，不重复实现编解码。CRC 字节序兼容开关 `spring.netty.protocol.crc-byte-swap`（默认 `false`）：开启后 CRC 校验失败时会按 CRC 字段长度对计算值做字节交换后再比对一次，用于兼容按小端序存储 CRC 的设备，命中时输出 WARN 日志；仅作用于校验方向，下行报文 CRC 字段字节序仍由字段 `littleEndian` 属性控制。
