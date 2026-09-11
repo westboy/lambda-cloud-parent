@@ -95,6 +95,7 @@
 | netty | `lambda.netty.*` |
 | cache | `lambda.cache.*` |
 | sse | `lambda.sse.*` |
+| crypto | `lambda.crypto.*` |
 | mybatis | `mybatis-plus.*` |
 
 ### 5.3 禁令（MUST NOT）

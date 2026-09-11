@@ -121,6 +121,8 @@ lambda-cloud-parent
 │
 ├── lambda-cloud-starter-security        # 安全认证模块
 │
+├── lambda-cloud-starter-crypto          # 通用加密能力（加签/验签、非对称/对称/混合加解密、摘要、密钥库，支持 SM2/SM3/SM4 国密）
+│
 ├── lambda-cloud-starter-netty           # Netty 网络通信框架
 │
 ├── lambda-cloud-starter-lucene           # Lucene 本地全文索引与多索引生命周期
@@ -254,6 +256,29 @@ Sa-Token 多登录类型（`loginUser`/`hmac`），四种策略条件装配：�
 ### Netty 协议引擎（`lambda-cloud-starter-netty`）
 
 注解驱动二进制协议：`@ProtocolPayload`+`@ProtocolField`；`ProtocolEngine` 提供 `parse`/`serialize`/`validate`；`ByteCodeFieldAccessor`（ASM 零反射，回退 `ReflectionFieldAccessor`）；CRC 校验（`Crc16Algorithm` 等）；`NettyServer`（`SmartLifecycle`，EPOLL/NIO）；扩展点 `ServerBootstrapConfigurationCustomizer`/`ChannelPipelineConfigurationCustomizer`。协议业务 starter（`ocpp`/`t645`/`ykc`）复用此引擎，不重复实现编解码。CRC 字节序兼容开关 `spring.netty.protocol.crc-byte-swap`（默认 `false`）：开启后 CRC 校验失败时会按 CRC 字段长度对计算值做字节交换后再比对一次，用于兼容按小端序存储 CRC 的设备，命中时输出 WARN 日志；仅作用于校验方向，下行报文 CRC 字段字节序仍由字段 `littleEndian` 属性控制。
+
+### 通用加密能力（`lambda-cloud-starter-crypto`）
+
+统一密码学能力，实现基于 hutool-crypto + BouncyCastle，支持国际算法与国密：加签/验签（RSA: SHA256withRSA，SM2: SM3withSM2）、非对称加解密（RSA-OAEP / SM2）、对称加解密（AES-GCM / SM4-GCM，随机 IV 前置）、混合信封加密（长数据场景）、摘要（SHA-256/512、SM3）。密钥统一由 `KeyProvider` 扩展点解析，默认 `PropertiesKeyProvider` 从 `lambda.crypto.keys` 配置加载（内联 PEM/Base64/hex 或 JKS/PKCS12 密钥库，密钥值经环境变量注入），解析失败启动期 fail-fast。所有服务均为可覆盖 Bean。
+
+```yaml
+lambda:
+  crypto:
+    enabled: true                  # 默认 true
+    default-key-id: default        # 未指定 keyId 时使用
+    keys:
+      - id: default
+        type: RSA                  # RSA | SM2 | AES | SM4
+        public-key: ${CRYPTO_RSA_PUBLIC_KEY}    # PEM 或 Base64
+        private-key: ${CRYPTO_RSA_PRIVATE_KEY}
+      - id: sm2-cert
+        type: SM2
+        key-store:                 # JKS / PKCS12，与内联密钥互斥，优先生效
+          type: PKCS12
+          location: ${CRYPTO_JKS_PATH}
+          password: ${CRYPTO_JKS_PASSWORD}
+          alias: sign-key
+```
 
 ### Lucene 本地全文索引（`lambda-cloud-starter-lucene`）
 

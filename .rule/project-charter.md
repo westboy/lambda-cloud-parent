@@ -12,7 +12,7 @@
 
 ## 2. 适用范围（Scope）
 
-本宪章适用于本仓库内所有 `lambda-cloud-*` 模块（core / processor / dependencies + 26 个 starter）中的：
+本宪章适用于本仓库内所有 `lambda-cloud-*` 模块（core / processor / dependencies + 27 个 starter）中的：
 
 - starter 的提供与扩展、自动配置装配
 - 依赖与版本治理（parent POM / BOM）
