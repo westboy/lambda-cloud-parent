@@ -108,6 +108,7 @@
         <module>lambda-cloud-starter-ocpp</module>
         <module>lambda-cloud-starter-lucene</module>
         <module>lambda-cloud-starter-xxljob</module>
+        <module>lambda-cloud-starter-crypto</module>
     </modules>
 
     <dependencyManagement>
