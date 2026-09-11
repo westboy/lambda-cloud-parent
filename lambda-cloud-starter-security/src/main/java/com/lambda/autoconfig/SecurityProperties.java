@@ -296,6 +296,18 @@ public class SecurityProperties {
         boolean enableVerify = false;
 
         /**
+         * 凭据传输加密配置
+         * <p>
+         * 启用后表单登录提交的 username/password 为密文
+         * （经 lambda-cloud-starter-crypto 非对称公钥加密后 Base64 编码），
+         * 过滤器在参数提取后自动解密。需要 classpath 存在
+         * lambda-cloud-starter-crypto（security 模块 optional 依赖）。
+         * </p>
+         */
+        @NestedConfigurationProperty
+        CredentialsEncrypt credentialsEncrypt = new CredentialsEncrypt();
+
+        /**
          * 表单请求参数配置
          * <p>
          * 定义表单登录时的请求参数名称，如用户名字段、密码字段、验证码字段等。
@@ -342,6 +354,31 @@ public class SecurityProperties {
          */
         @NestedConfigurationProperty
         Logout logout = new Logout();
+
+        /**
+         * 凭据传输加密配置类
+         * <p>
+         * 控制表单登录凭据（用户名/密码）的传输层加密。
+         * 密钥来自 lambda-cloud-starter-crypto 的 lambda.crypto.keys 配置。
+         * </p>
+         */
+        @Getter
+        @Setter
+        public static class CredentialsEncrypt {
+            /**
+             * 是否启用凭据传输加密
+             *
+             * @default false
+             */
+            boolean enabled = false;
+
+            /**
+             * 密钥标识（lambda.crypto.keys 中登记的非对称密钥 id）
+             *
+             * @default "default"
+             */
+            String keyId = "default";
+        }
 
         /**
          * 登出配置类

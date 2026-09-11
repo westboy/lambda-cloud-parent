@@ -110,6 +110,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- 加密组件（可选，启用 lambda.security.form.credentials-encrypt 时用于登录凭据传输加密） -->
+        <dependency>
+            <groupId>com.lambda.cloud</groupId>
+            <artifactId>lambda-cloud-starter-crypto</artifactId>
+            <version>${project.parent.version}</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
 </project>

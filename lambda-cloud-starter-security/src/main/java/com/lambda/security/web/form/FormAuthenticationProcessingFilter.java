@@ -175,6 +175,16 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
 
     private List<FormLoginValidator> formLoginValidators = new ArrayList<>();
 
+    /**
+     * 登录凭据解密器
+     * <p>
+     * 启用凭据传输加密（{@code lambda.security.form.credentials-encrypt.enabled=true}）时非空，
+     * 在参数提取后对 username/password 逐字段解密；为 null 时行为与明文提交一致。
+     * </p>
+     */
+    @Nullable
+    private CredentialsDecryptor credentialsDecryptor;
+
     public void setFormLoginValidators(List<FormLoginValidator> formLoginValidators) {
         if (formLoginValidators == null) {
             this.formLoginValidators = new ArrayList<>();
@@ -345,6 +355,11 @@ public class FormAuthenticationProcessingFilter extends AbstractAuthenticationPr
                     device = StringUtils.defaultString((String) user.getOrDefault(Constants.LOGIN_DEVICE, "default"));
                 }
             }
+        }
+
+        if (this.credentialsDecryptor != null) {
+            username = this.credentialsDecryptor.decrypt(username);
+            password = this.credentialsDecryptor.decrypt(password);
         }
 
         return new FormLoginContext(request, response, requestBody, username, password, device, loginType);

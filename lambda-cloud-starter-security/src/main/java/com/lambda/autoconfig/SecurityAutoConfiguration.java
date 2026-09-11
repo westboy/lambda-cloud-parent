@@ -857,6 +857,40 @@ public class SecurityAutoConfiguration {
         }
 
         /**
+         * 凭据传输加密配置
+         * <p>
+         * 启用凭据传输加密且 classpath 存在 lambda-cloud-starter-crypto 时装配，
+         * 基于 crypto 模块的非对称加解密实现登录凭据（用户名/密码）解密。
+         * crypto 缺失或未启用时本配置整体跳过，过滤器行为与明文提交一致（优雅降级）。
+         * </p>
+         */
+        @Configuration
+        @ConditionalOnClass(com.lambda.cloud.crypto.service.AsymmetricCryptoService.class)
+        @ConditionalOnProperty(
+                prefix = "lambda.security.form.credentials-encrypt",
+                name = "enabled",
+                havingValue = "true")
+        public static class CredentialsEncryptConfiguration {
+
+            /**
+             * 登录凭据解密器
+             *
+             * @param asymmetricCryptoService crypto 模块非对称加解密服务
+             * @param securityProperties 安全配置
+             * @return 默认解密器实现
+             */
+            @Bean
+            @ConditionalOnMissingBean(CredentialsDecryptor.class)
+            public CredentialsDecryptor credentialsDecryptor(
+                    com.lambda.cloud.crypto.service.AsymmetricCryptoService asymmetricCryptoService,
+                    SecurityProperties securityProperties) {
+                return new AsymmetricCredentialsDecryptor(
+                        asymmetricCryptoService,
+                        securityProperties.getForm().getCredentialsEncrypt().getKeyId());
+            }
+        }
+
+        /**
          * 表单认证处理过滤器
          * <p>
          * 创建表单登录的认证处理过滤器，负责处理用户名+密码的登录请求。
@@ -886,7 +920,8 @@ public class SecurityAutoConfiguration {
                 PasswordEncoder passwordEncoder,
                 ApplicationEventPublisher eventPublisher,
                 @Autowired(required = false) List<FormLoginValidator> formLoginValidators,
-                @Autowired(required = false) UserDetailService userDetailService) {
+                @Autowired(required = false) UserDetailService userDetailService,
+                @Autowired(required = false) CredentialsDecryptor credentialsDecryptor) {
             FilterRegistrationBean<FormAuthenticationProcessingFilter> filterRegistrationBean =
                     new FilterRegistrationBean<>();
             FormAuthenticationProcessingFilter processingFilter =
@@ -898,6 +933,7 @@ public class SecurityAutoConfiguration {
             processingFilter.setFormLoginValidators(formLoginValidators);
             processingFilter.setUserDetailService(userDetailService);
             processingFilter.setPasswordEncoder(passwordEncoder);
+            processingFilter.setCredentialsDecryptor(credentialsDecryptor);
             filterRegistrationBean.setFilter(processingFilter);
             filterRegistrationBean.addUrlPatterns("/*");
             filterRegistrationBean.setOrder(30);
