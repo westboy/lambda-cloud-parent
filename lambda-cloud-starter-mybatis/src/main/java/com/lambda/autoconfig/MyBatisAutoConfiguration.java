@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.lambda.autoconfig.condition.MapperPackageConfiguredCondition;
+import com.lambda.cloud.crypto.service.SymmetricCryptoService;
 import com.lambda.cloud.mybatis.handler.AesEncryptHandler;
 import com.lambda.cloud.mybatis.handler.EntityMetaFiller;
 import com.lambda.cloud.mybatis.handler.GlobalMetaObjectHandler;
@@ -45,7 +46,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Configuration
 @Import({MybatisPlusAutoConfiguration.class})
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
-@AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
+@AutoConfigureAfter(value = {DataSourceAutoConfiguration.class, CryptoAutoConfiguration.class})
 public class MyBatisAutoConfiguration {
 
     public MyBatisAutoConfiguration() {
@@ -168,8 +169,9 @@ public class MyBatisAutoConfiguration {
         }
 
         @Bean
-        public AesEncryptHandler aesEncryptHandler() {
-            return new AesEncryptHandler(mybatisProperties.getEncrypt().getKey());
+        public AesEncryptHandler aesEncryptHandler(SymmetricCryptoService symmetricCryptoService) {
+            return new AesEncryptHandler(
+                    symmetricCryptoService, mybatisProperties.getEncrypt().getKeyId());
         }
 
         @Bean

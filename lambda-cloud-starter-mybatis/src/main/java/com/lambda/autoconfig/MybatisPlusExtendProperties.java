@@ -34,7 +34,11 @@ public class MybatisPlusExtendProperties {
     @Setter
     public static class EncryptConfig {
         private Boolean enabled = false;
-        private String key = "1234567890123456";
+
+        /**
+         * 密钥标识，对应 lambda.crypto.keys 中的 id（AES/SM4 类型密钥）
+         */
+        private String keyId = "default";
     }
 
     @Getter

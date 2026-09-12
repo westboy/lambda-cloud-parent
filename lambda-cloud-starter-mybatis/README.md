@@ -104,7 +104,7 @@ com.lambda.autoconfig.datascope.DataScopeAutoConfiguration
 
 - `mapper-package`
 - `database-id-map`
-- `encrypt.enabled` / `encrypt.key`
+- `encrypt.enabled` / `encrypt.key-id`（对应 `lambda.crypto.keys` 中的密钥 id）
 - `tenant.enabled`
 - `tenant.tenant-column`（默认 `tenant_id`）
 - `tenant.ignore-tables`（与内置默认忽略表集合做并集）
@@ -139,10 +139,11 @@ com.lambda.autoconfig.datascope.DataScopeAutoConfiguration
 
 ### 字段 AES 加解密
 
-`AesEncryptHandler` 在写入时加密、读取时解密：
+`AesEncryptHandler` 在写入时加密、读取时解密，委托 `lambda-cloud-starter-crypto` 的 `SymmetricCryptoService` 实现：
 
-- 写：`AES.encrypt(value, key)`
-- 读：`AES.decrypt(value, key)`
+- 算法：AES-GCM / SM4-GCM（由密钥类型决定），随机 IV 前置，带完整性校验
+- 密钥：由 `lambda.crypto.keys` 统一管理（`mybatis-plus.encrypt.key-id` 指定使用的密钥 id）
+- 存储：数据库存 Base64 编码密文（`Base64(iv || ciphertext)`）
 
 用于 `@TableField(typeHandler = AesEncryptHandler.class)` 的敏感字段。
 
@@ -184,7 +185,7 @@ mybatis-plus:
   mapper-package: com.example.**.mapper
   encrypt:
     enabled: true
-    key: 1234567890123456
+    key-id: aes-data
   tenant:
     enabled: true
     tenant-column: tenant_id
@@ -193,6 +194,11 @@ mybatis-plus:
       - sys_dict
 
 lambda:
+  crypto:
+    keys:
+      - id: aes-data
+        type: AES
+        secret-key: ${CRYPTO_AES_KEY}   # hex 或 Base64，16/24/32 字节
   datascope:
     super-admin-identifiers:
       - admin
@@ -225,6 +231,7 @@ public class UserEntity {
 - `mybatis-plus-jsqlparser`
 - `p6spy`
 - `lambda-cloud-core`
+- `lambda-cloud-starter-crypto`（字段加密，AES-GCM/SM4-GCM）
 - `lambda-cloud-starter-security`（optional）
 
 ## 当前实现约束
@@ -233,4 +240,4 @@ public class UserEntity {
 - `TenantExpressionInterceptor` 依赖参数名与 `tenant-column` 一致；不一致时会回退到登录用户租户。该拦截器需手动注册为 Bean 并加入 MyBatis 拦截器链，构造参数 `name` 即为租户列名。
 - `DataScopeInterceptor` 只处理 `SELECT`，不会改写 `UPDATE/DELETE/INSERT`。
 - 数据权限策略在复杂 SQL 下依赖 JSqlParser 解析成功；解析失败时 SUB_QUERY/INNER 模式会抛出异常。
-- `AesEncryptHandler` 使用配置密钥对称加解密，密钥轮换需业务自行规划迁移策略。
+- `AesEncryptHandler` 密文格式为 `Base64(iv || ciphertext)`（GCM），与旧版 mybatis-plus `AES` 工具（ECB）密文不兼容，存量数据需迁移；密钥轮换通过 `lambda.crypto.keys` 新增密钥并切换 `encrypt.key-id`，需业务自行规划数据迁移策略。
