@@ -78,7 +78,7 @@ com.lambda.autoconfig.datascope.DataScopeAutoConfiguration
 
 条件：
 
-- `mybatis-plus.encrypt.enabled=true`
+- `mybatis-plus.encrypt.enabled=true` 且 classpath 存在 `lambda-cloud-starter-crypto`（optional 依赖，开启字段加密需自行引入）
 
 输出：
 
@@ -231,7 +231,7 @@ public class UserEntity {
 - `mybatis-plus-jsqlparser`
 - `p6spy`
 - `lambda-cloud-core`
-- `lambda-cloud-starter-crypto`（字段加密，AES-GCM/SM4-GCM）
+- `lambda-cloud-starter-crypto`（optional，字段加密 `mybatis-plus.encrypt.enabled=true` 时需要）
 - `lambda-cloud-starter-security`（optional）
 
 ## 当前实现约束

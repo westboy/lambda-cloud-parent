@@ -17,10 +17,12 @@
             <artifactId>lambda-cloud-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <!-- 字段加密（mybatis-plus.encrypt.enabled=true 时需要），可选依赖 -->
         <dependency>
             <groupId>com.lambda.cloud</groupId>
             <artifactId>lambda-cloud-starter-crypto</artifactId>
             <version>${project.parent.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.lambda.cloud</groupId>

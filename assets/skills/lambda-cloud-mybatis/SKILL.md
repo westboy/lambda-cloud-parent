@@ -150,17 +150,24 @@ private LocalDateTime updateTime;
 
 配置 `mybatis-plus.encrypt.enabled=true` 后，使用 `AesEncryptHandler`。
 
-`AesEncryptHandler` 构造需要传入 `key` 参数:
+`AesEncryptHandler` 委托 `lambda-cloud-starter-crypto` 的 `SymmetricCryptoService`（AES-GCM / SM4-GCM，随机 IV 前置），
+密钥由 `lambda.crypto.keys` 统一管理，通过 `mybatis-plus.encrypt.key-id` 指定密钥 id（默认 `default`）：
 
-```java
-public class AesEncryptHandler extends BaseTypeHandler<String> {
-    public final String key;
+```yaml
+mybatis-plus:
+  encrypt:
+    enabled: true
+    key-id: aes-data
 
-    public AesEncryptHandler(String key) {
-        this.key = key;
-    }
-}
+lambda:
+  crypto:
+    keys:
+      - id: aes-data
+        type: AES
+        secret-key: ${CRYPTO_AES_KEY}   # hex 或 Base64
 ```
+
+数据库列存储 Base64 编码密文（`Base64(iv || ciphertext)`）。
 
 在实体中使用:
 

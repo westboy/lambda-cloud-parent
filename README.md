@@ -246,7 +246,7 @@ mvn -pl lambda-cloud-starter-netty test # 单模块测试（协议模块 netty/y
 ### MyBatis Plus 增强（`lambda-cloud-starter-mybatis`）
 
 - `LambdaSqlInjector` 注入 `insertAll`/`selectByCode`/`updateByCode`/`deleteByCode`/`exists`（基于 `@TableCodeField`），Mapper 继承 `LambdaBaseMapper`
-- 字段加密 `AesEncryptHandler`（`mybatis-plus.encrypt.*`）；多租户 `TenantLineInnerInterceptor`+`TenantHandler`（`mybatis-plus.tenant.enabled`）
+- 字段加密 `AesEncryptHandler`（`mybatis-plus.encrypt.*`，委托 `lambda-cloud-starter-crypto` 的 AES-GCM/SM4-GCM，`encrypt.key-id` 引用 `lambda.crypto.keys` 密钥）；多租户 `TenantLineInnerInterceptor`+`TenantHandler`（`mybatis-plus.tenant.enabled`）
 - 自动填充 `GlobalMetaObjectHandler`+`EntityMetaFiller`；拦截器顺序 9/10/20/30；多数据库 `DatabaseIdProvider`（MySQL/Oracle/PostgreSQL/H2/DM）
 
 ### 安全认证（`lambda-cloud-starter-security`）

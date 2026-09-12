@@ -28,6 +28,7 @@ import org.apache.ibatis.type.JdbcType;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -46,7 +47,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Configuration
 @Import({MybatisPlusAutoConfiguration.class})
 @EnableConfigurationProperties(MybatisPlusExtendProperties.class)
-@AutoConfigureAfter(value = {DataSourceAutoConfiguration.class, CryptoAutoConfiguration.class})
+@AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
 public class MyBatisAutoConfiguration {
 
     public MyBatisAutoConfiguration() {
@@ -156,9 +157,14 @@ public class MyBatisAutoConfiguration {
 
     /**
      * 加密解密
+     * <p>
+     * crypto 为可选依赖：仅在 classpath 存在且开启 {@code mybatis-plus.encrypt.enabled} 时装配。
+     * {@code @AutoConfigureAfter(CryptoAutoConfiguration.class)} 保证 {@link SymmetricCryptoService} 已注册。
      */
     @Configuration
+    @ConditionalOnClass(SymmetricCryptoService.class)
     @ConditionalOnProperty(prefix = "mybatis-plus.encrypt", name = "enabled")
+    @AutoConfigureAfter(value = CryptoAutoConfiguration.class)
     public static class EncryptConfig {
         @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"})
         private MybatisPlusExtendProperties mybatisProperties;
