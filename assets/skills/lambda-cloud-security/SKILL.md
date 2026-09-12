@@ -287,6 +287,16 @@ lambda:
 3. 委派 `SecureInterceptor#handle()`
 4. 默认执行 `stpLogic.checkLogin()`
 
+### 方法注解鉴权
+
+`SaTokenInterceptor` 对 `HandlerMethod` 显式调用 `SaAnnotationStrategy.instance.checkMethodAnnotation`，
+因此方法级注解**有效**，无需 `new SaInterceptor(isAnnotation=true)`：
+
+- `@SaIgnore` — 跳过鉴权（匿名放行，如公钥下发、回调地址）
+- `@SaCheckLogin` / `@SaCheckRole` / `@SaCheckPermission` — 按需精细控制
+
+匿名放行的两种方式：`ignored` 配置按路径放行；`@SaIgnore` 按方法放行。二者等价，可任选。
+
 ### 同源令牌检查
 
 - `SaServletFilter` 对 `/**` 生效，排除 ignored 路径
