@@ -231,6 +231,8 @@ mvn -pl lambda-cloud-starter-netty test # 单模块测试（协议模块 netty/y
 
 > 本仓 parent/BOM 为 `2026.1.1-SNAPSHOT`，下游项目依赖前须先 `mvn clean install` 本仓。`mvn compile` 已在 compile 阶段绑定 Spotless（Palantir 2.67.0）+ SpotBugs（4.10.3.0），违规即失败（见 `.rule/engineering-contract.md` §14）。修改 `@AutoConverter`/协议注解/权限注解后须 `mvn clean compile` 重新生成处理器产物（见 §5）。
 
+> **首次构建提示：** 如果本地仓库中还没有 `lambda-cloud-core` 和 `lambda-cloud-processor`，需要先完成注解处理器自举，详见 [快速开始指南](docs/quick-start/quick-start.md)。
+
 ## 架构与核心能力
 
 ### 自动配置模式
