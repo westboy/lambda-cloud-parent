@@ -12,7 +12,7 @@
 
 ## 二、首次构建
 
-### 方式一：使用仓库自带 settings.xml（首次安装推荐）
+### 方式一：使用仓库自带 settings.xml安装（推荐）
 
 仓库自带 [assets/maven/settings.xml](../../assets/maven/settings.xml)，已配置阿里云公共镜像与私服 `rdc-releases`/`rdc-snapshots` 的公开只读账号（`pub-user`，仅用于拉取依赖，不含发布权限），因此首次构建可一次通过，**无需改动任何 POM**：
 
@@ -25,7 +25,7 @@ mvn -s assets/maven/settings.xml clean install
 > **温馨提示：** 也可以把该文件直接复制到 `~/.m2/settings.xml`（Windows：`%USERPROFILE%\.m2\settings.xml`），之后直接执行 `mvn clean install`。
 
 
-### 方式二：直接构建安装
+### 方式二：本地直接构建安装
 
 首次在本地构建安装，此时本地仓库里也没有 `lambda-cloud-core` / `lambda-cloud-processor`，直接 `mvn clean install` 会报找不到 `com.lambda.cloud:lambda-cloud-processor`的错误。
 
