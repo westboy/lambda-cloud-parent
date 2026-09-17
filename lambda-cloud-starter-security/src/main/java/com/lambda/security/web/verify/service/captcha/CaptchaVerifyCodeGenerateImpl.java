@@ -2,6 +2,7 @@ package com.lambda.security.web.verify.service.captcha;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.CircleCaptcha;
+import cn.hutool.captcha.generator.RandomGenerator;
 import cn.hutool.core.math.Calculator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
@@ -408,17 +409,26 @@ public class CaptchaVerifyCodeGenerateImpl implements VerifyCodeService {
                 securityProperties.getVerify().getCaptchaHeight(),
                 securityProperties.getVerify().getCaptchaCodeCount(),
                 3);
-        MathGenerator mathGenerator =
-                new MathGenerator(securityProperties.getVerify().getCaptchaNumberLength());
-        captcha.setGenerator(mathGenerator);
+        String captchaType = securityProperties.getVerify().getCaptchaType();
+        String captchaCode;
+        if ("math".equalsIgnoreCase(captchaType)) {
+            captcha.setGenerator(
+                    new MathGenerator(securityProperties.getVerify().getCaptchaNumberLength()));
+            captchaCode = Integer.toString((int) Calculator.conversion(captcha.getCode()));
+        } else if ("letter".equalsIgnoreCase(captchaType)) {
+            captcha.setGenerator(new RandomGenerator(
+                    "ABCDEFGHJKLMNPQRSTUVWXYZ", securityProperties.getVerify().getCaptchaCodeCount()));
+            captchaCode = captcha.getCode();
+        } else {
+            throw new IllegalArgumentException("Unsupported captcha type: " + captchaType);
+        }
         String captchaId = IdUtil.fastUUID();
-        Integer captchaCode = (int) Calculator.conversion(captcha.getCode());
         if (securityProperties.getVerify().isDevMode()) {
             log.info("验证码[ {}:{}, {}:{} ]", TOKEN_KEY, captchaId, VERIFY_CODE_PARAMETER, captchaCode);
         }
         captchaStore.store(
                 captchaId,
-                captchaCode.toString(),
+                captchaCode,
                 securityProperties.getVerify().getTimeUnit(),
                 securityProperties.getVerify().getDuration());
         if (WebHttpUtils.isAjaxRequest(request) || JakartaServletUtil.isPostMethod(request)) {

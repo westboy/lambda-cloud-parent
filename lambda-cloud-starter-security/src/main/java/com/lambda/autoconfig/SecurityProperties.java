@@ -661,11 +661,10 @@ public class SecurityProperties {
         /**
          * 验证码类型
          * <p>
-         * 指定验证码的类型，如数字、字母、混合等。
-         * 不同类型的验证码有不同的安全级别。
+         * letter 为字母图形验证码（默认），math 为算术验证码。
          * </p>
          */
-        private String captchaType;
+        private String captchaType = "letter";
 
         /**
          * 验证码图片宽度
