@@ -159,155 +159,17 @@ lambda-cloud-parent
 - **JDK**：21 或更高版本
 - **构建工具**：Maven 3.6+
 
-### 添加依赖
+## 构建项目
 
-在您的 Maven 项目中引入 Lambda Cloud 的 BOM：
-
-```xml
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.lambda.cloud</groupId>
-            <artifactId>lambda-cloud-starter-dependencies</artifactId>
-            <version>2026.1.1-SNAPSHOT</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-```
-
-然后根据需要添加相应的 starter 依赖，例如：
-
-```xml
-<dependencies>
-    <!-- Web 模块 -->
-    <dependency>
-        <groupId>com.lambda.cloud</groupId>
-        <artifactId>lambda-cloud-starter-web</artifactId>
-    </dependency>
-    
-    <!-- 安全认证模块 -->
-    <dependency>
-        <groupId>com.lambda.cloud</groupId>
-        <artifactId>lambda-cloud-starter-security</artifactId>
-    </dependency>
-    
-    <!-- MyBatis Plus 模块 -->
-    <dependency>
-        <groupId>com.lambda.cloud</groupId>
-        <artifactId>lambda-cloud-starter-mybatis</artifactId>
-    </dependency>
-    
-    <!-- Redis 缓存模块 -->
-    <dependency>
-        <groupId>com.lambda.cloud</groupId>
-        <artifactId>lambda-cloud-starter-redis</artifactId>
-    </dependency>
-    
-    <!-- Dubbo RPC 模块 -->
-    <dependency>
-        <groupId>com.lambda.cloud</groupId>
-        <artifactId>lambda-cloud-starter-dubbo</artifactId>
-    </dependency>
-</dependencies>
-```
-
-## 构建与测试
-
-本仓无 Maven wrapper，使用系统 `mvn`（Maven 3.6+、JDK 21）。
+> 首次构建本项目请详细阅读 [ **>>快速开始指南<<** ](docs/quick-start/quick-start.md)
 
 ```bash
+mvn -s assets/maven/settings.xml clean install # 首次安装推荐（镜像加速 + 私服拉取处理器产物）
 mvn clean install                       # 构建并安装到本地仓库（下游依赖前必做）
 mvn clean install -DskipTests           # 跳过测试构建
-cd lambda-cloud-starter-mybatis && mvn clean install   # 单模块构建
 mvn spotless:apply                      # 格式化（Palantir Java Format）
-mvn spotless:check                      # 格式检查
-mvn spotbugs:check                      # 静态分析
-mvn test                                # 全部测试
-mvn clean verify                        # 测试 + jacoco 覆盖率（target/site/jacoco/index.html）
-mvn -pl lambda-cloud-starter-netty test # 单模块测试（协议模块 netty/ykc/t645/iotdb 有测试）
 ```
 
-> 本仓 parent/BOM 为 `2026.1.1-SNAPSHOT`，下游项目依赖前须先 `mvn clean install` 本仓。`mvn compile` 已在 compile 阶段绑定 Spotless（Palantir 2.67.0）+ SpotBugs（4.10.3.0），违规即失败（见 `.rule/engineering-contract.md` §14）。修改 `@AutoConverter`/协议注解/权限注解后须 `mvn clean compile` 重新生成处理器产物（见 §5）。
-
-> **首次构建提示：** 如果本地仓库中还没有 `lambda-cloud-core` 和 `lambda-cloud-processor`，需要先完成注解处理器自举，详见 [快速开始指南](docs/quick-start/quick-start.md)。
-
-## 架构与核心能力
-
-### 自动配置模式
-
-所有 starter 遵循 Spring Boot 自动配置：入口统一在 `com.lambda.autoconfig`，注册于 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`；经 `@ConditionalOnProperty`/`@ConditionalOnMissingBean`/`@ConditionalOnClass`/`@ConditionalOnWebApplication` 条件装配；属性用 `@ConfigurationProperties`，kebab-case 命名，`matchIfMissing` 向后兼容。
-
-### `lambda-cloud-core` 基础库
-
-- **基类**：`BaseDO`（审计字段 `createUser`/`createTime`/`updateUser`/`updateTime`）、`BaseDTO<T>`（`toEntity()`）、`BaseVO<T>`（`fromEntity()`）、`BasePageDTO`、`BaseEnum`
-- **对象转换**：`@AutoConverter` + `AutoConverterProcessor`（编译期生成 MapStruct）+ `ConverterResolver` + `ConvertFunctions`；`isReverse=false`（DTO->Entity）/`isReverse=true`（Entity->VO）
-- **工具与异常**：`Constants`、`HmacGenerator`、`TypeConverter`、`Assert`；`ErrorModel`/`ErrorCode` 标准化错误响应
-
-### MyBatis Plus 增强（`lambda-cloud-starter-mybatis`）
-
-- `LambdaSqlInjector` 注入 `insertAll`/`selectByCode`/`updateByCode`/`deleteByCode`/`exists`（基于 `@TableCodeField`），Mapper 继承 `LambdaBaseMapper`
-- 字段加密 `AesEncryptHandler`（`mybatis-plus.encrypt.*`，委托 `lambda-cloud-starter-crypto` 的 AES-GCM/SM4-GCM，`encrypt.key-id` 引用 `lambda.crypto.keys` 密钥）；多租户 `TenantLineInnerInterceptor`+`TenantHandler`（`mybatis-plus.tenant.enabled`）
-- 自动填充 `GlobalMetaObjectHandler`+`EntityMetaFiller`；拦截器顺序 9/10/20/30；多数据库 `DatabaseIdProvider`（MySQL/Oracle/PostgreSQL/H2/DM）
-
-### 安全认证（`lambda-cloud-starter-security`）
-
-Sa-Token 多登录类型（`loginUser`/`hmac`），四种策略条件装配：表单（`lambda.security.form.enabled`）/短信验证码（`lambda.security.verify.enabled`）/HMAC 签名（`lambda.security.hmac.enabled`）/第三方登录（`lambda.security.third-party.*.enabled`）；XSS 防护 `XSSDefendFilter`；授权 `@RequiresAuth`/`@RequiresPermission`/`@RequiresRole`；同源校验 `SaSameUtil`。
-
-表单登录支持凭据传输加密（依赖 `lambda-cloud-starter-crypto`）：`lambda.security.form.credentials-encrypt.enabled=true` 后，username/password 字段提交为密文（服务端 RSA 公钥加密 + Base64 编码），过滤器在参数提取后自动解密，后续锁定检查与密码校验流程不变；未启用或 crypto 不在 classpath 时行为与明文提交一致。
-
-```yaml
-lambda:
-  security:
-    form:
-      enabled: true
-      credentials-encrypt:
-        enabled: true
-        key-id: default        # 对应 lambda.crypto.keys 的非对称密钥
-```
-
-### Netty 协议引擎（`lambda-cloud-starter-netty`）
-
-注解驱动二进制协议：`@ProtocolPayload`+`@ProtocolField`；`ProtocolEngine` 提供 `parse`/`serialize`/`validate`；`ByteCodeFieldAccessor`（ASM 零反射，回退 `ReflectionFieldAccessor`）；CRC 校验（`Crc16Algorithm` 等）；`NettyServer`（`SmartLifecycle`，EPOLL/NIO）；扩展点 `ServerBootstrapConfigurationCustomizer`/`ChannelPipelineConfigurationCustomizer`。协议业务 starter（`ocpp`/`t645`/`ykc`）复用此引擎，不重复实现编解码。CRC 字节序兼容开关 `spring.netty.protocol.crc-byte-swap`（默认 `false`）：开启后 CRC 校验失败时会按 CRC 字段长度对计算值做字节交换后再比对一次，用于兼容按小端序存储 CRC 的设备，命中时输出 WARN 日志；仅作用于校验方向，下行报文 CRC 字段字节序仍由字段 `littleEndian` 属性控制。
-
-### 通用加密能力（`lambda-cloud-starter-crypto`）
-
-统一密码学能力，实现基于 hutool-crypto + BouncyCastle，支持国际算法与国密：加签/验签（RSA: SHA256withRSA，SM2: SM3withSM2）、非对称加解密（RSA-OAEP / SM2）、对称加解密（AES-GCM / SM4-GCM，随机 IV 前置）、混合信封加密（长数据场景）、摘要（SHA-256/512、SM3）。密钥统一由 `KeyProvider` 扩展点解析，默认 `PropertiesKeyProvider` 从 `lambda.crypto.keys` 配置加载（内联 PEM/Base64/hex 或 JKS/PKCS12 密钥库，密钥值经环境变量注入），解析失败启动期 fail-fast。所有服务均为可覆盖 Bean。
-
-```yaml
-lambda:
-  crypto:
-    enabled: true                  # 默认 true
-    default-key-id: default        # 未指定 keyId 时使用
-    keys:
-      - id: default
-        type: RSA                  # RSA | SM2 | AES | SM4
-        public-key: ${CRYPTO_RSA_PUBLIC_KEY}    # PEM 或 Base64
-        private-key: ${CRYPTO_RSA_PRIVATE_KEY}
-      - id: sm2-cert
-        type: SM2
-        key-store:                 # JKS / PKCS12，与内联密钥互斥，优先生效
-          type: PKCS12
-          location: ${CRYPTO_JKS_PATH}
-          password: ${CRYPTO_JKS_PASSWORD}
-          alias: sign-key
-```
-
-### Lucene 本地全文索引（`lambda-cloud-starter-lucene`）
-
-`LuceneManagerFactory` 在 `lambda.lucene.directory` 根目录下按逻辑名称创建相互隔离的索引，单个索引由长生命周期的 `LuceneManager` 管理 `IndexWriter`、近实时搜索器、提交和关闭。默认使用 `SmartChineseAnalyzer`，下游可注册 `LuceneAnalyzerFactory` Bean 覆盖分词器。
-
-```yaml
-lambda:
-  lucene:
-    enabled: true
-    directory: ${LUCENE_DIRECTORY:${user.home}/.lambda/lucene}
-```
-
-该能力面向单机本地文件系统；索引是可重建投影，不应使用共享网络目录模拟多节点写入。
-
-> 完整工程规则见 [`.rule/engineering-contract.md`](.rule/engineering-contract.md)，包结构细则见 [`.rule/package-structure.md`](.rule/package-structure.md)。
 
 ## 应用场景
 

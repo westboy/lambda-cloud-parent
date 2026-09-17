@@ -43,6 +43,35 @@ under the License.
  | values (values used when the setting is not specified) are provided.
  |
  |-->
+
+<!--
+ | ===========================================================================
+ | Lambda Cloud 构建用 Maven settings 模板（开箱可用，无需修改）
+ |
+ | 解决两类高频「首次构建失败」：
+ |   1. 国内直连 Maven Central 超时 —— 已配置阿里云公共镜像；
+ |   2. lambda-cloud-processor 解析失败 —— 根 POM 的
+ |      maven-compiler-plugin.annotationProcessorPaths 依赖
+ |      com.lambda.cloud:lambda-cloud-processor:2026.1.1-SNAPSHOT，
+ |      全新环境本地仓库没有该产物，无私服配置时会报
+ |      "Could not resolve dependencies ... lambda-cloud-processor"。
+ |      本模板已开放私服 rdc-releases / rdc-snapshots 的只读访问，
+ |      可直接拉取已发布的处理器产物，无需「注释处理器路径 + 手工自举」。
+ |
+ | 私服账号为公开只读账号（pub-user），仅用于拉取依赖，不含发布权限。
+ | 本模板定位为「首次安装 / 版本试用」：长期演化项目请把构件发布到团队内网
+ | 私服（Nexus、云效等），由内网私服供给下游项目。本仓 POM 不声明
+ | &lt;repositories&gt;/&lt;distributionManagement&gt;，切换私服只需改你自己的 settings.xml。
+ |
+ | 使用方式（二选一）：
+ |   A. 临时指定：mvn -s assets/maven/settings.xml clean install
+ |   B. 永久生效：把本文件的 mirrors / servers / profiles / activeProfiles
+ |      四段合并进 ~/.m2/settings.xml（Windows：%USERPROFILE%\.m2\settings.xml）
+ |
+ | 本模板刻意不设置 localRepository，沿用 Maven 默认
+ | ${user.home}/.m2/repository，避免写死盘符导致换机器即构建失败。
+ | ===========================================================================
+ |-->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
@@ -50,9 +79,12 @@ under the License.
    | The path to the local repository maven will use to store artifacts.
    |
    | Default: ${user.home}/.m2/repository
+   |
+   | 本模板不写死本地仓库路径：写死盘符（如 G:\MavenRepo）会让没有该盘符的
+   | 机器直接构建失败。需要自定义时取消下一行注释并改成你自己的路径，
+   | 或执行 mvn -Dmaven.repo.local=<path> clean install。
   <localRepository>/path/to/local/repo</localRepository>
   -->
-  <localRepository>G:\MavenRepo</localRepository>
   <!-- interactiveMode
    | This will determine whether maven prompts you when it needs input. If set to false,
    | maven will use a sensible default value, perhaps based on some other setting, for
