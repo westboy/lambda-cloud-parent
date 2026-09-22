@@ -49,6 +49,7 @@
         <dynamic-datasource.version>4.5.0</dynamic-datasource.version>
         <satoken.version>1.46.0</satoken.version>
         <wxjava.version>4.7.0</wxjava.version>
+        <warm-flow.version>1.8.9</warm-flow.version>
         <p6spy.version>3.9.1</p6spy.version>
         <dubbo.version>3.3.6</dubbo.version>
         <rocketmq.version>2.3.4</rocketmq.version>
@@ -394,6 +395,17 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>dynamic-datasource-spring-boot4-starter</artifactId>
                 <version>${dynamic-datasource.version}</version>
+            </dependency>
+            <!-- warm-flow 工作流引擎（dromara），供 lambda-fusion-workflow 等下游模块引用 -->
+            <dependency>
+                <groupId>org.dromara.warm</groupId>
+                <artifactId>warm-flow-mybatis-plus-sb4-starter</artifactId>
+                <version>${warm-flow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dromara.warm</groupId>
+                <artifactId>warm-flow-plugin-ui-sb-web</artifactId>
+                <version>${warm-flow.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
